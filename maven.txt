@@ -1,0 +1,9 @@
+<mirrors>
+	<mirror>
+		<id>****</id>
+		<url>http://ip:port/nexus/content/groups/public</url>
+		<mirrorOf>central</mirrorOf>
+	</mirror>
+</mirrors>
+
+mvn deploy:deploy-file -DgroupId=org.yx -DartifactId=sumk -Dversion=1.3-SNAPSHOT -Dpackaging=jar -Dfile=sumk-1.3-SNAPSHOT.jar -Durl=http://**** -DrepositoryId=***

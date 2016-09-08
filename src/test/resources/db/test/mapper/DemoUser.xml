@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="DEMOUSER">
+	<!-- 添加-->
+	<insert id="addDemoUser" parameterType="com.yidhuo.weile.pojo.DemoUser">
+		INSERT INTO demouser (	
+				name ,
+				id ,
+				age 
+		)
+		VALUES (               
+				#{name} ,
+				#{id} ,
+				#{age} 
+		)  
+	</insert>
+	
+	<!-- 更新 -->
+	<update id="updateDemoUser" parameterType="com.yidhuo.weile.pojo.DemoUser">
+		UPDATE  demouser       
+		   SET  
+				name  =   #{name}      ,
+				age  =   #{age}      
+		WHERE 
+			id = #{id}
+	</update>
+	
+	<!-- 删除 -->
+	<delete id="delDemoUser" parameterType="com.yidhuo.weile.pojo.DemoUser">
+	DELETE  FROM  demouser        
+	where
+			 <trim prefixOverrides="and">
+						<if test="name != null"> and name = #{name} </if>
+						<if test="id != null"> and id = #{id} </if>
+						<if test="age != null"> and age = #{age} </if>
+			</trim>
+	</delete>
+	
+	<!-- 查询-->
+	<select id="queryDemoUser" parameterType="com.yidhuo.weile.pojo.DemoUser" resultType="com.yidhuo.weile.pojo.DemoUser">
+      SELECT	
+				 name as  name  ,
+				 id as  id  ,
+				 age as  age  
+        FROM  demouser 
+        <where>  
+			<trim prefixOverrides="and">
+						<if test="name != null"> and name = #{name} </if>
+						<if test="id != null"> and id = #{id} </if>
+						<if test="age != null"> and age = #{age} </if>
+			</trim>
+		</where>
+	</select>
+	
+	<!-- 查询 -->
+	<select id="listDemoUser" parameterType="com.ydh.pojo.page.DemoUserPage" resultType="com.yidhuo.weile.pojo.DemoUser">
+      SELECT	
+				 name as  name  ,
+				 id as  id  ,
+				 age as  age  
+        FROM  demouser  
+		<trim prefix="where" prefixOverrides="and">
+					<if test="name != null"> and name = #{name} </if>
+					<if test="id != null"> and id = #{id} </if>
+					<if test="age != null"> and age = #{age} </if>
+		</trim>
+		<if test="order_by != null"> order by ${order_by} </if>
+		LIMIT #{beginDATAIndex},#{pageSize}
+	</select>
+	
+	<!-- 查询数量 -->
+	<select id="countDemoUser" parameterType="com.ydh.pojo.page.DemoUserPage" resultType="_long">
+        SELECT	
+				COUNT(1)	                          			   	     		        
+        FROM    demouser    
+		<trim prefix="where" prefixOverrides="and">
+					<if test="name != null"> and name = #{name} </if>
+					<if test="id != null"> and id = #{id} </if>
+					<if test="age != null"> and age = #{age} </if>
+		</trim>
+	</select>
+	
+	<!-- 查询-->
+	<select id="listDemoUserByIds" parameterType="collection" resultType="com.yidhuo.weile.pojo.DemoUser">
+      SELECT	
+				 name as  name  ,
+				 id as  id  ,
+				 age as  age  
+        FROM  demouser    
+        WHERE id IN 
+        <foreach item="item" collection="list" open="(" separator="," close=")">  
+          #{item}  
+        </foreach>
+	</select>
+	
+	<!-- 部分更新 -->
+	<update id="updatePartDemoUser" parameterType="com.yidhuo.weile.pojo.DemoUser">
+		UPDATE  demouser       
+		   SET  
+		   <trim prefixOverrides=",">
+				<if test="name != null">, name= #{name} </if>
+				<if test="age != null">, age= #{age} </if>
+			</trim>
+		WHERE 
+			id = #{id}
+	</update>
+	<!-- 新添加的方法 2014-10-01-->
+	<select id="listIds" parameterType="com.ydh.pojo.page.DemoUserPage" resultType="Long">
+      SELECT	
+				 id as  id
+        FROM  demouser  
+		<trim prefix="where" prefixOverrides="and">
+					<if test="name != null"> and name = #{name} </if>
+					<if test="id != null"> and id = #{id} </if>
+					<if test="age != null"> and age = #{age} </if>
+		</trim>
+		LIMIT #{beginDATAIndex},#{pageSize}
+	</select>
+	<delete id="delDemoUserByIds" parameterType="collection">
+	DELETE  FROM  demouser         
+	WHERE id IN 
+     	<foreach item="item" collection="list" open="(" separator="," close=")">  
+          #{item}  
+        </foreach>
+	</delete>
+	<update id="updatePartDemoUserByIds" parameterType="map">
+		UPDATE  demouser       
+		   SET
+		    <trim prefixOverrides=",">
+				<if test="newObj.name != null">, name= #{newObj.name} </if>
+				<if test="newObj.age != null">, age= #{newObj.age} </if>
+			</trim>  
+		WHERE id IN
+		<foreach item="item" collection="ids" open="(" separator="," close=")">  
+          #{item}  
+        </foreach>
+        <if test="oldObj!= null">
+				<if test="oldObj.name != null"> and name = #{oldObj.name} </if>
+				<if test="oldObj.age != null"> and age = #{oldObj.age} </if>
+        </if>
+	</update>
+</mapper>
