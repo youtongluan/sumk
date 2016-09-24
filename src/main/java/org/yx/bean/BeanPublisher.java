@@ -16,101 +16,106 @@ import org.yx.util.ClassScaner;
  *
  */
 public final class BeanPublisher {
-	
-	private static ListenerGroup<BeanEvent> group=new ListenerGroupImpl<>();
+
+	private static ListenerGroup<BeanEvent> group = new ListenerGroupImpl<>();
+
 	/**
 	 * 发布扫描包的事件，包括添加到IOC，SOA接口或HTTP接口中
+	 * 
 	 * @param packageNames
 	 */
-	public static synchronized void publishBeans(String... packageNames){
-		ClassScaner scaner=new ClassScaner();
-		Collection<String> clzs=scaner.parse(packageNames);
-		for(String c:clzs){
+	public static synchronized void publishBeans(String... packageNames) {
+		ClassScaner scaner = new ClassScaner();
+		Collection<String> clzs = scaner.parse(packageNames);
+		for (String c : clzs) {
 			try {
 				publish(new BeanEvent(c));
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.printStack(e);
 			}
 		}
 		Log.get(BeanPublisher.class).info(IOC.info());
 		autoWiredAll();
 	}
 
-	private static Object getInjectObject(Field f,Class<?> clz){
-		String name=f.getName();
-		if(clz==Object.class){
-			clz=f.getType();
+	private static Object getInjectObject(Field f, Class<?> clz) {
+		String name = f.getName();
+		if (clz == Object.class) {
+			clz = f.getType();
 		}
-		Object target=IOC.get(name,clz);
-		if(target!=null){
+		Object target = IOC.get(name, clz);
+		if (target != null) {
 			return target;
 		}
-		
-		target=IOC.get(name,f.getType());
-		if(target!=null){
+
+		target = IOC.get(name, f.getType());
+		if (target != null) {
 			return target;
 		}
 		return IOC.get(clz);
 	}
-	
-	private static Object getCacheObject(Field f){
-		String name=f.getName();
-		Class<?> clz=f.getType();
-		
-		Object target=IOC.cache(name,f.getType());
-		if(target!=null){
+
+	private static Object getCacheObject(Field f) {
+		String name = f.getName();
+		Class<?> clz = f.getType();
+
+		Object target = IOC.cache(name, f.getType());
+		if (target != null) {
 			return target;
 		}
-		return IOC.cache(null,clz);
+		return IOC.cache(null, clz);
 	}
-	
-	private static void injectField(Field f,Object bean,Object target){
-		boolean access=f.isAccessible();
-		if(!access){
+
+	private static void injectField(Field f, Object bean, Object target) {
+		boolean access = f.isAccessible();
+		if (!access) {
 			f.setAccessible(true);
 		}
 		try {
 			f.set(bean, target);
 		} catch (Exception e) {
-			e.printStackTrace();
-		}finally{
-			if(!access){
+			Log.printStack(e);
+		} finally {
+			if (!access) {
 				f.setAccessible(false);
 			}
 		}
 	}
-	
-	private static void autoWiredAll(){
-		BeanPool pool=InnerIOC.pool;
-		Collection<Object> beans=pool.allBeans();
-		synchronized(pool){
-			
-			beans.forEach(bean->{
-				Field[] fs=bean.getClass().getDeclaredFields();
-				for(Field f:fs){
-					Inject inj=f.getAnnotation(Inject.class);
-					if(inj!=null){
-						Class<?> clz=inj.beanClz();
-						Object target=getInjectObject(f, clz);
-						if(target==null){
-							SystemException.throwException(235435658, bean.getClass().getName()+"--"+f.getName()+" cannot injected");
+
+	private static void autoWiredAll() {
+		BeanPool pool = InnerIOC.pool;
+		Collection<Object> beans = pool.allBeans();
+		synchronized (pool) {
+
+			beans.forEach(bean -> {
+				Field[] fs = bean.getClass().getDeclaredFields();
+				for (Field f : fs) {
+					Inject inj = f.getAnnotation(Inject.class);
+					if (inj != null) {
+						Class<?> clz = inj.beanClz();
+						Object target = getInjectObject(f, clz);
+						if (target == null) {
+							SystemException.throwException(235435658,
+									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
 						}
-						injectField(f,bean,target);
+						injectField(f, bean, target);
 						continue;
 					}
-					Cached c=f.getAnnotation(Cached.class);
-					if(c!=null){
-						Object target=getCacheObject(f);
-						if(target==null){
-							SystemException.throwException(235435658, bean.getClass().getName()+"--"+f.getName()+" cannot injected");
+					Cached c = f.getAnnotation(Cached.class);
+					if (c != null) {
+						Object target = getCacheObject(f);
+						if (target == null) {
+							SystemException.throwException(235435658,
+									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
 						}
-						injectField(f,bean,target);
+						injectField(f, bean, target);
 						continue;
 					}
 				}
 			});
 		}
 	}
+
 	/**
 	 * 发布事件
 	 * 
@@ -126,7 +131,7 @@ public final class BeanPublisher {
 	 * @param listener
 	 * @return
 	 */
-	public static synchronized  boolean addListener(Listener<BeanEvent> listener) {
+	public static synchronized boolean addListener(Listener<BeanEvent> listener) {
 		group.addListener(listener);
 		return true;
 	}
@@ -136,7 +141,7 @@ public final class BeanPublisher {
 	 * 
 	 * @return
 	 */
-	public static synchronized  void removeListener(Listener<BeanEvent> listener) {
+	public static synchronized void removeListener(Listener<BeanEvent> listener) {
 		group.removeListener(listener);
 	}
 

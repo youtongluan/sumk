@@ -23,51 +23,50 @@ public class UploadHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		 HttpServletRequest request = ctx.getHttpRequest();
-		 Upload uploadInfo=ctx.getInfo().getUpload();
-		
-		 DiskFileItemFactory factory = new DiskFileItemFactory() ;
-		 factory.setSizeThreshold(uploadInfo.maxSize());
-		 ServletFileUpload upload = new ServletFileUpload(factory);
-		 upload.setHeaderEncoding(ctx.getCharset());
-		 List<FileItem> list = (List<FileItem>) upload.parseRequest(request);
-		 if(list==null||list.isEmpty()){
-			 HttpException.throwException(this.getClass(), "没有文件");
-		 }
+		HttpServletRequest request = ctx.getHttpRequest();
+		Upload uploadInfo = ctx.getInfo().getUpload();
 
-		 List<UploadFile> files = new ArrayList<>(list.size());
-		 for (FileItem fi:list) {
-			String name=fi.getName();
-			if(name==null){
-				if("data".equals(fi.getFieldName())){
+		DiskFileItemFactory factory = new DiskFileItemFactory();
+		factory.setSizeThreshold(uploadInfo.maxSize());
+		ServletFileUpload upload = new ServletFileUpload(factory);
+		upload.setHeaderEncoding(ctx.getCharset());
+		List<FileItem> list = (List<FileItem>) upload.parseRequest(request);
+		if (list == null || list.isEmpty()) {
+			HttpException.throwException(this.getClass(), "没有文件");
+		}
+
+		List<UploadFile> files = new ArrayList<>(list.size());
+		for (FileItem fi : list) {
+			String name = fi.getName();
+			if (name == null) {
+				if ("data".equals(fi.getFieldName())) {
 					ctx.setData(fi.get());
 					continue;
 				}
 
 				continue;
 			}
-			Log.get(this.getClass()).debug("fileupload#name:{},field:{}",name,fi.getFieldName());
-			name=name.toLowerCase();
-			boolean valid=false;
-			for(String ext:uploadInfo.exts()){
-				if(name.endsWith(ext)){
-					UploadFile item=new UploadFile();
-					item.fieldName=fi.getFieldName();
-					item.name=fi.getName();
-					item.inputStream=fi.getInputStream();
-					item.size=fi.getSize();
+			Log.get(this.getClass()).debug("fileupload#name:{},field:{}", name, fi.getFieldName());
+			name = name.toLowerCase();
+			boolean valid = false;
+			for (String ext : uploadInfo.exts()) {
+				if (name.endsWith(ext)) {
+					UploadFile item = new UploadFile();
+					item.fieldName = fi.getFieldName();
+					item.name = fi.getName();
+					item.inputStream = fi.getInputStream();
+					item.size = fi.getSize();
 					files.add(item);
-					valid=true;
+					valid = true;
 					break;
 				}
 			}
-			if(!valid){
-				HttpException.throwException(this.getClass(), name+"不是有效的文件类型");
+			if (!valid) {
+				HttpException.throwException(this.getClass(), name + "不是有效的文件类型");
 			}
 		}
 		UploadFileHolder.setFiles(files);
 		return false;
 	}
-	
 
 }

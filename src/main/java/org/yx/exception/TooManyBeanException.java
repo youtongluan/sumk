@@ -7,6 +7,5 @@ public class TooManyBeanException extends RuntimeException {
 	public TooManyBeanException(String message) {
 		super(message);
 	}
-	
-	
+
 }

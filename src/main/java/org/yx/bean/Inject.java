@@ -12,6 +12,7 @@ import java.lang.annotation.Target;
  * 1、使用name和clz获取对象<br>
  * 2、使用name获取对象<br>
  * 3、使用clz获取对象<br>
+ * 
  * @author youtl
  *
  */
@@ -19,12 +20,10 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Inject {
-	
 
 	/**
 	 * bean类的实际类型，默认是变量定义时候的类型<BR>
-	 * 它的用处是多个bean具有相同的name，
-	 * 这时候如果字段的类型不想定义为实际的类，可以用这个注解来指定实际的类
+	 * 它的用处是多个bean具有相同的name， 这时候如果字段的类型不想定义为实际的类，可以用这个注解来指定实际的类
 	 */
 	Class<?> beanClz() default Object.class;
 }

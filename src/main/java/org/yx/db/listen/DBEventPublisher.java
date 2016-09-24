@@ -15,8 +15,8 @@ import org.yx.log.Log;
  *
  */
 public class DBEventPublisher {
-	
-	private static Map<String,ListenerGroup<DBEvent>> listenerGroups = new HashMap<>();
+
+	private static Map<String, ListenerGroup<DBEvent>> listenerGroups = new HashMap<>();
 	private static ForAllListenerGroup<DBEvent> forAllGroup = new ForAllListenerGroup<>();
 
 	/**
@@ -26,10 +26,10 @@ public class DBEventPublisher {
 	 */
 	public static void publish(DBEvent event) {
 		forAllGroup.listen(event);
-		String type=event.getType();
-		ListenerGroup<DBEvent> group=listenerGroups.get(type);
-		if(group==null){
-			Log.get(DBEventPublisher.class,"publish").debug("{}没有监听类",type);
+		String type = event.getType();
+		ListenerGroup<DBEvent> group = listenerGroups.get(type);
+		if (group == null) {
+			Log.get(DBEventPublisher.class, "publish").debug("{}没有监听类", type);
 			return;
 		}
 		group.listen(event);
@@ -41,19 +41,19 @@ public class DBEventPublisher {
 	 * @param listener
 	 * @return
 	 */
-	public static synchronized  boolean addListener(Listener<DBEvent> listener) {
-		String[] tags=listener.getTags();
-		if(tags==null){
+	public static synchronized boolean addListener(Listener<DBEvent> listener) {
+		String[] tags = listener.getTags();
+		if (tags == null) {
 			if (forAllGroup.addListener(listener)) {
-				Log.get(DBEventPublisher.class,"addListener").info("{}添加到commonGroup中",listener);
+				Log.get(DBEventPublisher.class, "addListener").info("{}添加到commonGroup中", listener);
 				return true;
 			}
 			return false;
 		}
-		for(String tag:tags){
-			ListenerGroup<DBEvent> group=listenerGroups.get(tag);
-			if(group==null){
-				group=new ListenerGroupImpl<DBEvent>();
+		for (String tag : tags) {
+			ListenerGroup<DBEvent> group = listenerGroups.get(tag);
+			if (group == null) {
+				group = new ListenerGroupImpl<DBEvent>();
 				listenerGroups.put(tag, group);
 			}
 			group.addListener(listener);
@@ -66,15 +66,15 @@ public class DBEventPublisher {
 	 * 
 	 * @return
 	 */
-	public static synchronized  void removeListener(Listener<DBEvent> listener) {
-		String[] tags=listener.getTags();
-		if(tags==null){
+	public static synchronized void removeListener(Listener<DBEvent> listener) {
+		String[] tags = listener.getTags();
+		if (tags == null) {
 			forAllGroup.removeListener(listener);
 			return;
 		}
-		for(String tag:tags){
-			ListenerGroup<DBEvent> group=listenerGroups.get(tag);
-			if(group==null){
+		for (String tag : tags) {
+			ListenerGroup<DBEvent> group = listenerGroups.get(tag);
+			if (group == null) {
 				continue;
 			}
 			group.removeListener(listener);

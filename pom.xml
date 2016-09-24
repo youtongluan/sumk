@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.3-SNAPSHOT</version>
+	<version>1.5.1</version>
 
 	<name>org.yx:lotos</name>
 	<description>A framewort for internet company</description>

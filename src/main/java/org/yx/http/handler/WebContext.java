@@ -11,14 +11,13 @@ public class WebContext {
 	private HttpInfo info;
 	private HttpServletRequest httpRequest;
 	private HttpServletResponse httpResponse;
-	private String charset="UTF-8";
+	private String charset = "UTF-8";
 	private String sign;
-	private Map<String,String> headers;
+	private Map<String, String> headers;
 	private Object data;
-	private Integer respCode=null;
-	private Object result=null;
+	private Integer respCode = null;
+	private Object result = null;
 	private byte[] key;
-	
 
 	public Integer getRespCode() {
 		return respCode;
@@ -37,9 +36,9 @@ public class WebContext {
 	}
 
 	public WebContext(HttpInfo info, HttpServletRequest req, HttpServletResponse resp) {
-		this.info=info;
-		this.httpRequest=req;
-		this.httpResponse=resp;
+		this.info = info;
+		this.httpRequest = req;
+		this.httpResponse = resp;
 	}
 
 	public String getCharset() {
@@ -61,7 +60,6 @@ public class WebContext {
 	public HttpServletResponse getHttpResponse() {
 		return httpResponse;
 	}
-	
 
 	public HttpInfo getInfo() {
 		return info;
@@ -72,10 +70,10 @@ public class WebContext {
 	}
 
 	void setCharset(String charset) {
-		if(charset!=null&&charset.length()>0){
-			this.charset=charset;
+		if (charset != null && charset.length() > 0) {
+			this.charset = charset;
 		}
-		
+
 	}
 
 	void setData(Object data) {
@@ -93,9 +91,9 @@ public class WebContext {
 	public byte[] getKey() {
 		return key;
 	}
-	
-	void setKey(byte[] key){
-		this.key=key;
+
+	void setKey(byte[] key) {
+		this.key = key;
 	}
-	
+
 }

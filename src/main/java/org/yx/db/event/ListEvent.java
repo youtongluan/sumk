@@ -3,12 +3,14 @@ package org.yx.db.event;
 import java.util.Collection;
 
 import org.yx.listener.DBEvent;
+
 /**
  * 用于根据某种id查询的类型.比如productImage，他是根据productID查询的
+ * 
  * @author Administrator
  *
  */
-public class ListEvent extends DBEvent{
+public class ListEvent extends DBEvent {
 
 	/**
 	 * 
@@ -19,7 +21,7 @@ public class ListEvent extends DBEvent{
 	 * 外键id，非空.多个外键就用PkUtils组合起来使用
 	 */
 	private String foreignId;
-	
+
 	public String getForeignId() {
 		return foreignId;
 	}
@@ -31,9 +33,7 @@ public class ListEvent extends DBEvent{
 
 	@Override
 	public String toString() {
-		return "ListEvent [foreignId=" + foreignId + ", getType()=" + getType()
-				+ "]";
+		return "ListEvent [foreignId=" + foreignId + ", getType()=" + getType() + "]";
 	}
-	
-	
+
 }

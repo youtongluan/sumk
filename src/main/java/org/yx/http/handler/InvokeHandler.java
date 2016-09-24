@@ -14,15 +14,15 @@ public class InvokeHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
 
-		HttpInfo info=ctx.getInfo();
-		if(!String.class.isInstance(ctx.getData())){
-			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName()+"不是String类型");
+		HttpInfo info = ctx.getInfo();
+		if (!String.class.isInstance(ctx.getData())) {
+			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + "不是String类型");
 		}
-		try{
-			Object obj=info.invokeByJsonArg((String)ctx.getData());
+		try {
+			Object obj = info.invokeByJsonArg((String) ctx.getData());
 			ctx.setResult(obj);
-		}finally{
-			
+		} finally {
+
 		}
 		return false;
 	}

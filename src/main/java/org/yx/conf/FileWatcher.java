@@ -24,43 +24,43 @@ public class FileWatcher {
 
 	public void addHandle(FileHandler h) {
 		this.handlers.add(h);
-		handle(h,false);
+		handle(h, false);
 	}
 
 	public void start() {
-		Thread t=new Thread(() -> {
+		Thread t = new Thread(() -> {
 			while (true) {
 				try {
 					Thread.sleep(1000);
 					for (FileHandler h : handlers) {
-						handle(h,true);
+						handle(h, true);
 					}
 				} catch (Exception e) {
-					Log.get("SYS.10").error(e);
+					Log.printStack(e);
 				}
 
 			}
 
-		} , "file-watcher");
+		}, "file-watcher");
 		t.setDaemon(true);
 		t.start();
 
 	}
 
-	private synchronized void handle(FileHandler h,boolean showLog) {
+	private synchronized void handle(FileHandler h, boolean showLog) {
 		File[] fs = h.listFile();
 		for (File f : fs) {
 			String p = f.getAbsolutePath();
 			Long modify = lastModif.get(p);
 			if (modify == null || f.lastModified() > modify) {
 				lastModif.put(p, f.lastModified());
-				if(showLog){
-					Log.get("SYS.11").info("##{} changed at {}",f,lastModif.get(p));
+				if (showLog) {
+					Log.get("SYS.11").info("##{} changed at {}", f, lastModif.get(p));
 				}
 				try (FileInputStream fin = new FileInputStream(f)) {
 					h.deal(fin);
 				} catch (Exception e) {
-					Log.get("SYS.12").error(e);
+					Log.printStack(e);
 				}
 			}
 		}

@@ -21,16 +21,18 @@ import org.yx.db.DBType;
 @Documented
 @Inherited
 @Bean
-public @interface SOA  {
+public @interface SOA {
 	/**
 	 * 服务名称，如果为空，就根据方法名获取
+	 * 
 	 * @return
 	 */
 	String value() default "";
 
 	public String description() default "";
-	
+
 	public DBType dbType() default DBType.READONLY;
+
 	public String dbName() default "";
 
 }

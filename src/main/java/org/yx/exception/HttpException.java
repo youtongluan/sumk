@@ -26,8 +26,6 @@ public class HttpException extends RuntimeException {
 		throw new HttpException(container, msg, exception);
 	}
 
-	
-
 	public Class<?> getContainer() {
 		return container;
 	}

@@ -5,6 +5,7 @@ import org.yx.listener.Listener;
 
 /**
  * 所有的事件，它都要监听
+ * 
  * @see <code>ForAllListenerGroup</code>
  *
  */

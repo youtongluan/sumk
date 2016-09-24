@@ -8,22 +8,21 @@ import org.yx.log.Log;
 
 public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 
-	
 	protected List<String> packages = new ArrayList<String>();
-	
-	public AbstractBeanListener(String packs){
-		if(packs==null){
+
+	public AbstractBeanListener(String packs) {
+		if (packs == null) {
 			return;
 		}
-		String[] ps=packs.split(",");
-		for(String p:ps){
+		String[] ps = packs.split(",");
+		for (String p : ps) {
 			addPackage(p);
 		}
 	}
 
 	public boolean addPackage(String p) {
-		p=p.trim();
-		if(p.isEmpty()){
+		p = p.trim();
+		if (p.isEmpty()) {
 			return false;
 		}
 		List<String> ps = this.packages;

@@ -3,8 +3,8 @@ package org.yx.http.handler;
 import java.util.List;
 
 public class UploadFileHolder {
-	private static ThreadLocal<List<UploadFile>> files=new ThreadLocal<>();
-	
+	private static ThreadLocal<List<UploadFile>> files = new ThreadLocal<>();
+
 	public static List<UploadFile> getFiles() {
 		return files.get();
 	}
@@ -12,9 +12,9 @@ public class UploadFileHolder {
 	static void setFiles(List<UploadFile> fs) {
 		files.set(fs);
 	}
-	
-	static void remove(){
+
+	static void remove() {
 		files.remove();
 	}
-	
+
 }

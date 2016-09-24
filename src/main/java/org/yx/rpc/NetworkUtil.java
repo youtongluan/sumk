@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.yx.log.Log;
+
 public class NetworkUtil {
 
 	private static String localIp = null;
@@ -17,28 +19,23 @@ public class NetworkUtil {
 		if (ia instanceof Inet6Address) {
 			return false;
 		}
-		//10、172、16、192、168开头的，才被认为是本机的ip
+		// 10、172、16、192、168开头的，才被认为是本机的ip
 		return ia.isSiteLocalAddress();
-
-
-
-
 
 	}
 
-	 
-	 public static void setLocalIp(String ip){
-		 try {
-			 ip=ip.trim();
-			 InetAddress ia=InetAddress.getByName(ip);
-			 if(Inet4Address.class.isInstance(ia)){
-				 localIp=ip;
-			 }
+	public static void setLocalIp(String ip) {
+		try {
+			ip = ip.trim();
+			InetAddress ia = InetAddress.getByName(ip);
+			if (Inet4Address.class.isInstance(ia)) {
+				localIp = ip;
+			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStack(e);
 		}
-	 }
-	 
+	}
+
 	public static String getLocalIP() throws Exception {
 		if (localIp != null) {
 			return localIp;
@@ -81,17 +78,19 @@ public class NetworkUtil {
 				}
 			}
 		} catch (SocketException e) {
-			e.printStackTrace();
+			Log.printStack(e);
 		}
 		return ipList;
 	}
+
 	/**
 	 * 网卡是否有效
+	 * 
 	 * @param ni
 	 * @return
 	 * @throws SocketException
 	 */
 	private static boolean isUp(NetworkInterface ni) throws SocketException {
-		return ni.getName().startsWith("eth")&&(!ni.isVirtual()) && ni.isUp();
+		return ni.getName().startsWith("eth") && (!ni.isVirtual()) && ni.isUp();
 	}
 }

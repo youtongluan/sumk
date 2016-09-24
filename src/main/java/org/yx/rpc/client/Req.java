@@ -1,33 +1,27 @@
 package org.yx.rpc.client;
 
-
 public class Req {
-	
+
 	private String sn;
-	
+
 	private String sn0;
 
-	
 	private Integer ver;
 
-	
 	private String args;
-	
+
 	private String[] params;
 
-	
 	private String method;
 
-	
 	private String secret;
-	
+
 	private String sign;
-	
-	
+
 	private String src;
-	
+
 	private long start;
-	
+
 	public long getStart() {
 		return start;
 	}
@@ -76,7 +70,6 @@ public class Req {
 		this.method = method;
 	}
 
-
 	public String getSign() {
 		return sign;
 	}
@@ -108,5 +101,5 @@ public class Req {
 	public void setParams(String[] params) {
 		this.params = params;
 	}
-	
+
 }

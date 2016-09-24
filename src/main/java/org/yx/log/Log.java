@@ -12,93 +12,89 @@ public final class Log {
 	public static final byte DEBUG = 7;
 	public static final byte TRACE = 9;
 	public static final byte ON = 100;
-	private static byte DEFAULT_LEVEL=INFO;
-	private byte _level=-1;
-	private static Map<String,Log> map=new ConcurrentHashMap<>();
-	private static Log root=new Log("ROOT");
-	public static boolean isTraceEnable(String module){
-		byte le=getLevel(module);
-		return le>=Log.TRACE;
+	private static byte DEFAULT_LEVEL = INFO;
+	private byte _level = -1;
+	private static Map<String, Log> map = new ConcurrentHashMap<>();
+	private static Log root = new Log("ROOT");
+
+	public static boolean isTraceEnable(String module) {
+		byte le = getLevel(module);
+		return le >= Log.TRACE;
 	}
-	private static byte getLevel(String logName){
-		int index=logName.lastIndexOf(".");
-		while(index>0){
-			logName=logName.substring(0,index);
-			Log log=map.get(logName);
-			if(log!=null&&log._level>0){
+
+	private static byte getLevel(String logName) {
+		int index = logName.lastIndexOf(".");
+		while (index > 0) {
+			logName = logName.substring(0, index);
+			Log log = map.get(logName);
+			if (log != null && log._level > 0) {
 				return log._level;
 			}
-			index=logName.lastIndexOf(".");
+			index = logName.lastIndexOf(".");
 		}
 		return DEFAULT_LEVEL;
 	}
-	
-	private byte getLevel(){
-		if(this._level>0){
+
+	private byte getLevel() {
+		if (this._level > 0) {
 			return this._level;
 		}
-		if(this.name==null){
+		if (this.name == null) {
 			return DEFAULT_LEVEL;
 		}
-		String logName=this.name;
+		String logName = this.name;
 		return getLevel(logName);
 	}
-	public static void setDefaultLevel(byte level){
-		if(level>-1){
-			DEFAULT_LEVEL=level;
+
+	public static void setDefaultLevel(byte level) {
+		if (level > -1) {
+			DEFAULT_LEVEL = level;
 		}
 	}
+
 	private final String name;
-	
+
 	private Log(String module) {
-		name=module;
+		name = module;
 	}
 
-
-
-	
-	public static Log get(Class<?> clz){
+	public static Log get(Class<?> clz) {
 		return get(clz.getName());
 	}
-	public static Log get(Class<?> clz,Object id){
-		return get(clz.getName()+"."+String.valueOf(id));
+
+	public static Log get(Class<?> clz, Object id) {
+		return get(clz.getName() + "." + String.valueOf(id));
 	}
-	
-	public Log sub(Object id){
-		return get(this.name+"."+String.valueOf(id));
+
+	public Log sub(Object id) {
+		return get(this.name + "." + String.valueOf(id));
 	}
-	public static Log get(String module){
-		if(module==null){
+
+	public static Log get(String module) {
+		if (module == null) {
 			return root;
 		}
-		module=module.trim();
-		Log log=map.get(module);
-		if(log!=null){
+		module = module.trim();
+		Log log = map.get(module);
+		if (log != null) {
 			return log;
 		}
-		if(module.isEmpty()||module.equals(root.name)){
+		if (module.isEmpty() || module.equals(root.name)) {
 			return root;
 		}
-		log=new Log(module);
+		log = new Log(module);
 		map.putIfAbsent(module, log);
 		return map.get(module);
 	}
-	
-	private void show(String msg,Object... args) {
-		for(Object arg:args){
-			msg=msg.replaceFirst("\\{\\}", arg==null?"null":arg.toString());
+
+	private void show(String msg, Object... args) {
+		for (Object arg : args) {
+			msg = msg.replaceFirst("\\{\\}", arg == null ? "null" : arg.toString());
 		}
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		System.out.println(format.format(new Date())+" ["+Thread.currentThread().getName()+"] "+name+" - "+msg);
+		System.out.println(
+				format.format(new Date()) + " [" + Thread.currentThread().getName() + "] " + name + " - " + msg);
 	}
-	
-
-
-
-
-
-
-
 
 	public void setLevel(byte level) {
 		this._level = level;
@@ -110,28 +106,28 @@ public final class Log {
 		}
 		show(String.valueOf(msg));
 	}
-	
-	public void debug(String msg,Object... args) {
+
+	public void debug(String msg, Object... args) {
 		if (getLevel() < DEBUG) {
 			return;
 		}
-		show(msg,args);
+		show(msg, args);
 	}
-	
-	public void trace(String msg,Object... args) {
+
+	public void trace(String msg, Object... args) {
 		if (getLevel() < TRACE) {
 			return;
 		}
-		show(msg,args);
+		show(msg, args);
 	}
-	
-	public void info(String msg,Object... args) {
+
+	public void info(String msg, Object... args) {
 		if (getLevel() < INFO) {
 			return;
 		}
-		show(msg,args);
+		show(msg, args);
 	}
-	
+
 	public void trace(Object msg) {
 		if (getLevel() < TRACE) {
 			return;
@@ -142,8 +138,8 @@ public final class Log {
 	public boolean isEnable(byte level) {
 		return level <= getLevel();
 	}
-	
-	public void setDebug(){
+
+	public void setDebug() {
 		this.setLevel(DEBUG);
 	}
 
@@ -161,79 +157,27 @@ public final class Log {
 		show(msg);
 	}
 
-	public void error(Throwable e) {
-		if (getLevel() < ERROR) {
-			return;
-		}
-		e.printStackTrace();
-	}
-
 	public void error(String msg, Throwable e) {
 		if (getLevel() < ERROR) {
 			return;
 		}
 		show(msg);
-		e.printStackTrace();
+		printStack(e);
 
 	}
 
+	public static void printStack(Throwable e) {
+		if (DEFAULT_LEVEL < ERROR) {
+			return;
+		}
+		e.printStackTrace();
+	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	
 }
-class CodeInfo{
+
+class CodeInfo {
 	String clz;
 	String method;
 	int line;
-	
+
 }

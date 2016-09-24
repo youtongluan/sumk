@@ -7,18 +7,21 @@ public class UploadFile {
 	String fieldName;
 	long size;
 	InputStream inputStream;
+
 	public String getName() {
 		return name;
 	}
+
 	public String getFieldName() {
 		return fieldName;
 	}
+
 	public long getSize() {
 		return size;
 	}
+
 	public InputStream getInputStream() {
 		return inputStream;
 	}
-	
-	
+
 }

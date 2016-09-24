@@ -8,9 +8,9 @@ import org.yx.rpc.MethodInfo;
 import org.yx.rpc.server.intf.ActionContext;
 
 public class AsmUtils {
-	
-	private static String[] blanks = new String[] { "getClass", "wait",
-			"equals", "notify", "notifyAll", "toString", "hashCode" };
+
+	private static String[] blanks = new String[] { "getClass", "wait", "equals", "notify", "notifyAll", "toString",
+			"hashCode" };
 
 	/**
 	 * 
@@ -34,7 +34,7 @@ public class AsmUtils {
 	 * @return
 	 */
 	public static boolean sameType(Type[] types, Class<?>[] clazzes) {
-		
+
 		if (types.length != clazzes.length) {
 			return false;
 		}
@@ -46,43 +46,44 @@ public class AsmUtils {
 		}
 		return true;
 	}
-	private static MyClassLoader myClassLoader = new MyClassLoader();
-	
+
+	public static MyClassLoader myClassLoader = new MyClassLoader();
+
 	/**
 	 * 生成参数的对象，如果参数个数为空，就返回null
+	 * 
 	 * @param clzName
 	 * @param methodName
 	 * @param p
 	 * @return
 	 */
-	public static Class<?> CreateArgPojo(String clzName,MethodInfo p) {
-			String fullName=clzName+"_"+p.getMethod().getName();
-			if(p.getArgNames()==null||p.getArgNames().length==0){
-				return null;
+	public static Class<?> CreateArgPojo(String clzName, MethodInfo p) {
+		String fullName = clzName + "_" + p.getMethod().getName();
+		if (p.getArgNames() == null || p.getArgNames().length == 0) {
+			return null;
+		}
+
+		ClassWriter cw = new ClassWriter(0);
+		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC, fullName.replace('.', '/'), null, "java/lang/Object", null);
+		Class<?>[] argTypes = p.getMethod().getParameterTypes();
+		int argCount = 0;
+		for (int i = 0; i < p.getArgNames().length; i++) {
+			if (ActionContext.class.isInstance(argTypes[i])) {
+				continue;
 			}
-			
-			ClassWriter cw = new ClassWriter(0);
-			cw.visit(Vars.JVM_VERSION, ACC_PUBLIC, fullName.replace('.', '/'), null,
-					"java/lang/Object", null);
-			Class<?>[] argTypes=p.getMethod().getParameterTypes();
-			int argCount=0;
-			for(int i=0;i<p.getArgNames().length;i++){
-				if(ActionContext.class.isInstance(argTypes[i])){
-					continue;
-				}
-				argCount++;
-				String arg=p.getArgNames()[i];
-				String desc=p.getDescs()[i];
-				cw.visitField(ACC_PUBLIC, arg, desc, p.getSignatures()[i], null).visitEnd();
-			}
-			cw.visitEnd();
-			if(argCount==0){
-				return null;
-			}
-			byte[] b = cw.toByteArray();
-			
-			return myClassLoader.defineClass(fullName, b);
-			
+			argCount++;
+			String arg = p.getArgNames()[i];
+			String desc = p.getDescs()[i];
+			cw.visitField(ACC_PUBLIC, arg, desc, p.getSignatures()[i], null).visitEnd();
+		}
+		cw.visitEnd();
+		if (argCount == 0) {
+			return null;
+		}
+		byte[] b = cw.toByteArray();
+
+		return myClassLoader.defineClass(fullName, b);
+
 	}
-	
+
 }

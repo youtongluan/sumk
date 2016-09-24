@@ -4,6 +4,7 @@ import org.yx.http.Web;
 
 public interface HttpHandler {
 	boolean accept(Web web);
+
 	/**
 	 * 
 	 * @param request

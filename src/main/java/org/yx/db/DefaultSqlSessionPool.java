@@ -25,5 +25,4 @@ public class DefaultSqlSessionPool implements SqlSessionPool {
 		DBSessionContext.get().rollback();
 	}
 
-
 }

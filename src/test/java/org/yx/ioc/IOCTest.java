@@ -18,17 +18,17 @@ import org.yx.exception.TooManyBeanException;
 
 @Bean
 public class IOCTest {
-	
+
 	@Test
 	public void testInject() {
 		BeanPublisher.addListener(new BeanFactoryListener("org.yx"));
 		BeanPublisher.publishBeans("org.yx");
-		HelloService s=IOC.get(HelloService.class);
+		HelloService s = IOC.get(HelloService.class);
 		Assert.assertEquals(Hello.class, s.getHello().getClass());
 		Assert.assertEquals(Hi.class, s.getSuiyi().getClass());
 		Assert.assertEquals(Fine.class, s.f.getClass());
 		try {
-			IOC.get("hello",IHello.class);
+			IOC.get("hello", IHello.class);
 			Assert.fail("要抛出TooManyBeanException才对");
 		} catch (TooManyBeanException e) {
 		}
@@ -36,32 +36,32 @@ public class IOCTest {
 
 	@Test
 	public void testDirect() {
-		List<String> list=new ArrayList<String>();
+		List<String> list = new ArrayList<String>();
 		list.add("wertwert");
 		InnerIOC.put(list);
-		InnerIOC.put(new ArrayList<String>());//这个应该会被过滤掉
+		InnerIOC.put(new ArrayList<String>());
 		InnerIOC.put("arrayList", new LinkedList<String>());
-		Map<Object, Object> map=new HashMap<Object, Object>();
+		Map<Object, Object> map = new HashMap<Object, Object>();
 		InnerIOC.put("map", map);
 		System.out.println(IOC.info());
-		List<String> list2=IOC.get(ArrayList.class);
+		List<String> list2 = IOC.get(ArrayList.class);
 		Assert.assertEquals(list, list2);
 		try {
-			IOC.get("arrayList",List.class);
+			IOC.get("arrayList", List.class);
 			Assert.fail("要抛出TooManyBeanException才对,因为List接口有2个");
 		} catch (Exception e) {
-			Assert.assertTrue(e.getClass()==TooManyBeanException.class);
+			Assert.assertTrue(e.getClass() == TooManyBeanException.class);
 		}
 		try {
 			IOC.get("arrayList");
 			Assert.fail("要抛出TooManyBeanException才对，因为ArrayList有2个bean");
 		} catch (Exception e) {
-			Assert.assertTrue(e.getClass()==TooManyBeanException.class);
+			Assert.assertTrue(e.getClass() == TooManyBeanException.class);
 		}
 		Assert.assertNull(IOC.get("HashMap"));
 		Assert.assertEquals(map, IOC.get("map"));
-		//这个会返回LinkedList对应的那个对象,因为ArrayList这个name对应的bean中，实现LinkedList的就只有一个
-		Assert.assertNotNull(IOC.get("arrayList",Deque.class).getClass()==LinkedList.class);
+
+		Assert.assertNotNull(IOC.get("arrayList", Deque.class).getClass() == LinkedList.class);
 	}
 
 }

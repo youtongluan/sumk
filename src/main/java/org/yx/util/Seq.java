@@ -3,93 +3,105 @@ package org.yx.util;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.yx.log.Log;
 
 public final class Seq {
 
-	private static final long FROMMILS=1420041600000L;
-	private static final int LOCAL_SEQ_INDEX=64;
-	
-	private AtomicIntegerArray localSeqs=new AtomicIntegerArray(LOCAL_SEQ_INDEX+1);
+	private static final long FROMMILS = 1420041600000L;
+	private static final int LOCAL_SEQ_INDEX = 64;
+
+	private AtomicIntegerArray localSeqs = new AtomicIntegerArray(LOCAL_SEQ_INDEX + 1);
 	private SeqCounter counter;
-	public Seq(){
+
+	public Seq() {
 		try {
-			for(int i=0;i<localSeqs.length();i++){
+			for (int i = 0; i < localSeqs.length(); i++) {
 				localSeqs.set(i, ThreadLocalRandom.current().nextInt(256));
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStack(e);
 		}
 	}
-	
+
 	public void setCounter(SeqCounter counter) {
 		this.counter = counter;
 	}
 
-	
-	private int localHashIndex(String name){
-		if(name==null|| name.isEmpty()){
+	private int localHashIndex(String name) {
+		if (name == null || name.isEmpty()) {
 			return LOCAL_SEQ_INDEX;
 		}
-		return name.hashCode() & (LOCAL_SEQ_INDEX-1);
+		return name.hashCode() & (LOCAL_SEQ_INDEX - 1);
 	}
 
-	
-	private int localSeq(String name){
-		int hash=localHashIndex(name);
+	private int localSeq(String name) {
+		int hash = localHashIndex(name);
 		int num = localSeqs.incrementAndGet(hash);
-		if(num>50000000){
-			localSeqs.weakCompareAndSet(hash,num,ThreadLocalRandom.current().nextInt(100));
+		if (num > 50000000) {
+			localSeqs.weakCompareAndSet(hash, num, ThreadLocalRandom.current().nextInt(100));
 		}
 		return num;
 	}
-	private static long shortNowMills(){
-		return System.currentTimeMillis()-FROMMILS;
+
+	private static long shortNowMills() {
+		return System.currentTimeMillis() - FROMMILS;
 	}
-	private static long fullTime(long time){
-		return time+FROMMILS;
+
+	private static long fullTime(long time) {
+		return time + FROMMILS;
 	}
-	
-	int sub(String name){
-		if(counter!=null){
+
+	int sub(String name) {
+		if (counter != null) {
 			try {
-				int c=counter.count(name);
-				if(c>-1){
-					return c ;
+				int c = counter.count(name);
+				if (c > -1) {
+					return c;
 				}
 			} catch (Exception e) {
-				e.printStackTrace();
+				Log.printStack(e);
 			}
 		}
-		int sub=(ThreadLocalRandom.current().nextInt(0x100)<<16);
-		sub |= ((int)System.nanoTime()) & 0xFF00;
+		int sub = (ThreadLocalRandom.current().nextInt(0x100) << 16);
+		sub |= ((int) System.nanoTime()) & 0xFF00;
 		return sub | (localSeq(name) & 0xFF);
-		
+
 	}
-	
-	public long next(String name){
-		if(name!=null){
-			name=name.trim();
-			if(name.isEmpty()){
-				name=null;
+
+	/**
+	 * 
+	 * @param name
+	 *            一般是表名，同表的seq重复概率大幅下降。在redis正常的时候，几乎不可能重复
+	 * @return
+	 */
+	public long next(String name) {
+		if (name != null) {
+			name = name.trim();
+			if (name.isEmpty()) {
+				name = null;
 			}
 		}
-		long num=shortNowMills();
+		long num = shortNowMills();
 		num &= 0x7FFFFFFFFFL;
 		num <<= 24;
-		int sub=sub(name) & 0xFFFFFF ;
-		return num|sub;
+		int sub = sub(name) & 0xFFFFFF;
+		return num | sub;
 	}
-	
-	public long next(){
+
+	public long next() {
 		return next(null);
 	}
-	
-	public static long getDate(long seq){
-		long num=seq & 0x7FFFFFFFFF000000L;
-		num >>=24;
+
+	/**
+	 * 从seq中获取生成时的时间
+	 * 
+	 * @param seq
+	 * @return
+	 */
+	public static long getDate(long seq) {
+		long num = seq & 0x7FFFFFFFFF000000L;
+		num >>= 24;
 		return fullTime(num);
 	}
-	
-	
 
 }

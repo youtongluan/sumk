@@ -3,7 +3,7 @@ package org.yx.exception;
 public class BizException extends RuntimeException {
 
 	private static final long serialVersionUID = 453453454L;
-	
+
 	private final int code;
 	private final String msg;
 

@@ -3,19 +3,19 @@ package org.yx.http.filter;
 import java.util.Map;
 
 public class Session {
-	
-	public static String SESSIONID="sid";
-	
+
+	public static String SESSIONID = "sid";
+
 	private String sessionId;
 	/**
 	 * 用于加密使用，如果不需要加密，也不能为null。null表示登陆失败
 	 */
 	private byte[] key;
-	
+
 	private String errorMsg;
-	
-	private Map<String,Object> valueMap;
-	
+
+	private Map<String, Object> valueMap;
+
 	public Map<String, Object> getValueMap() {
 		return valueMap;
 	}
@@ -54,6 +54,5 @@ public class Session {
 		this.key = key;
 		this.errorMsg = errorMsg;
 	}
-	
-	
+
 }

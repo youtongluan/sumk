@@ -4,13 +4,13 @@ public class ResultContainer {
 	Object result;
 	private Object param;
 	private String db;
-	
+
 	public static ResultContainer create(String db) {
-		return new ResultContainer(db,null);
+		return new ResultContainer(db, null);
 	}
-	
+
 	public static ResultContainer create(String db, Object param) {
-		return new ResultContainer(db,param);
+		return new ResultContainer(db, param);
 	}
 
 	public ResultContainer(String db, Object param) {
@@ -19,19 +19,20 @@ public class ResultContainer {
 		this.param = param;
 	}
 
-
-
 	public String getDb() {
 		return db;
 	}
+
 	public Object getParam() {
 		return param;
 	}
+
 	public void setParam(Object param) {
 		this.param = param;
 	}
+
 	public Object getResult() {
 		return result;
 	}
-	
+
 }

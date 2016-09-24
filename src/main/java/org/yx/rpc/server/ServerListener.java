@@ -26,7 +26,7 @@ public class ServerListener implements Runnable {
 	private String host = null;
 	private IoHandler handler;
 	private boolean useExcutor = true;
-	private int acceptors=0;
+	private int acceptors = 0;
 
 	public void setAcceptors(int acceptors) {
 		this.acceptors = acceptors;
@@ -51,37 +51,34 @@ public class ServerListener implements Runnable {
 
 	public void run() {
 		try {
-			SocketAcceptor acceptor = acceptors>0?new NioSocketAcceptor(acceptors):new NioSocketAcceptor();
+			SocketAcceptor acceptor = acceptors > 0 ? new NioSocketAcceptor(acceptors) : new NioSocketAcceptor();
 			acceptor.setReuseAddress(true);
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
-			
-			Charset charset=Charset.forName("UTF-8");
-			TextLineEncoder encoder=new TextLineEncoder(charset);
-			TextLineDecoder decoder=new TextLineDecoder(charset);
+			Charset charset = Charset.forName("UTF-8");
+			TextLineEncoder encoder = new TextLineEncoder(charset);
+			TextLineDecoder decoder = new TextLineDecoder(charset);
 			decoder.setMaxLineLength(10240);
-			ProtocolCodecFilter pf = new ProtocolCodecFilter(encoder,decoder);
-			
+			ProtocolCodecFilter pf = new ProtocolCodecFilter(encoder, decoder);
+
 			chain.addLast("codec", pf);
 
 			if (useExcutor) {
-				
+
 				chain.addLast("exec", new ExecutorFilter(Executors.newCachedThreadPool()));
 			}
-			
+
 			acceptor.setHandler(handler);
 			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 120);
-			if (SocketSessionConfig.class.isInstance(acceptor
-					.getSessionConfig())) {
-				SocketSessionConfig conf = (SocketSessionConfig) acceptor
-						.getSessionConfig();
+			if (SocketSessionConfig.class.isInstance(acceptor.getSessionConfig())) {
+				SocketSessionConfig conf = (SocketSessionConfig) acceptor.getSessionConfig();
 				conf.setKeepAlive(true);
 				conf.setReceiveBufferSize(100);
 				conf.setSendBufferSize(8192);
 				logger.info("set keep alive");
 			}
 			InetSocketAddress addr = null;
-			if (host==null||host.trim().length()==0) {
+			if (host == null || host.trim().length() == 0) {
 				addr = new InetSocketAddress(port);
 			} else {
 				addr = new InetSocketAddress(host, port);

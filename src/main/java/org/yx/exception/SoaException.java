@@ -10,7 +10,6 @@ public class SoaException extends RuntimeException {
 	private String detailError;
 	private String exceptionClz;
 
-	
 	public String getDetailError() {
 		return detailError;
 	}
@@ -22,13 +21,13 @@ public class SoaException extends RuntimeException {
 	public SoaException(int code, String msg, Throwable e) {
 		super(msg);
 		this.code = code;
-		this.detailError=getException(e);
-		this.exceptionClz=e==null?"":e.getClass().getName();
+		this.detailError = getException(e);
+		this.exceptionClz = e == null ? "" : e.getClass().getName();
 	}
 
 	public static void throwException(int code, String msg, Throwable exception) {
-		if(msg==null||msg.length()==0){
-			msg=exception.getMessage();
+		if (msg == null || msg.length() == 0) {
+			msg = exception.getMessage();
 		}
 		throw new SoaException(code, msg, exception);
 	}
@@ -42,7 +41,7 @@ public class SoaException extends RuntimeException {
 	}
 
 	private static String getException(Throwable e) {
-		if(e==null){
+		if (e == null) {
 			return "Exception is NULL";
 		}
 		StringWriter sw = new StringWriter();

@@ -18,14 +18,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-public @interface Upload  {
-	
-	int maxSize() default 1024*1024*10;//10M
+public @interface Upload {
+
+	int maxSize() default 1024 * 1024 * 10;// 10M
+
 	int maxFiles() default 1;
+
 	/**
 	 * 小写格式
+	 * 
 	 * @return
 	 */
-	String[] exts() default {".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".gif", ".png", ".jpg", ".jpeg", ".bmp"};
+	String[] exts() default { ".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".gif", ".png", ".jpg", ".jpeg",
+			".bmp" };
+
 	Store tempStore() default Store.VM;
 }

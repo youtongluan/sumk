@@ -3,6 +3,7 @@ package org.yx.db;
 public class AbstractCachable implements Cachable {
 
 	private boolean cacheEnable;
+
 	@Override
 	public boolean isCacheEnable() {
 		return cacheEnable;
@@ -10,7 +11,7 @@ public class AbstractCachable implements Cachable {
 
 	@Override
 	public void setCacheEnable(boolean cache) {
-		this.cacheEnable=cache;
+		this.cacheEnable = cache;
 	}
 
 	@Override

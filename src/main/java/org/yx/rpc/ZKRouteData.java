@@ -1,7 +1,7 @@
 package org.yx.rpc;
 
 public class ZKRouteData {
-	
+
 	private String methods;
 	private Integer weight;
 
@@ -20,6 +20,5 @@ public class ZKRouteData {
 	public void setWeight(Integer weight) {
 		this.weight = weight;
 	}
-	
-	
+
 }

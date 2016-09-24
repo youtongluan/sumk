@@ -21,12 +21,12 @@ public class ReqHeaderHandler implements HttpHandler {
 		HttpServletRequest req = ctx.getHttpRequest();
 		ctx.setCharset(HttpUtil.charset(req));
 		ctx.setSign(req.getParameter("sign"));
-		String data=req.getParameter("data");
-		if(data!=null){
+		String data = req.getParameter("data");
+		if (data != null) {
 			ctx.setData(data);
 		}
 		Enumeration<String> names = req.getHeaderNames();
-		Map<String,String> map=new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 		while (names.hasMoreElements()) {
 			String name = names.nextElement();
 			map.put(name, req.getHeader(name));

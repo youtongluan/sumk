@@ -11,23 +11,23 @@ import org.yx.conf.AppInfo;
 import org.yx.util.GsonUtil;
 
 public final class HttpUtil {
-	public static String charset(HttpServletRequest req){
+	public static String charset(HttpServletRequest req) {
 		String charset = AppInfo.get("http_charset");
 		if (StringUtils.isEmpty(charset)) {
-			charset=req.getCharacterEncoding();
+			charset = req.getCharacterEncoding();
 		}
 		if (StringUtils.isEmpty(charset)) {
-			charset="utf-8";
+			charset = "utf-8";
 		}
 		return charset;
 	}
-	
-	public static void error(HttpServletResponse resp,int code,String errorMsg,String charset) throws UnsupportedEncodingException, IOException {
+
+	public static void error(HttpServletResponse resp, int code, String errorMsg, String charset)
+			throws UnsupportedEncodingException, IOException {
 		resp.setStatus(499);
-		ErrorResp r=new ErrorResp();
+		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);
 		resp.getOutputStream().write(GsonUtil.toJson(r).getBytes(charset));
 	}
 }
-

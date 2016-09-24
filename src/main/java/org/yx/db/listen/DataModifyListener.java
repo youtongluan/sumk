@@ -7,7 +7,6 @@ import org.yx.listener.Listener;
  * service层监听数据变更
  *
  */
-public interface DataModifyListener extends Listener<DBEvent>{
-
+public interface DataModifyListener extends Listener<DBEvent> {
 
 }
