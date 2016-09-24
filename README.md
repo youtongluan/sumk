@@ -20,9 +20,10 @@
 ###HTTP工程搭建步骤
 
 1. 在工程的resources底下添加app.properties文件，必须的key只有http，它表示action所在的包名。
-* 在http所配置的包底下创建Action类（类名任意，不强制继承任何接口。但方法名不能重名，也就是不支持方法overload和override）。在方法上加@Web注解，如果需要上传文件，还要添加@Upload注解<br>
+2. 在http所配置的包底下创建Action类（类名任意，不强制继承任何接口。但方法名不能重名，也就是不支持方法overload和override）。在方法上加@Web注解，如果需要上传文件，还要添加@Upload注解<br>
 示例（服务端参见com.test.web.demo包，测试用例参见com.test.client.HttpTest)：<br>
 服务器端添加接口（无需其它额外配置）：<br>
+```java
 public class Demo {
 	
 	@Web(value="echo")
@@ -34,11 +35,12 @@ public class Demo {
 		return list;
 	}
 }
-客户端就是一般的http请求，请求路径是http://localhost/webserver?act=echo，请求实体是{"echo":"hi",“names”:["张三","李四"]}<br>
+```
+3.客户端就是一般的http请求，请求路径是http://localhost/webserver?act=echo，请求实体是{"echo":"hi",“names”:["张三","李四"]}<br>
 
 ###RPC工程搭建步骤：
 1. 在工程的resources底下添加app.properties文件，必须的key只有zkurl和soa，zkurl是zookeeper的地址，soa是RPC接口所放置的位置。本测试用例内置了zookeeper服务器，可以直接运行
-* 服务器端：只需要添加@SOA注解就行，方法名不能重名<BR>
+2. 服务器端：只需要添加@SOA注解就行，方法名不能重名<BR>
 
 ```java
 @SOA
@@ -50,15 +52,15 @@ public List<String> echo(String echo,List<String> names){
 	return list;
 }
 ```
-* 客户端：<BR>
+3. 客户端：<BR>
 ```Java
-		Client.init();
-		List<String> names=new ArrayList<String>();
-		names.add("游侠");
-		names.add("BOSS");
-		String echo=",how are you";
-		//ret是json格式。key的格式是包名的最后一个单词+类名+方法名
-		String ret=Client.call("demo.EchoAction.echo", echo,names);
+Client.init();
+List<String> names=new ArrayList<String>();
+names.add("游侠");
+names.add("BOSS");
+String echo=",how are you";
+//ret是json格式。key的格式是包名的最后一个单词+类名+方法名
+String ret=Client.call("demo.EchoAction.echo", echo,names);
 ```
 
 <br>
