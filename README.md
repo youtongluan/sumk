@@ -39,17 +39,19 @@ public class Demo {
 ###RPC工程搭建步骤：
 1. 在工程的resources底下添加app.properties文件，必须的key只有zkurl和soa，zkurl是zookeeper的地址，soa是RPC接口所放置的位置。本测试用例内置了zookeeper服务器，可以直接运行
 * 服务器端：只需要添加@SOA注解就行，方法名不能重名<BR>
-	
-	@SOA
-	public List<String> echo(String echo,List<String> names){
-		List<String> list=new ArrayList<String>();
-		for(String name:names){
-			list.add(echo+" "+name);
-		}
-		return list;
-	}
-* 客户端：<BR>
 
+```java
+@SOA
+public List<String> echo(String echo,List<String> names){
+	List<String> list=new ArrayList<String>();
+	for(String name:names){
+		list.add(echo+" "+name);
+	}
+	return list;
+}
+```
+* 客户端：<BR>
+```Java
 		Client.init();
 		List<String> names=new ArrayList<String>();
 		names.add("游侠");
@@ -57,8 +59,7 @@ public class Demo {
 		String echo=",how are you";
 		//ret是json格式。key的格式是包名的最后一个单词+类名+方法名
 		String ret=Client.call("demo.EchoAction.echo", echo,names);
-
-
+```
 
 <br>
 问题反馈：<br>
