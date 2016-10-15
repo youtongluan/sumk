@@ -49,7 +49,7 @@ public class AppInfo {
 	}
 
 	public static String getIp() {
-		String ip = info.get("ip");
+		String ip = info.get("sumk.ip");
 		if (ip != null) {
 			return ip;
 		}
@@ -75,6 +75,26 @@ public class AppInfo {
 
 	public static String get(String name) {
 		return info.get(name);
+	}
+
+	public static String get(String name, String defaultValue) {
+		String value = info.get(name);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		return defaultValue;
+	}
+
+	public static int getInt(String name, int defaultValue) {
+		String value = info.get(name);
+		if (value == null || value.length() == 0) {
+			return defaultValue;
+		}
+		try {
+			return Integer.parseInt(name);
+		} catch (Exception e) {
+			return defaultValue;
+		}
 	}
 
 }

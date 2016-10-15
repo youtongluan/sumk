@@ -19,7 +19,6 @@ public class NetworkUtil {
 		if (ia instanceof Inet6Address) {
 			return false;
 		}
-		// 10、172、16、192、168开头的，才被认为是本机的ip
 		return ia.isSiteLocalAddress();
 
 	}

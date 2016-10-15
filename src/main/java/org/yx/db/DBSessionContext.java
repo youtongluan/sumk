@@ -1,6 +1,8 @@
 package org.yx.db;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.util.Assert;
@@ -8,7 +10,14 @@ import org.yx.log.Log;
 
 public final class DBSessionContext implements AutoCloseable {
 
-	private static ThreadLocal<DBSessionContext> sessionHolder = new ThreadLocal<DBSessionContext>();
+	private static ThreadLocal<List<DBSessionContext>> sessionHolder = new ThreadLocal<List<DBSessionContext>>() {
+
+		@Override
+		protected List<DBSessionContext> initialValue() {
+			return new ArrayList<>(2);
+		}
+
+	};
 	private String dbName;
 	private DBType dbType;
 
@@ -16,32 +25,55 @@ public final class DBSessionContext implements AutoCloseable {
 	private SqlSession writeSession;
 
 	/**
+	 * 创建新的DBSessionContext
 	 * 
 	 * @param dbName
 	 *            数据库名称
 	 * @param dbType
 	 *            读或者写.any会被当成读
-	 * @return
 	 */
 	public static DBSessionContext create(String dbName, DBType dbType) {
-		DBSessionContext context = sessionHolder.get();
-		if (context != null) {
-			return context;
-		}
-		context = new DBSessionContext();
+		List<DBSessionContext> list = sessionHolder.get();
+		DBSessionContext context = new DBSessionContext();
 		context.dbName = dbName;
 		context.dbType = dbType;
-		sessionHolder.set(context);
+		list.add(0, context);
 		return context;
+	}
+
+	public static DBSessionContext createIfAbsent(String dbName, DBType dbType) {
+		List<DBSessionContext> list = sessionHolder.get();
+		if (list.size() > 0) {
+			return null;
+		}
+		return create(dbName, dbType);
 	}
 
 	private DBSessionContext() {
 	}
 
 	public static DBSessionContext get() {
-		DBSessionContext context = sessionHolder.get();
-		Assert.notNull(context, "DBSessionContext.create() must be call before get()");
+		List<DBSessionContext> list = sessionHolder.get();
+		Assert.isTrue(list.size() > 0, "DBSessionContext.create() must be call before get()");
+		DBSessionContext context = list.get(0);
 		return context;
+	}
+
+	public static void clossLeakSession() {
+		List<DBSessionContext> list = sessionHolder.get();
+		if (list.isEmpty()) {
+			sessionHolder.remove();
+			return;
+		}
+		try {
+			Log.get("DBSessionContext").error("###session leak:" + list.size());
+			while (list.size() > 0) {
+				list.get(0).close();
+			}
+			sessionHolder.remove();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	/**
@@ -136,7 +168,10 @@ public final class DBSessionContext implements AutoCloseable {
 			}
 			this.readSession = null;
 		}
-		sessionHolder.remove();
+		List<DBSessionContext> list = sessionHolder.get();
+		int size = list.size();
+		list.remove(this);
+		Log.get(this.getClass()).trace("Close session context, from size {} to {}", size, list.size());
 	}
 
 	public String getDbName() {

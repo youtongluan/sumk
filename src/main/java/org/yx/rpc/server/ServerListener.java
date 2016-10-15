@@ -16,12 +16,12 @@ import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.yx.conf.AppInfo;
+import org.yx.log.Log;
 
 public class ServerListener implements Runnable {
 
-	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	private Log logger = Log.get(this.getClass());
 	private int port;
 	private String host = null;
 	private IoHandler handler;
@@ -55,7 +55,7 @@ public class ServerListener implements Runnable {
 			acceptor.setReuseAddress(true);
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
-			Charset charset = Charset.forName("UTF-8");
+			Charset charset = Charset.forName(AppInfo.get("soa.server.charset", "UTF-8"));
 			TextLineEncoder encoder = new TextLineEncoder(charset);
 			TextLineDecoder decoder = new TextLineDecoder(charset);
 			decoder.setMaxLineLength(10240);

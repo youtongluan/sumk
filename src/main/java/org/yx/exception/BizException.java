@@ -19,11 +19,11 @@ public class BizException extends RuntimeException {
 		this.msg = msg;
 	}
 
-	public static void throwException(int code, String msg) {
+	public static void throwException(int code, String msg) throws BizException {
 		throw new BizException(code, msg);
 	}
 
-	public static void throwException(int code, String msg, Throwable exception) {
+	public static void throwException(int code, String msg, Throwable exception) throws BizException {
 		throw new BizException(code, msg, exception);
 	}
 

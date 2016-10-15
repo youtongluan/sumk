@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import org.yx.asm.ProxyClassFactory;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
 
@@ -27,6 +28,11 @@ public class BeanPool {
 	private final Object getBean(Object v) {
 		BeanWrapper w = (BeanWrapper) v;
 		return w.getBean();
+	}
+
+	private final Class<?> getBeanClass(Object v) {
+		BeanWrapper w = (BeanWrapper) v;
+		return w.getTargetClass();
 	}
 
 	/**
@@ -51,30 +57,45 @@ public class BeanPool {
 	}
 
 	/**
+	 * 将类的实例添加的IOC中。这里会做aop等操作
+	 * 
+	 * @param name
+	 *            null的话，将根据clz的名字自动生成
+	 * @param clz
+	 * @return 添加到IOC中的实例
+	 * @throws Exception
+	 */
+	public <T> T putClass(String name, Class<T> clz) throws Exception {
+		Assert.notNull(clz);
+		if (name == null || name.isEmpty()) {
+			name = BeanPool.getBeanName(clz);
+		}
+		name = name.trim();
+		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
+		Object bean = proxyClz.newInstance();
+		BeanWrapper w = new BeanWrapper();
+		w.setBean(bean);
+		w.setTargetClass(clz);
+		put(name, w);
+		return this.getBean(name, clz);
+	}
+
+	/**
 	 * 添加bean，一个类的实例，不能多次出现在一个name中
 	 * 
 	 * @param bean
 	 * @param name
 	 */
-	public void put(String name, Object bean) {
-		Assert.notNull(bean);
-		Class<?> clz = bean.getClass();
-		if (name == null || name.isEmpty()) {
-			name = getBeanName(clz);
-		}
-		name = name.trim();
-		BeanWrapper w = new BeanWrapper();
-		w.setBean(bean);
-
+	private void put(String name, BeanWrapper w) {
+		Class<?> clz = w.getTargetClass();
 		Object oldWrapper = map.putIfAbsent(name, w);
 		if (oldWrapper == null) {
 			return;
 		}
 		synchronized (this) {
 			if (!oldWrapper.getClass().isArray()) {
-				Object old = this.getBean(oldWrapper);
-				if (bean.getClass() == old.getClass()) {
-					Log.get(this.getClass(), "put").info("{}={} duplicate", name, bean.getClass().getName());
+				if (clz == this.getBeanClass(oldWrapper)) {
+					Log.get(this.getClass(), "put").info("{}={} duplicate,will be ignored", name, clz.getName());
 					return;
 				}
 				map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
@@ -82,8 +103,8 @@ public class BeanPool {
 			}
 			BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
 			for (BeanWrapper o : objs) {
-				if (bean.getClass() == o.getBean().getClass()) {
-					Log.get(this.getClass(), "put").info("{}={} duplicate", name, bean.getClass().getName());
+				if (clz == this.getBeanClass(o)) {
+					Log.get(this.getClass(), "put").info("{}={} duplicate,will be ignored.", name, clz.getName());
 					return;
 				}
 			}
@@ -103,7 +124,7 @@ public class BeanPool {
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
-	public <T> T getBean(String name, Class<?> clz) {
+	public <T> T getBean(String name, Class<T> clz) {
 		if (name == null || name.length() == 0) {
 			name = getBeanName(clz);
 		}
@@ -171,11 +192,11 @@ public class BeanPool {
 						sb.append(",");
 					}
 					Object o = objs[k];
-					sb.append(getBean(o).getClass().getName());
+					sb.append(getBeanClass(o).getName());
 				}
 				sb.append("]");
 			} else {
-				sb.append(getBean(value).getClass().getName());
+				sb.append(getBeanClass(value).getName());
 			}
 
 			if (!i.hasNext())

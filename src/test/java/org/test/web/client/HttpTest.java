@@ -2,6 +2,7 @@ package org.test.web.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.Random;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -122,7 +124,8 @@ public class HttpTest {
 		byte[] conts = EncryUtil.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
 		String req = Base64.encodeBase64String(conts);
 		System.out.println("req:" + req);
-		StringEntity se = new StringEntity(req, charset);
+		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
+		StringEntity se = new StringEntity("data=" + URLEncoder.encode(req, "ASCII"), charset);
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
@@ -136,6 +139,27 @@ public class HttpTest {
 		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
+		/*
+		 * 非表单MIME的方式提交 去掉application/x-www-form-urlencoded，内容也不要URLEncoder编码
+		 */
+		post = new HttpPost(getUrl(act));
+		post.setHeader(Session.SESSIONID, sessionId);
+		System.out.println("req:" + req);
+		se = new StringEntity("data=" + req, charset);
+		post.setEntity(se);
+		resp = client.execute(post);
+		line = resp.getStatusLine().toString();
+		Log.get(this.getClass(), "aes_base64").info(line);
+		Assert.assertEquals("HTTP/1.1 200 OK", line);
+		resEntity = resp.getEntity();
+		raw = EntityUtils.toString(resEntity);
+		Log.get("aes").info("raw resp:{}", raw);
+		contentBytes = Base64.decodeBase64(raw);
+		ret = new String(EncryUtil.decrypt(contentBytes, key), charset);
+		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
+		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
+
+		// 异常验证
 		post = new HttpPost(getUrl("bizError"));
 		post.setHeader(Session.SESSIONID, sessionId);
 		resp = client.execute(post);
@@ -165,6 +189,7 @@ public class HttpTest {
 		String req = Base64.encodeBase64String(conts);
 		Log.get("aes_sign").info("req:" + req);
 		String sign = MD5Utils.encrypt(GsonUtil.toJson(json).getBytes(charset));
+		System.out.println("sign:" + sign);
 		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
 		post.setHeader(Session.SESSIONID, sessionId);
 
@@ -173,7 +198,7 @@ public class HttpTest {
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
 		Log.get(this.getClass(), "aes_sign").info(line);
-
+		// Assert.assertEquals("HTTP/1.1 200 OK", line);
 		HttpEntity resEntity = resp.getEntity();
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
@@ -199,7 +224,7 @@ public class HttpTest {
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("data", StringBody.create(req, "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("img", new FileBody(new File("E:\\works\\logo.png")));
-
+		// reqEntity.addPart("rar",new FileBody(new File("e:\\log.zip")));
 		post.setEntity(reqEntity);
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();

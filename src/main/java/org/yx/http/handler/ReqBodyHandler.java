@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.yx.exception.HttpException;
+import org.yx.http.HttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
 
@@ -24,6 +25,9 @@ public class ReqBodyHandler implements HttpHandler {
 			Log.get(ReqBodyHandler.class).debug("data is not null");
 			return false;
 		}
+		if (ctx.getInfo().getArgClz() == null) {
+			return false;
+		}
 		HttpServletRequest req = ctx.getHttpRequest();
 		InputStream in = req.getInputStream();
 		int count = 0;
@@ -37,7 +41,8 @@ public class ReqBodyHandler implements HttpHandler {
 				HttpException.throwException(ReqBodyHandler.class, "request body is too long");
 			}
 		}
-		ctx.setData(output.toByteArray());
+		byte[] bs = output.toByteArray();
+		ctx.setData(HttpUtil.extractData(bs));
 		output.close();
 		return false;
 	}

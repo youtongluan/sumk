@@ -2,7 +2,7 @@ package org.yx.rpc.server.start;
 
 import java.lang.reflect.Method;
 
-import org.yx.exception.SystemException;
+import org.yx.conf.AppInfo;
 
 class SoaNameResolver {
 
@@ -13,10 +13,6 @@ class SoaNameResolver {
 				return soaName;
 			}
 		}
-		String[] cs = clz.getName().split("\\.");
-		if (cs.length < 2) {
-			SystemException.throwException(122342, clz.getName() + "必须要有包名");
-		}
-		return String.join(".", cs[cs.length - 2], cs[cs.length - 1], m.getName());
+		return AppInfo.getAppId() + "." + clz.getSimpleName().toLowerCase() + "." + m.getName();
 	}
 }

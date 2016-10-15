@@ -1,34 +1,52 @@
 package org.yx.bean;
 
 public class BeanWrapper {
-	private Object Bean;
-
-	private boolean soa;
-
-	private boolean web;
+	private Object bean;
+	private Class<?> targetClass;
 
 	public Object getBean() {
-		return Bean;
+		return bean;
 	}
 
 	public void setBean(Object bean) {
-		Bean = bean;
+		this.bean = bean;
 	}
 
-	public boolean isSoa() {
-		return soa;
+	public boolean isProxy() {
+		return bean.getClass() != this.targetClass;
 	}
 
-	public void setSoa(boolean soa) {
-		this.soa = soa;
+	public Class<?> getTargetClass() {
+		return targetClass;
 	}
 
-	public boolean isWeb() {
-		return web;
+	public void setTargetClass(Class<?> targetClass) {
+		this.targetClass = targetClass;
 	}
 
-	public void setWeb(boolean web) {
-		this.web = web;
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((targetClass == null) ? 0 : targetClass.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		BeanWrapper other = (BeanWrapper) obj;
+		if (targetClass == null) {
+			if (other.targetClass != null)
+				return false;
+		} else if (!targetClass.equals(other.targetClass))
+			return false;
+		return true;
 	}
 
 }

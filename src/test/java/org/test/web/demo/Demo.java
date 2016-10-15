@@ -8,16 +8,21 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
+import org.yx.http.HttpHeadersHolder;
 import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
+import org.yx.http.start.UserSessionHolder;
+import org.yx.rpc.SOA;
 
 public class Demo {
 
 	@Web(value = "echo")
+	@SOA
 	public List<String> echo(String echo, List<String> names) {
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
@@ -52,6 +57,7 @@ public class Demo {
 
 	@Web(value = "aes_base64", requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
 	public List<String> aes_base64(String echo, List<String> names) {
+		Assert.assertEquals("admin", UserSessionHolder.getUserObject(String.class));
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
 			list.add(echo + " " + name);
@@ -71,6 +77,7 @@ public class Demo {
 
 	@Web(requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
 	public String bizError() {
+		System.out.println("req:" + HttpHeadersHolder.getHttpRequest());
 		BizException.throwException(12345, "业务异常");
 		return "";
 	}

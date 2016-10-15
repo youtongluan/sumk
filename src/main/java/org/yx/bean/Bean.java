@@ -17,4 +17,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Bean {
 	String value() default "";
+
+	Proxy proxy() default Proxy.CONFIG;
 }

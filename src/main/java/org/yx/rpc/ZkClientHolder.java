@@ -11,7 +11,7 @@ import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 
 public final class ZkClientHolder {
-	private static Map<String, ZkClient> map = new ConcurrentHashMap<>();
+	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
 	private static Charset defaultCharset;
 	public static final String SOA_ROOT = "/SOA_ROOT";
 	static {

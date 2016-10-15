@@ -1,4 +1,4 @@
-package org.yx.rpc;
+package org.yx.common;
 
 import java.lang.reflect.Method;
 

@@ -22,7 +22,7 @@ public class SOAServer {
 			System.setProperty("nohttp", "true");
 			Bootstrap.main(null);
 		} catch (Exception e) {
-			e.printStackTrace();
+			Log.printStack(e);
 		}
 		Thread.currentThread().join();
 	}

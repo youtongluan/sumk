@@ -1,7 +1,5 @@
 package org.yx.rpc.server.start;
 
-import java.io.IOException;
-
 import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
 import org.yx.log.Log;
@@ -18,9 +16,7 @@ public class SOABeanListener extends AbstractBeanListener {
 	public void listen(BeanEvent event) {
 		try {
 			factory.resolve(Class.forName(event.getClassName()));
-		} catch (ClassNotFoundException e) {
-			Log.printStack(e);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			Log.printStack(e);
 		}
 	}

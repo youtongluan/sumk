@@ -7,6 +7,7 @@ import java.util.Set;
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.yx.common.ServerStarter;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SystemException;
 import org.yx.log.Log;
@@ -25,10 +26,10 @@ import org.yx.util.GsonUtil;
  * @author youtl
  *
  */
-public class SOAStarter {
-	private static boolean started = false;
+public class SOAStarter implements ServerStarter{
+	private boolean started = false;
 
-	public synchronized static void start() throws Exception {
+	public synchronized void start(int port) throws Exception {
 		if (started) {
 			SystemException.throwException(20000, "soa server has started");
 		}
@@ -36,13 +37,6 @@ public class SOAStarter {
 		String zkUrl = AppInfo.getZKUrl();
 		ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 		ZkClientHolder.makeSure(client, ZkClientHolder.SOA_ROOT);
-		int port = 0;
-		try {
-			port = Integer.parseInt(AppInfo.get("soa.port"));
-		} catch (Exception e) {
-			Log.get("SYS.45").error("port {} is not a number");
-			return;
-		}
 		String path = ZkClientHolder.SOA_ROOT + "/" + AppInfo.getIp() + ":" + port;
 		client.delete(path);
 		client.createEphemeral(path, createZkRouteData());
@@ -68,7 +62,7 @@ public class SOAStarter {
 		started = true;
 	}
 
-	private static void startServer(String ip, int port) {
+	private void startServer(String ip, int port) {
 		List<MinaHandler> list = new ArrayList<MinaHandler>();
 		list.add(new DefaultMinaHandler());
 		list.add(new JsonArgHandler());
@@ -78,7 +72,7 @@ public class SOAStarter {
 		t.start();
 	}
 
-	private static String createZkRouteData() {
+	private String createZkRouteData() {
 		Set<String> methods = ActionHolder.soaSet();
 		StringBuilder sb = new StringBuilder();
 		for (String m : methods) {

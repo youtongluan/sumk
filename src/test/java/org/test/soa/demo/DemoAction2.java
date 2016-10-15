@@ -8,7 +8,9 @@ import java.util.Set;
 import org.yx.rpc.SOA;
 
 public class DemoAction2 {
-
+	/*
+	 * 用来作为测试用例，解析方法中的参数，组装层pojo. 除此之外，还需要测试继承与重载
+	 */
 	@SOA
 	public void d_b_names_ps(Date d, double b, String[] names, Set<Date> ps) {
 		System.out.println("开始执行d_b_names_ps");

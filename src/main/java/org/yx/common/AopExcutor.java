@@ -1,9 +1,7 @@
-package org.yx.spring.aop;
+package org.yx.common;
 
 import org.yx.db.DBSessionContext;
 import org.yx.db.DBType;
-import org.yx.exception.BizException;
-import org.yx.exception.SoaException;
 import org.yx.log.Log;
 
 /**
@@ -16,22 +14,29 @@ import org.yx.log.Log;
 public class AopExcutor {
 
 	private DBSessionContext dbCtx = null;
+	private boolean embed;
+
+	public AopExcutor(boolean embed) {
+		super();
+		this.embed = embed;
+	}
 
 	public void begin(String dbName, DBType dbType) {
-		dbCtx = DBSessionContext.create(dbName, dbType);
+		Log.get(AopExcutor.class).trace("begin with embed:{}", embed);
+
+		dbCtx = embed ? DBSessionContext.createIfAbsent(dbName, dbType) : DBSessionContext.create(dbName, dbType);
 	}
 
 	public void rollback(Throwable e) {
 		Log.printStack(e);
-		if (dbCtx == null) {
-			return;
+		if (dbCtx != null) {
+			Log.get(AopExcutor.class).trace("rollback {}", dbCtx.getDbName());
+			dbCtx.rollback();
 		}
-		Log.get(AopExcutor.class).trace("rollback {}", dbCtx.getDbName());
-		dbCtx.rollback();
-		if (BizException.class.isInstance(e)) {
-			throw (BizException) e;
+		if (RuntimeException.class.isInstance(e)) {
+			throw (RuntimeException) e;
 		}
-		SoaException.throwException(e);
+		throw new RuntimeException(e);
 	}
 
 	public void commit() {
@@ -43,6 +48,7 @@ public class AopExcutor {
 	}
 
 	public void close() {
+
 		if (dbCtx == null) {
 			return;
 		}

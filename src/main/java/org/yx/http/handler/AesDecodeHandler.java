@@ -18,6 +18,9 @@ public class AesDecodeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
+		if (ctx.getInfo().getArgClz() == null) {
+			return false;
+		}
 		byte[] bs = (byte[]) ctx.getData();
 		byte[] key = ctx.getKey();
 		byte[] data = EncryUtil.decrypt(bs, key);

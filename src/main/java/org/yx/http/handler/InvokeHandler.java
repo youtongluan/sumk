@@ -16,14 +16,10 @@ public class InvokeHandler implements HttpHandler {
 
 		HttpInfo info = ctx.getInfo();
 		if (!String.class.isInstance(ctx.getData())) {
-			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + "不是String类型");
+			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
 		}
-		try {
-			Object obj = info.invokeByJsonArg((String) ctx.getData());
-			ctx.setResult(obj);
-		} finally {
-
-		}
+		Object obj = info.invokeByJsonArg((String) ctx.getData());
+		ctx.setResult(obj);
 		return false;
 	}
 

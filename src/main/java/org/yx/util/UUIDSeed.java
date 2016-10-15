@@ -105,7 +105,6 @@ public final class UUIDSeed {
 		if (next > 1000000000) {
 			current = new AtomicInteger(next % (DOUBLE_LEN * DOUBLE_LEN) + DOUBLE_LEN);
 		}
-		// 1个随机位和1个校验位
 		fill(ret, 14, next, 4);
 		fill(ret, 18, addNum, 1);
 		fill(ret, 19, getRandom().nextInt(LEN), 1);
@@ -128,7 +127,6 @@ public final class UUIDSeed {
 		if (next > 1000000000) {
 			current = new AtomicInteger(next % (DOUBLE_LEN * DOUBLE_LEN) + DOUBLE_LEN);
 		}
-		// 1个随机位和1个校验位
 		fill(ret, 14, next, 4);
 		fill(ret, 18, addNum, 1);
 		fill(ret, 19, getRandom().nextInt(LEN), 1);

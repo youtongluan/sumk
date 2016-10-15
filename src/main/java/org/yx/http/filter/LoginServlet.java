@@ -14,5 +14,4 @@ public interface LoginServlet {
 
 	void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 
-	void setDBName(String dbName);
 }

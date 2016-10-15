@@ -1,7 +1,7 @@
 package org.yx.conf;
 
-import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 
 /**
  * 监听文件的变更，并且映射文件的内容
@@ -15,7 +15,7 @@ public interface FileHandler {
 	 * 
 	 * @return
 	 */
-	File[] listFile();
+	URL[] listFile();
 
 	void deal(InputStream in) throws Exception;
 }

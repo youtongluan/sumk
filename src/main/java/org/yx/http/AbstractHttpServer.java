@@ -33,7 +33,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	private long startTime = System.currentTimeMillis();
 
 	private boolean validPath(Class<?> actionClz, String path) {
-		String pname = actionClz.getPackage().getName();
+		String pname = actionClz.getName();
 		String[] names = pname.split("\\.");
 		for (int i = 2; i < names.length; i++) {
 			if (names[i].equals(path)) {

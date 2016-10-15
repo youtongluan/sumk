@@ -1,8 +1,10 @@
 package org.yx.conf;
 
-import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Properties;
+
+import org.yx.log.Log;
 
 public class PropertiesInfo implements FileHandler {
 
@@ -21,12 +23,13 @@ public class PropertiesInfo implements FileHandler {
 	}
 
 	@Override
-	public File[] listFile() {
-		java.net.URL url = PropertiesInfo.class.getClassLoader().getResource(fileName);
+	public URL[] listFile() {
+		URL url = PropertiesInfo.class.getClassLoader().getResource(fileName);
 		if (url == null) {
-			return new File[0];
+			Log.get(PropertiesInfo.class).info("{} cannot found", fileName);
+			return null;
 		}
-		return new File[] { new File(url.getPath()) };
+		return new URL[] { url };
 	}
 
 	@Override

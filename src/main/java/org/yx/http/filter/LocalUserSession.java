@@ -39,7 +39,7 @@ public class LocalUserSession implements UserSession {
 							if (t == null) {
 								continue;
 							}
-							if (t.getEvictTime() > now) {
+							if (now > t.getEvictTime()) {
 								map.remove(key);
 								keyMap.remove(key);
 							}
@@ -56,13 +56,14 @@ public class LocalUserSession implements UserSession {
 		t.start();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Object getUserObject(Class<?> clz) {
+	public <T> T getUserObject(Class<T> clz) {
 		TimedObject to = map.get(HttpHeadersHolder.token());
 		if (to == null) {
 			return null;
 		}
-		return to.getTarget();
+		return (T) to.getTarget();
 	}
 
 	@Override

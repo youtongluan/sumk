@@ -30,4 +30,13 @@ public final class HttpUtil {
 		r.setMessage(errorMsg);
 		resp.getOutputStream().write(GsonUtil.toJson(r).getBytes(charset));
 	}
+
+	public static byte[] extractData(byte[] bs) {
+		if (bs != null && bs.length > 4 && bs[0] == 100 && bs[1] == 97 && bs[2] == 116 && bs[3] == 97 && bs[4] == 61) {
+			byte[] temp = new byte[bs.length - 5];
+			System.arraycopy(bs, 5, temp, 0, temp.length);
+			return temp;
+		}
+		return bs;
+	}
 }

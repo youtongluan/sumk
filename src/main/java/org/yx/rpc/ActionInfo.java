@@ -5,8 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.yx.biz.BizExcutor;
-import org.yx.db.DBType;
+import org.yx.common.BizExcutor;
 import org.yx.exception.SystemException;
 import org.yx.rpc.server.intf.ActionContext;
 import org.yx.util.GsonUtil;
@@ -28,8 +27,6 @@ public final class ActionInfo {
 	private Object obj;
 
 	private Class<?> argClz;
-	private DBType dbType;
-	private String dbName;
 
 	public Field[] getFields() {
 		return fields;
@@ -59,14 +56,6 @@ public final class ActionInfo {
 		return argClz;
 	}
 
-	public DBType getDbType() {
-		return dbType;
-	}
-
-	public String getDbName() {
-		return dbName;
-	}
-
 	public ActionInfo(Object obj, Method m, Class<?> argClz, String[] argNames, Class<?>[] argTypes, SOA action) {
 		super();
 		this.obj = obj;
@@ -75,8 +64,6 @@ public final class ActionInfo {
 		this.argNames = argNames;
 		this.argTypes = argTypes;
 		this.action = action;
-		this.dbType = action.dbType();
-		this.dbName = action.dbName();
 		this.m.setAccessible(true);
 		if (argClz != null) {
 			this.fields = argClz.getFields();
@@ -95,7 +82,7 @@ public final class ActionInfo {
 	 */
 	public Object invokeByJsonArg(String args) throws Exception {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, null);
+			return BizExcutor.exec(m, obj, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
 		if (getArgClz() == null) {
@@ -116,7 +103,7 @@ public final class ActionInfo {
 			Field f = getFields()[k++];
 			params[i] = f.get(argObj);
 		}
-		return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, params);
+		return BizExcutor.exec(m, obj, params);
 	}
 
 	/**
@@ -130,7 +117,7 @@ public final class ActionInfo {
 	 */
 	public Object invokeByOrder(String... args) throws Exception {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, null);
+			return BizExcutor.exec(m, obj, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
 		if (getArgClz() == null) {
@@ -158,7 +145,7 @@ public final class ActionInfo {
 			params[i] = GsonUtil.fromJson(args[i], f.getGenericType());
 			k++;
 		}
-		return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, params);
+		return BizExcutor.exec(m, obj, params);
 	}
 
 }

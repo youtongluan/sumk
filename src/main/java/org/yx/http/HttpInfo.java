@@ -5,14 +5,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-import org.yx.biz.BizExcutor;
-import org.yx.db.DBType;
+import org.yx.common.BizExcutor;
 import org.yx.exception.SystemException;
 import org.yx.rpc.server.intf.ActionContext;
 import org.yx.util.GsonUtil;
 
 /**
- * soa服务的信息
+ * http服务的信息
  * 
  * @author youtl
  *
@@ -29,8 +28,6 @@ public final class HttpInfo {
 	private Object obj;
 
 	private Class<?> argClz;
-	private DBType dbType;
-	private String dbName;
 
 	public Field[] getFields() {
 		return fields;
@@ -60,14 +57,6 @@ public final class HttpInfo {
 		return argClz;
 	}
 
-	public DBType getDbType() {
-		return dbType;
-	}
-
-	public String getDbName() {
-		return dbName;
-	}
-
 	public Upload getUpload() {
 		return upload;
 	}
@@ -81,8 +70,6 @@ public final class HttpInfo {
 		this.argNames = argNames;
 		this.argTypes = argTypes;
 		this.action = action;
-		this.dbType = action.dbType();
-		this.dbName = action.dbName();
 		this.m.setAccessible(true);
 		this.upload = upload;
 		if (argClz != null) {
@@ -101,14 +88,10 @@ public final class HttpInfo {
 	 * @throws IllegalAccessException
 	 */
 	public Object invokeByJsonArg(String args) throws Exception {
-		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, null);
+		if (getArgClz() == null || argTypes == null || argTypes.length == 0) {
+			return BizExcutor.exec(m, obj, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
-		if (getArgClz() == null) {
-
-			return null;
-		}
 		Object argObj = GsonUtil.fromJson(args, argClz);
 		for (int i = 0, k = 0; i < params.length; i++) {
 			if (ActionContext.class.isInstance(getArgTypes()[i])) {
@@ -123,7 +106,7 @@ public final class HttpInfo {
 			Field f = getFields()[k++];
 			params[i] = f.get(argObj);
 		}
-		return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, params);
+		return BizExcutor.exec(m, obj, params);
 	}
 
 	/**
@@ -137,7 +120,7 @@ public final class HttpInfo {
 	 */
 	public Object invokeByOrder(String... args) throws Exception {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, null);
+			return BizExcutor.exec(m, obj, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
 		if (getArgClz() == null) {
@@ -165,7 +148,7 @@ public final class HttpInfo {
 			params[i] = GsonUtil.fromJson(args[i], f.getGenericType());
 			k++;
 		}
-		return BizExcutor.create(this.dbName, this.dbType).exec(m, obj, params);
+		return BizExcutor.exec(m, obj, params);
 	}
 
 }

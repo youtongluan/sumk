@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.5.1</version>
+	<version>1.5.4</version>
 
-	<name>org.yx:lotos</name>
+	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>
-	<url>http://github.com/youtongluan/lotus</url>
+	<url>http://github.com/youtongluan/sumk</url>
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>
@@ -20,16 +20,6 @@
 			<email>3205207767@qq.com</email>
 		</developer>
 	</developers>
-	<repositories>
-		<repository>
-			<id>mvnrepository</id>
-			<layout>default</layout>
-			<url>http://mvnrepository.com/</url>
-			<releases>
-				<enabled>true</enabled>
-			</releases>
-		</repository>
-	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>org.mybatis</groupId>

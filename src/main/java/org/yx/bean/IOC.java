@@ -8,11 +8,11 @@ public final class IOC {
 		return get(name, null);
 	}
 
-	public static <T> T get(Class<?> clz) {
+	public static <T> T get(Class<T> clz) {
 		return get(null, clz);
 	}
 
-	public static <T> T get(String name, Class<?> clz) {
+	public static <T> T get(String name, Class<T> clz) {
 		return InnerIOC.pool.getBean(name, clz);
 	}
 
@@ -20,7 +20,7 @@ public final class IOC {
 		return InnerIOC.pool.toString();
 	}
 
-	public static <T> T cache(String name, Class<?> clz) {
+	public static <T> T cache(String name, Class<T> clz) {
 		if (name == null || name.isEmpty()) {
 			name = BeanPool.getBeanName(clz);
 		}

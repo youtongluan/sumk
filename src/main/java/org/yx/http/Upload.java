@@ -20,7 +20,7 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Upload {
 
-	int maxSize() default 1024 * 1024 * 10;// 10M
+	int maxSize() default 1024 * 1024 * 10;
 
 	int maxFiles() default 1;
 

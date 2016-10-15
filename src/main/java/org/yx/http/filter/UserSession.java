@@ -16,7 +16,7 @@ public interface UserSession {
 	 * 
 	 * @return
 	 */
-	Object getUserObject(Class<?> clz);
+	<T> T getUserObject(Class<T> clz);
 
 	void flushSession();
 

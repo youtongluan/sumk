@@ -34,7 +34,7 @@ public final class BeanPublisher {
 				Log.printStack(e);
 			}
 		}
-		Log.get(BeanPublisher.class).info(IOC.info());
+		Log.get(BeanPublisher.class).debug(IOC.info());
 		autoWiredAll();
 	}
 
@@ -75,10 +75,6 @@ public final class BeanPublisher {
 			f.set(bean, target);
 		} catch (Exception e) {
 			Log.printStack(e);
-		} finally {
-			if (!access) {
-				f.setAccessible(false);
-			}
 		}
 	}
 
@@ -88,29 +84,34 @@ public final class BeanPublisher {
 		synchronized (pool) {
 
 			beans.forEach(bean -> {
-				Field[] fs = bean.getClass().getDeclaredFields();
-				for (Field f : fs) {
-					Inject inj = f.getAnnotation(Inject.class);
-					if (inj != null) {
-						Class<?> clz = inj.beanClz();
-						Object target = getInjectObject(f, clz);
-						if (target == null) {
-							SystemException.throwException(235435658,
-									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+				Class<?> tempClz = bean.getClass();
+				while (tempClz != null && (!tempClz.equals(Object.class))) {
+
+					Field[] fs = tempClz.getDeclaredFields();
+					for (Field f : fs) {
+						Inject inj = f.getAnnotation(Inject.class);
+						if (inj != null) {
+							Class<?> clz = inj.beanClz();
+							Object target = getInjectObject(f, clz);
+							if (target == null) {
+								SystemException.throwException(235435658,
+										bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+							}
+							injectField(f, bean, target);
+							continue;
 						}
-						injectField(f, bean, target);
-						continue;
-					}
-					Cached c = f.getAnnotation(Cached.class);
-					if (c != null) {
-						Object target = getCacheObject(f);
-						if (target == null) {
-							SystemException.throwException(235435658,
-									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+						Cached c = f.getAnnotation(Cached.class);
+						if (c != null) {
+							Object target = getCacheObject(f);
+							if (target == null) {
+								SystemException.throwException(235435658,
+										bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+							}
+							injectField(f, bean, target);
+							continue;
 						}
-						injectField(f, bean, target);
-						continue;
 					}
+					tempClz = tempClz.getSuperclass();
 				}
 			});
 		}

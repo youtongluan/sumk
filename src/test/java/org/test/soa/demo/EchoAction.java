@@ -25,4 +25,5 @@ public class EchoAction {
 	public void print() {
 		System.out.println("print");
 	}
+
 }

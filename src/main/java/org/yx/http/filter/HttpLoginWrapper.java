@@ -28,7 +28,6 @@ public class HttpLoginWrapper extends HttpServlet {
 		try {
 			serv = IOC.get(LoginServlet.class);
 			Login login = serv.getClass().getAnnotation(Login.class);
-			serv.setDBName(login.dbName());
 			serv.init(config);
 		} catch (Exception e) {
 			Log.printStack(e);

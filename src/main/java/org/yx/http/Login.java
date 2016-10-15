@@ -11,6 +11,4 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Login {
 	String path() default "/login";
-
-	String dbName() default "";
 }

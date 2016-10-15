@@ -18,6 +18,10 @@ public class Base64DecodeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
+
+		if (ctx.getInfo().getArgClz() == null) {
+			return false;
+		}
 		byte[] bs;
 		if (String.class.isInstance(ctx.getData())) {
 			bs = ((String) ctx.getData()).getBytes(ctx.getCharset());

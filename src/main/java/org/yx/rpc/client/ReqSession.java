@@ -9,6 +9,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 
@@ -28,8 +29,9 @@ public class ReqSession {
 				connector = new NioSocketConnector();
 				connector.setConnectTimeoutMillis(5000);
 				connector.setHandler(new ClientHandler());
+				Charset charset = Charset.forName(AppInfo.get("soa.charset", "UTF-8"));
 				connector.getFilterChain().addLast("codec",
-						new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"), "\n", "\n")));
+						new ProtocolCodecFilter(new TextLineCodecFactory(charset, "\n", "\n")));
 			}
 
 			if (session == null || session.isClosing()) {

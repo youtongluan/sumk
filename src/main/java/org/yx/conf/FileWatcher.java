@@ -1,7 +1,8 @@
 package org.yx.conf;
 
 import java.io.File;
-import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -48,16 +49,31 @@ public class FileWatcher {
 	}
 
 	private synchronized void handle(FileHandler h, boolean showLog) {
-		File[] fs = h.listFile();
-		for (File f : fs) {
+		URL[] urls = h.listFile();
+		if (urls == null) {
+			return;
+		}
+		for (URL url : urls) {
+			File f = new File(url.getPath());
 			String p = f.getAbsolutePath();
+			if (!f.isFile() || !f.exists()) {
+				if (!lastModif.containsKey(p)) {
+					lastModif.put(p, System.currentTimeMillis());
+					try (InputStream fin = url.openStream()) {
+						h.deal(fin);
+					} catch (Exception e) {
+						Log.printStack(e);
+					}
+				}
+				continue;
+			}
 			Long modify = lastModif.get(p);
 			if (modify == null || f.lastModified() > modify) {
 				lastModif.put(p, f.lastModified());
 				if (showLog) {
 					Log.get("SYS.11").info("##{} changed at {}", f, lastModif.get(p));
 				}
-				try (FileInputStream fin = new FileInputStream(f)) {
+				try (InputStream fin = url.openStream()) {
 					h.deal(fin);
 				} catch (Exception e) {
 					Log.printStack(e);

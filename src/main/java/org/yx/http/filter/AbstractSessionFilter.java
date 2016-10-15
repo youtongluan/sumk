@@ -9,8 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
-import org.yx.db.DBSessionContext;
-import org.yx.db.DBType;
 import org.yx.http.ErrorCode;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
@@ -24,31 +22,21 @@ import org.yx.util.UUIDSeed;
  */
 public abstract class AbstractSessionFilter implements LoginServlet {
 
-	private String dbName;
-
-	public void setDBName(String dbName) {
-		this.dbName = dbName;
-	}
-
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String user = req.getParameter(userName());
 		final String sid = createToken();
 
-		DBSessionContext dbCtx = null;
 		try {
-			if (dbName != null && dbName.length() > 0) {
-				dbCtx = DBSessionContext.create(dbName, DBType.WRITE);
-			}
 			LoginObject obj = login(sid, user, req);
 
 			String charset = HttpUtil.charset(req);
 			if (obj == null) {
-				Log.get("loginAction").error("login Object must not be null.username=" + user);
+				Log.get("loginAction").info(user + ":login Object must not be null");
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
-				Log.get("loginAction").error("login Object must not be null.username=" + user);
+				Log.get("loginAction").debug(user + ":" + obj.getErrorMsg());
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
@@ -60,22 +48,8 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
 			}
-			if (dbCtx != null) {
-				dbCtx.commit();
-			}
 		} catch (Exception e) {
 			Log.printStack(e);
-			if (dbCtx != null) {
-				dbCtx.rollback();
-			}
-		} finally {
-			if (dbCtx != null) {
-				try {
-					dbCtx.close();
-				} catch (Exception e) {
-					Log.printStack(e);
-				}
-			}
 		}
 
 	}
