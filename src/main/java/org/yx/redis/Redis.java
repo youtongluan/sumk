@@ -1,6 +1,6 @@
 package org.yx.redis;
 
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 import redis.clients.jedis.Jedis;
@@ -10,14 +10,33 @@ import redis.clients.util.SafeEncoder;
 
 public class Redis {
 
-	Redis(JedisPool pool, int tryCount) {
-		super();
-		this.pool = pool;
-		this.tryCount = tryCount;
-	}
-
+	private String host;
+	private int db;
 	private int tryCount;
 	private JedisPool pool;
+
+	private final static String UTF8 = "UTF-8";
+
+	Redis(JedisPool pool, RedisParamter p) {
+		super();
+		this.pool = pool;
+		this.tryCount = p.getTryCount();
+		this.host = p.getIp() + ":" + p.getPort();
+		this.db = p.getDb();
+	}
+
+	/**
+	 * redis的主机地址，如果存在多个，就用逗号分隔
+	 * 
+	 * @return
+	 */
+	public String getHost() {
+		return host;
+	}
+
+	public int getDb() {
+		return db;
+	}
 
 	Jedis jedis() {
 		return pool.getResource();
@@ -39,7 +58,7 @@ public class Redis {
 
 	private void handleRedisException(Exception e1) {
 		if (e1 != null) {
-			throw new SystemException(12342422, e1.getMessage(), e1);
+			throw new SumkException(12342422, e1.getMessage(), e1);
 		}
 	}
 
@@ -58,7 +77,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.get").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -66,7 +85,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hset(String key, String field, byte[] value) {
@@ -84,7 +103,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -92,7 +111,59 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
+	}
+
+	public String setex(String key, int seconds, byte[] value) {
+		Jedis jedis = null;
+		Exception e1 = null;
+		for (int i = 0; i < tryCount; i++) {
+			try {
+				jedis = pool.getResource();
+				return jedis.setex(key.getBytes(UTF8), seconds, value);
+			} catch (Exception e) {
+				if (JedisConnectionException.class.isInstance(e)
+						|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()))) {
+					Log.get("Redis.setex").error("redis connection failed！" + e.getMessage(), e);
+					e1 = e;
+					continue;
+				}
+				Log.get("Redis.setex").error("redis execute error！" + e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
+			} finally {
+				if (jedis != null) {
+					jedis.close();
+				}
+			}
+		}
+		handleRedisException(e1);
+		throw new SumkException(12342423, "未知redis异常");
+	}
+
+	public byte[] getBytes(String key) {
+		Jedis jedis = null;
+		Exception e1 = null;
+		for (int i = 0; i < tryCount; i++) {
+			try {
+				jedis = pool.getResource();
+				return jedis.get(key.getBytes(UTF8));
+			} catch (Exception e) {
+				if (JedisConnectionException.class.isInstance(e)
+						|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()))) {
+					Log.get("Redis.get").error("redis connection failed！" + e.getMessage(), e);
+					e1 = e;
+					continue;
+				}
+				Log.get("Redis.get").error("redis execute error！" + e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
+			} finally {
+				if (jedis != null) {
+					jedis.close();
+				}
+			}
+		}
+		handleRedisException(e1);
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String get(String key) {
@@ -110,7 +181,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.get").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -118,7 +189,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String type(String key) {
@@ -136,7 +207,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.type").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -144,7 +215,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long append(String key, String value) {
@@ -162,7 +233,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.append").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -170,7 +241,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> keys(String pattern) {
@@ -188,7 +259,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.keys").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -196,7 +267,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String set(String key, String value) {
@@ -214,7 +285,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.set").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -222,7 +293,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String set(String key, String value, String nxxx) {
@@ -240,7 +311,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.set").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -248,7 +319,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String set(String key, String value, String nxxx, String expx, int time) {
@@ -266,7 +337,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.set").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -274,7 +345,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String set(String key, String value, String nxxx, String expx, long time) {
@@ -292,7 +363,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.set").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -300,7 +371,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean exists(String key) {
@@ -318,7 +389,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.exists").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -326,7 +397,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long exists(String... keys) {
@@ -344,7 +415,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.exists").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -352,7 +423,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String rename(String oldkey, String newkey) {
@@ -370,7 +441,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.rename").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -378,7 +449,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> sort(String key) {
@@ -396,7 +467,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sort").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -404,7 +475,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> sort(String key, redis.clients.jedis.SortingParams sortingParameters) {
@@ -422,7 +493,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sort").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -430,7 +501,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sort(String key, redis.clients.jedis.SortingParams sortingParameters, String dstkey) {
@@ -448,7 +519,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sort").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -456,7 +527,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sort(String key, String dstkey) {
@@ -474,7 +545,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sort").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -482,7 +553,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<String> scan(String cursor) {
@@ -500,7 +571,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -508,7 +579,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<String> scan(String cursor, redis.clients.jedis.ScanParams params) {
@@ -526,7 +597,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -534,7 +605,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> brpop(int timeout, String key) {
@@ -552,7 +623,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.brpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -560,7 +631,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> brpop(String... args) {
@@ -578,7 +649,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.brpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -586,7 +657,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> brpop(int timeout, String... keys) {
@@ -604,7 +675,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.brpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -612,7 +683,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public byte[] dump(String key) {
@@ -630,7 +701,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.dump").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -638,7 +709,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public void subscribe(redis.clients.jedis.JedisPubSub jedisPubSub, String... channels) {
@@ -656,7 +727,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.subscribe").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -664,7 +735,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterInfo() {
@@ -682,7 +753,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterInfo").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -690,7 +761,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterForget(String nodeId) {
@@ -708,7 +779,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterForget").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -716,7 +787,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long clusterKeySlot(String key) {
@@ -734,7 +805,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterKeySlot").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -742,7 +813,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterReplicate(String nodeId) {
@@ -760,7 +831,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterReplicate").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -768,7 +839,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> clusterSlaves(String nodeId) {
@@ -786,7 +857,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSlaves").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -794,7 +865,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterFailover() {
@@ -812,7 +883,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterFailover").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -820,7 +891,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<Object> clusterSlots() {
@@ -838,7 +909,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSlots").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -846,7 +917,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String asking() {
@@ -864,7 +935,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.asking").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -872,7 +943,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> pubsubChannels(String pattern) {
@@ -890,7 +961,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pubsubChannels").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -898,7 +969,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long pubsubNumPat() {
@@ -916,7 +987,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pubsubNumPat").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -924,7 +995,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Map<String, String> pubsubNumSub(String... channels) {
@@ -942,7 +1013,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pubsubNumSub").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -950,7 +1021,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long pfadd(String key, String... elements) {
@@ -968,7 +1039,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pfadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -976,7 +1047,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public long pfcount(String... keys) {
@@ -994,7 +1065,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pfcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1002,7 +1073,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public long pfcount(String key) {
@@ -1020,7 +1091,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pfcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1028,7 +1099,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String pfmerge(String destkey, String... sourcekeys) {
@@ -1046,7 +1117,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pfmerge").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1054,7 +1125,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long geoadd(String key, double longitude, double latitude, String member) {
@@ -1072,7 +1143,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geoadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1080,7 +1151,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long geoadd(String key, java.util.Map<String, redis.clients.jedis.GeoCoordinate> memberCoordinateMap) {
@@ -1098,7 +1169,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geoadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1106,7 +1177,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double geodist(String key, String member1, String member2, redis.clients.jedis.GeoUnit unit) {
@@ -1124,7 +1195,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geodist").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1132,7 +1203,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double geodist(String key, String member1, String member2) {
@@ -1150,7 +1221,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geodist").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1158,7 +1229,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> geohash(String key, String... members) {
@@ -1176,7 +1247,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geohash").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1184,7 +1255,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.jedis.GeoCoordinate> geopos(String key, String... members) {
@@ -1202,7 +1273,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.geopos").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1210,7 +1281,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.jedis.GeoRadiusResponse> georadius(String key, double longitude,
@@ -1229,7 +1300,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.georadius").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1237,7 +1308,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.jedis.GeoRadiusResponse> georadius(String key, double longitude,
@@ -1257,7 +1328,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.georadius").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1265,7 +1336,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<Long> bitfield(String key, String... arguments) {
@@ -1283,7 +1354,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitfield").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1291,7 +1362,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long del(String key) {
@@ -1309,7 +1380,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.del").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1317,7 +1388,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long del(String... keys) {
@@ -1335,7 +1406,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.del").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1343,7 +1414,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long renamenx(String oldkey, String newkey) {
@@ -1361,7 +1432,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.renamenx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1369,7 +1440,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String randomKey() {
@@ -1387,7 +1458,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.randomKey").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1395,7 +1466,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long expire(String key, int seconds) {
@@ -1413,7 +1484,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.expire").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1421,7 +1492,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long expireAt(String key, long unixTime) {
@@ -1439,7 +1510,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.expireAt").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1447,7 +1518,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long ttl(String key) {
@@ -1465,7 +1536,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.ttl").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1473,7 +1544,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long move(String key, int dbIndex) {
@@ -1491,7 +1562,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.move").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1499,7 +1570,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String getSet(String key, String value) {
@@ -1517,7 +1588,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.getSet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1525,7 +1596,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> mget(String... keys) {
@@ -1543,7 +1614,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.mget").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1551,7 +1622,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long setnx(String key, String value) {
@@ -1569,7 +1640,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.setnx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1577,7 +1648,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String setex(String key, int seconds, String value) {
@@ -1595,7 +1666,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.setex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1603,7 +1674,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String mset(String... keysvalues) {
@@ -1621,7 +1692,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.mset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1629,7 +1700,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long msetnx(String... keysvalues) {
@@ -1647,7 +1718,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.msetnx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1655,7 +1726,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long decrBy(String key, long integer) {
@@ -1673,7 +1744,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.decrBy").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1681,7 +1752,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long decr(String key) {
@@ -1699,7 +1770,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.decr").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1707,7 +1778,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long incrBy(String key, long integer) {
@@ -1725,7 +1796,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.incrBy").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1733,7 +1804,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double incrByFloat(String key, double value) {
@@ -1751,7 +1822,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.incrByFloat").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1759,7 +1830,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long incr(String key) {
@@ -1777,7 +1848,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.incr").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1785,7 +1856,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hset(String key, String field, String value) {
@@ -1803,7 +1874,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1811,7 +1882,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String hget(String key, String field) {
@@ -1829,7 +1900,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hget").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1837,7 +1908,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hsetnx(String key, String field, String value) {
@@ -1855,7 +1926,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hsetnx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1863,7 +1934,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String hmset(String key, java.util.Map<String, String> hash) {
@@ -1881,7 +1952,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hmset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1889,7 +1960,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> hmget(String key, String... fields) {
@@ -1907,7 +1978,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hmget").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1915,7 +1986,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hincrBy(String key, String field, long value) {
@@ -1933,7 +2004,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hincrBy").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1941,7 +2012,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double hincrByFloat(String key, String field, double value) {
@@ -1959,7 +2030,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hincrByFloat").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1967,7 +2038,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean hexists(String key, String field) {
@@ -1985,7 +2056,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hexists").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -1993,7 +2064,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hdel(String key, String... fields) {
@@ -2011,7 +2082,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hdel").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2019,7 +2090,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long hlen(String key) {
@@ -2037,7 +2108,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hlen").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2045,7 +2116,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> hkeys(String key) {
@@ -2063,7 +2134,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hkeys").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2071,7 +2142,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> hvals(String key) {
@@ -2089,7 +2160,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hvals").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2097,7 +2168,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Map<String, String> hgetAll(String key) {
@@ -2115,7 +2186,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hgetAll").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2123,7 +2194,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long rpush(String key, String... strings) {
@@ -2141,7 +2212,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.rpush").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2149,7 +2220,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long lpush(String key, String... strings) {
@@ -2167,7 +2238,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lpush").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2175,7 +2246,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long llen(String key) {
@@ -2193,7 +2264,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.llen").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2201,7 +2272,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> lrange(String key, long start, long end) {
@@ -2219,7 +2290,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lrange").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2227,7 +2298,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String ltrim(String key, long start, long end) {
@@ -2245,7 +2316,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.ltrim").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2253,7 +2324,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String lindex(String key, long index) {
@@ -2271,7 +2342,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lindex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2279,7 +2350,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String lset(String key, long index, String value) {
@@ -2297,7 +2368,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2305,7 +2376,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long lrem(String key, long count, String value) {
@@ -2323,7 +2394,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lrem").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2331,7 +2402,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String lpop(String key) {
@@ -2349,7 +2420,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2357,7 +2428,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String rpop(String key) {
@@ -2375,7 +2446,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.rpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2383,7 +2454,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String rpoplpush(String srckey, String dstkey) {
@@ -2401,7 +2472,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.rpoplpush").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2409,7 +2480,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sadd(String key, String... members) {
@@ -2427,7 +2498,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2435,7 +2506,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> smembers(String key) {
@@ -2453,7 +2524,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.smembers").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2461,7 +2532,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long srem(String key, String... members) {
@@ -2479,7 +2550,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.srem").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2487,7 +2558,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String spop(String key) {
@@ -2505,7 +2576,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.spop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2513,7 +2584,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> spop(String key, long count) {
@@ -2531,7 +2602,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.spop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2539,7 +2610,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long smove(String srckey, String dstkey, String member) {
@@ -2557,7 +2628,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.smove").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2565,7 +2636,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long scard(String key) {
@@ -2583,7 +2654,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scard").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2591,7 +2662,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean sismember(String key, String member) {
@@ -2609,7 +2680,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sismember").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2617,7 +2688,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> sinter(String... keys) {
@@ -2635,7 +2706,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sinter").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2643,7 +2714,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sinterstore(String dstkey, String... keys) {
@@ -2661,7 +2732,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sinterstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2669,7 +2740,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> sunion(String... keys) {
@@ -2687,7 +2758,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sunion").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2695,7 +2766,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sunionstore(String dstkey, String... keys) {
@@ -2713,7 +2784,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sunionstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2721,7 +2792,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> sdiff(String... keys) {
@@ -2739,7 +2810,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sdiff").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2747,7 +2818,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sdiffstore(String dstkey, String... keys) {
@@ -2765,7 +2836,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sdiffstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2773,7 +2844,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> srandmember(String key, int count) {
@@ -2791,7 +2862,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.srandmember").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2799,7 +2870,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String srandmember(String key) {
@@ -2817,7 +2888,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.srandmember").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2825,7 +2896,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zadd(String key, java.util.Map<String, Double> scoreMembers,
@@ -2844,7 +2915,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2852,7 +2923,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zadd(String key, java.util.Map<String, Double> scoreMembers) {
@@ -2870,7 +2941,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2878,7 +2949,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zadd(String key, double score, String member) {
@@ -2896,7 +2967,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2904,7 +2975,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zadd(String key, double score, String member, redis.clients.jedis.params.sortedset.ZAddParams params) {
@@ -2922,7 +2993,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zadd").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2930,7 +3001,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrange(String key, long start, long end) {
@@ -2948,7 +3019,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrange").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2956,7 +3027,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zrem(String key, String... members) {
@@ -2974,7 +3045,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrem").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -2982,7 +3053,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double zincrby(String key, double score, String member,
@@ -3001,7 +3072,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zincrby").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3009,7 +3080,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double zincrby(String key, double score, String member) {
@@ -3027,7 +3098,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zincrby").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3035,7 +3106,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zrank(String key, String member) {
@@ -3053,7 +3124,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrank").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3061,7 +3132,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zrevrank(String key, String member) {
@@ -3079,7 +3150,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrank").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3087,7 +3158,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrange(String key, long start, long end) {
@@ -3105,7 +3176,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrange").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3113,7 +3184,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrangeWithScores(String key, long start, long end) {
@@ -3131,7 +3202,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3139,7 +3210,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zcard(String key) {
@@ -3157,7 +3228,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zcard").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3165,7 +3236,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Double zscore(String key, String member) {
@@ -3183,7 +3254,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zscore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3191,7 +3262,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String watch(String... keys) {
@@ -3209,7 +3280,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.watch").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3217,7 +3288,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> blpop(int timeout, String... keys) {
@@ -3235,7 +3306,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.blpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3243,7 +3314,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> blpop(String... args) {
@@ -3261,7 +3332,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.blpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3269,7 +3340,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> blpop(int timeout, String key) {
@@ -3287,7 +3358,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.blpop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3295,7 +3366,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zcount(String key, double min, double max) {
@@ -3313,7 +3384,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3321,7 +3392,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zcount(String key, String min, String max) {
@@ -3339,7 +3410,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3347,7 +3418,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByScore(String key, String min, String max) {
@@ -3365,7 +3436,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3373,7 +3444,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByScore(String key, double min, double max) {
@@ -3391,7 +3462,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3399,7 +3470,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByScore(String key, String min, String max, int offset, int count) {
@@ -3417,7 +3488,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3425,7 +3496,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByScore(String key, double min, double max, int offset, int count) {
@@ -3443,7 +3514,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3451,7 +3522,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByScore(String key, String max, String min) {
@@ -3469,7 +3540,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3477,7 +3548,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByScore(String key, String max, String min, int offset, int count) {
@@ -3495,7 +3566,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3503,7 +3574,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByScore(String key, double max, double min, int offset, int count) {
@@ -3521,7 +3592,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3529,7 +3600,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByScore(String key, double max, double min) {
@@ -3547,7 +3618,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3555,7 +3626,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zremrangeByRank(String key, long start, long end) {
@@ -3573,7 +3644,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zremrangeByRank").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3581,7 +3652,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zremrangeByScore(String key, String start, String end) {
@@ -3599,7 +3670,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zremrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3607,7 +3678,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zremrangeByScore(String key, double start, double end) {
@@ -3625,7 +3696,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zremrangeByScore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3633,7 +3704,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zunionstore(String dstkey, String... sets) {
@@ -3651,7 +3722,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zunionstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3659,7 +3730,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zunionstore(String dstkey, redis.clients.jedis.ZParams params, String... sets) {
@@ -3677,7 +3748,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zunionstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3685,7 +3756,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zinterstore(String dstkey, redis.clients.jedis.ZParams params, String... sets) {
@@ -3703,7 +3774,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zinterstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3711,7 +3782,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zinterstore(String dstkey, String... sets) {
@@ -3729,7 +3800,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zinterstore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3737,7 +3808,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zlexcount(String key, String min, String max) {
@@ -3755,7 +3826,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zlexcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3763,7 +3834,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByLex(String key, String min, String max) {
@@ -3781,7 +3852,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByLex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3789,7 +3860,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrangeByLex(String key, String min, String max, int offset, int count) {
@@ -3807,7 +3878,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByLex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3815,7 +3886,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByLex(String key, String max, String min) {
@@ -3833,7 +3904,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByLex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3841,7 +3912,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<String> zrevrangeByLex(String key, String max, String min, int offset, int count) {
@@ -3859,7 +3930,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByLex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3867,7 +3938,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long zremrangeByLex(String key, String min, String max) {
@@ -3885,7 +3956,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zremrangeByLex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3893,7 +3964,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long strlen(String key) {
@@ -3911,7 +3982,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.strlen").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3919,7 +3990,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long lpushx(String key, String... string) {
@@ -3937,7 +4008,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.lpushx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3945,7 +4016,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long persist(String key) {
@@ -3963,7 +4034,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.persist").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3971,7 +4042,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long rpushx(String key, String... string) {
@@ -3989,7 +4060,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.rpushx").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -3997,7 +4068,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String echo(String string) {
@@ -4015,7 +4086,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.echo").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4023,7 +4094,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long linsert(String key, redis.clients.jedis.BinaryClient.LIST_POSITION where, String pivot, String value) {
@@ -4041,7 +4112,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.linsert").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4049,7 +4120,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String brpoplpush(String source, String destination, int timeout) {
@@ -4067,7 +4138,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.brpoplpush").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4075,7 +4146,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean setbit(String key, long offset, String value) {
@@ -4093,7 +4164,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.setbit").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4101,7 +4172,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean setbit(String key, long offset, boolean value) {
@@ -4119,7 +4190,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.setbit").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4127,7 +4198,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean getbit(String key, long offset) {
@@ -4145,7 +4216,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.getbit").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4153,7 +4224,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long setrange(String key, long offset, String value) {
@@ -4171,7 +4242,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.setrange").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4179,7 +4250,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String getrange(String key, long startOffset, long endOffset) {
@@ -4197,7 +4268,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.getrange").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4205,7 +4276,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long bitpos(String key, boolean value, redis.clients.jedis.BitPosParams params) {
@@ -4223,7 +4294,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitpos").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4231,7 +4302,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long bitpos(String key, boolean value) {
@@ -4249,7 +4320,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitpos").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4257,7 +4328,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> configGet(String pattern) {
@@ -4275,7 +4346,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.configGet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4283,7 +4354,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String configSet(String parameter, String value) {
@@ -4301,7 +4372,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.configSet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4309,7 +4380,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long publish(String channel, String message) {
@@ -4327,7 +4398,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.publish").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4335,7 +4406,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public void psubscribe(redis.clients.jedis.JedisPubSub jedisPubSub, String... patterns) {
@@ -4353,7 +4424,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.psubscribe").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4361,7 +4432,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object evalsha(String sha1, int keyCount, String... params) {
@@ -4379,7 +4450,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.evalsha").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4387,7 +4458,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object evalsha(String script) {
@@ -4405,7 +4476,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.evalsha").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4413,7 +4484,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object evalsha(String sha1, java.util.List<String> keys, java.util.List<String> args) {
@@ -4431,7 +4502,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.evalsha").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4439,7 +4510,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<Boolean> scriptExists(String... sha1) {
@@ -4457,7 +4528,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scriptExists").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4465,7 +4536,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Boolean scriptExists(String sha1) {
@@ -4483,7 +4554,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scriptExists").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4491,7 +4562,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String scriptLoad(String script) {
@@ -4509,7 +4580,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.scriptLoad").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4517,7 +4588,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.util.Slowlog> slowlogGet(long entries) {
@@ -4535,7 +4606,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.slowlogGet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4543,7 +4614,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.util.Slowlog> slowlogGet() {
@@ -4561,7 +4632,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.slowlogGet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4569,7 +4640,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long objectRefcount(String string) {
@@ -4587,7 +4658,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.objectRefcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4595,7 +4666,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String objectEncoding(String string) {
@@ -4613,7 +4684,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.objectEncoding").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4621,7 +4692,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long objectIdletime(String string) {
@@ -4639,7 +4710,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.objectIdletime").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4647,7 +4718,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long bitcount(String key, long start, long end) {
@@ -4665,7 +4736,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4673,7 +4744,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long bitcount(String key) {
@@ -4691,7 +4762,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitcount").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4699,7 +4770,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long bitop(redis.clients.jedis.BitOP op, String destKey, String... srcKeys) {
@@ -4717,7 +4788,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.bitop").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4725,7 +4796,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<java.util.Map<String, String>> sentinelMasters() {
@@ -4743,7 +4814,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelMasters").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4751,7 +4822,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long sentinelReset(String pattern) {
@@ -4769,7 +4840,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelReset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4777,7 +4848,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<java.util.Map<String, String>> sentinelSlaves(String masterName) {
@@ -4795,7 +4866,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelSlaves").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4803,7 +4874,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String sentinelFailover(String masterName) {
@@ -4821,7 +4892,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelFailover").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4829,7 +4900,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String sentinelMonitor(String masterName, String ip, int port, int quorum) {
@@ -4847,7 +4918,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelMonitor").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4855,7 +4926,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String sentinelRemove(String masterName) {
@@ -4873,7 +4944,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelRemove").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4881,7 +4952,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String sentinelSet(String masterName, java.util.Map<String, String> parameterMap) {
@@ -4899,7 +4970,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelSet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4907,7 +4978,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String restore(String key, int ttl, byte... serializedValue) {
@@ -4925,7 +4996,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.restore").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4933,7 +5004,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long pexpire(String key, long milliseconds) {
@@ -4951,7 +5022,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pexpire").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4959,7 +5030,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long pexpireAt(String key, long millisecondsTimestamp) {
@@ -4977,7 +5048,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pexpireAt").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -4985,7 +5056,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long pttl(String key) {
@@ -5003,7 +5074,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.pttl").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5011,7 +5082,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String psetex(String key, long milliseconds, String value) {
@@ -5029,7 +5100,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.psetex").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5037,7 +5108,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clientKill(String client) {
@@ -5055,7 +5126,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clientKill").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5063,7 +5134,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clientSetname(String name) {
@@ -5081,7 +5152,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clientSetname").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5089,7 +5160,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String migrate(String host, int port, String key, int destinationDb, int timeout) {
@@ -5107,7 +5178,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.migrate").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5115,7 +5186,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<java.util.Map.Entry<String, String>> hscan(String key, String cursor,
@@ -5134,7 +5205,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5142,7 +5213,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<java.util.Map.Entry<String, String>> hscan(String key, String cursor) {
@@ -5160,7 +5231,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.hscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5168,7 +5239,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<String> sscan(String key, String cursor) {
@@ -5186,7 +5257,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5194,7 +5265,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<String> sscan(String key, String cursor,
@@ -5213,7 +5284,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5221,7 +5292,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<redis.clients.jedis.Tuple> zscan(String key, String cursor,
@@ -5240,7 +5311,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5248,7 +5319,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public redis.clients.jedis.ScanResult<redis.clients.jedis.Tuple> zscan(String key, String cursor) {
@@ -5266,7 +5337,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zscan").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5274,7 +5345,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterNodes() {
@@ -5292,7 +5363,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterNodes").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5300,7 +5371,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String readonly() {
@@ -5318,7 +5389,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.readonly").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5326,7 +5397,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterMeet(String ip, int port) {
@@ -5344,7 +5415,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterMeet").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5352,7 +5423,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterReset(redis.clients.jedis.JedisCluster.Reset resetType) {
@@ -5370,7 +5441,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterReset").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5378,7 +5449,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterAddSlots(int... slots) {
@@ -5396,7 +5467,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterAddSlots").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5404,7 +5475,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterDelSlots(int... slots) {
@@ -5422,7 +5493,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterDelSlots").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5430,7 +5501,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.jedis.GeoRadiusResponse> georadiusByMember(String key, String member,
@@ -5449,7 +5520,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.georadiusByMember").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5457,7 +5528,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<redis.clients.jedis.GeoRadiusResponse> georadiusByMember(String key, String member,
@@ -5476,7 +5547,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.georadiusByMember").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5484,7 +5555,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterSaveConfig() {
@@ -5502,7 +5573,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSaveConfig").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5510,7 +5581,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Long clusterCountKeysInSlot(int slot) {
@@ -5528,7 +5599,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterCountKeysInSlot").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5536,7 +5607,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterFlushSlots() {
@@ -5554,7 +5625,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterFlushSlots").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5562,7 +5633,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterSetSlotStable(int slot) {
@@ -5580,7 +5651,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSetSlotStable").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5588,7 +5659,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterSetSlotImporting(int slot, String nodeId) {
@@ -5606,7 +5677,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSetSlotImporting").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5614,7 +5685,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterSetSlotMigrating(int slot, String nodeId) {
@@ -5632,7 +5703,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSetSlotMigrating").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5640,7 +5711,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String clusterSetSlotNode(int slot, String nodeId) {
@@ -5658,7 +5729,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterSetSlotNode").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5666,7 +5737,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> clusterGetKeysInSlot(int slot, int count) {
@@ -5684,7 +5755,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.clusterGetKeysInSlot").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5692,7 +5763,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.List<String> sentinelGetMasterAddrByName(String masterName) {
@@ -5710,7 +5781,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.sentinelGetMasterAddrByName").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5718,7 +5789,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrevrangeByScoreWithScores(String key, String max, String min,
@@ -5737,7 +5808,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5745,7 +5816,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrevrangeByScoreWithScores(String key, double max, double min) {
@@ -5763,7 +5834,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5771,7 +5842,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrevrangeByScoreWithScores(String key, double max, double min,
@@ -5790,7 +5861,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5798,7 +5869,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrevrangeByScoreWithScores(String key, String max, String min) {
@@ -5816,7 +5887,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5824,7 +5895,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrangeByScoreWithScores(String key, double min, double max,
@@ -5843,7 +5914,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5851,7 +5922,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrangeByScoreWithScores(String key, String min, String max) {
@@ -5869,7 +5940,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5877,7 +5948,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrangeByScoreWithScores(String key, double min, double max) {
@@ -5895,7 +5966,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5903,7 +5974,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrangeByScoreWithScores(String key, String min, String max,
@@ -5922,7 +5993,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrangeByScoreWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5930,7 +6001,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public java.util.Set<redis.clients.jedis.Tuple> zrevrangeWithScores(String key, long start, long end) {
@@ -5948,7 +6019,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.zrevrangeWithScores").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5956,7 +6027,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public String substr(String key, int start, int end) {
@@ -5974,7 +6045,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.substr").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -5982,7 +6053,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object eval(String script, java.util.List<String> keys, java.util.List<String> args) {
@@ -6000,7 +6071,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.eval").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -6008,7 +6079,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object eval(String script) {
@@ -6026,7 +6097,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.eval").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -6034,7 +6105,7 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	public Object eval(String script, int keyCount, String... params) {
@@ -6052,7 +6123,7 @@ public class Redis {
 					continue;
 				}
 				Log.get("Redis.eval").error("redis execute error！" + e.getMessage(), e);
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -6060,7 +6131,12 @@ public class Redis {
 			}
 		}
 		handleRedisException(e1);
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
+	}
+
+	@Override
+	public String toString() {
+		return "Redis [host=" + host + ", db=" + db + ", tryCount=" + tryCount + "]";
 	}
 
 }

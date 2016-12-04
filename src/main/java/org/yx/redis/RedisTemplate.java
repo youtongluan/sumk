@@ -1,6 +1,6 @@
 package org.yx.redis;
 
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 import redis.clients.jedis.Jedis;
@@ -37,7 +37,7 @@ public class RedisTemplate {
 					jedis.close();
 					jedis = null;
 				}
-				SystemException.throwException(12342411, e.getMessage(), e);
+				SumkException.throwException(12342411, e.getMessage(), e);
 			} finally {
 				if (jedis != null) {
 					jedis.close();
@@ -45,8 +45,8 @@ public class RedisTemplate {
 			}
 		}
 		if (e1 != null) {
-			throw new SystemException(12342422, e1.getMessage(), e1);
+			throw new SumkException(12342422, e1.getMessage(), e1);
 		}
-		throw new SystemException(12342423, "未知redis异常");
+		throw new SumkException(12342423, "未知redis异常");
 	}
 }

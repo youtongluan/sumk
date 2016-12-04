@@ -1,7 +1,9 @@
 package org.yx.bean;
 
 public class BeanWrapper {
+
 	private Object bean;
+
 	private Class<?> targetClass;
 
 	public Object getBean() {

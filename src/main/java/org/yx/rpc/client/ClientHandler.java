@@ -3,9 +3,9 @@ package org.yx.rpc.client;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.server.Response;
-import org.yx.util.GsonUtil;
 
 public class ClientHandler implements IoHandler {
 
@@ -37,11 +37,15 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		String msg = (String) message;
-		Log.get("SYS.5").trace(msg);
-		String[] msgs = msg.split("\r", -1);
-		Response resp = GsonUtil.fromJson(msgs[0], Response.class);
-		RequestLocker.unLockAndSetResult(resp);
+		if (message == null) {
+			return;
+		}
+		if (Response.class.isInstance(message)) {
+			Response resp = (Response) message;
+			RequestLocker.unLockAndSetResult(resp);
+			return;
+		}
+		SumkException.throwException(458223, message.getClass().getName() + " has not deserialized");
 	}
 
 	@Override

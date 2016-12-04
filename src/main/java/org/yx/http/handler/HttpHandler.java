@@ -1,8 +1,9 @@
 package org.yx.http.handler;
 
+import org.yx.common.Ordered;
 import org.yx.http.Web;
 
-public interface HttpHandler {
+public interface HttpHandler extends Ordered {
 	boolean accept(Web web);
 
 	/**
@@ -11,4 +12,5 @@ public interface HttpHandler {
 	 * @return true表示处理完毕，false表示需要继续处理
 	 */
 	boolean handle(WebContext ctx) throws Throwable;
+
 }

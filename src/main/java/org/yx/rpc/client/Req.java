@@ -2,25 +2,46 @@ package org.yx.rpc.client;
 
 public class Req {
 
-	private String sn;
+	protected String sn;
 
-	private String sn0;
+	protected String sn0;
 
-	private Integer ver;
+	protected Integer ver;
 
-	private String args;
+	protected String jsonedParam;
 
-	private String[] params;
+	protected String[] paramArray;
 
-	private String method;
+	/**
+	 * 将所有的参数序列化为一个json
+	 * 
+	 * @return
+	 */
+	public String getJsonedParam() {
+		return jsonedParam;
+	}
 
-	private String secret;
+	public void setJsonedParam(String jsonedParam) {
+		this.jsonedParam = jsonedParam;
+	}
 
-	private String sign;
+	public String[] getParamArray() {
+		return paramArray;
+	}
 
-	private String src;
+	public void setParamArray(String[] paramArray) {
+		this.paramArray = paramArray;
+	}
 
-	private long start;
+	protected String method;
+
+	protected String secret;
+
+	protected String sign;
+
+	protected String src;
+
+	protected long start;
 
 	public long getStart() {
 		return start;
@@ -52,14 +73,6 @@ public class Req {
 
 	public void setVer(Integer ver) {
 		this.ver = ver;
-	}
-
-	public String getArgs() {
-		return args;
-	}
-
-	public void setArgs(String args) {
-		this.args = args;
 	}
 
 	public String getMethod() {
@@ -94,12 +107,9 @@ public class Req {
 		this.secret = secret;
 	}
 
-	public String[] getParams() {
-		return params;
-	}
-
-	public void setParams(String[] params) {
-		this.params = params;
+	public void clearParams() {
+		this.jsonedParam = null;
+		this.paramArray = null;
 	}
 
 }

@@ -2,21 +2,20 @@ package org.yx.asm;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.asm.ClassReader;
-import org.springframework.asm.ClassWriter;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
 import org.yx.bean.Box;
 import org.yx.conf.AppInfo;
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public class ProxyClassFactory {
 
-	public static Class<?> proxyIfNeed(Class<?> clz) throws IOException {
+	public static Class<?> proxyIfNeed(Class<?> clz) throws Exception {
 		if ("no".equals(AppInfo.get("sumk.aop.proxy", "config"))) {
 			return clz;
 		}
@@ -30,14 +29,14 @@ public class ProxyClassFactory {
 				continue;
 			}
 			if (aopMethods.put(m.getName(), m) != null) {
-				SystemException.throwException(-2321435, "the name of box method cannot duplicate in one class");
+				SumkException.throwException(-2321435, "the name of box method cannot duplicate in one class");
 			}
 		}
 		if (aopMethods.isEmpty()) {
 			return clz;
 		}
 
-		ClassReader cr = new ClassReader(clz.getName());
+		ClassReader cr = new ClassReader(AsmUtils.openStreamForClass(clz.getName()));
 
 		ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
 

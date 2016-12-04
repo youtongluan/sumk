@@ -23,4 +23,8 @@ public class HttpHeadersHolder {
 		return _req.get().getHeader(Session.SESSIONID);
 	}
 
+	public static void remove() {
+		_req.remove();
+	}
+
 }

@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
-import org.yx.http.Login;
 import org.yx.log.Log;
 
 public class HttpLoginWrapper extends HttpServlet {
@@ -27,7 +26,6 @@ public class HttpLoginWrapper extends HttpServlet {
 		super.init(config);
 		try {
 			serv = IOC.get(LoginServlet.class);
-			Login login = serv.getClass().getAnnotation(Login.class);
 			serv.init(config);
 		} catch (Exception e) {
 			Log.printStack(e);

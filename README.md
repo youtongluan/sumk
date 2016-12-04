@@ -1,34 +1,60 @@
 #sumk
-本项目的目标是为中小互联网公司提供一个封装接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移的框架。一站式解决这些互联网公司都面临的难题。<br>
+sumk的定位是为互联网公司提供一个快速开发、接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移的框架。一站式解决互联网公司面临的常见问题。
+除故障转移外，其它5个特性都已有体现。具体的技术实现上，sumk拥有一套类似于"SSH"（spring的IOC、hibernate的ORM以及spring mvc/struts的接口访问能力）的体系。引入sumk以及它的依赖包，再加入一些特定注解，就能将一个普通的项目，转化成web或微服务项目（内置jetty，类似于tomcat）。<BR>
 
-###现有功能
-* HTTP方式的接口调用，用于客户端调用。包括APP、web浏览器等。<br>
-* 用于微服务的RPC调用，提供服务器间通信能力。开发人员不需要考虑与手机端的交互细节、安全性，以及session维护等<br>
-* 无论RPC还是HTTP，都可以通过注解的方式，配置数据库访问。系统会自动开闭连接，提交事务，或异常回滚。<br>
-* 轻量级IOC框架，比spring更轻，更快，配置更简单（但是spring大家更熟悉,且功能更丰富）。只需要@Inject就可以自动注入，也可以使用IOC.get(..)在代码中直接获取。在基本IOC上，还扩展了一些特殊注解：@Cached表示使用缓存的DAO,@Login表示是登陆接口，@Web和@Soa也被认为是特殊的IOC注解<BR>
-* 数据库连接的管理与事务支持，防止连接泄漏。支持多数据源、读写分离、事务传递等<BR>
-* 既可以将SUMK当框架使用，也可以当成普通的jar包。内置到现有的工程中。它的事务等特性，依然能够使用<BR>
-* 异常体系，开发人员直接抛出异常就行，不需要考虑异常处理。<br>
-* 对redis的封装。提供了redis连接的管理以及重试机制。<br>
+###现有主要功能
+* IOC模块，它是sumk的核心，无论是将sumk作为框架使用，还是作为一个普通的jar使用，都需要要初始化IOC模块。初始化方式是`Bootstrap.main(new String[0])`。它拥有类似于spring的注解扫描，反向注入，接口回调等特性。<br>
+* DB模块，包括ORM、事务管理、数据缓存等。sumkDB（sumk的DB模块）是sumk的最大亮点。与hibernate或mybatis相比，sumkDB有自己的优势：支持多数据源、支持读写分离、能够智能地使用或刷新redis缓存、开发速度快。尤其是与redis的结合，它是sumkDB最大的卖点。<br>
+	* sumkDB的事务管理：只要在方法上加入`@Box`注解，就表示开启一个新的事务，支持嵌套事务以及独立事务
+	* sumkDB的ORM：入口是DB类，比如插入`DB.insert(obj).excute()`。它是jquery风格，提供许多设置参数，整个过程不需要编写sql。sumkDB的ORM只是实现了常用的操作，其它的数据库操作，要通过mybatis来补充（暂不支持hibernate）。目前只支持mysql，其它数据库未测试
+	* sumkDB与后面介绍的HTTP、微服务是独立的，它可以在HTTP或微服务中使用，也可以在定时任务等其它场景中使用
+* 接口层之HTTP：只需要在一个普通方法上添加`@Web`注解，就可以将它变成web项目的servlet。以json协议进行交互，预定义了业务出错的提示方式、登陆方式、鉴权方式、加解密方式等<br>
+* 接口层之微服务（RPC）：只需要设置zk路径，然后在方法上添加`@Soa`注解，就能够将一个普通方法变成一个微服务方法<BR>
+* 除IOC框架外，sumkDB的事务管理、sumkDB的ORM、HTTP模块、RPC模块相互之间是独立的，可以单独使用。但一起使用效果更好。
+* 除上述四大模块外，还有一些小功能，比如redis。它提供了对官方redis驱动的封装。有连接管理、失败重试等功能。未来还会有主从检测等功能。<br>
+* 因为配置简单、接口定义简单、异常处理简单、sql语句减少。即使不考虑缓存等卖点，单就开发速度而言，也比其它框架来得快
 <br>
 
-###测试用例说明
-1. org.test.web底下是http的测试用例，TestServer启动服务器端，系统内置jetty，所以不需要tomcat就能启动。client包是用java模拟http请求，其中的文件上传和数据库操作需要文件和数据库的配合，其他的直接就能执行。
-* org.test.soa是微服务的测试用例。SOAServer是启动soa的服务器端，ClientTest是客户端的使用例子。<br>
-* 数据库的使用，参考SimpleDBTest测试用例，或者http测试用例中DBDemo。数据库的配置在db.ini文件中，支持读写分离（写库有多少个，取决于数据库集群的搭建方式，主库可以是只写，也可以既写又读）。<br>
-* redis的使用，参见SingleTest类。开发人员不需要考虑redis的创建与销毁，也不需要担心连接池被多次创建。RedisPool.get()第一次使用的时候，会自动创建。创建之后，可以把Redis对象保存起来，也可以每次都调用get。支持使用不同的db，或者使用多个redis实例。<br>
-* @Box相当于Spring的Transaction，它支持多个数据源，事务传递等。
+###环境搭建
+* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/test/db.ini中
+* 安装redis服务器（可选），如果有redis服务器，就将redis.properties的注释打开
+* zookeeper服务器（可选），目前只有RPC功能有用到zookeeper。`org.test.Main`启动的时候，会启动测试环境内置的zookeeper，这样做的目的是便于新手入门
 
-###HTTP工程搭建步骤
+###执行测试用例
+* 将sumk作为web或soa框架使用
+	* `org.test.Main`启动服务器，同时提供RPC和WEB访问的能力
+	* `org.test.web.client.HttpTest` 使用HttpClient模拟web浏览器的行为。包括用户登陆、加解密等。被调用的服务器端代码在org.test.web.demo包底下
+	* `org.test.soa.client.RpcTest` RPC客户端的使用例子，2种方式的客户端调用都有。被调用的服务器端代码在`org.test.soa.demo`包底下
+	
+* 单独使用sumkDB（也可以只使用sumkDB中的事务管理，而不是用ORM）的测试用例在org.test.orm包底下。尤其是`SinglePrimaryTest.select()`，里面有很多查询的示例
 
-* 在工程的resources底下添加app.properties文件，必须的key只有http，它表示action所在的包名。
-* 在http所配置的包底下创建Action类（类名任意，不强制继承任何接口。但方法名不能重名，也就是不支持方法overload和override）。在方法上加@Web注解，如果需要上传文件，还要添加@Upload注解<br>
-示例（服务端参见com.test.web.demo包，测试用例参见com.test.client.HttpTest)：<br>
-服务器端添加接口（无需其它额外配置）：<br>
+
+###示例代码
+
+####sumkDB
+
+```
+	@Box(dbName = "test")  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
+	public void select() {
+		list=DB.select(obj).queryList(); //插入对象
+		//查询
+		list=DB.select().tableClass(DemoUser.class)
+				.lessThan("lastupdate", new Date())
+				.OrderByAsc("lastupdate")
+				.offset(10)
+				.limit(10)
+				.resultHandler(MapResultHandler.handler)
+				.queryList();
+		
+	}
+```
+
+####http服务器端：
+
 ```java
 public class Demo {
 	
-	@Web(value="echo")
+	@Web   //只需要这个注解就表示可以接受http请求
 	public List<String> echo(String echo,List<String> names){
 		List<String> list=new ArrayList<String>();
 		for(String name:names){
@@ -38,14 +64,12 @@ public class Demo {
 	}
 }
 ```
-* 客户端就是一般的http请求，请求路径是http://localhost/webserver?act=echo，请求实体是{"echo":"hi",“names”:["张三","李四"]}<br>
+* 客户端就是一般的http请求，请求路径是http://localhost/intf/webserver/demo?act=echo，请求实体是{"echo":"hi",“names”:["张三","李四"]}<br>
 
-###RPC工程搭建步骤：
-* 在工程的resources底下添加app.properties文件，必须的key只有zkurl和soa，zkurl是zookeeper的地址，soa是RPC接口所放置的位置。本测试用例内置了zookeeper服务器，可以直接运行
-* 服务器端：只需要添加@SOA注解就行，方法名不能重名<BR>
+####RPC服务器端：
 
 ```java
-@SOA
+@Soa //只需要这个注解，就能接收RPC请求，默认接口名是 appId.小写的类名.小写的方法名
 public List<String> echo(String echo,List<String> names){
 	List<String> list=new ArrayList<String>();
 	for(String name:names){
@@ -54,17 +78,20 @@ public List<String> echo(String echo,List<String> names){
 	return list;
 }
 ```
-* 客户端：<BR>
+
+####RPC客户端：
+
 ```Java
-Client.init();
-List<String> names=new ArrayList<String>();
-names.add("游侠");
-names.add("BOSS");
+Rpc.init();
+List<String> names=Arrays.asList("游夏","游侠");
 String echo=",how are you";
-//ret是json格式。key的格式是包名的最后一个单词+类名+方法名
-String ret=Client.call("demo.EchoAction.echo", echo,names);
+//返回是json格式。key的格式是包名的最后一个单词+类名+方法名
+String result=Rpc.call("demo.EchoAction.echo", echo,names);
 ```
 
 <br>
-问题反馈：<br>
-如果使用过程中遇到问题，或者需要某种扩展，请联系QQ：3205207767，尤其是福州地区的朋友。
+
+###作者心声
+雁过留声，人过留名，我也想在职业生涯结束后，留下点什么。也许sumk就是那个留下的。所以***我会长期维护的sumk***，虽然进度不一定能保障。<BR>
+本项目要特别感谢福建一定火科技有限公司（现已改名）。我在一定火任架构师期间，曾为一定火搭建过一套服务器端框架，在高并发方面表现相当优异。但因为兼容旧代码、工期、当时的技术局限性等原因，有很多地方我觉得可以改进，尤其是它的通用性不强。sumk就是在这种背景下诞生的，但是sumk的体系架构、代码结构等都已经与原来的框架完全不同了。sumk从一开始就是一个全新的项目<BR>
+作者：游夏，QQ：3205207767

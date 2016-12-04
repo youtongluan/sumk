@@ -1,37 +1,35 @@
 package org.yx.rpc.server.start;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
+import org.yx.bean.IOC;
 import org.yx.common.ServerStarter;
 import org.yx.conf.AppInfo;
-import org.yx.exception.SystemException;
+import org.yx.conf.Profile;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.ActionHolder;
-import org.yx.rpc.ZKRouteData;
+import org.yx.rpc.ZKConst;
 import org.yx.rpc.ZkClientHolder;
-import org.yx.rpc.server.MinaHandler;
+import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.rpc.server.ServerListener;
-import org.yx.rpc.server.impl.DefaultMinaHandler;
-import org.yx.rpc.server.impl.JsonArgHandler;
-import org.yx.util.GsonUtil;
 
 /**
  * 启动服务器端
  * 
- * @author youtl
+ * @author 游夏
  *
  */
-public class SOAStarter implements ServerStarter{
+public class SOAStarter implements ServerStarter {
 	private boolean started = false;
 
 	public synchronized void start(int port) throws Exception {
 		if (started) {
-			SystemException.throwException(20000, "soa server has started");
+			SumkException.throwException(20000, "soa server has started");
 		}
 
 		String zkUrl = AppInfo.getZKUrl();
@@ -44,7 +42,7 @@ public class SOAStarter implements ServerStarter{
 
 			@Override
 			public void handleStateChanged(KeeperState state) throws Exception {
-				Log.get("SYS.46").info("zk state changed:{}", state);
+				Log.get("SYS.RPC").info("zk state changed:{}", state);
 			}
 
 			@Override
@@ -54,7 +52,7 @@ public class SOAStarter implements ServerStarter{
 
 			@Override
 			public void handleSessionEstablishmentError(Throwable error) throws Exception {
-				Log.get("SYS.47").error("SessionEstablishmentError#" + error.getMessage(), error);
+				Log.get("SYS.RPC").error("SessionEstablishmentError#" + error.getMessage(), error);
 			}
 
 		});
@@ -62,11 +60,8 @@ public class SOAStarter implements ServerStarter{
 		started = true;
 	}
 
-	private void startServer(String ip, int port) {
-		List<MinaHandler> list = new ArrayList<MinaHandler>();
-		list.add(new DefaultMinaHandler());
-		list.add(new JsonArgHandler());
-		ServerListener server = new ServerListener(ip, port, list);
+	private void startServer(String ip, int port) throws Exception {
+		ServerListener server=new ServerListener(ip,port,IOC.get(ReqHandlerFactorysBean.class).create());
 		Thread t = new Thread(server, "server-listener");
 		t.setDaemon(true);
 		t.start();
@@ -74,15 +69,11 @@ public class SOAStarter implements ServerStarter{
 
 	private String createZkRouteData() {
 		Set<String> methods = ActionHolder.soaSet();
-		StringBuilder sb = new StringBuilder();
-		for (String m : methods) {
-			if (sb.length() > 0) {
-				sb.append(",");
-			}
-			sb.append(m);
+		StringJoiner sj = new StringJoiner("\n");
+		if (methods != null && methods.size() > 0) {
+			sj.add(ZKConst.METHODS + "=" + String.join(",", methods.toArray(new String[methods.size()])));
 		}
-		ZKRouteData data = new ZKRouteData();
-		data.setMethods(sb.toString());
-		return GsonUtil.toJson(data);
+		sj.add(ZKConst.FEATURE + "=" + Profile.featureInHex());
+		return sj.toString();
 	}
 }

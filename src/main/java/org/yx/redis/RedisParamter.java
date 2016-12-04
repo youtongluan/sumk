@@ -6,22 +6,31 @@ public class RedisParamter {
 	final static int DEFAULT_TRY_COUNT = 3;
 	final static int DEFAULT_Timeout = 3000;
 
-	public static RedisParamter create() {
-		return new RedisParamter();
+	public static RedisParamter create(String ip) {
+		return new RedisParamter(ip);
 	}
 
-	public static RedisParamter create(int port) {
-		RedisParamter p = new RedisParamter();
+	public static RedisParamter create(String ip, int port) {
+		RedisParamter p = new RedisParamter(ip);
 		p.setPort(port);
 		return p;
 	}
 
 	private int timeout = DEFAULT_Timeout;
 	private String password = null;
-
+	private String ip;
 	private int db = 0;
 	private int tryCount = DEFAULT_TRY_COUNT;
 	private int port = Protocol.DEFAULT_PORT;
+
+	public RedisParamter(String ip) {
+		super();
+		this.ip = ip;
+	}
+
+	public String getIp() {
+		return ip;
+	}
 
 	public int getPort() {
 		return port;
@@ -66,12 +75,6 @@ public class RedisParamter {
 	public RedisParamter setTryCount(int tryCount) {
 		this.tryCount = tryCount;
 		return this;
-	}
-
-	@Override
-	public String toString() {
-		return " [timeout=" + timeout + ", password=" + password + ", db=" + db + ", tryCount=" + tryCount + ", port="
-				+ port + "]";
 	}
 
 }

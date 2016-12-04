@@ -1,14 +1,13 @@
 package org.yx.rpc.client.route;
 
-import org.yx.rpc.Url;
-import org.yx.rpc.ZkData;
+import org.yx.rpc.Host;
 
 public class RouteEvent {
 	private RouteEventType type;
 	private ZkData zkData;
-	private Url url;
+	private Host url;
 
-	public Url getUrl() {
+	public Host getUrl() {
 		return url;
 	}
 
@@ -20,22 +19,22 @@ public class RouteEvent {
 		return zkData;
 	}
 
-	private RouteEvent(RouteEventType type, Url url, ZkData zkData) {
+	private RouteEvent(RouteEventType type, Host url, ZkData zkData) {
 		super();
 		this.type = type;
 		this.zkData = zkData;
 		this.url = url;
 	}
 
-	public static RouteEvent create(Url url, ZkData data) {
+	public static RouteEvent create(Host url, ZkData data) {
 		return new RouteEvent(RouteEventType.Create, url, data);
 	}
 
-	public static RouteEvent delete(Url url) {
+	public static RouteEvent delete(Host url) {
 		return new RouteEvent(RouteEventType.Delete, url, null);
 	}
 
-	public static RouteEvent modify(Url url, ZkData data) {
+	public static RouteEvent modify(Host url, ZkData data) {
 		return new RouteEvent(RouteEventType.Modify, url, data);
 	}
 }

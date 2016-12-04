@@ -6,7 +6,7 @@ import java.net.URL;
 /**
  * 监听文件的变更，并且映射文件的内容
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public interface FileHandler {

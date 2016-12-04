@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 /**
  * 表示是IOC中的bean。使用在类上面，不支持接口注解 SOA、Web注释，包含了Bean的功能
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 @Target({ ElementType.TYPE })

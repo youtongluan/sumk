@@ -8,7 +8,7 @@ import org.yx.http.filter.Session;
 /**
  * 用来写入内容主题，是最后一个handler
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public class RespHeaderHandler implements HttpHandler {

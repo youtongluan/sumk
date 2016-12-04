@@ -1,8 +1,6 @@
 package org.yx.listener;
 
-import java.util.EventObject;
-
-public interface ListenerGroup<T extends EventObject> {
+public interface ListenerGroup<T extends SumkEvent> {
 
 	/**
 	 * 如果这个组的listen和support的listen的类型一致，就返回true。否则返回false。

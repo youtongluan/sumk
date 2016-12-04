@@ -3,12 +3,11 @@ package org.yx.conf;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
-import org.springframework.util.Assert;
-import org.yx.db.DataSourceWraper;
+import org.yx.db.conn.DataSourceWraper;
 import org.yx.log.Log;
+import org.yx.util.Assert;
 import org.yx.util.SimpleBeanUtil;
 
 public class DBConfig {
@@ -41,20 +40,18 @@ public class DBConfig {
 		properties.put("poolPreparedStatements", "false");
 		properties.put("defaultAutoCommit", "false");
 
+		properties.put("enableAutoCommitOnReturn", "false");
+		properties.put("rollbackOnReturn", "true");
 	}
 
 	public String getProperty(String name) {
 		return this.properties.get(name);
 	}
 
-	public void setProperties(Properties p) throws IllegalAccessException, InvocationTargetException {
-		Set<Object> set = p.keySet();
-		for (Object o : set) {
-			if (!String.class.isInstance(o)) {
-				continue;
-			}
-			String key = (String) o;
-			String v = p.getProperty(key);
+	public void setProperties(Map<String, String> p) throws IllegalAccessException, InvocationTargetException {
+		Set<String> set = p.keySet();
+		for (String key : set) {
+			String v = p.get(key);
 			if (v == null) {
 				log.sub("setProperties").debug("{} key的值是null，被忽略掉", key);
 				continue;

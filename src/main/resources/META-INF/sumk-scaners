@@ -1,0 +1,4 @@
+org.yx.bean.BeanFactory
+org.yx.db.sql.PojoMetaListener
+org.yx.rpc.server.start.SOABeanListener
+org.yx.http.start.HttpBeanListener

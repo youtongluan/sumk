@@ -1,22 +1,18 @@
 package org.yx.listener;
 
-import java.util.EventObject;
+import org.yx.common.Ordered;
 
-public interface Listener<T extends EventObject> {
+public interface Listener<T extends SumkEvent> extends Ordered {
+
 	/**
 	 * 是否接受当前的事件
 	 * 
 	 * @param event
 	 * @return
 	 */
-	boolean accept(T event);
+	boolean accept(SumkEvent event);
 
 	void listen(T event);
 
-	/**
-	 * 所属group的标签,null表示监听全部，空数组表示全部不监听
-	 * 
-	 * @return
-	 */
 	String[] getTags();
 }

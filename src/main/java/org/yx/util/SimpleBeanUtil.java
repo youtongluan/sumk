@@ -5,13 +5,13 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Set;
 
-import org.springframework.util.StringUtils;
+import org.yx.util.StringUtils;
 import org.yx.log.Log;
 
 /**
  * 简单的bean对象操作，只支持boolean,int,long,double,String,boolean以及他们的包装类
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public class SimpleBeanUtil {

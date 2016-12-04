@@ -7,6 +7,10 @@ public final class InnerIOC {
 		return pool.putClass(name, clz);
 	}
 
+	public static <T> T putClassByInterface(Class<?> intf, Class<T> clz) throws Exception {
+		return pool.putClass(BeanPool.getBeanName(intf), clz);
+	}
+
 	/**
 	 * 获取IOC中的实例，如果实例不存在，就创建新的 这个方法不会处理内部的注入
 	 * 

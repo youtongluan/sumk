@@ -17,31 +17,30 @@ public class ClassScaner {
 
 	public Collection<String> parse(final String... packageNames) {
 		Set<String> classNameList = new HashSet<String>(240);
-		if (packageNames != null) {
-			String packagePath;
-			ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-			File file;
-			URL url;
-			String filePath;
-			Enumeration<URL> eUrl;
-			for (String packageName : packageNames) {
-				packagePath = packageName.replaceAll("\\.", "/");
-				try {
-					eUrl = classLoader.getResources(packagePath);
-					while (eUrl.hasMoreElements()) {
-						url = eUrl.nextElement();
-						filePath = url.getFile();
-						if (filePath.indexOf("src/test/") == -1 && filePath.indexOf("src/main/") == -1) {
-							file = new File(url.getPath());
-							this.parseFile(classNameList, file, packagePath, url);
-						}
+		if (packageNames == null) {
+			return classNameList;
+		}
+		String packagePath;
+		ClassLoader classLoader = ClassScaner.class.getClassLoader();
+		File file;
+		URL url;
+		String filePath;
+		Enumeration<URL> eUrl;
+		for (String packageName : packageNames) {
+			packagePath = packageName.replace('.', '/');
+			try {
+				eUrl = classLoader.getResources(packagePath);
+				while (eUrl.hasMoreElements()) {
+					url = eUrl.nextElement();
+					filePath = url.getFile();
+					if (filePath.indexOf("src/test/") == -1 && filePath.indexOf("src/main/") == -1) {
+						file = new File(url.getPath());
+						this.parseFile(classNameList, file, packagePath, url);
 					}
-				} catch (IOException ex) {
-					Log.get("ClassScaner.parse").error("parse 解析指定的包名出现异常", ex);
 				}
+			} catch (IOException ex) {
+				Log.get("ClassScaner").error("parse " + packageName + "failed", ex);
 			}
-		} else {
-			Log.get("ClassScaner.parse").error("parse 没有输出指定的包路径");
 		}
 		return classNameList;
 	}
@@ -50,6 +49,9 @@ public class ClassScaner {
 		File[] subFiles;
 		if (file.isDirectory()) {
 			subFiles = file.listFiles();
+			if (subFiles == null) {
+				return;
+			}
 			for (File subFile : subFiles) {
 				this.parseFile(classNameList, subFile, packagePath, url);
 			}
@@ -80,13 +82,13 @@ public class ClassScaner {
 				}
 			}
 		} catch (IOException ex) {
-			Log.get("ClassScaner.findClassInJar").error("findClassInJar 找不到相应的jar或者class", ex);
+			Log.get("ClassScaner").error("findClassInJar can not found jar or class", ex);
 		} finally {
 			if (jarFile != null) {
 				try {
 					jarFile.close();
 				} catch (IOException ex) {
-					Log.get("ClassScaner.findClassInJar").error("findClassInJar 关闭jarFile出现异常", ex);
+					Log.get("ClassScaner").error("can not close jarFile in findClassInJar", ex);
 				}
 			}
 		}
@@ -96,9 +98,9 @@ public class ClassScaner {
 		String absolutePath = file.getAbsolutePath().replaceAll("\\\\", "/");
 		int index = absolutePath.indexOf(packagePath);
 		String className = absolutePath.substring(index);
-		className = className.replaceAll("/", ".");
+		className = className.replace('/', '.');
 		className = className.substring(0, className.length() - 6);
-		String packageName = packagePath.replaceAll("/", ".");
+		String packageName = packagePath.replace('/', '.');
 		if (className.startsWith(packageName) && !classNameList.contains(className)) {
 			classNameList.add(className);
 		}

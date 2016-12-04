@@ -1,20 +1,22 @@
 package org.yx.asm;
 
-import static org.springframework.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.asm.ClassReader;
-import org.springframework.asm.ClassWriter;
-import org.springframework.asm.Opcodes;
-import org.springframework.asm.Type;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.yx.common.MethodInfo;
 import org.yx.rpc.server.intf.ActionContext;
 
@@ -24,11 +26,25 @@ public final class AsmUtils {
 			"hashCode" };
 
 	private static Map<String, Class<?>> clzMap;
+	private static Map<Class<?>, Method> loaderDefinds = new HashMap<>();
 
 	public static String proxyCalssName(Class<?> clz) {
 		String name = clz.getName();
 		int index = name.lastIndexOf(".");
-		return name.substring(0, index) + ".box" + name.substring(index);
+		return name.substring(0, index) + ".sumkbox" + name.substring(index);
+	}
+
+	private static ClassLoader loader() {
+		ClassLoader load = Thread.currentThread().getContextClassLoader();
+		if (load != null) {
+			return load;
+		}
+		return AsmUtils.class.getClassLoader();
+	}
+
+	public static InputStream openStreamForClass(String name) {
+		String internalName = name.replace('.', '/') + ".class";
+		return loader().getResourceAsStream(internalName);
 	}
 
 	/**
@@ -66,8 +82,6 @@ public final class AsmUtils {
 		return true;
 	}
 
-	static MyClassLoader myClassLoader = new MyClassLoader();
-
 	/**
 	 * 生成参数的对象，如果参数个数为空，就返回null
 	 * 
@@ -75,8 +89,9 @@ public final class AsmUtils {
 	 * @param methodName
 	 * @param p
 	 * @return
+	 * @throws Exception
 	 */
-	public static Class<?> CreateArgPojo(String clzName, MethodInfo p) {
+	public static Class<?> CreateArgPojo(String clzName, MethodInfo p) throws Exception {
 		String fullName = clzName + "_" + p.getMethod().getName();
 		if (p.getArgNames() == null || p.getArgNames().length == 0) {
 			return null;
@@ -106,14 +121,32 @@ public final class AsmUtils {
 	}
 
 	public static MethodInfo createMethodInfo(String classFullName, Method m) throws IOException {
-		ClassReader cr = new ClassReader(classFullName);
+		ClassReader cr = new ClassReader(openStreamForClass(classFullName));
 		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(m);
 		cr.accept(cv, 0);
 		return new MethodInfo(m, cv.argNames.toArray(new String[0]), cv.descriptor,
 				cv.signatures.toArray(new String[0]));
 	}
 
-	public static Class<?> loadClass(String fullName, byte[] b) {
+	public static Method getMethod(Class<?> clz, String methodName, Class<?>[] paramTypes) {
+		while (clz != Object.class) {
+			Method[] ms = clz.getDeclaredMethods();
+			for (Method m : ms) {
+				if (!m.getName().equals(methodName)) {
+					continue;
+				}
+				Class<?>[] paramTypes2 = m.getParameterTypes();
+				if (!Arrays.equals(paramTypes2, paramTypes)) {
+					continue;
+				}
+				return m;
+			}
+			clz = clz.getSuperclass();
+		}
+		return null;
+	}
+
+	public static Class<?> loadClass(String fullName, byte[] b) throws Exception {
 		if (clzMap == null) {
 			clzMap = new ConcurrentHashMap<>();
 		}
@@ -126,7 +159,18 @@ public final class AsmUtils {
 			if (clz != null) {
 				return clz;
 			}
-			clz = myClassLoader.defineClass(fullName, b);
+			Class<?> loaderClz = loader().getClass();
+			Method defineClass = loaderDefinds.get(loaderClz);
+			if (defineClass == null) {
+				defineClass = getMethod(loaderClz, "defineClass",
+						new Class<?>[] { String.class, byte[].class, int.class, int.class });
+				defineClass.setAccessible(true);
+				loaderDefinds.put(loaderClz, defineClass);
+			}
+			clz = (Class<?>) defineClass.invoke(loader(), fullName, b, 0, b.length);
+			if (clz == null) {
+				throw new Exception("cannot load class " + fullName);
+			}
 			clzMap.put(fullName, clz);
 			return clz;
 		}

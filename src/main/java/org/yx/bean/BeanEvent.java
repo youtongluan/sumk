@@ -1,22 +1,21 @@
 package org.yx.bean;
 
-import java.util.EventObject;
+import org.yx.listener.SumkEvent;
 
 /**
  * 用于bean扫描
  * 
- * @author youtl
+ * @author 游夏
  *
  */
-public class BeanEvent extends EventObject {
-	private static final long serialVersionUID = 456354649L;
-
-	public BeanEvent(String className) {
-		super(className);
+public class BeanEvent extends SumkEvent {
+	public BeanEvent(Class<?> clz) {
+		super(clz);
 	}
 
-	public String getClassName() {
-		return (String) this.source;
+	public Class<?> clz() {
+		Object src = this.source;
+		return (Class<?>) src;
 	}
 
 }

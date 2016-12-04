@@ -2,7 +2,6 @@ package org.yx.rpc.server;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Executors;
 
@@ -10,14 +9,12 @@ import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.codec.textline.TextLineDecoder;
-import org.apache.mina.filter.codec.textline.TextLineEncoder;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ServerListener implements Runnable {
 
@@ -36,14 +33,14 @@ public class ServerListener implements Runnable {
 		this.useExcutor = useExcutor;
 	}
 
-	public ServerListener(String host, int port, List<MinaHandler> handlers) {
+	public ServerListener(String host, int port, List<RequestHandler> handlers) {
 		super();
 		this.port = port;
 		this.host = host;
 		this.handler = new ServerHandler(handlers);
 	}
 
-	public ServerListener(int port, List<MinaHandler> handlers) {
+	public ServerListener(int port, List<RequestHandler> handlers) {
 		super();
 		this.port = port;
 		this.handler = new ServerHandler(handlers);
@@ -55,13 +52,7 @@ public class ServerListener implements Runnable {
 			acceptor.setReuseAddress(true);
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
-			Charset charset = Charset.forName(AppInfo.get("soa.server.charset", "UTF-8"));
-			TextLineEncoder encoder = new TextLineEncoder(charset);
-			TextLineDecoder decoder = new TextLineDecoder(charset);
-			decoder.setMaxLineLength(10240);
-			ProtocolCodecFilter pf = new ProtocolCodecFilter(encoder, decoder);
-
-			chain.addLast("codec", pf);
+			chain.addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
 
 			if (useExcutor) {
 
@@ -84,7 +75,7 @@ public class ServerListener implements Runnable {
 				addr = new InetSocketAddress(host, port);
 			}
 			acceptor.bind(addr);
-			logger.info("Listening on " + addr);
+			logger.info("rpc listening on " + addr);
 
 		} catch (IOException e) {
 			logger.error(e.getMessage(), e);

@@ -1,6 +1,6 @@
 package org.yx.db;
 
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 
 public enum DBType {
 	WRITE(true, false), READONLY(false, true), ANY(true, true);
@@ -20,7 +20,7 @@ public enum DBType {
 		case "any":
 			return ANY;
 		default:
-			SystemException.throwException(2342312, type + " is not correct db type");
+			SumkException.throwException(2342312, type + " is not correct db type");
 			return null;
 		}
 	}

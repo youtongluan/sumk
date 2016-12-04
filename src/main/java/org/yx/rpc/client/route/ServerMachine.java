@@ -1,14 +1,14 @@
 package org.yx.rpc.client.route;
 
-import org.yx.rpc.Url;
+import org.yx.rpc.Host;
 
 public class ServerMachine {
 
-	public Url getUrl() {
+	public Host getUrl() {
 		return url;
 	}
 
-	public Url url;
+	public Host url;
 	public int weight;
 	/**
 	 * RPC的超时时间
@@ -19,7 +19,7 @@ public class ServerMachine {
 	 */
 	public Integer serverCount;
 
-	public ServerMachine(Url url, int weight) {
+	public ServerMachine(Host url, int weight) {
 
 		this.url = url;
 		this.weight = weight;

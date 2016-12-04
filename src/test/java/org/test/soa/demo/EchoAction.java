@@ -3,11 +3,11 @@ package org.test.soa.demo;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yx.rpc.SOA;
+import org.yx.rpc.Soa;
 
 public class EchoAction {
 
-	@SOA
+	@Soa
 	public List<String> echo(String echo, List<String> names) {
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
@@ -16,12 +16,12 @@ public class EchoAction {
 		return list;
 	}
 
-	@SOA
+	@Soa
 	public String hi() {
 		return "hello";
 	}
 
-	@SOA
+	@Soa
 	public void print() {
 		System.out.println("print");
 	}

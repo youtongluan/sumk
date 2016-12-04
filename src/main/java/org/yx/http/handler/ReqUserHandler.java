@@ -6,6 +6,7 @@ import org.yx.http.Web;
 import org.yx.http.filter.Session;
 import org.yx.http.filter.UserSession;
 import org.yx.http.start.UserSessionHolder;
+import org.yx.log.Log;
 
 public class ReqUserHandler implements HttpHandler {
 
@@ -17,10 +18,11 @@ public class ReqUserHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		String sessionID = ctx.getHeaders().get(Session.SESSIONID);
-		UserSession session = UserSessionHolder.userSession();
+		UserSession session = UserSessionHolder.loadUserSession();
 		byte[] key = session.getkey(sessionID);
 
 		if (key == null) {
+			Log.get("session").info("session:{}, has expired", sessionID);
 			BizException.throwException(ErrorCode.SESSION_ERROR, "请重新登陆");
 		}
 		ctx.setKey(key);

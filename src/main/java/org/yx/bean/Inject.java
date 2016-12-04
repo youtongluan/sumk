@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * 2、使用name获取对象<br>
  * 3、使用clz获取对象<br>
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 @Target({ ElementType.FIELD })
