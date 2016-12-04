@@ -5,10 +5,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.yx.common.TimedObject;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpHeadersHolder;
 import org.yx.log.Log;
-import org.yx.main.TimedObject;
 
 public class LocalUserSession implements UserSession {
 
@@ -26,6 +26,7 @@ public class LocalUserSession implements UserSession {
 	}
 
 	public LocalUserSession() {
+		Log.get("session").info("use local user session");
 		Thread t = new Thread() {
 
 			@Override

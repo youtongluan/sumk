@@ -4,16 +4,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.rpc.Url;
+import org.yx.rpc.Host;
 
 public class ReqSessionHolder {
-	private static Map<Url, Object> map = new ConcurrentHashMap<>();
+	private static Map<Host, Object> map = new ConcurrentHashMap<>();
 
-	public static void addClient(Url url, ReqSession s) {
+	public static void addClient(Host url, ReqSession s) {
 		map.putIfAbsent(url, s);
 	}
 
-	public static ReqSession getSession(Url url) {
+	public static ReqSession getSession(Host url) {
 		Object obj = map.get(url);
 		if (obj == null) {
 			ReqSession ses = createSession(url);
@@ -36,7 +36,7 @@ public class ReqSessionHolder {
 		return ((List<ReqSession>) obj).get(0);
 	}
 
-	private static ReqSession createSession(Url url) {
+	private static ReqSession createSession(Host url) {
 		return new ReqSession(url.getIp(), url.getPort());
 	}
 }

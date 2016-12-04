@@ -2,9 +2,9 @@ package org.yx.conf;
 
 import java.io.InputStream;
 
-import org.springframework.util.StringUtils;
+import org.yx.db.dao.ColumnType;
 import org.yx.log.Log;
-import org.yx.rpc.NetworkUtil;
+import org.yx.rpc.LocalhostUtil;
 
 public class AppInfo {
 	private static String appId = "UNKOWN";
@@ -12,8 +12,24 @@ public class AppInfo {
 	public static int httpSessionTimeout = 3600;
 
 	public static int redisTTL = 7200;
+	/**
+	 * 默认情况下，DB操作是根据数据库中的主键，还是redis中的主键。
+	 */
+	public static ColumnType modifyByColumnType = ColumnType.ID_DB;
 
 	public static final PropertiesInfo info = new PropertiesInfo("app.properties") {
+
+		private Integer intValue(String key) {
+			String temp = get(key);
+			if (temp != null) {
+				try {
+					return Integer.valueOf(temp);
+				} catch (Exception e) {
+					Log.get(AppInfo.class).error(key + "=" + temp + "，不是有效的数字格式");
+				}
+			}
+			return null;
+		}
 
 		@Override
 		public void deal(InputStream in) throws Exception {
@@ -23,22 +39,19 @@ public class AppInfo {
 				AppInfo.appId = id;
 			}
 
-			String temp = get("http.session.timeout");
+			Integer temp = intValue("http.session.timeout");
 			if (temp != null) {
-				try {
-					AppInfo.httpSessionTimeout = Integer.parseInt(temp);
-				} catch (Exception e) {
-					Log.get(AppInfo.class).error("http.session.timeout=" + temp + "，要是数字格式，单位秒");
-				}
+				AppInfo.httpSessionTimeout = temp;
 			}
 
-			temp = get("redis.ttl");
+			temp = intValue("redis.ttl");
 			if (temp != null) {
-				try {
-					AppInfo.redisTTL = Integer.parseInt(temp);
-				} catch (Exception e) {
-					Log.get(AppInfo.class).error("http.session.timeout=" + temp + "，要是数字格式，单位秒");
-				}
+				AppInfo.redisTTL = temp;
+			}
+			String modify = get("sumk.db.default_modify");
+			if (modify != null && modify.length() > 0
+					&& ("redis".equalsIgnoreCase(modify) || "cache".equalsIgnoreCase(modify))) {
+				AppInfo.modifyByColumnType = ColumnType.ID_CACHE;
 			}
 		}
 
@@ -54,7 +67,7 @@ public class AppInfo {
 			return ip;
 		}
 		try {
-			return NetworkUtil.getLocalIP();
+			return LocalhostUtil.getLocalIP();
 		} catch (Exception e) {
 			Log.printStack(e);
 		}
@@ -63,14 +76,6 @@ public class AppInfo {
 
 	public static String getAppId() {
 		return appId;
-	}
-
-	public static String getDBRoot(String defalutRoot) {
-		String root = info.get("dbRoot");
-		if (!StringUtils.isEmpty(root)) {
-			return "file://" + root + "/";
-		}
-		return defalutRoot;
 	}
 
 	public static String get(String name) {
@@ -95,6 +100,10 @@ public class AppInfo {
 		} catch (Exception e) {
 			return defaultValue;
 		}
+	}
+
+	public static String systemCharset() {
+		return System.getProperty("sumk.app.charset", "UTF-8");
 	}
 
 }

@@ -2,20 +2,25 @@ package org.yx.bean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 import org.yx.asm.ProxyClassFactory;
+import org.yx.bean.watcher.IOCWatcher;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
+import org.yx.util.Assert;
+import org.yx.util.StringUtils;
 
 public class BeanPool {
-	private Map<String, Object> map = new ConcurrentHashMap<>();
+
+	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
+
+	List<IOCWatcher> watchers = new ArrayList<>();
 
 	public static String getBeanName(Class<?> clz) {
 		String name = StringUtils.uncapitalize(clz.getSimpleName());
@@ -56,6 +61,22 @@ public class BeanPool {
 		return list;
 	}
 
+	Collection<BeanWrapper> allBeanWrapper() {
+		List<BeanWrapper> list = new ArrayList<>();
+		Collection<Object> vs = map.values();
+		for (Object v : vs) {
+			if (!v.getClass().isArray()) {
+				list.add((BeanWrapper) v);
+				continue;
+			}
+			Object[] objs = (Object[]) v;
+			for (Object o : objs) {
+				list.add((BeanWrapper) o);
+			}
+		}
+		return list;
+	}
+
 	/**
 	 * 将类的实例添加的IOC中。这里会做aop等操作
 	 * 
@@ -77,15 +98,14 @@ public class BeanPool {
 		w.setBean(bean);
 		w.setTargetClass(clz);
 		put(name, w);
-		return this.getBean(name, clz);
+		T t = this.getBean(name, clz);
+		if (IOCWatcher.class.isInstance(t)) {
+			watchers.add((IOCWatcher) t);
+			Collections.sort(watchers, null);
+		}
+		return t;
 	}
 
-	/**
-	 * 添加bean，一个类的实例，不能多次出现在一个name中
-	 * 
-	 * @param bean
-	 * @param name
-	 */
 	private void put(String name, BeanWrapper w) {
 		Class<?> clz = w.getTargetClass();
 		Object oldWrapper = map.putIfAbsent(name, w);

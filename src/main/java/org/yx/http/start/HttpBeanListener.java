@@ -4,15 +4,17 @@ import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
 import org.yx.bean.BeanPool;
 import org.yx.bean.InnerIOC;
+import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
+import org.yx.conf.AppInfo;
 import org.yx.http.Login;
 import org.yx.http.filter.LoginServlet;
 import org.yx.log.Log;
 
 public class HttpBeanListener extends AbstractBeanListener {
 
-	public HttpBeanListener(String packs) {
-		super(packs);
+	public HttpBeanListener() {
+		super(AppInfo.get(StartConstants.HTTP_PACKAGES));
 	}
 
 	private HttpFactory factory = new HttpFactory();
@@ -20,12 +22,12 @@ public class HttpBeanListener extends AbstractBeanListener {
 	@Override
 	public void listen(BeanEvent event) {
 		try {
-			Class<?> clz = Class.forName(event.getClassName());
+			Class<?> clz = event.clz();
 			if (LoginServlet.class.isAssignableFrom(clz)) {
 				Login login = clz.getAnnotation(Login.class);
 				if (login != null) {
 					InnerIOC.putClass(BeanPool.getBeanName(LoginServlet.class), clz);
-					StartContext.inst.map.get().put(StartContext.HTTP_LOGIN_PATH, login.path());
+					StartContext.inst.put(LoginServlet.class, login.path());
 				}
 				return;
 			}

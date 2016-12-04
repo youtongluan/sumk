@@ -3,12 +3,11 @@ package org.yx.rpc.client.route;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.rpc.Url;
-import org.yx.rpc.ZkData;
+import org.yx.rpc.Host;
 
 public class RouteHolder {
 	private static Map<String, WeightedRoute> routes = new ConcurrentHashMap<>();
-	private static Map<Url, ZkData> zkDatas = new ConcurrentHashMap<>();
+	private static Map<Host, ZkData> zkDatas = new ConcurrentHashMap<>();
 
 	public static WeightedRoute getRoute(String method) {
 
@@ -37,7 +36,7 @@ public class RouteHolder {
 	 * @param route
 	 * @param data
 	 */
-	public static void init(Map<String, WeightedRoute> route, Map<Url, ZkData> data) {
+	public static void init(Map<String, WeightedRoute> route, Map<Host, ZkData> data) {
 		routes.clear();
 		zkDatas.clear();
 		zkDatas.putAll(data);
@@ -54,7 +53,7 @@ public class RouteHolder {
 		r.addServer(server);
 	}
 
-	public static void removeServer(String method, Url url) {
+	public static void removeServer(String method, Host url) {
 		WeightedRoute r = routes.get(method);
 		if (r == null) {
 			return;
@@ -62,11 +61,11 @@ public class RouteHolder {
 		r.removeServer(url);
 	}
 
-	public static void addZkData(Url url, ZkData data) {
+	public static void addZkData(Host url, ZkData data) {
 		zkDatas.put(url, data);
 	}
 
-	public static ZkData removeZkData(Url url) {
+	public static ZkData removeZkData(Host url) {
 		return zkDatas.remove(url);
 	}
 }

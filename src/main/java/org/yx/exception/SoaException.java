@@ -18,17 +18,21 @@ public class SoaException extends RuntimeException {
 		return exceptionClz;
 	}
 
+	/**
+	 * 如果是bizException，就会使用bizException的code，msg
+	 * 
+	 * @param code
+	 * @param msg
+	 * @param e
+	 */
 	public SoaException(int code, String msg, Throwable e) {
-		super(msg);
-		this.code = code;
+		super(BizException.class.isInstance(e) ? e.getMessage() : msg);
+		this.code = BizException.class.isInstance(e) ? ((BizException) e).getCode() : code;
 		this.detailError = getException(e);
 		this.exceptionClz = e == null ? "" : e.getClass().getName();
 	}
 
 	public static void throwException(int code, String msg, Throwable exception) {
-		if (msg == null || msg.length() == 0) {
-			msg = exception.getMessage();
-		}
 		throw new SoaException(code, msg, exception);
 	}
 

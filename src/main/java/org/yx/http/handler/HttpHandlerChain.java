@@ -28,6 +28,10 @@ public class HttpHandlerChain implements HttpHandler {
 		this.handlers.add(handler);
 	}
 
+	public void setHandlers(List<HttpHandler> handlers) {
+		this.handlers = handlers;
+	}
+
 	@Override
 	public boolean accept(Web web) {
 		return true;

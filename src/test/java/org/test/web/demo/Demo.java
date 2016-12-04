@@ -17,12 +17,12 @@ import org.yx.http.Web;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
 import org.yx.http.start.UserSessionHolder;
-import org.yx.rpc.SOA;
+import org.yx.rpc.Soa;
 
 public class Demo {
 
 	@Web(value = "echo")
-	@SOA
+	@Soa
 	public List<String> echo(String echo, List<String> names) {
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {

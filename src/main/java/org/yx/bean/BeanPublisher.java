@@ -2,19 +2,19 @@ package org.yx.bean;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.List;
 
+import org.yx.bean.watcher.BeanWatcher;
+import org.yx.bean.watcher.ContextWatcher;
+import org.yx.bean.watcher.Scaned;
 import org.yx.db.Cached;
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
 import org.yx.util.ClassScaner;
 
-/**
- * 监听器对外提供的接口
- *
- */
 public final class BeanPublisher {
 
 	private static ListenerGroup<BeanEvent> group = new ListenerGroupImpl<>();
@@ -29,9 +29,16 @@ public final class BeanPublisher {
 		Collection<String> clzs = scaner.parse(packageNames);
 		for (String c : clzs) {
 			try {
-				publish(new BeanEvent(c));
+
+				Class<?> clz = BeanPublisher.class.getClassLoader().loadClass(c);
+				publish(new BeanEvent(clz));
 			} catch (Exception e) {
 				Log.printStack(e);
+			} catch (NoClassDefFoundError e) {
+				if (!c.startsWith("org.yx.")) {
+					throw e;
+				}
+				Log.get("SYS.load").info(c + " load failed, ommit it.Error message:" + e.getMessage());
 			}
 		}
 		Log.get(BeanPublisher.class).debug(IOC.info());
@@ -78,43 +85,61 @@ public final class BeanPublisher {
 		}
 	}
 
+	@SuppressWarnings("rawtypes")
 	private static void autoWiredAll() {
 		BeanPool pool = InnerIOC.pool;
-		Collection<Object> beans = pool.allBeans();
-		synchronized (pool) {
+		Collection<BeanWrapper> beanwrapers = pool.allBeanWrapper();
 
-			beans.forEach(bean -> {
-				Class<?> tempClz = bean.getClass();
-				while (tempClz != null && (!tempClz.equals(Object.class))) {
+		pool.watchers.stream().filter(Scaned.class::isInstance).forEach(w -> ((Scaned) w).afterScaned());
+		injectProperties(pool.allBeans());
+		pool.watchers.stream().filter(BeanWatcher.class::isInstance).forEach(w -> {
+			for (BeanWrapper bw : beanwrapers) {
+				BeanWatcher watcher = (BeanWatcher) w;
 
-					Field[] fs = tempClz.getDeclaredFields();
-					for (Field f : fs) {
-						Inject inj = f.getAnnotation(Inject.class);
-						if (inj != null) {
-							Class<?> clz = inj.beanClz();
-							Object target = getInjectObject(f, clz);
-							if (target == null) {
-								SystemException.throwException(235435658,
-										bean.getClass().getName() + "--" + f.getName() + " cannot injected");
-							}
-							injectField(f, bean, target);
-							continue;
-						}
-						Cached c = f.getAnnotation(Cached.class);
-						if (c != null) {
-							Object target = getCacheObject(f);
-							if (target == null) {
-								SystemException.throwException(235435658,
-										bean.getClass().getName() + "--" + f.getName() + " cannot injected");
-							}
-							injectField(f, bean, target);
-							continue;
-						}
-					}
-					tempClz = tempClz.getSuperclass();
+				if (BeanWatcher.class.isAssignableFrom(bw.getTargetClass())
+						|| !watcher.acceptClass().isInstance(bw.getBean())) {
+					continue;
 				}
-			});
-		}
+				watcher.beanPost(bw);
+			}
+		});
+		pool.watchers.stream().filter(ContextWatcher.class::isInstance)
+				.forEach(w -> ((ContextWatcher) w).contextInitialized());
+	}
+
+	private static void injectProperties(Collection<Object> beans) {
+
+		beans.forEach(bean -> {
+			Class<?> tempClz = bean.getClass();
+			while (tempClz != null && (!tempClz.equals(Object.class))) {
+
+				Field[] fs = tempClz.getDeclaredFields();
+				for (Field f : fs) {
+					Inject inj = f.getAnnotation(Inject.class);
+					if (inj != null) {
+						Class<?> clz = inj.beanClz();
+						Object target = getInjectObject(f, clz);
+						if (target == null) {
+							SumkException.throwException(235435658,
+									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+						}
+						injectField(f, bean, target);
+						continue;
+					}
+					Cached c = f.getAnnotation(Cached.class);
+					if (c != null) {
+						Object target = getCacheObject(f);
+						if (target == null) {
+							SumkException.throwException(235435658,
+									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+						}
+						injectField(f, bean, target);
+						continue;
+					}
+				}
+				tempClz = tempClz.getSuperclass();
+			}
+		});
 	}
 
 	/**
@@ -134,6 +159,14 @@ public final class BeanPublisher {
 	 */
 	public static synchronized boolean addListener(Listener<BeanEvent> listener) {
 		group.addListener(listener);
+		return true;
+	}
+
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public static synchronized boolean addListeners(List<Listener> list) {
+		for (Listener<BeanEvent> l : list) {
+			addListener(l);
+		}
 		return true;
 	}
 

@@ -1,5 +1,8 @@
 package org.yx.rpc.client.route;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -7,43 +10,53 @@ import java.util.Map;
 import java.util.Set;
 
 import org.I0Itec.zkclient.ZkClient;
-import org.springframework.util.StringUtils;
-import org.yx.rpc.Url;
-import org.yx.rpc.ZKRouteData;
+import org.yx.rpc.Host;
+import org.yx.rpc.ZKConst;
 import org.yx.rpc.ZkClientHolder;
-import org.yx.rpc.ZkData;
+import org.yx.util.CollectionUtils;
 import org.yx.util.GsonUtil;
+import org.yx.util.StringUtils;
 
 public class ZkRouteParser {
 	/**
 	 * 根据zk的数据，初始化RouteHolder
 	 * 
 	 * @param zkUrl
+	 * @throws IOException
 	 */
-	public void parse(String zkUrl) {
-		Map<Url, ZkData> datas = new HashMap<>();
+	public void parse(String zkUrl) throws IOException {
+		Map<Host, ZkData> datas = new HashMap<>();
 		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
 
 		List<String> paths = zk.getChildren(ZkClientHolder.SOA_ROOT);
 		for (String path : paths) {
-			Url url = Url.create(path);
+			Host url = Host.create(path);
 			String json = zk.readData(ZkClientHolder.SOA_ROOT + "/" + path);
-			ZKRouteData data = GsonUtil.fromJson(json, ZKRouteData.class);
-			String methods = data.getMethods();
+			Map<String, String> map = CollectionUtils.loadMap(new StringReader(json));
+			String methods = map.get(ZKConst.METHODS);
 			if (StringUtils.isEmpty(methods)) {
 				continue;
 			}
-			ZkData d = new ZkData();
-			d.setMethods(methods);
-			d.setWeight(data.getWeight());
-			datas.put(url, d);
+			ZkData data = new ZkData();
+			data.setWeight(map.get(ZKConst.WEIGHT));
+			Arrays.asList(methods.split(",")).forEach(m -> {
+				if (m.startsWith("{")) {
+					IntfInfo intf = GsonUtil.fromJson(m, IntfInfo.class);
+					data.addIntf(intf);
+					return;
+				}
+				IntfInfo intf = new IntfInfo();
+				intf.setIntf(m);
+				data.addIntf(intf);
+			});
+			datas.put(url, data);
 		}
 		parseRoute(datas);
 	}
 
-	private void parseRoute(Map<Url, ZkData> datas) {
+	private void parseRoute(Map<Host, ZkData> datas) {
 		Map<String, Set<ServerMachine>> map = new HashMap<>();
-		for (Url url : datas.keySet()) {
+		for (Host url : datas.keySet()) {
 			Map<String, ServerMachine> ms = this.createServerMachine(url, datas.get(url));
 			for (String m : ms.keySet()) {
 				Set<ServerMachine> server = map.get(m);
@@ -68,17 +81,13 @@ public class ZkRouteParser {
 	 * @param data
 	 * @return
 	 */
-	public Map<String, ServerMachine> createServerMachine(Url url, ZkData data) {
+	public Map<String, ServerMachine> createServerMachine(Host url, ZkData data) {
 		Map<String, ServerMachine> servers = new HashMap<>();
-		int weight = data.getWeight() == null ? 5 : data.getWeight();
-		String method = data.getMethods();
-		if (method == null || method.isEmpty()) {
-			return servers;
-		}
-		for (String m : method.split(",")) {
+		int weight = data.weight > 0 ? data.weight : 5;
+		data.getIntfs().forEach(intf -> {
 			ServerMachine server = new ServerMachine(url, weight);
-			servers.put(m, server);
-		}
+			servers.put(intf.getIntf(), server);
+		});
 		return servers;
 	}
 }

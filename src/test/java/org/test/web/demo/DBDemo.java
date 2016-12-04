@@ -6,14 +6,14 @@ import java.util.List;
 import org.junit.Assert;
 import org.yx.bean.Box;
 import org.yx.db.Cached;
+import org.yx.db.DB;
 import org.yx.db.DBType;
 import org.yx.db.MemberUserDao;
-import org.yx.db.SqlSessionFactory;
 import org.yx.demo.member.DemoUser;
 import org.yx.exception.BizException;
 import org.yx.http.Web;
 import org.yx.log.Log;
-import org.yx.rpc.SOA;
+import org.yx.rpc.Soa;
 import org.yx.util.SeqUtil;
 
 /*
@@ -25,9 +25,6 @@ public class DBDemo {
 	@Cached
 	private MemberUserDao memberUserDao;
 
-	@Cached
-	private MemberUserDao dao;
-
 	@Box(dbName = "test", dbType = DBType.WRITE, embed = false)
 	public long insert(long id, boolean success) {
 		if (id == 0) {
@@ -37,7 +34,7 @@ public class DBDemo {
 		user.setAge(2343);
 		user.setId(id);
 		user.setName(success ? "成功插入" : "失败记录");
-		memberUserDao.insert(user);
+		DB.insert(user).execute();//等价于	memberUserDao.insert(user);
 		if (!success) {
 			BizException.throwException(3242, "故意出错");
 		}
@@ -45,7 +42,7 @@ public class DBDemo {
 	}
 
 	@Web
-	@SOA
+	@Soa
 	@Box(dbName = "test", dbType = DBType.WRITE)
 	public int add(List<DemoUser> users) {
 		long successId = this.insert(0, true);
@@ -61,22 +58,22 @@ public class DBDemo {
 			Log.printStack(e);
 		}
 		Assert.assertEquals(Long.valueOf(successId), memberUserDao.queryById(successId).getId());
-		Assert.assertNull(memberUserDao.queryById(failId));// insert的embed==false时
+		Assert.assertNull(memberUserDao.queryById(failId));
 		return count;
 	}
 
 	@Web
-	@Box(dbName = "test", dbType = DBType.WRITE)
+	@Box(dbName = "test")
 	public List<DemoUser> addAndGet(List<DemoUser> users) {
 		for (DemoUser user : users) {
 			memberUserDao.insert(user);
 		}
 		List<DemoUser> list = new ArrayList<DemoUser>();
 		for (DemoUser user : users) {
-			DemoUser user2 = memberUserDao.queryById(user.getId());
+			DemoUser user2 = DB.select().tableClass(DemoUser.class).byPrimaryId(user.getId()).queryOne();
+			Assert.assertEquals(memberUserDao.queryById(user.getId()), user2);
 			list.add(user2);
 		}
-		System.out.println(SqlSessionFactory.get("test").status());
 		return list;
 	}
 }

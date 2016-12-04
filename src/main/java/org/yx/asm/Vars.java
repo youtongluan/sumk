@@ -1,6 +1,6 @@
 package org.yx.asm;
 
-import org.springframework.asm.Opcodes;
+import org.objectweb.asm.Opcodes;
 
 public interface Vars {
 	int JVM_VERSION = Opcodes.V1_8;

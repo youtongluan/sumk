@@ -92,10 +92,25 @@ public final class Log {
 		return map.get(module);
 	}
 
-	private void show(String level, String msg, Object... args) {
-		for (Object arg : args) {
-			msg = msg.replaceFirst("\\{\\}", arg == null ? "null" : arg.toString());
+	protected String buildMessage(String msg, Object... args) {
+		if (msg == null) {
+			return msg;
 		}
+		String[] tmps = msg.split("\\{\\}", -1);
+		if (tmps.length < 2) {
+			return msg;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < tmps.length - 1; i++) {
+			sb.append(tmps[i]);
+			sb.append(args.length > i ? String.valueOf(args[i]) : "{}");
+		}
+		sb.append(tmps[tmps.length - 1]);
+		return sb.toString();
+	}
+
+	protected void show(String level, String msg, Object... args) {
+		msg = this.buildMessage(msg, args);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		System.out.println(format.format(new Date()) + " [" + Thread.currentThread().getName() + "] " + level + " "
 				+ shorter(name) + " - " + msg);
@@ -180,6 +195,13 @@ public final class Log {
 
 	public static void printStack(Throwable e) {
 		if (DEFAULT_LEVEL < ERROR) {
+			return;
+		}
+		e.printStackTrace();
+	}
+
+	public static void printStack(String module, Throwable e) {
+		if (getLevel(module) < ERROR) {
 			return;
 		}
 		e.printStackTrace();

@@ -15,29 +15,17 @@ Date: 2016-09-08 17:28:55
 
 SET FOREIGN_KEY_CHECKS=0;
 
--- ----------------------------
--- Table structure for `demo2`
--- ----------------------------
-DROP TABLE IF EXISTS `demo2`;
-CREATE TABLE `demo2` (
-  `id` decimal(12,0) NOT NULL DEFAULT '0',
-  `name` varchar(250) DEFAULT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
--- ----------------------------
--- Records of demo2
--- ----------------------------
 
 -- ----------------------------
 -- Table structure for `demouser`
 -- ----------------------------
 DROP TABLE IF EXISTS `demouser`;
 CREATE TABLE `demouser` (
-  `id` decimal(20,0) NOT NULL DEFAULT '0',
+  `id` bigint(20) NOT NULL DEFAULT '0',
   `name` varchar(255) DEFAULT NULL,
   `age` int(11) DEFAULT NULL,
-  `lastUpate` timestamp NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  `lastUpdate` timestamp NULL DEFAULT NULL,
+  `enable` tinyint(1) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

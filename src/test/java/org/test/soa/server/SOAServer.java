@@ -17,7 +17,6 @@ public class SOAServer {
 	@Test
 	public void test() throws InterruptedException {
 		startZKServer();
-		Log.setDefaultLevel(Log.TRACE);
 		try {
 			System.setProperty("nohttp", "true");
 			Bootstrap.main(null);

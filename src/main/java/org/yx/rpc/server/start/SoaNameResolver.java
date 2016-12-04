@@ -13,6 +13,6 @@ class SoaNameResolver {
 				return soaName;
 			}
 		}
-		return AppInfo.getAppId() + "." + clz.getSimpleName().toLowerCase() + "." + m.getName();
+		return AppInfo.getAppId() + "." + clz.getSimpleName().toLowerCase() + "." + m.getName().toLowerCase();
 	}
 }

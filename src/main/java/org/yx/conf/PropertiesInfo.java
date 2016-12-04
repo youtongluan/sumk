@@ -2,9 +2,12 @@ package org.yx.conf;
 
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Properties;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.yx.log.Log;
+import org.yx.util.CollectionUtils;
 
 public class PropertiesInfo implements FileHandler {
 
@@ -13,13 +16,13 @@ public class PropertiesInfo implements FileHandler {
 	public PropertiesInfo(String fileName) {
 		super();
 		this.fileName = fileName;
-		FileWatcher.inst.addHandle(this);
+		FileMonitor.inst.addHandle(this);
 	}
 
-	Properties pro = new Properties();
+	Map<String, String> pro = new HashMap<>();
 
 	public String get(String key) {
-		return pro.getProperty(key);
+		return pro.get(key);
 	}
 
 	@Override
@@ -34,9 +37,10 @@ public class PropertiesInfo implements FileHandler {
 
 	@Override
 	public void deal(InputStream in) throws Exception {
-		Properties temp = new Properties();
-		temp.load(in);
-		pro = temp;
+		if (in == null) {
+			return;
+		}
+		pro = Collections.unmodifiableMap(CollectionUtils.loadMap(in));
 	}
 
 }

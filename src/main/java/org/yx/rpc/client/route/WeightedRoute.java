@@ -6,7 +6,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.yx.rpc.Url;
+import org.yx.rpc.Host;
 
 public class WeightedRoute {
 	private volatile int currentIndex = -1;
@@ -44,7 +44,7 @@ public class WeightedRoute {
 		return w;
 	}
 
-	public Url getUrl() {
+	public Host getUrl() {
 		ServerMachine sm = this.GetServer();
 		if (sm == null) {
 			return null;
@@ -68,7 +68,7 @@ public class WeightedRoute {
 
 			int index = currentIndex % serverCount;
 			if (list.get(index).weight >= currentWeight) {
-				if (UrlChecker.instance().isDowned(list.get(index).getUrl())) {
+				if (HostChecker.instance().isDowned(list.get(index).getUrl())) {
 					continue;
 				}
 				return list.get(index);
@@ -83,7 +83,7 @@ public class WeightedRoute {
 		init(list);
 	}
 
-	public void removeServer(Url url) {
+	public void removeServer(Host url) {
 		List<ServerMachine> list = new ArrayList<>(serverList);
 		for (ServerMachine s : list) {
 			if (s.getUrl().equals(url)) {

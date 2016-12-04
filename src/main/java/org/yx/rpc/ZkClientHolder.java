@@ -13,7 +13,7 @@ import org.yx.util.GsonUtil;
 public final class ZkClientHolder {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
 	private static Charset defaultCharset;
-	public static final String SOA_ROOT = "/SOA_ROOT";
+	public static final String SOA_ROOT = "/SUMK_SOA";
 	static {
 		try {
 			defaultCharset = Charset.forName("UTF-8");
@@ -56,7 +56,7 @@ public final class ZkClientHolder {
 		if (zk != null) {
 			return zk;
 		}
-		synchronized (map) {
+		synchronized (ZkClientHolder.class) {
 			zk = map.get(url);
 			if (zk != null) {
 				return zk;

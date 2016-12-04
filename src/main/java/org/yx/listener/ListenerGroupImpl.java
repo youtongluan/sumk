@@ -1,14 +1,13 @@
 package org.yx.listener;
 
 import java.util.ArrayList;
-import java.util.EventObject;
 import java.util.List;
 
 import org.yx.log.Log;
 
-public class ListenerGroupImpl<T extends EventObject> implements ListenerGroup<T> {
+public class ListenerGroupImpl<T extends SumkEvent> implements ListenerGroup<T> {
 
-	private List<Listener<T>> listeners = new ArrayList<>();
+	protected List<Listener<T>> listeners = new ArrayList<>();
 
 	@Override
 	public Listener<T> removeListener(Listener<T> listener) {

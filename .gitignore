@@ -1,1 +1,8 @@
+/target/classes
+/target/test-classes
+/bin/
+/.settings
+/.classpath
+/.project
+/.gitignore
 /target/

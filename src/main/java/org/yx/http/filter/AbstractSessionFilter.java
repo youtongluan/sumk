@@ -12,12 +12,15 @@ import org.apache.commons.codec.binary.Base64;
 import org.yx.http.ErrorCode;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
+import org.yx.redis.Redis;
+import org.yx.redis.RedisConstants;
+import org.yx.redis.RedisPool;
 import org.yx.util.UUIDSeed;
 
 /**
  * 单节点使用
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public abstract class AbstractSessionFilter implements LoginServlet {
@@ -69,13 +72,27 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 		return UUIDSeed.random();
 	}
 
+	private synchronized void initSession() {
+		if (session != null) {
+			return;
+		}
+		Redis redis = RedisPool.getRedisExactly(RedisConstants.SESSION);
+		session = redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
+		if (LocalUserSession.class.isInstance(session)) {
+			Log.get("loginAction").info("use local session.");
+		}
+	}
+
 	@Override
 	public void init(ServletConfig config) {
-		session = new LocalUserSession();
+		initSession();
 	}
 
 	@Override
 	public UserSession userSession() {
+		if (session == null) {
+			initSession();
+		}
 		return session;
 	}
 

@@ -6,9 +6,9 @@ import java.io.UnsupportedEncodingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.util.StringUtils;
 import org.yx.conf.AppInfo;
 import org.yx.util.GsonUtil;
+import org.yx.util.StringUtils;
 
 public final class HttpUtil {
 	public static String charset(HttpServletRequest req) {

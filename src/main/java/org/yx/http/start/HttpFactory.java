@@ -41,7 +41,7 @@ class HttpFactory {
 			Upload upload = m.getAnnotation(Upload.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
 			if (HttpHolder.getHttpInfo(soaName) != null) {
-				Log.get("SYS.13").error(soaName + " already existed");
+				Log.get("SYS.http").error(soaName + " already existed");
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);

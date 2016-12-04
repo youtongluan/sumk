@@ -1,5 +1,8 @@
 package org.yx.util;
 
+import org.yx.common.Seq;
+import org.yx.common.SeqCounter;
+
 public class SeqUtil {
 	static Seq inst = new Seq();
 

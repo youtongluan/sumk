@@ -1,24 +1,24 @@
 package org.yx.asm;
 
-import static org.springframework.asm.Opcodes.ACC_ABSTRACT;
-import static org.springframework.asm.Opcodes.ACC_FINAL;
-import static org.springframework.asm.Opcodes.ACC_PRIVATE;
-import static org.springframework.asm.Opcodes.ACC_PUBLIC;
-import static org.springframework.asm.Opcodes.ACC_STATIC;
-import static org.springframework.asm.Opcodes.ALOAD;
-import static org.springframework.asm.Opcodes.INVOKESPECIAL;
-import static org.springframework.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ACC_ABSTRACT;
+import static org.objectweb.asm.Opcodes.ACC_FINAL;
+import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
+import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
+import static org.objectweb.asm.Opcodes.ACC_STATIC;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.reflect.Method;
 import java.util.Map;
 
-import org.springframework.asm.AnnotationVisitor;
-import org.springframework.asm.Attribute;
-import org.springframework.asm.ClassVisitor;
-import org.springframework.asm.FieldVisitor;
-import org.springframework.asm.MethodVisitor;
-import org.springframework.asm.Type;
-import org.springframework.asm.TypePath;
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
+import org.objectweb.asm.ClassVisitor;
+import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.TypePath;
 import org.yx.bean.Box;
 
 public class ProxyClassVistor extends ClassVisitor {

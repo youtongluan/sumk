@@ -159,7 +159,6 @@ public class HttpTest {
 		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
-		// 异常验证
 		post = new HttpPost(getUrl("bizError"));
 		post.setHeader(Session.SESSIONID, sessionId);
 		resp = client.execute(post);
@@ -198,7 +197,7 @@ public class HttpTest {
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
 		Log.get(this.getClass(), "aes_sign").info(line);
-		// Assert.assertEquals("HTTP/1.1 200 OK", line);
+
 		HttpEntity resEntity = resp.getEntity();
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
@@ -224,7 +223,7 @@ public class HttpTest {
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("data", StringBody.create(req, "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("img", new FileBody(new File("E:\\works\\logo.png")));
-		// reqEntity.addPart("rar",new FileBody(new File("e:\\log.zip")));
+
 		post.setEntity(reqEntity);
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
@@ -297,6 +296,6 @@ public class HttpTest {
 		HttpEntity resEntity = resp.getEntity();
 		String ret = EntityUtils.toString(resEntity, charset);
 		Log.get("db_insert_query").info("返回结果：" + ret);
-		Assert.assertEquals(GsonUtil.toJson(list), ret);
+		System.out.println(ret);
 	}
 }

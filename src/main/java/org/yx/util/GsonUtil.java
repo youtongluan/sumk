@@ -1,21 +1,20 @@
 package org.yx.util;
 
-import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.yx.common.DateTimeTypeAdapter;
+import org.yx.db.dao.Pojo;
+import org.yx.log.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.TypeAdapter;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonToken;
-import com.google.gson.stream.JsonWriter;
 
 public class GsonUtil {
 
 	private static Gson createGson() {
+
 		return new GsonBuilder().disableHtmlEscaping().registerTypeAdapter(Date.class, new DateTimeTypeAdapter())
 				.create();
 	}
@@ -59,63 +58,27 @@ public class GsonUtil {
 		return getGson().fromJson(reader, clz);
 	}
 
+	/**
+	 * 不能用于集合、数组
+	 * 
+	 * @param source
+	 * @return
+	 */
 	public static Object copyObject(Object source) {
 		if (source == null) {
 			return null;
 		}
-		String json = toJson(source);
-		return fromJson(json, source.getClass());
-	}
-
-}
-
-class DateTimeTypeAdapter extends TypeAdapter<Date> {
-
-	@Override
-	public Date read(JsonReader in) throws IOException {
-		if (in.peek() == JsonToken.NULL) {
-			in.nextNull();
-			return null;
-		}
-		return deserializeToDate(in.nextString());
-	}
-
-	private Date deserializeToDate(final String json) throws IOException {
-		if (json == null) {
-			return null;
-		}
-
-		if (json.contains(":")) {
-			SimpleDateFormat format = null;
-			if (json.length() == 19) {
-				format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-			} else if (json.length() == 23) {
-				format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-			}
-			if (format != null) {
-				try {
-					return format.parse(json);
-				} catch (Exception e) {
+		if (Pojo.class.isInstance(source)) {
+			try {
+				return ((Pojo) source).clone();
+			} catch (CloneNotSupportedException e) {
+				if (Log.isTraceEnable("gson")) {
+					Log.printStack(e);
 				}
 			}
-			throw new IOException(json + " cannot convert to Date");
 		}
-
-		String num = json;
-		if (num.contains(".")) {
-
-			num = num.substring(0, num.indexOf("."));
-		}
-		return new Date(Long.parseLong(num));
-	}
-
-	@Override
-	public void write(JsonWriter out, Date value) throws IOException {
-		if (value == null) {
-			out.nullValue();
-			return;
-		}
-		out.value(value.getTime());
+		String json = toJson(source);
+		return fromJson(json, source.getClass());
 	}
 
 }

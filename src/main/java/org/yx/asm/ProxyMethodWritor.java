@@ -1,40 +1,39 @@
 package org.yx.asm;
 
-import static org.springframework.asm.Opcodes.ALOAD;
-import static org.springframework.asm.Opcodes.ARETURN;
-import static org.springframework.asm.Opcodes.ASTORE;
-import static org.springframework.asm.Opcodes.ATHROW;
-import static org.springframework.asm.Opcodes.DLOAD;
-import static org.springframework.asm.Opcodes.DRETURN;
-import static org.springframework.asm.Opcodes.DSTORE;
-import static org.springframework.asm.Opcodes.DUP;
-import static org.springframework.asm.Opcodes.FLOAD;
-import static org.springframework.asm.Opcodes.FRETURN;
-import static org.springframework.asm.Opcodes.FSTORE;
-import static org.springframework.asm.Opcodes.GETSTATIC;
-import static org.springframework.asm.Opcodes.GOTO;
-import static org.springframework.asm.Opcodes.ICONST_0;
-import static org.springframework.asm.Opcodes.ICONST_1;
-import static org.springframework.asm.Opcodes.ILOAD;
-import static org.springframework.asm.Opcodes.INVOKESPECIAL;
-import static org.springframework.asm.Opcodes.INVOKEVIRTUAL;
-import static org.springframework.asm.Opcodes.IRETURN;
-import static org.springframework.asm.Opcodes.ISTORE;
-import static org.springframework.asm.Opcodes.LLOAD;
-import static org.springframework.asm.Opcodes.LRETURN;
-import static org.springframework.asm.Opcodes.LSTORE;
-import static org.springframework.asm.Opcodes.NEW;
-import static org.springframework.asm.Opcodes.RETURN;
+import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
+import static org.objectweb.asm.Opcodes.ASTORE;
+import static org.objectweb.asm.Opcodes.ATHROW;
+import static org.objectweb.asm.Opcodes.DLOAD;
+import static org.objectweb.asm.Opcodes.DRETURN;
+import static org.objectweb.asm.Opcodes.DSTORE;
+import static org.objectweb.asm.Opcodes.DUP;
+import static org.objectweb.asm.Opcodes.FLOAD;
+import static org.objectweb.asm.Opcodes.FRETURN;
+import static org.objectweb.asm.Opcodes.FSTORE;
+import static org.objectweb.asm.Opcodes.GETSTATIC;
+import static org.objectweb.asm.Opcodes.GOTO;
+import static org.objectweb.asm.Opcodes.ICONST_0;
+import static org.objectweb.asm.Opcodes.ICONST_1;
+import static org.objectweb.asm.Opcodes.ILOAD;
+import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
+import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
+import static org.objectweb.asm.Opcodes.IRETURN;
+import static org.objectweb.asm.Opcodes.ISTORE;
+import static org.objectweb.asm.Opcodes.LLOAD;
+import static org.objectweb.asm.Opcodes.LRETURN;
+import static org.objectweb.asm.Opcodes.LSTORE;
+import static org.objectweb.asm.Opcodes.NEW;
+import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.asm.Label;
-import org.springframework.asm.MethodVisitor;
-import org.springframework.asm.Opcodes;
-import org.springframework.asm.Type;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.yx.bean.Box;
-import org.yx.common.AopExcutor;
 import org.yx.conf.AppInfo;
 
 public class ProxyMethodWritor {
@@ -116,7 +115,7 @@ public class ProxyMethodWritor {
 		return size;
 	}
 
-	private static final String AOPEXCUTOR = Type.getInternalName(AopExcutor.class);
+	private static final String AOPEXCUTOR = "org/yx/common/AopExcutor";
 
 	public static void write(MethodVisitor mv, AsmMethod asmMethod) {
 		if (asmMethod.desc.endsWith(")V")) {
@@ -273,12 +272,11 @@ public class ProxyMethodWritor {
 		mv.visitInsn(ATHROW);
 		mv.visitLabel(l5);
 		mv.visitFrame(Opcodes.F_SAME, 0, null, 0, null);
-		mv.visitTypeInsn(NEW, "org/yx/exception/SystemException");
+		mv.visitTypeInsn(NEW, "org/yx/exception/SumkException");
 		mv.visitInsn(DUP);
 		mv.visitLdcInsn(new Integer(-364533425));
 		mv.visitLdcInsn("you are locky to see me^_^");
-		mv.visitMethodInsn(INVOKESPECIAL, "org/yx/exception/SystemException", "<init>", "(ILjava/lang/String;)V",
-				false);
+		mv.visitMethodInsn(INVOKESPECIAL, "org/yx/exception/SumkException", "<init>", "(ILjava/lang/String;)V", false);
 		mv.visitInsn(ATHROW);
 		mv.visitMaxs(Math.max(4, localVariableIndex + 1), 4 + localVariableIndex);
 		mv.visitEnd();

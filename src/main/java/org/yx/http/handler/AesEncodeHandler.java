@@ -6,7 +6,7 @@ import org.yx.util.secury.EncryUtil;
 /**
  * base64解码
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public class AesEncodeHandler implements HttpHandler {

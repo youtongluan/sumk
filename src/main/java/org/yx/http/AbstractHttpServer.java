@@ -89,6 +89,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				Log.printStack(e);
 			}
 		} finally {
+			HttpHeadersHolder.remove();
 		}
 	}
 

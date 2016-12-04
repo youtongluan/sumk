@@ -6,14 +6,14 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.yx.common.BizExcutor;
-import org.yx.exception.SystemException;
+import org.yx.exception.SumkException;
 import org.yx.rpc.server.intf.ActionContext;
 import org.yx.util.GsonUtil;
 
 /**
  * http服务的信息
  * 
- * @author youtl
+ * @author 游夏
  *
  */
 public final class HttpInfo {
@@ -87,7 +87,7 @@ public final class HttpInfo {
 	 * @throws IllegalArgumentException
 	 * @throws IllegalAccessException
 	 */
-	public Object invokeByJsonArg(String args) throws Exception {
+	public Object invokeByJsonArg(String args) throws Throwable {
 		if (getArgClz() == null || argTypes == null || argTypes.length == 0) {
 			return BizExcutor.exec(m, obj, null);
 		}
@@ -118,7 +118,7 @@ public final class HttpInfo {
 	 * @throws IllegalArgumentException
 	 * @throws InvocationTargetException
 	 */
-	public Object invokeByOrder(String... args) throws Exception {
+	public Object invokeByOrder(String... args) throws Throwable {
 		if (argTypes == null || argTypes.length == 0) {
 			return BizExcutor.exec(m, obj, null);
 		}
@@ -128,10 +128,10 @@ public final class HttpInfo {
 			return null;
 		}
 		if (args == null || args.length == 0) {
-			SystemException.throwException(12012, m.getName() + "的参数不能为空");
+			SumkException.throwException(12012, m.getName() + "的参数不能为空");
 		}
 		if (args.length != argTypes.length) {
-			SystemException.throwException(12013,
+			SumkException.throwException(12013,
 					m.getName() + "需要传递的参数有" + argTypes.length + "个，实际传递的是" + args.length + "个");
 		}
 		for (int i = 0, k = 0; i < params.length; i++) {

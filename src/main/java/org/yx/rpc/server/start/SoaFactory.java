@@ -10,7 +10,7 @@ import org.yx.common.MethodInfo;
 import org.yx.log.Log;
 import org.yx.rpc.ActionHolder;
 import org.yx.rpc.ActionInfo;
-import org.yx.rpc.SOA;
+import org.yx.rpc.Soa;
 
 class SoaFactory {
 	private SoaNameResolver nameResolver = new SoaNameResolver();
@@ -25,7 +25,7 @@ class SoaFactory {
 			if (AsmUtils.notPublicOnly(m.getModifiers())) {
 				continue;
 			}
-			if (m.getAnnotation(SOA.class) != null) {
+			if (m.getAnnotation(Soa.class) != null) {
 				actMethods.add(m);
 			}
 		}
@@ -37,7 +37,7 @@ class SoaFactory {
 		Class<?> proxyClz = obj.getClass();
 		String classFullName = clz.getName();
 		for (final Method m : actMethods) {
-			SOA act = m.getAnnotation(SOA.class);
+			Soa act = m.getAnnotation(Soa.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
 			if (ActionHolder.getActionInfo(soaName) != null) {
 				Log.get("SYS.soa").error(soaName + " already existed");
