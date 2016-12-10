@@ -25,16 +25,16 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 <BR>
 
 ###sumk-core与传统Spring框架的对应关系<BR>
-我将列出sumk-core中元素与Spirng的对应关系，让大家更易入手<br>
+我将列出sumk-core中元素与Spirng的对应关系，让大家更易入手<br><BR>
 
-sumk的元素 | spring的元素 | 作用<BR>
-:----- |:----- |: -----<BR>
-@Bean|@Component|声明一个bean<BR>
-@Inject|@Autowired|注入<BR>
-@Box|@Transactional<BR>
-IOCWatcher系列接口|spirng的Aware系列接口|接收IOC框架回调<BR>
-IOC.get()|SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean<BR>
-
+sumk的元素 | spring的元素 | 作用
+-|-|-
+@Bean|@Component|声明一个bean
+@Inject|@Autowired|注入
+@Box|@Transactional|数据库事务
+IOCWatcher系列接口|spirng的Aware系列接口|接收IOC框架回调
+IOC.get()|SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean
+<BR>
 
 ###环境搭建
 * 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/test/db.ini中
