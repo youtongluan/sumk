@@ -26,13 +26,14 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 
 ###sumk-core与传统Spring框架的对应关系<BR>
 我将列出sumk-core中元素与Spirng的对应关系，让大家更易入手<br>
-sumk的元素 | spring的元素 | 作用
-:----- |:----- |: -----
-@Bean|@Component|声明一个bean
-@Inject|@Autowired|注入
-@Box|@Transactional
-IOCWatcher系列接口|spirng的Aware系列接口|接收IOC框架回调
-IOC.get()|SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean
+
+sumk的元素 | spring的元素 | 作用<BR>
+:----- |:----- |: -----<BR>
+@Bean|@Component|声明一个bean<BR>
+@Inject|@Autowired|注入<BR>
+@Box|@Transactional<BR>
+IOCWatcher系列接口|spirng的Aware系列接口|接收IOC框架回调<BR>
+IOC.get()|SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean<BR>
 
 
 ###环境搭建
