@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.conf.AppInfo;
-import org.yx.db.dao.ColumnType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
@@ -35,6 +34,21 @@ public class Update extends AbstractSqlBuilder<Integer> {
 		return AppInfo.modifyByColumnType;
 	}
 
+	/**
+	 * 默认是根据数据库主键更新
+	 * 
+	 * @return
+	 */
+	public Update byDBID() {
+		this._byType = ColumnType.ID_DB;
+		return this;
+	}
+
+	/**
+	 * 根据缓存id更新数据。默认是根据数据库主键更新
+	 * 
+	 * @return
+	 */
 	public Update byCacheID() {
 		this._byType = ColumnType.ID_CACHE;
 		return this;
@@ -99,6 +113,9 @@ public class Update extends AbstractSqlBuilder<Integer> {
 				continue;
 			}
 			if (value == null && !withnull) {
+				continue;
+			}
+			if (fm.accept(ColumnType.ID_DB)) {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");

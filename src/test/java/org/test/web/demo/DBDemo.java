@@ -34,7 +34,7 @@ public class DBDemo {
 		user.setAge(2343);
 		user.setId(id);
 		user.setName(success ? "成功插入" : "失败记录");
-		DB.insert(user).execute();//等价于	memberUserDao.insert(user);
+		DB.insert(user).execute();// 等价于 memberUserDao.insert(user);
 		if (!success) {
 			BizException.throwException(3242, "故意出错");
 		}

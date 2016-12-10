@@ -21,18 +21,18 @@ public class RpcTest {
 	@Test
 	public void call() {
 		Rpc.init();
-		List<String> names=Arrays.asList("游夏","游侠");
-		String echo="how are you";
+		List<String> names = Arrays.asList("游夏", "游侠");
+		String echo = "how are you";
 		String ret = Rpc.call(AppInfo.getAppId() + ".echoaction.echo", echo, names);
 		System.out.println("result:" + ret);
 		Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
 	}
-	
+
 	@Test
 	public void callInJson() {
 		Rpc.init();
-		List<String> names=Arrays.asList("游夏","游侠");
-		String echo="how are you";
+		List<String> names = Arrays.asList("游夏", "游侠");
+		String echo = "how are you";
 		Map<String, Object> map = new HashMap<>();
 		map.put("echo", echo);
 		map.put("names", names);
@@ -45,7 +45,7 @@ public class RpcTest {
 	@Test
 	public void db_insert() throws IOException {
 		Rpc.init();
-		for(int j=0;j<5;j++){
+		for (int j = 0; j < 5; j++) {
 			List<DemoUser> list = new ArrayList<DemoUser>();
 			for (int i = 0; i < 10; i++) {
 				DemoUser obj = new DemoUser();

@@ -5,9 +5,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yx.conf.DBConfigUtils;
 import org.yx.conf.DBConfig;
 import org.yx.db.DBType;
-import org.yx.sumk.batis.ResUtils;
 
 public class DataSourceFactory {
 	/**
@@ -54,7 +54,7 @@ public class DataSourceFactory {
 	}
 
 	static Map<String, Map<String, String>> parse(String db) throws Exception {
-		return ResUtils.parseIni(ResUtils.dbResource(db).dbIni());
+		return DBConfigUtils.parseIni(DBConfigUtils.openConfig(db));
 	}
 
 }

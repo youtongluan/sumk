@@ -23,7 +23,7 @@ public final class Rpc {
 	private static boolean strated;
 
 	public static synchronized void init() {
-		if(strated){
+		if (strated) {
 			return;
 		}
 		try {
@@ -31,7 +31,7 @@ public final class Rpc {
 			String zkUrl = AppInfo.getZKUrl();
 			Log.get("SYS.2").info("zkUrl:{}", zkUrl);
 			new ZkRouteParser().parse(zkUrl);
-			strated=true;
+			strated = true;
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}

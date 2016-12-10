@@ -33,7 +33,6 @@ public class AopExcutor {
 	public void rollback(Throwable e) {
 		Log.printStack(e);
 		if (dbCtx != null) {
-			Log.get(AopExcutor.class).trace("rollback {}", dbCtx.getDbName());
 			try {
 				dbCtx.rollback();
 			} catch (SQLException e1) {
@@ -50,7 +49,6 @@ public class AopExcutor {
 		if (dbCtx == null) {
 			return;
 		}
-		Log.get(AopExcutor.class).trace("commit {}", dbCtx.getDbName());
 		try {
 			this.dbCtx.commit();
 		} catch (SQLException e) {
@@ -63,7 +61,6 @@ public class AopExcutor {
 		if (dbCtx == null) {
 			return;
 		}
-		Log.get(AopExcutor.class).trace("close {}", dbCtx.getDbName());
 		try {
 			dbCtx.close();
 		} catch (Exception e) {

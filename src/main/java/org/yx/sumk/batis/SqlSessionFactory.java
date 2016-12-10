@@ -86,7 +86,7 @@ public class SqlSessionFactory {
 
 	void init() throws Exception {
 		configuration = new Configuration();
-		Map<String, InputStream> sqls = ResUtils.dbResource(db).sqlXmls();
+		Map<String, InputStream> sqls = MybatisSqlXmlUtils.openInputs(db);
 		Set<Map.Entry<String, InputStream>> entries = sqls.entrySet();
 		for (Map.Entry<String, InputStream> entry : entries) {
 			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(entry.getValue(), configuration, entry.getKey(),

@@ -3,8 +3,6 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.yx.db.dao.ColumnType;
-
 public class ColumnMeta implements Comparable<ColumnMeta> {
 
 	private Field field;

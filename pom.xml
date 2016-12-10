@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.6.0</version>
+	<version>1.6.1</version>
 
 	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>

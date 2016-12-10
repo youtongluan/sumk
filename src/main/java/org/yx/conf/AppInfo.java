@@ -2,11 +2,13 @@ package org.yx.conf;
 
 import java.io.InputStream;
 
-import org.yx.db.dao.ColumnType;
+import org.yx.db.sql.ColumnType;
 import org.yx.log.Log;
 import org.yx.rpc.LocalhostUtil;
 
 public class AppInfo {
+	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
+	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 	private static String appId = "UNKOWN";
 
 	public static int httpSessionTimeout = 3600;

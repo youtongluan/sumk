@@ -1,4 +1,4 @@
-package org.yx.db.dao;
+package org.yx.db.sql;
 
 public enum ColumnType {
 	NORMAL(0), ID_DB(1), ID_CACHE(2), ID_BOTH(3);

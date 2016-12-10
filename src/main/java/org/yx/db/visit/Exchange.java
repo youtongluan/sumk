@@ -50,7 +50,7 @@ public class Exchange {
 	 */
 	public void findFromCache(PojoMeta pm) {
 		List<Map<String, Object>> origin = this.leftIn;
-		if (origin == null || origin.isEmpty()||RedisPool.defaultRedis()==null) {
+		if (origin == null || origin.isEmpty() || RedisPool.defaultRedis() == null) {
 			return;
 		}
 		try {

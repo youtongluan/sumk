@@ -6,7 +6,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yx.db.dao.ColumnType;
+import org.yx.db.sql.ColumnType;
 
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)

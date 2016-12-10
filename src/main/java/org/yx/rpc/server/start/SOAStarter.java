@@ -61,7 +61,8 @@ public class SOAStarter implements ServerStarter {
 	}
 
 	private void startServer(String ip, int port) throws Exception {
-		ServerListener server=new ServerListener(ip,port,IOC.get(ReqHandlerFactorysBean.class).create());
+
+		ServerListener server = new ServerListener(ip, port, IOC.get(ReqHandlerFactorysBean.class).create());
 		Thread t = new Thread(server, "server-listener");
 		t.setDaemon(true);
 		t.start();
@@ -74,6 +75,7 @@ public class SOAStarter implements ServerStarter {
 			sj.add(ZKConst.METHODS + "=" + String.join(",", methods.toArray(new String[methods.size()])));
 		}
 		sj.add(ZKConst.FEATURE + "=" + Profile.featureInHex());
+		sj.add(ZKConst.START + "=" + System.currentTimeMillis());
 		return sj.toString();
 	}
 }

@@ -2,8 +2,8 @@ package org.yx.demo.member;
 
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.Table;
-import org.yx.db.dao.ColumnType;
 import org.yx.db.dao.Pojo;
+import org.yx.db.sql.ColumnType;
 
 @Table
 public class Multikey extends Pojo {
@@ -98,6 +98,5 @@ public class Multikey extends Pojo {
 			return false;
 		return true;
 	}
-	
-	
+
 }

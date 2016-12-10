@@ -18,8 +18,8 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 	@Override
 	public Integer visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
-		if (Log.get("SQL").isEnable(Log.DEBUG)) {
-			Log.get("SQL").debug(maped);
+		if (Log.get("sumk.SQL.raw").isEnable(Log.ON)) {
+			Log.get("sumk.SQL.raw").trace(maped);
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -29,8 +29,8 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
-		if (Log.get("SQL").isEnable(Log.ON)) {
-			Log.get("SQL").trace(statement);
+		if (Log.get("sumk.SQL").isEnable(Log.DEBUG)) {
+			Log.get("sumk.SQL").debug(" <== {}", statement);
 		}
 		int ret = statement.executeUpdate();
 		EventLane.pubuish(conn, maped.getEvent());

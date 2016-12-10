@@ -1,11 +1,14 @@
 package org.yx.bean;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.bean.watcher.ContextWatcher;
+import org.yx.bean.watcher.IOCWatcher;
 import org.yx.bean.watcher.Scaned;
 import org.yx.db.Cached;
 import org.yx.exception.SumkException;
@@ -88,11 +91,21 @@ public final class BeanPublisher {
 	@SuppressWarnings("rawtypes")
 	private static void autoWiredAll() {
 		BeanPool pool = InnerIOC.pool;
-		Collection<BeanWrapper> beanwrapers = pool.allBeanWrapper();
+		Map<Object, BeanWrapper> beanMap = pool.allBeans();
+		Collection<BeanWrapper> beanwrapers = beanMap.values();
+		Collection<Object> beans = beanMap.keySet();
+		List<IOCWatcher> watchers = new ArrayList<>(128);
+		beans.forEach(b -> {
+			if (IOCWatcher.class.isInstance(b)) {
+				watchers.add((IOCWatcher) b);
+			}
+		});
+		;
+		watchers.sort(null);
 
-		pool.watchers.stream().filter(Scaned.class::isInstance).forEach(w -> ((Scaned) w).afterScaned());
-		injectProperties(pool.allBeans());
-		pool.watchers.stream().filter(BeanWatcher.class::isInstance).forEach(w -> {
+		watchers.stream().filter(Scaned.class::isInstance).forEach(w -> ((Scaned) w).afterScaned());
+		injectProperties(beans);
+		watchers.stream().filter(BeanWatcher.class::isInstance).forEach(w -> {
 			for (BeanWrapper bw : beanwrapers) {
 				BeanWatcher watcher = (BeanWatcher) w;
 
@@ -103,7 +116,7 @@ public final class BeanPublisher {
 				watcher.beanPost(bw);
 			}
 		});
-		pool.watchers.stream().filter(ContextWatcher.class::isInstance)
+		watchers.stream().filter(ContextWatcher.class::isInstance)
 				.forEach(w -> ((ContextWatcher) w).contextInitialized());
 	}
 
@@ -111,7 +124,7 @@ public final class BeanPublisher {
 
 		beans.forEach(bean -> {
 			Class<?> tempClz = bean.getClass();
-			while (tempClz != null && (!tempClz.equals(Object.class))) {
+			while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
 				Field[] fs = tempClz.getDeclaredFields();
 				for (Field f : fs) {

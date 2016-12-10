@@ -1,4 +1,4 @@
-package org.yx.sumk.batis;
+package org.yx.conf;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.conf.AppInfo;
+import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -21,16 +21,15 @@ import org.yx.util.Assert;
  * @author 游夏
  *
  */
-public final class ResUtils {
+public final class DBConfigUtils {
 
-	public static DBResource dbResource(String db) throws Exception {
-		String resourceFactory = AppInfo.get("sumk.db.resource.factory." + db, "DBFileFactory");
-		resourceFactory = "org.yx.sumk.batis." + resourceFactory;
-		Class<?> factoryClz = ResUtils.class.getClassLoader().loadClass(resourceFactory);
-		Assert.isTrue(DBResourceFactory.class.isAssignableFrom(factoryClz),
-				resourceFactory + " should extend from DBResourceFactory");
-		DBResourceFactory factory = (DBResourceFactory) factoryClz.newInstance();
-		return factory.create(db);
+	public static InputStream openConfig(String db) throws Exception {
+		String resourceFactory = AppInfo.get("sumk.db.conf.factory." + db, LocalDBResourceFactory.class.getName());
+		Class<?> factoryClz = Loader.loadClass(resourceFactory);
+		Assert.isTrue(SingleResourceFactory.class.isAssignableFrom(factoryClz),
+				resourceFactory + " should extend from SingleResourceFactory");
+		SingleResourceFactory factory = (SingleResourceFactory) factoryClz.newInstance();
+		return factory.openInput(db);
 	}
 
 	public static Map<String, Map<String, String>> parseIni(String filename) throws FileNotFoundException {

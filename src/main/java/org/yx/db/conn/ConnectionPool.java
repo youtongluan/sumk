@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.db.DBType;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
@@ -84,12 +85,15 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.getWriteConnection();
 		}
 		if (this.dbType == DBType.READONLY) {
+			if (type == DBType.WRITE) {
+				SumkException.throwException(5639234, "can not open write connection in readonly context");
+			}
 			return this.getReadConnection();
 		}
-		return this._connection(type);
+		return this.connectionByUser(type);
 	}
 
-	private Connection _connection(DBType type) {
+	private Connection connectionByUser(DBType type) {
 		if (type == DBType.ANY) {
 			if (this.readConn != null) {
 				return this.readConn;
@@ -111,6 +115,7 @@ public final class ConnectionPool implements AutoCloseable {
 		ConnectionFactory factory = ConnectionFactory.get(dbName);
 		Connection conn = factory.getConnection(DBType.READONLY, this.writeConn);
 		this.readConn = conn;
+		Log.get("sumk.conn.open").trace("open read connection:{}", conn);
 		return conn;
 	}
 
@@ -119,9 +124,10 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.writeConn;
 		}
 		ConnectionFactory factory = ConnectionFactory.get(dbName);
-		Connection session = factory.getConnection(DBType.WRITE, null);
-		this.writeConn = session;
-		return session;
+		Connection conn = factory.getConnection(DBType.WRITE, null);
+		this.writeConn = conn;
+		Log.get("sumk.conn.open").trace("open write connection:{}", conn);
+		return conn;
 	}
 
 	/**
@@ -131,17 +137,19 @@ public final class ConnectionPool implements AutoCloseable {
 	 * @throws SQLException
 	 */
 	public Connection getDefaultconnection() {
-		return this._connection(this.dbType);
+		return this.connectionByUser(this.dbType);
 	}
 
 	public void commit() throws SQLException {
 		if (this.writeConn != null) {
+			Log.get("sumk.conn").trace("commit {}", this.dbName);
 			this.writeConn.commit();
 		}
 	}
 
 	public void rollback() throws SQLException {
 		if (this.writeConn != null) {
+			Log.get("sumk.conn").trace("rollback {}", this.dbName);
 			this.writeConn.rollback();
 		}
 	}
@@ -150,6 +158,7 @@ public final class ConnectionPool implements AutoCloseable {
 	public void close() throws Exception {
 		if (this.writeConn != null) {
 			try {
+				Log.get("sumk.conn.close").trace("close write connection:{}", this.writeConn);
 				this.writeConn.close();
 			} catch (Exception e) {
 				Log.printStack(e);
@@ -158,6 +167,7 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 		if (this.readConn != null) {
 			try {
+				Log.get("sumk.conn.close").trace("close read connection:{}", this.readConn);
 				this.readConn.close();
 			} catch (Exception e) {
 				Log.printStack(e);
@@ -167,7 +177,7 @@ public final class ConnectionPool implements AutoCloseable {
 		List<ConnectionPool> list = connectionHolder.get();
 		int size = list.size();
 		list.remove(this);
-		Log.get(this.getClass()).trace("Close session context, from size {} to {}", size, list.size());
+		Log.get("sumk.conn").trace("Close connection context [{}], from size {} to {}", this.dbName, size, list.size());
 	}
 
 	public String getDbName() {

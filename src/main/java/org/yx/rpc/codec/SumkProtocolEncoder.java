@@ -43,7 +43,7 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 	 * 
 	 * @param buffer
 	 * @param prefixLength
-	 * @throws ProtocolEncoderException 
+	 * @throws ProtocolEncoderException
 	 */
 	private void putProtocol(int code, IoBuffer buffer, int prefixLength) throws ProtocolEncoderException {
 		switch (prefixLength) {
@@ -64,7 +64,8 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		}
 	}
 
-	private void encodeReq(IoSession session, Req req, ProtocolEncoderOutput out) throws CharacterCodingException, ProtocolEncoderException {
+	private void encodeReq(IoSession session, Req req, ProtocolEncoderOutput out)
+			throws CharacterCodingException, ProtocolEncoderException {
 		String jsonedArg = req.getJsonedParam();
 		String[] params = req.getParamArray();
 		req.clearParams();
@@ -89,7 +90,7 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		int size = message.length();
 		int prefixLength = size <= (Protocols.MAX_ONE / 3) ? 1 : size <= (Protocols.MAX_TWO / 3) ? 2 : 4;
 
-		IoBuffer buffer = IoBuffer.allocate(size + 10).setAutoExpand(true);
+		IoBuffer buffer = IoBuffer.allocate((int) (size * 1.2) + 10).setAutoExpand(true);
 		putProtocol(code, buffer, prefixLength);
 
 		buffer.putPrefixedString(message, prefixLength, charset.newEncoder());

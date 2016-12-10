@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.yx.asm.AsmUtils;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.Table;
-import org.yx.db.dao.ColumnType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.StringUtils;

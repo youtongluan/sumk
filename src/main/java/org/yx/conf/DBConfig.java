@@ -29,7 +29,7 @@ public class DBConfig {
 		properties.put("maxWaitMillis", "10000");
 		properties.put("testOnBorrow", "false");
 		properties.put("testOnReturn", "false");
-		properties.put("testWhileIdle", "false");
+		properties.put("testWhileIdle", "true");
 		properties.put("removeAbandonedOnBorrow", "false");
 		properties.put("removeAbandonedOnMaintenance", "true");
 		properties.put("removeAbandonedTimeout", "30");
@@ -39,9 +39,6 @@ public class DBConfig {
 		properties.put("logExpiredConnections", "false");
 		properties.put("poolPreparedStatements", "false");
 		properties.put("defaultAutoCommit", "false");
-
-		properties.put("enableAutoCommitOnReturn", "false");
-		properties.put("rollbackOnReturn", "true");
 	}
 
 	public String getProperty(String name) {

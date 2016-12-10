@@ -12,29 +12,28 @@ import org.yx.orm.MultikeyDao;
 public class MultiPrimaryTest {
 
 	private MultikeyDao dao;
-	
+
 	@Before
 	public void before() {
 		Log.setDefaultLevel(Log.DEBUG);
-		System.setProperty("nosoa","true");
-		System.setProperty("nohttp","true");
+		System.setProperty("nosoa", "true");
+		System.setProperty("nohttp", "true");
 		Bootstrap.main(null);
-		dao=IOC.get(MultikeyDao.class);
+		dao = IOC.get(MultikeyDao.class);
 	}
-	
-	
+
 	@Test
 	public void crud() {
-		Multikey obj=dao.insert(null);
-		Assert.assertEquals(obj,dao.query(obj.getId1(),obj.getId2()));
-		dao.fullUpate(obj.getId1(),obj.getId2());
-		Multikey real=new Multikey();
+		Multikey obj = dao.insert(null);
+		Assert.assertEquals(obj, dao.query(obj.getId1(), obj.getId2()));
+		dao.fullUpate(obj.getId1(), obj.getId2());
+		Multikey real = new Multikey();
 		real.setId1(obj.getId1()).setId2(obj.getId2());
 		real.setName("全部更新，除名字外都清空");
-		Assert.assertEquals(real,dao.query(obj.getId1(),obj.getId2()));
-		
-		Assert.assertEquals(1,dao.delete(real));
-		Assert.assertNull(dao.query(obj.getId1(),obj.getId2()));
+		Assert.assertEquals(real, dao.query(obj.getId1(), obj.getId2()));
+
+		Assert.assertEquals(1, dao.delete(real));
+		Assert.assertNull(dao.query(obj.getId1(), obj.getId2()));
 	}
 
 }

@@ -46,8 +46,8 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder, SqlAcceptor<T
 			return;
 		}
 		this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass());
-		if(this.pojoMeta==null){
-			SumkException.throwException(3654, src.getClass()+" does not config as a table");
+		if (this.pojoMeta == null) {
+			SumkException.throwException(3654, src.getClass() + " does not config as a table");
 		}
 		try {
 			this.in.add(this.pojoMeta.populateByFieldName(src, withnull));

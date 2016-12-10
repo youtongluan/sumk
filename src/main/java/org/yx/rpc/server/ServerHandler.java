@@ -52,7 +52,7 @@ public class ServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		Log.get("SYS.54").trace("server receive:{}", message);
+
 		try {
 			for (RequestHandler h : handlers) {
 				if (h.accept(message)) {

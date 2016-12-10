@@ -26,8 +26,8 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 	@Override
 	public List<Map<String, Object>> visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
-		if (Log.get("SQL").isEnable(Log.DEBUG)) {
-			Log.get("SQL").debug(maped);
+		if (Log.get("sumk.SQL.raw").isEnable(Log.ON)) {
+			Log.get("sumk.SQL.raw").trace(maped);
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.ANY);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -37,8 +37,8 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
-		if (Log.get("SQL").isEnable(Log.ON)) {
-			Log.get("SQL").trace(statement);
+		if (Log.get("sumk.SQL").isEnable(Log.DEBUG)) {
+			Log.get("sumk.SQL").debug(" ==> {}", statement);
 		}
 		ResultSet ret = statement.executeQuery();
 		PojoMeta pm = null;
@@ -77,6 +77,7 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 			}
 			list.add(rowData);
 		}
+		rs.close();
 		return list;
 	}
 }

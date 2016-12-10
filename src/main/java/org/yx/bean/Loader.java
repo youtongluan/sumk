@@ -13,4 +13,6 @@ public class Loader {
 	public static InputStream getResourceAsStream(String name) {
 		return Loader.class.getClassLoader().getResourceAsStream(name.replace('.', '/'));
 	}
+
+	public static final String JAVA_PRE = "java.";
 }

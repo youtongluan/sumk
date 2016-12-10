@@ -1,5 +1,11 @@
 package org.yx.bean;
 
+/**
+ * 它的equal和hashcode都取决于它所代理的bean
+ * 
+ * @author 游夏
+ *
+ */
 public class BeanWrapper {
 
 	private Object bean;
@@ -30,7 +36,7 @@ public class BeanWrapper {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((targetClass == null) ? 0 : targetClass.hashCode());
+		result = prime * result + ((bean == null) ? 0 : bean.hashCode());
 		return result;
 	}
 
@@ -43,12 +49,17 @@ public class BeanWrapper {
 		if (getClass() != obj.getClass())
 			return false;
 		BeanWrapper other = (BeanWrapper) obj;
-		if (targetClass == null) {
-			if (other.targetClass != null)
+		if (bean == null) {
+			if (other.bean != null)
 				return false;
-		} else if (!targetClass.equals(other.targetClass))
+		} else if (!bean.equals(other.bean))
 			return false;
 		return true;
+	}
+
+	@Override
+	public String toString() {
+		return String.valueOf(bean);
 	}
 
 }

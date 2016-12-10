@@ -1,16 +1,19 @@
 package org.yx.bean;
 
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.asm.ProxyClassFactory;
-import org.yx.bean.watcher.IOCWatcher;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -20,14 +23,42 @@ public class BeanPool {
 
 	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 
-	List<IOCWatcher> watchers = new ArrayList<>();
-
 	public static String getBeanName(Class<?> clz) {
 		String name = StringUtils.uncapitalize(clz.getSimpleName());
 		if (name.endsWith("Impl")) {
 			name = name.substring(0, name.length() - 4);
 		}
 		return name;
+	}
+
+	/**
+	 * 获取所有用户定义的类以及方法，用户定义指定是非java.开头的类或接口。<BR>
+	 * 用于IOC使用
+	 * 
+	 * @param clazz
+	 * @return
+	 */
+	static Set<String> getBeanNames(Class<?> clazz) {
+		Assert.notNull(clazz, "Class must not be null");
+		Set<Class<?>> interfaces = new HashSet<>();
+		resloveSuperClassAndInterface(clazz, interfaces);
+		Set<String> names = new HashSet<>();
+		interfaces.forEach(clz -> names.add(getBeanName(clz)));
+		return names;
+	}
+
+	private static void resloveSuperClassAndInterface(Class<?> clazz, Set<Class<?>> interfaces) {
+		while (clazz != null && !clazz.getName().startsWith(Loader.JAVA_PRE)
+				&& (clazz.getModifiers() & Modifier.PUBLIC) != 0) {
+			interfaces.add(clazz);
+			Class<?>[] ifcs = clazz.getInterfaces();
+			if (ifcs != null) {
+				for (Class<?> ifc : ifcs) {
+					resloveSuperClassAndInterface(ifc, interfaces);
+				}
+			}
+			clazz = clazz.getSuperclass();
+		}
 	}
 
 	private final Object getBean(Object v) {
@@ -41,40 +72,32 @@ public class BeanPool {
 	}
 
 	/**
-	 * 获取pool中所有的bean
+	 * 获取pool中所有的bean.key是bean
 	 * 
 	 * @return
 	 */
-	Collection<Object> allBeans() {
-		List<Object> list = new ArrayList<>();
+	Map<Object, BeanWrapper> allBeans() {
+		Map<Object, BeanWrapper> beans = new HashMap<>();
 		Collection<Object> vs = map.values();
 		for (Object v : vs) {
 			if (!v.getClass().isArray()) {
-				list.add(getBean(v));
+				Object bean = getBean(v);
+				if (beans.containsKey(bean)) {
+					continue;
+				}
+				beans.put(bean, (BeanWrapper) v);
 				continue;
 			}
 			Object[] objs = (Object[]) v;
 			for (Object o : objs) {
-				list.add(getBean(o));
+				Object bean = getBean(o);
+				if (beans.containsKey(bean)) {
+					continue;
+				}
+				beans.put(bean, (BeanWrapper) o);
 			}
 		}
-		return list;
-	}
-
-	Collection<BeanWrapper> allBeanWrapper() {
-		List<BeanWrapper> list = new ArrayList<>();
-		Collection<Object> vs = map.values();
-		for (Object v : vs) {
-			if (!v.getClass().isArray()) {
-				list.add((BeanWrapper) v);
-				continue;
-			}
-			Object[] objs = (Object[]) v;
-			for (Object o : objs) {
-				list.add((BeanWrapper) o);
-			}
-		}
-		return list;
+		return beans;
 	}
 
 	/**
@@ -86,24 +109,22 @@ public class BeanPool {
 	 * @return 添加到IOC中的实例
 	 * @throws Exception
 	 */
-	public <T> T putClass(String name, Class<T> clz) throws Exception {
+	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
 		Assert.notNull(clz);
-		if (name == null || name.isEmpty()) {
-			name = BeanPool.getBeanName(clz);
+		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? getBeanNames(clz)
+				: Collections.singleton(beanName);
+		if (names == null || names.isEmpty()) {
+			names = Collections.singleton(getBeanName(clz));
 		}
-		name = name.trim();
 		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
 		Object bean = proxyClz.newInstance();
 		BeanWrapper w = new BeanWrapper();
 		w.setBean(bean);
 		w.setTargetClass(clz);
-		put(name, w);
-		T t = this.getBean(name, clz);
-		if (IOCWatcher.class.isInstance(t)) {
-			watchers.add((IOCWatcher) t);
-			Collections.sort(watchers, null);
+		for (String name : names) {
+			put(name, w);
 		}
-		return t;
+		return this.getBean(beanName, clz);
 	}
 
 	private void put(String name, BeanWrapper w) {
@@ -141,7 +162,8 @@ public class BeanPool {
 	 * 
 	 * @param name
 	 * @param clz
-	 * @return
+	 * @return 返回最符合条件的bean。不存在最符合条件的bean，就抛出异常
+	 * @exception TooManyBeanException
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> clz) {
@@ -187,6 +209,45 @@ public class BeanPool {
 			}
 		}
 		return (T) bean;
+
+	}
+
+	/**
+	 * 如果不存在，返回空的list
+	 * 
+	 * @param name
+	 * @param clz
+	 * @return 返回所有符合条件的bean，如果不存在就返回null，不会抛异常
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> getBeans(String name, Class<T> clz) {
+		List<T> list = new ArrayList<>();
+		if (name == null || name.length() == 0) {
+			name = getBeanName(clz);
+		}
+		if (clz == Object.class) {
+			clz = null;
+		}
+		Object bw = map.get(name);
+		if (bw == null) {
+			return list;
+		}
+		if (!bw.getClass().isArray()) {
+			Object obj = this.getBean(bw);
+			if (clz == null || clz.isInstance(obj)) {
+				list.add((T) obj);
+			}
+			return list;
+		}
+		BeanWrapper[] objs = (BeanWrapper[]) bw;
+
+		for (BeanWrapper w : objs) {
+			Object o = w.getBean();
+			if (clz.isInstance(o)) {
+				list.add((T) o);
+			}
+		}
+		return list;
 
 	}
 
