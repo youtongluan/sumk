@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.demo.member.DemoUser;
-import org.yx.log.Log;
+import org.yx.log.ConsoleLog;
 import org.yx.main.Bootstrap;
 import org.yx.orm.DemoUserDao;
 
@@ -19,7 +19,7 @@ public class SinglePrimaryTest {
 
 	@Before
 	public void before() {
-		Log.setDefaultLevel(Log.DEBUG);
+		ConsoleLog.setDefaultLevel(ConsoleLog.DEBUG);
 		System.setProperty("nosoa", "true");
 		System.setProperty("nohttp", "true");
 		Bootstrap.main(null);

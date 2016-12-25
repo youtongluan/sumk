@@ -23,8 +23,6 @@ import org.yx.util.Assert;
  */
 public class ConnectionFactory {
 
-	static Log logger = Log.get(ConnectionFactory.class);
-
 	private static Map<String, ConnectionFactory> factoryMap = new ConcurrentHashMap<>();
 
 	private WeightedDataSourceRoute read;

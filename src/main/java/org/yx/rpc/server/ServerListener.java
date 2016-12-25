@@ -13,12 +13,13 @@ import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+import org.slf4j.Logger;
 import org.yx.log.Log;
 import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ServerListener implements Runnable {
 
-	private Log logger = Log.get(this.getClass());
+	private Logger logger = Log.get(this.getClass());
 	private int port;
 	private String host = null;
 	private IoHandler handler;

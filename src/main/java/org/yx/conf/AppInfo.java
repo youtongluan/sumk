@@ -3,7 +3,9 @@ package org.yx.conf;
 import java.io.InputStream;
 
 import org.yx.db.sql.ColumnType;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
+import org.yx.log.LogType;
 import org.yx.rpc.LocalhostUtil;
 
 public class AppInfo {
@@ -36,7 +38,7 @@ public class AppInfo {
 		@Override
 		public void deal(InputStream in) throws Exception {
 			super.deal(in);
-			String id = get("appId");
+			String id = get("sumk.appId");
 			if (id != null) {
 				AppInfo.appId = id;
 			}
@@ -46,7 +48,7 @@ public class AppInfo {
 				AppInfo.httpSessionTimeout = temp;
 			}
 
-			temp = intValue("redis.ttl");
+			temp = intValue("sumk.redis.ttl");
 			if (temp != null) {
 				AppInfo.redisTTL = temp;
 			}
@@ -55,12 +57,22 @@ public class AppInfo {
 					&& ("redis".equalsIgnoreCase(modify) || "cache".equalsIgnoreCase(modify))) {
 				AppInfo.modifyByColumnType = ColumnType.ID_CACHE;
 			}
+			try {
+				String logType = get("sumk.logtype", LogType.console.name());
+				Log.setLogType(LogType.valueOf(logType));
+				temp = intValue("sumk.loglevel.console");
+				if (temp != null && temp.byteValue() > -1) {
+					ConsoleLog.setDefaultLevel(temp.byteValue());
+				}
+			} catch (Exception e) {
+				Log.get("sumk.appInfo").info(e.getMessage(), e);
+			}
 		}
 
 	};
 
 	public static String getZKUrl() {
-		return info.get("zkurl");
+		return info.get("sumk.zkurl");
 	}
 
 	public static String getIp() {
@@ -85,11 +97,7 @@ public class AppInfo {
 	}
 
 	public static String get(String name, String defaultValue) {
-		String value = info.get(name);
-		if (value != null && value.length() > 0) {
-			return value;
-		}
-		return defaultValue;
+		return info.get(name, defaultValue);
 	}
 
 	public static int getInt(String name, int defaultValue) {

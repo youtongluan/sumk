@@ -13,6 +13,7 @@ import java.util.Map;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceFactory;
+import org.yx.log.Log;
 
 public class LocalSqlXmlFactory implements MultiResourceFactory {
 
@@ -23,7 +24,7 @@ public class LocalSqlXmlFactory implements MultiResourceFactory {
 
 	public File getParent(String dbName) throws Exception {
 		String uri = AppInfo.get("sumk.db.batis.path." + dbName,
-				AppInfo.CLASSPATH_URL_PREFIX + "db" + System.getProperty("file.separator") + dbName);
+				AppInfo.CLASSPATH_URL_PREFIX + "batis" + System.getProperty("file.separator") + dbName);
 		uri = uri.trim();
 		if (uri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()));
@@ -40,6 +41,7 @@ public class LocalSqlXmlFactory implements MultiResourceFactory {
 		List<File> xmlFiles = new ArrayList<>();
 		parseFileList(xmlFiles, getParent(db));
 		for (File f : xmlFiles) {
+			Log.get("sumk.db.batis").debug("mybatis file:{}", f.getAbsolutePath());
 			map.put(f.getAbsolutePath(), new FileInputStream(f));
 		}
 		return map;

@@ -25,6 +25,14 @@ public class PropertiesInfo implements FileHandler {
 		return pro.get(key);
 	}
 
+	public String get(String key, String defaultValue) {
+		String value = pro.get(key);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		return defaultValue;
+	}
+
 	@Override
 	public URL[] listFile() {
 		URL url = PropertiesInfo.class.getClassLoader().getResource(fileName);

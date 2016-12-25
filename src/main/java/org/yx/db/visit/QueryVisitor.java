@@ -16,6 +16,7 @@ import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.SelectBuilder;
 import org.yx.db.sql.SqlBuilder;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
@@ -26,8 +27,8 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 	@Override
 	public List<Map<String, Object>> visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
-		if (Log.get("sumk.SQL.raw").isEnable(Log.ON)) {
-			Log.get("sumk.SQL.raw").trace(maped);
+		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
+			Log.get("sumk.SQL.raw").trace(String.valueOf(maped));
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.ANY);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -37,9 +38,7 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
-		if (Log.get("sumk.SQL").isEnable(Log.DEBUG)) {
-			Log.get("sumk.SQL").debug(" ==> {}", statement);
-		}
+		Log.get("sumk.SQL").debug(" ==> {}", statement);
 		ResultSet ret = statement.executeQuery();
 		PojoMeta pm = null;
 		if (SelectBuilder.class.isInstance(builder)) {

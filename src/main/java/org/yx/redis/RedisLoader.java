@@ -49,7 +49,7 @@ public class RedisLoader {
 			return;
 		}
 		Map<String, String> p = CollectionUtils.loadMap(in);
-		Log.get(RedisLoader.class).debug(p);
+		Log.get(RedisLoader.class).debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {
 			if (StringUtils.isEmpty(kk)) {

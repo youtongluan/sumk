@@ -5,18 +5,18 @@ sumk的定位是为互联网公司提供一个快速开发、接口交互（RPC�
 引入sumk以及它的依赖包，再加入一些特定注解，就能将一个普通的项目，转化成web或微服务项目（内置jetty，类似于tomcat）。<BR>
 
 ###sumk的优势
-* 传统的SSH框架不太适合互联网，而大多数开发人员对SSH很熟悉，但对互联网认识不足。sumk能让SSH的开发人员，更快的过渡到互联网领域<BR>
+* sumk能让传统的SSH开发人员，更快的过渡到互联网领域。也避免开发人员直接将SSH应用于服务器端<BR>
 * 更快的开发速度。互联网领域的时间观念是非常强的。早一天出产品，就早一点拥有市场。<BR>
-* 减少开发人员。因为接口简单，开发速度快，代码量少。所以开发人员和维护人员都会相应的减少些<BR>
-* 更容易开发出健壮的应用。sumk封装了数据库连接和redis连接，并提供了一套异常体系。<BR>
-* 少走弯路。因为传统软件开发对性能、并发不是很敏感。很多企业做大之后，就发现自己的产品有很多性能问题，横向扩展很难。sumk提供了rpc（微服务），sumk-http支持分布式部署，sumk-tx支持多数据库以及读写分离，sumk-orm支持缓存<BR>
+* 更少的开发人员。因为接口简单，开发速度快，代码量少。所以开发人员和维护人员都会相应的减少些<BR>
+* 更健壮的应用。sumk封装了数据库连接和redis连接，并提供了一套异常体系。<BR>
+* 少走弯路。因为传统软件开发对性能、并发不是很敏感。很多企业做大之后，就发现自己的产品有很多性能问题，横向扩展很难。sumk的接口层都支持分布式部署，数据库层支持多数据库(异构数据库)、读写分离、实时缓存<BR>
 
 
 ###现有主要模块
 * **sumk-core**：这个模块类似于spring-core，它的核心是IOC。
-sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc的`@Soa`,sumk-orm的`@Table`。此外，sumk-core还有RedisPool（连接管理以及重试功能等）、配置管理等公共功能<br>
+sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc的`@Soa`,sumk-orm的`@Table`。此外，sumk-core还有许多彩蛋，等待你去挖掘<br>
 	* **sumk-tx**：类似于spring-tx，使用@Box来开启事务，连接的开关，以及事务的提交、回滚对开发人员透明。sumk-tx支持异构数据源、读写分离等互联网经常遇到的场景。<br>
-		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。<br>
+		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。sumk-orm只支持mysql，但sumk-tx与数据库类型无关<br>
 		* **sumk-batis**：类似于spring-mybatis.jar。因为sumk-orm只提供最常用的操作，所以sumk框架内置了对mybatis的兼容，已提供额外的操作<br>
 	* **sumk-http**：json版的spring mvc，主要面向于服务器端（提供给移动端访问）。只需要在一个普通方法上添加`@Web`注解，就可以让它提供http访问，内置了异常处理、加解密等。支持单机部署或分布式部署（session可存放在本机或redis上）。其中String类型的返回值，会将原始信息返回回去，类似于@ResponseBody<br>
 	* **sumk-rpc**：提供微服务能力。只需要配置zookeeper地址，然后在方法上添加`@Soa`注解，就能够将一个普通方法变成一个微服务方法。<BR>
@@ -37,7 +37,7 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 <BR>
 
 ###环境搭建
-* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/test/db.ini中
+* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/test.ini中
 * 安装redis服务器（可选），如果有redis服务器，就将redis.properties的注释打开
 * zookeeper服务器（可选），目前只有RPC功能有用到zookeeper。`org.test.Main`启动的时候，会启动测试环境内置的zookeeper，这样做的目的是便于新手入门
 
@@ -52,14 +52,18 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 
 ###示例代码
 
-####sumk的事务及数据库操作方式
+####sumk的事务及ORM
 
 ```
 	@Box(dbName = "test")  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
-	public void select() {
-		list=DB.select(obj).queryList(); //插入对象
-		//查询
-		list=DB.select().tableClass(DemoUser.class)
+	public void test() {
+		DemoUser user = new DemoUser();
+		user.setAge(30);
+		user.setName("张三");
+		user.setLastUpdate(new Date());
+		DB.insert(user).execute(); //插入对象
+		//多条件查询
+		List<DemoUser> list=DB.select().tableClass(DemoUser.class)
 				.lessThan("lastupdate", new Date())
 				.OrderByAsc("lastupdate")
 				.offset(10)
@@ -114,5 +118,5 @@ String result=Rpc.call("demo.EchoAction.echo", echo,names);
 
 ###作者心声
 雁过留声，人过留名，我也想在职业生涯结束后，留下点什么。也许sumk就是那个留下的。所以***我会长期维护的sumk***，虽然进度不一定能保障。<BR>
-本项目要特别感谢福建一定火科技有限公司（现已改名）。我在一定火任架构师期间，曾为一定火搭建过一套服务器端框架，在高并发方面表现相当优异。但因为兼容旧代码、工期、当时的技术局限性等原因，有很多地方我觉得可以改进，尤其是它的通用性不强。sumk就是在这种背景下诞生的，但是sumk的体系架构、代码结构等都已经与原来的框架完全不同了。sumk从一开始就是一个全新的项目<BR>
+
 作者：游夏，QQ：3205207767

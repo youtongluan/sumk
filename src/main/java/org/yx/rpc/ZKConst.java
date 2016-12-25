@@ -1,8 +1,8 @@
 package org.yx.rpc;
 
 public class ZKConst {
-	public final static String METHODS = "methods";
-	public final static String FEATURE = "feature";
-	public final static String WEIGHT = "weight";
-	public final static String START = "start";
+	public static final String METHODS = "methods";
+	public static final String FEATURE = "feature";
+	public static final String WEIGHT = "weight";
+	public static final String START = "start";
 }

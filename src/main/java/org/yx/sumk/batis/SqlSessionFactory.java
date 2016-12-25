@@ -24,8 +24,6 @@ import org.yx.util.Assert;
  */
 public class SqlSessionFactory {
 
-	static Log logger = Log.get(SqlSessionFactory.class);
-
 	private static Configuration configuration;
 	private static Map<String, SqlSessionFactory> factoryMap = new ConcurrentHashMap<>();
 
@@ -89,9 +87,11 @@ public class SqlSessionFactory {
 		Map<String, InputStream> sqls = MybatisSqlXmlUtils.openInputs(db);
 		Set<Map.Entry<String, InputStream>> entries = sqls.entrySet();
 		for (Map.Entry<String, InputStream> entry : entries) {
-			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(entry.getValue(), configuration, entry.getKey(),
+			InputStream in = entry.getValue();
+			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(in, configuration, entry.getKey(),
 					configuration.getSqlFragments());
 			xmlMapperBuilder.parse();
+			in.close();
 		}
 	}
 

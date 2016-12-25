@@ -9,6 +9,7 @@ import org.yx.db.conn.ConnectionPool;
 import org.yx.db.conn.EventLane;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.SqlBuilder;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
 public class DmlVisitor implements SumkDbVisitor<Integer> {
@@ -18,8 +19,8 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 	@Override
 	public Integer visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
-		if (Log.get("sumk.SQL.raw").isEnable(Log.ON)) {
-			Log.get("sumk.SQL.raw").trace(maped);
+		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
+			Log.get("sumk.SQL.raw").trace(String.valueOf(maped));
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -29,9 +30,7 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
-		if (Log.get("sumk.SQL").isEnable(Log.DEBUG)) {
-			Log.get("sumk.SQL").debug(" <== {}", statement);
-		}
+		Log.get("sumk.SQL").debug(" <== {}", statement);
 		int ret = statement.executeUpdate();
 		EventLane.pubuish(conn, maped.getEvent());
 		return ret;

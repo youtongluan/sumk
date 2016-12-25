@@ -12,8 +12,6 @@ import org.yx.util.SimpleBeanUtil;
 
 public class DBConfig {
 
-	private Log log = Log.get(this.getClass());
-
 	String type = "";
 	int weight = 0;
 	int read_weight = 0;
@@ -36,9 +34,11 @@ public class DBConfig {
 		properties.put("logAbandoned", "true");
 		properties.put("timeBetweenEvictionRunsMillis", "30000");
 		properties.put("softMinEvictableIdleTimeMillis", "60000");
+
 		properties.put("logExpiredConnections", "false");
 		properties.put("poolPreparedStatements", "false");
 		properties.put("defaultAutoCommit", "false");
+
 	}
 
 	public String getProperty(String name) {
@@ -50,7 +50,7 @@ public class DBConfig {
 		for (String key : set) {
 			String v = p.get(key);
 			if (v == null) {
-				log.sub("setProperties").debug("{} key的值是null，被忽略掉", key);
+				Log.get("sumk.db.config").debug("{} key的值是null，被忽略掉", key);
 				continue;
 			}
 			switch (key) {

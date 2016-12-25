@@ -1,10 +1,11 @@
 package org.yx.log;
 
 import org.apache.ibatis.logging.LogFactory;
+import org.slf4j.Logger;
 
 public class MybatisLog implements org.apache.ibatis.logging.Log {
 
-	private Log log;
+	private Logger log;
 
 	public MybatisLog(String clazz) {
 		log = Log.get(clazz);
@@ -12,12 +13,12 @@ public class MybatisLog implements org.apache.ibatis.logging.Log {
 
 	@Override
 	public boolean isDebugEnabled() {
-		return log.isEnable(Log.DEBUG);
+		return log.isDebugEnabled();
 	}
 
 	@Override
 	public boolean isTraceEnabled() {
-		return log.isEnable(Log.TRACE);
+		return log.isTraceEnabled();
 	}
 
 	@Override

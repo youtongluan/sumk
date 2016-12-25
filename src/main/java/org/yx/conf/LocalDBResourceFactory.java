@@ -18,12 +18,11 @@ public class LocalDBResourceFactory implements SingleResourceFactory {
 	private InputStream fileInClassPath(String uri, String dbName) throws URISyntaxException, FileNotFoundException {
 		URL url = this.getClass().getClassLoader().getResource(uri);
 		File parent = new File(url.toURI());
-		return new FileInputStream(new File(parent, "db.ini"));
+		return new FileInputStream(new File(parent, dbName + ".ini"));
 	}
 
 	public InputStream openInput(String dbName) throws Exception {
-		String uri = AppInfo.get("sumk.db.config.path." + dbName,
-				AppInfo.CLASSPATH_URL_PREFIX + "db" + System.getProperty("file.separator") + dbName);
+		String uri = AppInfo.get("sumk.db.config.path." + dbName, AppInfo.CLASSPATH_URL_PREFIX + "db");
 		uri = uri.trim();
 		if (uri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()), dbName);
@@ -31,7 +30,7 @@ public class LocalDBResourceFactory implements SingleResourceFactory {
 		if (uri.startsWith(AppInfo.CLASSPATH_URL_PREFIX)) {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()), dbName);
 		}
-		return new FileInputStream(new File(uri, "db.ini"));
+		return new FileInputStream(new File(uri, dbName + ".ini"));
 	}
 
 }
