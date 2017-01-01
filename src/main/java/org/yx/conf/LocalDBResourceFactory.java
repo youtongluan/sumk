@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 /**
  * 从本地文件读取数据库的资源配置
@@ -15,22 +14,20 @@ import java.net.URL;
  */
 public class LocalDBResourceFactory implements SingleResourceFactory {
 
-	private InputStream fileInClassPath(String uri, String dbName) throws URISyntaxException, FileNotFoundException {
-		URL url = this.getClass().getClassLoader().getResource(uri);
-		File parent = new File(url.toURI());
-		return new FileInputStream(new File(parent, dbName + ".ini"));
+	private InputStream fileInClassPath(String uri) throws URISyntaxException, FileNotFoundException {
+		return this.getClass().getClassLoader().getResourceAsStream(uri);
 	}
 
 	public InputStream openInput(String dbName) throws Exception {
-		String uri = AppInfo.get("sumk.db.config.path." + dbName, AppInfo.CLASSPATH_URL_PREFIX + "db");
-		uri = uri.trim();
+		String uri = AppInfo.get("sumk.db.config.path", AppInfo.CLASSPATH_URL_PREFIX + "db/#.ini");
+		uri = uri.trim().replace("#", dbName);
 		if (uri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
-			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()), dbName);
+			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()));
 		}
 		if (uri.startsWith(AppInfo.CLASSPATH_URL_PREFIX)) {
-			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()), dbName);
+			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()));
 		}
-		return new FileInputStream(new File(uri, dbName + ".ini"));
+		return new FileInputStream(new File(uri));
 	}
 
 }

@@ -10,7 +10,7 @@ import org.yx.bean.Box;
 import org.yx.db.DB;
 import org.yx.db.visit.MapResultHandler;
 import org.yx.demo.member.DemoUser;
-import org.yx.util.MapBuilder;
+import org.yx.util.SBuilder;
 
 @Bean
 public class DemoUserDao {
@@ -69,18 +69,31 @@ public class DemoUserDao {
 		list = DB.select(obj).queryList(); // 查询name=kkk
 
 		System.out.println("用map做条件，查询(id=10000 and age =16) or (id=20000)的记录。用map做条件的时候，key的大小写不敏感，但值类型要跟pojo类定义的一致");
-		list = DB.select().tableClass(DemoUser.class).addEqual(MapBuilder.create("id", 10000).put("age", 16).toMap())
-				.addEqual(MapBuilder.create("id", 20000).toMap()).queryList();
+		list = DB.select()
+				.tableClass(DemoUser.class)
+				.addEqual(SBuilder.map("id", 10000).put("age", 16).toMap())
+				.addEqual(SBuilder.map("id", 20000).toMap())
+				.queryList();
 
 		System.out.println("返回结果是List<Map>的例子。查询lastupdate<当前时间的记录，按lastupdate升序排列，并且limit 10,10（相当于每页10条的第二页数据）");
-		list = DB.select().tableClass(DemoUser.class).lessThan("lastupdate", new Date()).OrderByAsc("lastupdate")
-				.offset(10).limit(10).resultHandler(MapResultHandler.handler).queryList();
+		list = DB.select()
+				.tableClass(DemoUser.class)
+				.lessThan("lastupdate", new Date())
+				.orderByAsc("lastupdate")
+				.offset(10).limit(10)
+				.resultHandler(MapResultHandler.handler)
+				.queryList();
 		System.out.println("map list:" + list);
 
 		System.out.println(
 				"相当于select id demouser where (name=kkk and age=12) or (name=第1个 and age=1) order by lastupdate,age desc limit 0,10");
-		DB.select(obj).selectColumns("id").addEqual(MapBuilder.create("name", "第1个").put("AGE", 1).toMap())
-				.OrderByAsc("lastupdate").OrderByDesc("age").limit(10).queryList();
+		DB.select(obj)
+			.selectColumns("id")
+			.addEqual(SBuilder.map("name", "第1个").put("AGE", 1).toMap())
+			.orderByAsc("lastupdate")
+			.orderByDesc("age")
+			.limit(10)
+			.queryList();
 	}
 
 }

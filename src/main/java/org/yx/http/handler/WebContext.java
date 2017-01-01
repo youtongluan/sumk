@@ -18,6 +18,7 @@ public class WebContext {
 	private Integer respCode = null;
 	private Object result = null;
 	private byte[] key;
+	private String act;
 
 	public Integer getRespCode() {
 		return respCode;
@@ -35,7 +36,8 @@ public class WebContext {
 		this.result = result;
 	}
 
-	public WebContext(HttpInfo info, HttpServletRequest req, HttpServletResponse resp) {
+	public WebContext(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp) {
+		this.act = act;
 		this.info = info;
 		this.httpRequest = req;
 		this.httpResponse = resp;
@@ -94,6 +96,10 @@ public class WebContext {
 
 	void setKey(byte[] key) {
 		this.key = key;
+	}
+
+	String getAct() {
+		return act;
 	}
 
 }

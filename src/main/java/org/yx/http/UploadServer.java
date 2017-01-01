@@ -11,6 +11,7 @@ import org.yx.log.Log;
  * 
  * @author Administrator
  */
+@SumkServlet(value = { "/upload/*" }, loadOnStartup = -1)
 public class UploadServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 1L;
@@ -28,7 +29,7 @@ public class UploadServer extends AbstractHttpServer {
 			Log.get(this.getClass()).error(act + " has error type, it must be have @Upload");
 			return;
 		}
-		WebContext wc = new WebContext(info, req, resp);
+		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.upload.handle(wc);
 	}
 }

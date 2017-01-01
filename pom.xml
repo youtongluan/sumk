@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.6.2</version>
+	<version>1.6.3</version>
 
 	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>
@@ -119,6 +119,33 @@
 					<skip>true</skip>
 				</configuration>
 			</plugin>
+            <plugin>  
+                <artifactId>maven-source-plugin</artifactId>  
+                <version>2.1</version>  
+                <configuration>  
+                    <attach>true</attach>  
+                </configuration>  
+                <executions>
+                	<!-- <execution>  
+                		<id>copy-license</id>
+                        <phase>package</phase>  
+                        <goals>  
+                            <goal>aggregate</goal>  
+                        </goals>
+                        <configuration>
+                        	<includes>
+                        		<include>LICENSE</include>
+                        	</includes>
+                        </configuration>  
+                    </execution>   -->
+                    <execution>  
+                        <phase>compile</phase>  
+                        <goals>  
+                            <goal>jar</goal>  
+                        </goals>  
+                    </execution> 
+                </executions>  
+            </plugin>  
 			<plugin>
                 <artifactId>maven-resources-plugin</artifactId>
                 <version>3.0.1</version>

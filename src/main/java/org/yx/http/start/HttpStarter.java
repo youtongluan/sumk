@@ -7,24 +7,21 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.yx.bean.IOC;
 import org.yx.common.ServerStarter;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.http.IntfHandlerFactorysBean;
 import org.yx.http.ServletInfo;
-import org.yx.http.UploadHandlerFactorysBean;
 import org.yx.http.filter.HttpLoginWrapper;
 import org.yx.http.filter.LoginServlet;
-import org.yx.http.handler.HttpHandlerChain;
 import org.yx.log.Log;
+import org.yx.util.StringUtils;
 
 public class HttpStarter implements ServerStarter {
 
 	public void start(int port) throws Exception {
-		initHandlers();
 		QueuedThreadPool pool = new QueuedThreadPool(AppInfo.getInt("http.pool.maxThreads", 200),
 				AppInfo.getInt("http.pool.minThreads", 8), AppInfo.getInt("http.pool.idleTimeout", 60000),
 				new LinkedBlockingDeque<Runnable>(AppInfo.getInt("http.pool.queues", 1000)));
@@ -48,6 +45,7 @@ public class HttpStarter implements ServerStarter {
 		for (ServletInfo info : servlets) {
 			context.addServlet(info.getServletClz(), info.getPath());
 		}
+
 		Object path = StartContext.inst.get(LoginServlet.class);
 		if (path != null && String.class.isInstance(path)) {
 			String loginPath = (String) path;
@@ -57,13 +55,14 @@ public class HttpStarter implements ServerStarter {
 			Log.get("http").info("login path:{}", context.getContextPath() + loginPath);
 			context.addServlet(HttpLoginWrapper.class, loginPath);
 		}
-
+		String resourcePath = AppInfo.get("http.resource");
+		if (StringUtils.isNotEmpty(resourcePath)) {
+			ResourceHandler resourceHandler = new ResourceHandler();
+			resourceHandler.setResourceBase(resourcePath);
+			context.insertHandler(resourceHandler);
+		}
 		server.setHandler(context);
 		server.start();
 	}
 
-	private void initHandlers() throws Exception {
-		HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
-		HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
-	}
 }

@@ -15,7 +15,7 @@ import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
-import org.yx.util.MapBuilder;
+import org.yx.util.SBuilder;
 
 public class Select extends SelectBuilder {
 	public Select(SumkDbVisitor<List<Map<String, Object>>> visitor) {
@@ -34,6 +34,16 @@ public class Select extends SelectBuilder {
 	 */
 	public Select resultHandler(ResultHandler resultHandler) {
 		this.resultHandler = resultHandler;
+		return this;
+	}
+	
+	/**
+	 * 允许不设置where条件
+	 * @param empty
+	 * @return
+	 */
+	public Select allowEmptyWhere(boolean empty){
+		this.allowEmptyWhere=empty;
 		return this;
 	}
 
@@ -135,7 +145,7 @@ public class Select extends SelectBuilder {
 	 * @param order
 	 * @return
 	 */
-	public Select OrderByAsc(String field) {
+	public Select orderByAsc(String field) {
 		return this.addOrderBy(field, false);
 	}
 
@@ -156,7 +166,7 @@ public class Select extends SelectBuilder {
 	 * @param field
 	 * @return
 	 */
-	public Select OrderByDesc(String field) {
+	public Select orderByDesc(String field) {
 		return this.addOrderBy(field, true);
 	}
 
@@ -267,7 +277,7 @@ public class Select extends SelectBuilder {
 	 * @return
 	 */
 	public Select addEqual(String field, Object value) {
-		this._addIn(MapBuilder.create(field, value).toMap());
+		this._addIn(SBuilder.map(field, value).toMap());
 		return this;
 	}
 

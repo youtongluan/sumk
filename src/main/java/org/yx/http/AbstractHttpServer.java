@@ -1,8 +1,6 @@
 package org.yx.http;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -18,20 +16,6 @@ public abstract class AbstractHttpServer extends HttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
 
-	public String getServerInfo() {
-		long now = System.currentTimeMillis();
-		long ms = now - startTime;
-		StringBuilder sb = new StringBuilder();
-		String ln = "\n";
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		sb.append("start at:" + sdf.format(new Date(startTime)));
-		sb.append(ln);
-		sb.append("run(ms):" + ms);
-		return sb.toString();
-	}
-
-	private long startTime = System.currentTimeMillis();
-
 	private boolean validPath(Class<?> actionClz, String path) {
 		String pname = actionClz.getName();
 		String[] names = pname.split("\\.");
@@ -46,7 +30,6 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) {
 		try {
-
 			setRespHeader(req, resp);
 
 			final String act = req.getParameter("act");

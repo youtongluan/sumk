@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.yx.bean.Box;
-import org.yx.db.Cached;
+import org.yx.bean.Inject;
 import org.yx.db.DB;
 import org.yx.db.DBType;
 import org.yx.db.MemberUserDao;
@@ -22,7 +22,7 @@ import org.yx.util.SeqUtil;
  */
 public class DBDemo {
 
-	@Cached
+	@Inject
 	private MemberUserDao memberUserDao;
 
 	@Box(dbName = "test", dbType = DBType.WRITE, embed = false)
@@ -63,7 +63,7 @@ public class DBDemo {
 	}
 
 	@Web
-	@Box(dbName = "test")
+	@Box(dbName = "test", dbType = DBType.WRITE)
 	public List<DemoUser> addAndGet(List<DemoUser> users) {
 		for (DemoUser user : users) {
 			memberUserDao.insert(user);

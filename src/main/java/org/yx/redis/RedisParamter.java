@@ -3,7 +3,7 @@ package org.yx.redis;
 import redis.clients.jedis.Protocol;
 
 public class RedisParamter {
-	final static int DEFAULT_TRY_COUNT = 3;
+	final static int DEFAULT_TRY_COUNT = 2;
 	final static int DEFAULT_Timeout = 3000;
 
 	public static RedisParamter create(String ip) {

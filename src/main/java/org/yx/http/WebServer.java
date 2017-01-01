@@ -11,6 +11,7 @@ import org.yx.log.Log;
  * 
  * @author Administrator
  */
+@SumkServlet(value = { "/webserver/*" }, loadOnStartup = -1)
 public class WebServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 74378082364534491L;
@@ -23,7 +24,7 @@ public class WebServer extends AbstractHttpServer {
 			return;
 		}
 
-		WebContext wc = new WebContext(info, req, resp);
+		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.inst.handle(wc);
 	}
 }

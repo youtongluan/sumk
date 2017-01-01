@@ -1,5 +1,6 @@
 package org.yx.rpc.server.start;
 
+import org.yx.asm.AsmUtils;
 import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
 import org.yx.common.StartConstants;
@@ -17,7 +18,11 @@ public class SOABeanListener extends AbstractBeanListener {
 	@Override
 	public void listen(BeanEvent event) {
 		try {
-			factory.resolve(event.clz());
+			Class<?> clz = event.clz();
+			if (AsmUtils.notPublicOnly(clz.getModifiers()) || clz.isAnonymousClass() || clz.isLocalClass()) {
+				return;
+			}
+			factory.resolve(clz);
 		} catch (Exception e) {
 			Log.printStack(e);
 		}

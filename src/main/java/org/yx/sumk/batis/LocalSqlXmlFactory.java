@@ -23,9 +23,8 @@ public class LocalSqlXmlFactory implements MultiResourceFactory {
 	}
 
 	public File getParent(String dbName) throws Exception {
-		String uri = AppInfo.get("sumk.db.batis.path." + dbName,
-				AppInfo.CLASSPATH_URL_PREFIX + "batis" + System.getProperty("file.separator") + dbName);
-		uri = uri.trim();
+		String uri = AppInfo.get("sumk.db.batis.path", AppInfo.CLASSPATH_URL_PREFIX + "batis/#");
+		uri = uri.trim().replace("#", dbName);
 		if (uri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()));
 		}

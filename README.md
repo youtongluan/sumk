@@ -1,8 +1,7 @@
 #sumk
 sumk的定位是为互联网公司提供一个快速开发、接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移的框架。
 一站式解决互联网公司面临的常见问题。除故障转移外，其它几个特性都已有部分体现。
-具体的技术实现上，sumk拥有一套类似于"SSH"（spring的IOC、hibernate的ORM以及spring mvc/struts的接口访问能力）的体系。
-引入sumk以及它的依赖包，再加入一些特定注解，就能将一个普通的项目，转化成web或微服务项目（内置jetty，类似于tomcat）。<BR>
+具体的技术实现上，sumk拥有一套类似于传统"SSH"的体系。但它的入门要比SSH简单多了，除了sumk-**.jar以及它的依赖包，只有app.properties文件是必须的。<BR>
 
 ###sumk的优势
 * sumk能让传统的SSH开发人员，更快的过渡到互联网领域。也避免开发人员直接将SSH应用于服务器端<BR>
@@ -47,7 +46,7 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 	* [org.test.web.client.HttpTest](https://github.com/youtongluan/sumk/blob/master/src/test/java/org/test/web/client/HttpTest.java) 使用HttpClient模拟web浏览器的行为。包括用户登陆、加解密等。被调用的服务器端代码在org.test.web.demo包底下
 	* [org.test.soa.client.RpcTest](https://github.com/youtongluan/sumk/blob/master/src/test/java/org/test/soa/client/RpcTest.java) RPC客户端的使用例子，2种方式的客户端调用都有。被调用的服务器端代码在`org.test.soa.demo`包底下
 	
-* 单独使用sumkDB（也可以只使用sumkDB中的事务管理，而不是用ORM）的测试用例在org.test.orm包底下。尤其是`SinglePrimaryTest.select()`，里面有很多查询的示例
+* 单独使用sumkDB（也可以只使用sumkDB中的事务管理，连ORM都不用）的测试用例在[org.test.orm](https://github.com/youtongluan/sumk/tree/master/src/test/java/org/test/orm)包底下。真正的代码在[org.yx.orm](https://github.com/youtongluan/sumk/tree/master/src/test/java/org/yx/orm)
 
 
 ###示例代码
@@ -65,7 +64,7 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 		//多条件查询
 		List<DemoUser> list=DB.select().tableClass(DemoUser.class)
 				.lessThan("lastupdate", new Date())
-				.OrderByAsc("lastupdate")
+				.orderByAsc("lastupdate")
 				.offset(10)
 				.limit(10)
 				.resultHandler(MapResultHandler.handler)
@@ -107,7 +106,8 @@ public List<String> echo(String echo,List<String> names){
 ####RPC客户端：
 
 ```Java
-Rpc.init();
+Rpc.init(); //只要初始化一次就可以了
+
 List<String> names=Arrays.asList("游夏","游侠");
 String echo=",how are you";
 //返回是json格式。key的格式是包名的最后一个单词+类名+方法名

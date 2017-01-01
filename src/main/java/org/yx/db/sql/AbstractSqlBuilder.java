@@ -9,7 +9,7 @@ import org.yx.exception.SumkException;
 import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
 
-public abstract class AbstractSqlBuilder<T> implements SqlBuilder, SqlAcceptor<T> {
+public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	protected boolean withnull;
 
 	protected SumkDbVisitor<T> visitor;
@@ -56,6 +56,10 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder, SqlAcceptor<T
 		}
 	}
 
+	/**
+	 * 获取sql操作相关联的对象信息<BR>
+	 * <B>这个是sumk框架的方法，不推荐在业务代码中使用</B>
+	 */
 	public PojoMeta getPojoMeta() {
 		if (this.tableClass != null) {
 			return PojoMetaHolder.getPojoMeta(tableClass);
@@ -68,8 +72,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder, SqlAcceptor<T
 		this.visitor = visitor;
 	}
 
-	@Override
-	public T accept(SumkDbVisitor<T> visitor) {
+	protected T accept(SumkDbVisitor<T> visitor) {
 		try {
 			return visitor.visit(this);
 		} catch (Exception e) {

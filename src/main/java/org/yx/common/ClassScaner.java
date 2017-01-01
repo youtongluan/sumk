@@ -1,4 +1,4 @@
-package org.yx.util;
+package org.yx.common;
 
 import java.io.File;
 import java.io.IOException;

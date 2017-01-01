@@ -17,8 +17,16 @@ import org.yx.log.Log;
 import org.yx.log.LogType;
 import org.yx.util.StringUtils;
 
-public class Sumk {
+public class SumkServer {
 	private static volatile boolean started = false;
+
+	public static void main(String[] args) {
+		start(args);
+	}
+
+	public static void start() {
+		start(new ArrayList<String>());
+	}
 
 	public static void start(String[] args) {
 		Set<String> argSet = new HashSet<>();
@@ -48,7 +56,6 @@ public class Sumk {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
-				e1.printStackTrace();
 			}
 			System.exit(-1);
 		}

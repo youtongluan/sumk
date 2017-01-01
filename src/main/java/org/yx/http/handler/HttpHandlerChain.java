@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.common.ActStatis;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpUtil;
@@ -16,6 +17,7 @@ public class HttpHandlerChain implements HttpHandler {
 
 	public static HttpHandlerChain inst = new HttpHandlerChain();
 	public static HttpHandlerChain upload = new HttpHandlerChain();
+	static final ActStatis actStatic = new ActStatis();
 
 	private HttpHandlerChain() {
 
@@ -39,6 +41,8 @@ public class HttpHandlerChain implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
+		long begin = System.currentTimeMillis();
+		boolean success = false;
 		try {
 			for (int i = 0; i < this.handlers.size(); i++) {
 				HttpHandler h = this.handlers.get(i);
@@ -52,6 +56,7 @@ public class HttpHandlerChain implements HttpHandler {
 						}
 					}
 					if (h.handle(ctx)) {
+						success = true;
 						return true;
 					}
 				}
@@ -80,6 +85,7 @@ public class HttpHandlerChain implements HttpHandler {
 			HttpUtil.error(ctx.getHttpResponse(), -2343254, "请求出错", ctx.getCharset());
 		} finally {
 			UploadFileHolder.remove();
+			actStatic.visit(ctx.getAct(), System.currentTimeMillis() - begin, success);
 		}
 		return true;
 	}

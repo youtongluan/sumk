@@ -54,42 +54,4 @@
 		</where>
 	</select>
 	
-	
-	
-	<!-- 查询-->
-	<select id="listDemoUserByIds" parameterType="collection" resultType="org.yx.demo.member.DemoUser">
-      SELECT	
-				 name as  name  ,
-				 id as  id  ,
-				 age as  age  
-        FROM  demouser    
-        WHERE id IN 
-        <foreach item="item" collection="list" open="(" separator="," close=")">  
-          #{item}  
-        </foreach>
-	</select>
-	
-	<!-- 部分更新 -->
-	<update id="updatePartDemoUser" parameterType="org.yx.demo.member.DemoUser">
-		UPDATE  demouser       
-		   SET  
-		   <trim prefixOverrides=",">
-				<if test="name != null">, name= #{name} </if>
-				<if test="age != null">, age= #{age} </if>
-			</trim>
-		WHERE 
-			id = #{id}
-	</update>
-	
-	<!-- test -->
-	<update id="updateAge" parameterType="org.yx.demo.member.DemoUser">
-		UPDATE  demouser       
-		   SET  
-		   <trim prefixOverrides=",">
-				<if test="name != null">, name= #{name} </if>
-				<if test="age != null">, age= #{age} </if>
-			</trim>
-		WHERE 
-			age = 1234
-	</update>
 </mapper>

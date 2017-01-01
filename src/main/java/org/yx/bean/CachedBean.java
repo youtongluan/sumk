@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.yx.exception.SumkException;
 
 /**
- * 对IOC中的bean进行缓存，已加快获取速度
+ * 对IOC中的bean进行缓存，以加快获取速度
  * 
  * @author 游夏
  *
@@ -13,6 +13,7 @@ import org.yx.exception.SumkException;
 public final class CachedBean {
 	private static ConcurrentHashMap<Class<?>, Object> map = new ConcurrentHashMap<>();
 
+	@SuppressWarnings("unchecked")
 	public static <T> T get(Class<T> intf) {
 		Object obj = map.get(intf);
 		if (obj == null) {

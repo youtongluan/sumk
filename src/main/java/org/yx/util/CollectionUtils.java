@@ -54,6 +54,9 @@ public class CollectionUtils {
 	}
 
 	public static List<String> loadList(InputStream in) throws IOException {
+		if (in == null) {
+			return null;
+		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
 		List<String> list = new ArrayList<>();
 		try {
