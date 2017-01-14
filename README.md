@@ -18,7 +18,7 @@
 * **sumk-core**：这个模块类似于spring-core，它的核心是IOC。除此之外，它还有许多彩蛋等待你去挖掘<br>
 	* **sumk-tx**：类似于spring-tx，使用@Box来开启事务，连接的开关，以及事务的提交、回滚对开发人员透明。sumk-tx支持异构数据源、读写分离等互联网经常遇到的场景。<br>
 		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。DB类目前只支持mysql，但RawDB、NamedDB以及sumk-tx都与数据库类型无关。sumk-orm的入口类是DB。此外还提供RawDB和NamedDB两个类，作为DB的补充。<br>
-		* **sumk-batis**：类似于spring-mybatis.jar。提供对mybatis的兼容，因为sumk-orm本身有些类似hibernate，所以没有内置对hibernate的兼容<br>
+		* **sumk-batis**：本功能是可选的。类似于spring-mybatis.jar，提供对mybatis的兼容，因为sumk-orm本身有些类似hibernate，所以没有内置对hibernate的兼容<br>
 	* **sumk-http**：json版的spring mvc，主要面向于服务器端（提供给移动端访问）。只需要在一个普通方法上添加`@Web`注解，就可以让它提供http访问，内置了异常处理、加解密等。支持单机部署或分布式部署（session可存放在本机或redis上）。其中String类型的返回值，会将原始信息返回回去，类似于@ResponseBody<br>
 	* **sumk-rpc**：提供微服务能力。只需要配置zookeeper地址，然后在方法上添加`@Soa`注解，就能够将一个普通方法变成一个微服务方法。<BR>
 上述的层级代表了他们的依赖关系。因为模块化的关系，我们可以只用其中的某一部分功能。

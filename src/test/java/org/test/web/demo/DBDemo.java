@@ -16,12 +16,12 @@ import org.yx.log.Log;
 import org.yx.rpc.Soa;
 import org.yx.util.SeqUtil;
 
-/*
- * 1、生产DAO类
- * 2、通过DAO类保存文件
- */
 public class DBDemo {
 
+	/*
+	 * 这个到用于演示mybatis操作。mybatis是可选模块，完全可以不用。
+	 * 如果不用mybatis，那么src/test/resources底下的batis文件夹也就可以删除了
+	 */
 	@Inject
 	private MemberUserDao memberUserDao;
 
