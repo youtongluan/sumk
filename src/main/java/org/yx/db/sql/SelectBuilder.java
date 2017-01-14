@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.db.sql;
 
 import java.util.List;
@@ -15,7 +30,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
-		this.failIfPropertyNotMapped = "true".equalsIgnoreCase(AppInfo.get("sumk.sql.failIfPropertyNotMapped"));
+		this.failIfPropertyNotMapped = SqlConstants.FAIL_IF_PROPERTY_NOT_MAPPED;
 		this.fromCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.fromCache"));
 		this.toCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.toCache"));
 		this.withnull = false;
@@ -188,6 +203,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		ItemJoiner joiner = ItemJoiner.create();
 		src.forEach((filedName, v) -> {
 			if (v == null && !this.withnull) {
+
 				return;
 			}
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);

@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.db;
 
 import org.yx.db.sql.Delete;
@@ -7,6 +22,13 @@ import org.yx.db.sql.Update;
 import org.yx.db.visit.DmlVisitor;
 import org.yx.db.visit.QueryVisitor;
 
+/**
+ * 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
+ * 大小写敏感性的原则是：数据库字段大小写不敏感，java字段大小写敏感。所以本类中的参数大小写敏感
+ * 
+ * @author 游夏
+ *
+ */
 public class DB {
 	/**
 	 * 进行插入，如果主键是单主键，并且主键是Long类型。 可以不用显示设置主键，系统会自动生成主键
@@ -31,9 +53,10 @@ public class DB {
 	}
 
 	/**
-	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。所有的更新都只能根据主键或者redis主键
+	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。
 	 * 
 	 * @param pojo
+	 *            修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
 	 * @return
 	 */
 	public static Update update(Object pojo) {

@@ -3,9 +3,9 @@ package org.yx.demo.member;
 import java.util.Date;
 
 import org.yx.db.annotation.Column;
+import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.SoftDelete;
 import org.yx.db.annotation.Table;
-import org.yx.db.sql.ColumnType;
 import org.yx.util.DateUtils;
 
 @Table

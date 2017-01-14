@@ -25,7 +25,7 @@ public class DBDemo {
 	@Inject
 	private MemberUserDao memberUserDao;
 
-	@Box(dbName = "test", dbType = DBType.WRITE, embed = false)
+	@Box(dbType = DBType.WRITE, embed = false)
 	public long insert(long id, boolean success) {
 		if (id == 0) {
 			id = SeqUtil.next();
@@ -43,7 +43,7 @@ public class DBDemo {
 
 	@Web
 	@Soa
-	@Box(dbName = "test", dbType = DBType.WRITE)
+	@Box( dbType = DBType.WRITE)
 	public int add(List<DemoUser> users) {
 		long successId = this.insert(0, true);
 		System.out.println("user cacheEnable:" + this.memberUserDao.isCacheEnable());
@@ -63,7 +63,7 @@ public class DBDemo {
 	}
 
 	@Web
-	@Box(dbName = "test", dbType = DBType.WRITE)
+	@Box(dbType = DBType.WRITE)
 	public List<DemoUser> addAndGet(List<DemoUser> users) {
 		for (DemoUser user : users) {
 			memberUserDao.insert(user);

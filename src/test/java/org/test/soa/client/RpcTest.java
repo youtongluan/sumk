@@ -15,7 +15,9 @@ import org.yx.conf.AppInfo;
 import org.yx.demo.member.DemoUser;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.GsonUtil;
-
+/**
+ * rpc端口的开启可能会慢点。所以服务器刚启动的时候，马上连接，有可能会获取session失败
+ */
 public class RpcTest {
 
 	@Test

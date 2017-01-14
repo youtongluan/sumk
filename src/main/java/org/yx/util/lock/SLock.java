@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.util.lock;
 
 import java.util.ArrayList;
@@ -110,16 +125,16 @@ public final class SLock {
 	 *            获取锁的最大时间，单位ms
 	 * @return 锁的钥匙
 	 */
-	public static Key lock(String name, long maxWaitTime) {
+	public static Key tryLock(String name, long maxWaitTime) {
 		Lock lock = Lock.create(name);
-		return lock(lock, maxWaitTime);
+		return tryLock(lock, maxWaitTime);
 	}
 
 	public static Key lock(String name) {
-		return lock(name, Integer.MAX_VALUE);
+		return tryLock(name, Integer.MAX_VALUE);
 	}
 
-	public static Key lock(Lock lock, long maxWaitTime) {
+	public static Key tryLock(Lock lock, long maxWaitTime) {
 		if (getLock(lock) != null) {
 			return LockedKey.key;
 		}

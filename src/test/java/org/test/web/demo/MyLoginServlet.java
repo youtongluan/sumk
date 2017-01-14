@@ -14,7 +14,7 @@ import org.yx.util.SeqUtil;
 @Login
 public class MyLoginServlet extends AbstractSessionFilter {
 
-	@Box(dbName = "test")
+	@Box
 	protected LoginObject login(String token, String user, HttpServletRequest req) {
 
 		String password = req.getParameter("password");

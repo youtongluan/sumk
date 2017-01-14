@@ -1,22 +1,23 @@
 #sumk
-sumk的定位是为互联网公司提供一个快速开发、接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移的框架。
-一站式解决互联网公司面临的常见问题。除故障转移外，其它几个特性都已有部分体现。
-具体的技术实现上，sumk拥有一套类似于传统"SSH"的体系。但它的入门要比SSH简单多了，除了sumk-**.jar以及它的依赖包，只有app.properties文件是必须的。<BR>
+&emsp;&emsp;*sumk的定位是为互联网公司提供一个开发速度快、又能很容易的进行各种横向扩展的框架。*
+同时具备接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移、异常处理等功能。一站式解决互联网公司面临的常见问题。
+&emsp;&emsp;具体的技术实现上，sumk拥有一套类似于传统"SSH"的体系。
+引入sumk以及它的依赖包，再加入一些特定注解，就能将一个普通的项目，转化成web或微服务项目（内置jetty，类似于tomcat）。<BR>
 
 ###sumk的优势
-* sumk能让传统的SSH开发人员，更快的过渡到互联网领域。也避免开发人员直接将SSH应用于服务器端<BR>
-* 更快的开发速度。互联网领域的时间观念是非常强的。早一天出产品，就早一点拥有市场。<BR>
+* 框架搭建简单。对于创业初期的互联网公司，搭建框架在人力上以及技术上，都是一个难题。使用sumk可以快速搭建应用框架，并集成了常见的登陆、加解密、用户提示等功能。 [web服务端的demo](https://github.com/youtongluan/sumk-http-demo)<BR>
+* 适应范围广。既适合移动互联网的早期阶段，也适合于后期的大用户、高并发阶段。从早期阶段，过渡到后期，只需要修改少量配置文件，就能进行分布式部署以及应用拆分。<BR>
+* 更快的开发速度。互联网领域的时间观念是非常强的，早一天出产品，就早一点拥有市场。sumk颠覆了原有的Action->service->dao的三层结构。无论开发还是修改接口，都只需要修改少量文件，能很大程度提高开发速度<BR>
 * 更少的开发人员。因为接口简单，开发速度快，代码量少。所以开发人员和维护人员都会相应的减少些<BR>
-* 更健壮的应用。sumk封装了数据库连接和redis连接，并提供了一套异常体系。<BR>
+* 更健壮的应用。连接(数据库连接、redis连接)的释放以及异常处理，是程序员经常犯的错。但这些sumk已经全部封装了<BR>
 * 少走弯路。因为传统软件开发对性能、并发不是很敏感。很多企业做大之后，就发现自己的产品有很多性能问题，横向扩展很难。sumk的接口层都支持分布式部署，数据库层支持多数据库(异构数据库)、读写分离、实时缓存<BR>
 
 
 ###现有主要模块
-* **sumk-core**：这个模块类似于spring-core，它的核心是IOC。
-sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc的`@Soa`,sumk-orm的`@Table`。此外，sumk-core还有许多彩蛋，等待你去挖掘<br>
+* **sumk-core**：这个模块类似于spring-core，它的核心是IOC。除此之外，它还有许多彩蛋等待你去挖掘<br>
 	* **sumk-tx**：类似于spring-tx，使用@Box来开启事务，连接的开关，以及事务的提交、回滚对开发人员透明。sumk-tx支持异构数据源、读写分离等互联网经常遇到的场景。<br>
-		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。sumk-orm只支持mysql，但sumk-tx与数据库类型无关<br>
-		* **sumk-batis**：类似于spring-mybatis.jar。因为sumk-orm只提供最常用的操作，所以sumk框架内置了对mybatis的兼容，已提供额外的操作<br>
+		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。DB类目前只支持mysql，但RawDB、NamedDB以及sumk-tx都与数据库类型无关。sumk-orm的入口类是DB。此外还提供RawDB和NamedDB两个类，作为DB的补充。<br>
+		* **sumk-batis**：类似于spring-mybatis.jar。提供对mybatis的兼容，因为sumk-orm本身有些类似hibernate，所以没有内置对hibernate的兼容<br>
 	* **sumk-http**：json版的spring mvc，主要面向于服务器端（提供给移动端访问）。只需要在一个普通方法上添加`@Web`注解，就可以让它提供http访问，内置了异常处理、加解密等。支持单机部署或分布式部署（session可存放在本机或redis上）。其中String类型的返回值，会将原始信息返回回去，类似于@ResponseBody<br>
 	* **sumk-rpc**：提供微服务能力。只需要配置zookeeper地址，然后在方法上添加`@Soa`注解，就能够将一个普通方法变成一个微服务方法。<BR>
 上述的层级代表了他们的依赖关系。因为模块化的关系，我们可以只用其中的某一部分功能。
@@ -26,17 +27,18 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 ###sumk-core与传统Spring框架的对应关系<BR>
 我将列出sumk-core中元素与Spirng的对应关系，让大家更易入手<br><BR>
 
-|sumk的元素 |spring的元素              |作用                            |
+|sumk的元素 |spring的元素                        |作用                                                  |
 |----------|-------------------------|--------------------------------|
-|@Bean     |@Component               |声明一个bean                     |
-|@Inject   |@Autowired               |注入                             |
-|@Box      |@Transactional           |数据库事务                        |
-|IOCWatcher接口|spirng的Aware系列接口|接收IOC框架回调|
+|@Bean     |@Component               |声明一个bean                    |
+|@Inject   |@Autowired               |注入                                                  |
+|@Box      |@Transactional           |数据库事务                                        |
+|IOCWatcher接口|spirng的Aware系列接口 |接收IOC框架回调                                |
 |IOC.get() |SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean  |
 <BR>
 
 ###环境搭建
-* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/test.ini中
+* 安装JDK8
+* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/sumk.ini中
 * 安装redis服务器（可选），如果有redis服务器，就将redis.properties的注释打开
 * zookeeper服务器（可选），目前只有RPC功能有用到zookeeper。`org.test.Main`启动的时候，会启动测试环境内置的zookeeper，这样做的目的是便于新手入门
 
@@ -54,7 +56,7 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 ####sumk的事务及ORM
 
 ```
-	@Box(dbName = "test")  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
+	@Box  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
 	public void test() {
 		DemoUser user = new DemoUser();
 		user.setAge(30);
@@ -69,9 +71,24 @@ sumk的IOC除了解析`@Bean`，sumk-tx的`@Box`,sumk-http的`@Web`，sumk-rpc�
 				.limit(10)
 				.resultHandler(MapResultHandler.handler)
 				.queryList();
-		
+				
 	}
+	
 ```
+
+RawDB和NamedDB是DB类的补充，以下是简单例子：<BR>
+
+```
+	@Box  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
+	public void query() {
+		// RawDB使用的是原生的sql，后面跟的是要注入的参数。参数个数与sql中的?的个数一致
+		RawDB.list("select * from demouser where name=? and age=?", "登陆",12);
+		
+		//NamedDB类似于mybatis，目前只支持#{}方式，不支持<if>等标签。
+		NamedDB.count("select count(1) from demouser where name=#{name}", SBuilder.map("name", "登陆").toMap()); 
+		}
+```
+
 
 ####http服务器端：
 
@@ -88,12 +105,12 @@ public class Demo {
 	}
 }
 ```
-* 客户端就是一般的http请求，请求路径是http://localhost/intf/webserver/demo?act=echo，请求实体是{"echo":"hi",“names”:["张三","李四"]}<br>
+* 客户端就是一般的http请求，请求路径是http://localhost/intf/webserver/demo?act=echo，请求实体是data={"echo":"hi",“names”:["张三","李四"]}<br>
 
 ####RPC服务器端：
 
 ```java
-@Soa //只需要这个注解，就能接收RPC请求，默认接口名是 appId.小写的类名.小写的方法名
+@Soa //只需要这个注解，就能接收RPC请求，默认接口名是 [appId.小写的类名.小写的方法名]
 public List<String> echo(String echo,List<String> names){
 	List<String> list=new ArrayList<String>();
 	for(String name:names){
@@ -106,7 +123,7 @@ public List<String> echo(String echo,List<String> names){
 ####RPC客户端：
 
 ```Java
-Rpc.init(); //只要初始化一次就可以了
+Rpc.init();// 如果在app.preperties中添加soa.client.start=true，就可以不用这行代码
 
 List<String> names=Arrays.asList("游夏","游侠");
 String echo=",how are you";

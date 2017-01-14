@@ -2,6 +2,7 @@ package org.test.orm;
 
 import java.sql.Timestamp;
 import java.text.ParseException;
+import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,8 +30,8 @@ public class SinglePrimaryTest {
 	@Test
 	public void crud() {
 		DemoUser obj = new DemoUser();
-		obj.setAge(dao.r.nextInt(100));
-		obj.setName("名字" + dao.r.nextInt());
+		obj.setAge(new Random().nextInt(100));
+		obj.setName("名字" + new Random().nextInt());
 		obj.setLastUpdate(new Timestamp(System.currentTimeMillis() / 1000 * 1000));// timestamp类型的字段，如果是mysql数据库。用Timestamp或Date类都行，但oracle只能用Timestamp类型
 		dao.insert(obj);
 		Assert.assertEquals(obj, dao.query(obj.getId()));

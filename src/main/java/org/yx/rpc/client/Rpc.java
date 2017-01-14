@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.rpc.client;
 
 import java.util.Map;
@@ -63,6 +78,14 @@ public final class Rpc {
 		return reqResp.getResp().getJson();
 	}
 
+	/**
+	 * 根据参数顺序调用rpc方法
+	 * 
+	 * @param method
+	 * @param args
+	 *            支持泛型，比如List<Integer>,List<String>之类的。但不提倡使用泛型
+	 * @return
+	 */
 	public static String call(String method, Object... args) {
 		Req req = createReq(method);
 		String[] params = new String[args.length];
@@ -84,5 +107,9 @@ public final class Rpc {
 		Req req = createReq(method);
 		req.setJsonedParam(arg);
 		return call0(req);
+	}
+
+	public static String callInMap(String method, String arg) {
+		return callInJson(method, GsonUtil.toJson(arg));
 	}
 }

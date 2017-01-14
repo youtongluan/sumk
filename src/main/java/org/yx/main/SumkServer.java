@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.main;
 
 import java.util.ArrayList;
@@ -9,12 +24,14 @@ import java.util.Set;
 
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.ScanerFactorysBean;
+import org.yx.bean.watcher.LifeCycleHandler;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.listener.Listener;
 import org.yx.log.Log;
 import org.yx.log.LogType;
+import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtils;
 
 public class SumkServer {
@@ -46,10 +63,19 @@ public class SumkServer {
 			handleSystemArgs();
 			handleArgs(args);
 			BeanPublisher.addListeners((List<Listener>) new ScanerFactorysBean().create());
-			BeanPublisher.publishBeans(
-					allPackage(AppInfo.get(StartConstants.SOA_PACKAGES), AppInfo.get(StartConstants.HTTP_PACKAGES),
-							AppInfo.get(StartConstants.IOC_PACKAGES), StartConstants.INNER_PACKAGE));
-
+			List<String> ps = new ArrayList<>();
+			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
+			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
+			if (StartContext.inst.get(StartConstants.NOSOA) == null) {
+				ps.add(AppInfo.get(StartConstants.SOA_PACKAGES));
+			}
+			if (StartContext.inst.get(StartConstants.NOHTTP) == null) {
+				ps.add(AppInfo.get(StartConstants.HTTP_PACKAGES));
+			}
+			BeanPublisher.publishBeans(allPackage(ps));
+			if(AppInfo.getBoolean(StartConstants.SOA_PACKAGES+".client.start",false)){
+				Rpc.init();
+			}
 			StartContext.clear();
 		} catch (Throwable e) {
 			Log.printStack(e);
@@ -65,13 +91,20 @@ public class SumkServer {
 	}
 
 	private static void handleArgs(Collection<String> args) {
-		if (args.contains("slf4j")) {
-			Log.setLogType(LogType.slf4j);
-		}
+		args.forEach(arg -> {
+			switch (arg) {
+			case "slf4j":
+				Log.setLogType(LogType.slf4j);
+				break;
+			default:
+				StartContext.inst.put(arg, Boolean.TRUE);
+				break;
+			}
+		});
 
 	}
 
-	private static String[] allPackage(String... ps) {
+	private static List<String> allPackage(List<String> ps) {
 		List<String> list = new ArrayList<String>();
 		for (String p : ps) {
 			if (StringUtils.isEmpty(p)) {
@@ -87,6 +120,10 @@ public class SumkServer {
 				list.add(s);
 			}
 		}
-		return list.toArray(new String[list.size()]);
+		return list;
+	}
+
+	public synchronized static void stop() {
+		LifeCycleHandler.instance.destory();
 	}
 }

@@ -1,25 +1,49 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.conf;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Observer;
 
-import org.yx.db.sql.ColumnType;
-import org.yx.log.ConsoleLog;
+import org.yx.db.annotation.ColumnType;
 import org.yx.log.Log;
-import org.yx.log.LogType;
 import org.yx.rpc.LocalhostUtil;
 
 public class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
-	private static String appId = "UNKOWN";
+	private static String appId = "sumk";
 
 	public static int httpSessionTimeout = 3600;
 
-	public static int redisTTL = 7200;
 	/**
 	 * 默认情况下，DB操作是根据数据库中的主键，还是redis中的主键。
 	 */
 	public static ColumnType modifyByColumnType = ColumnType.ID_DB;
+
+	private static List<Observer> observers = new ArrayList<>();
+
+	public static synchronized void addObserver(Observer ob) {
+		if (observers.contains(ob)) {
+			return;
+		}
+		observers.add(ob);
+	}
 
 	public static final PropertiesInfo info = new PropertiesInfo("app.properties") {
 
@@ -29,7 +53,7 @@ public class AppInfo {
 				try {
 					return Integer.valueOf(temp);
 				} catch (Exception e) {
-					Log.get(AppInfo.class).error(key + "=" + temp + "，不是有效的数字格式");
+					Log.get(AppInfo.class).error(key + "=" + temp + ", is not valid Integer,ignore it");
 				}
 			}
 			return null;
@@ -48,25 +72,9 @@ public class AppInfo {
 				AppInfo.httpSessionTimeout = temp;
 			}
 
-			temp = intValue("sumk.redis.ttl");
-			if (temp != null) {
-				AppInfo.redisTTL = temp;
-			}
-			String modify = get("sumk.db.default_modify");
-			if (modify != null && modify.length() > 0
-					&& ("redis".equalsIgnoreCase(modify) || "cache".equalsIgnoreCase(modify))) {
-				AppInfo.modifyByColumnType = ColumnType.ID_CACHE;
-			}
-			try {
-				String logType = get("sumk.logtype", LogType.console.name());
-				Log.setLogType(LogType.valueOf(logType));
-				temp = intValue("sumk.loglevel.console");
-				if (temp != null && temp.byteValue() > -1) {
-					ConsoleLog.setDefaultLevel(temp.byteValue());
-				}
-			} catch (Exception e) {
-				Log.get("sumk.appInfo").info(e.getMessage(), e);
-			}
+			observers.forEach(ob -> {
+				ob.update(null, null);
+			});
 		}
 
 	};
@@ -114,6 +122,15 @@ public class AppInfo {
 
 	public static String systemCharset() {
 		return System.getProperty("sumk.app.charset", "UTF-8");
+	}
+
+	public static boolean getBoolean(String name, boolean defaultValue) {
+		String value = info.get(name);
+		if (value == null || value.length() == 0) {
+			return defaultValue;
+		}
+		value = value.toLowerCase();
+		return "1".equals(value) || "true".equals(value);
 	}
 
 }

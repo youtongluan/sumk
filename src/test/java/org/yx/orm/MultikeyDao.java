@@ -13,7 +13,7 @@ public class MultikeyDao {
 
 	Random r = new Random();
 
-	@Box(dbName = "test")
+	@Box
 	public Multikey insert(Multikey obj) {
 		if (obj == null) {
 			obj = create("名字" + r.nextInt(), r.nextInt(100));
@@ -22,13 +22,13 @@ public class MultikeyDao {
 		return obj;
 	}
 
-	@Box(dbName = "test")
+	@Box
 	public void updatePart(Multikey obj) {
 		obj.setName("名字改为：" + r.nextInt());
 		DB.update(obj).execute();
 	}
 
-	@Box(dbName = "test")
+	@Box
 	public void fullUpate(String id1, String id2) {
 		Multikey obj = new Multikey();
 		obj.setId1(id1).setId2(id2);
@@ -36,12 +36,12 @@ public class MultikeyDao {
 		DB.update(obj).fullUpdate().execute();
 	}
 
-	@Box(dbName = "test")
+	@Box
 	public int delete(Multikey obj) {
 		return DB.delete(obj).execute();
 	}
 
-	@Box(dbName = "test")
+	@Box
 	public Multikey query(String id1, String id2) {
 		return DB.select(new Multikey().setId1(id1).setId2(id2)).queryOne();
 	}

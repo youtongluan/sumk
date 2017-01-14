@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.db.sql;
 
 import java.lang.reflect.Type;
@@ -72,7 +87,7 @@ public class PojoMeta {
 	 * @return
 	 */
 	public boolean isNoCache() {
-		return table.cacheType() == CacheType.NOCACHE || RedisPool.defaultRedis() == null;
+		return table.cacheType() == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.redisIDs.length == 0;
 	}
 
 	public CacheType cacheType() {
@@ -211,6 +226,11 @@ public class PojoMeta {
 
 	}
 
+	/**
+	 * 获取按缓存顺序的redis key
+	 * 
+	 * @return
+	 */
 	public ColumnMeta[] getRedisIDs() {
 		return this.redisIDs;
 	}
@@ -238,7 +258,7 @@ public class PojoMeta {
 	}
 
 	/**
-	 * 将pojo转化成map
+	 * 将pojo转化成map，key是pojo中的字段名
 	 * 
 	 * @param source
 	 * @param withnull
@@ -247,8 +267,12 @@ public class PojoMeta {
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
 	 */
-	public Map<String, Object> populateByFieldName(Object source, boolean withnull)
+	@SuppressWarnings("unchecked")
+	public Map<String, Object> populate(Object source, boolean withnull)
 			throws InstantiationException, IllegalAccessException {
+		if (Map.class.isInstance(source)) {
+			return (Map<String, Object>) source;
+		}
 		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
 			Log.get("event").debug("{} is not instance of {}", source.getClass().getName(), this.pojoClz.getName());
@@ -287,8 +311,12 @@ public class PojoMeta {
 		return obj;
 	}
 
+	@SuppressWarnings("unchecked")
 	public Map<String, Object> populateByDbColumn(Object source, boolean withnull)
 			throws InstantiationException, IllegalAccessException {
+		if (Map.class.isInstance(source)) {
+			return (Map<String, Object>) source;
+		}
 		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
 			Log.get("event").debug("{} is not instance of {}", source.getClass().getName(), this.pojoClz.getName());
@@ -311,7 +339,8 @@ public class PojoMeta {
 	 * @param source
 	 *            pojo对象，或者Map<String,Object>
 	 * @param exceptionIfHasNull
-	 *            如果为true，有null存在就抛异常，如果为false，就返回null
+	 *            如果为true，有null存在就抛异常，如果为false，就返回null。source的内容比redisID多，
+	 *            不会有任何问题
 	 * @return
 	 * @throws Exception
 	 */
@@ -329,6 +358,26 @@ public class PojoMeta {
 				}
 				return null;
 			}
+			if (key.isEmpty()) {
+				key = String.valueOf(v);
+			} else {
+				key += KEY_SPLIT + v;
+			}
+		}
+		return key;
+	}
+
+	/**
+	 * 允许key中出现null。如果出现null，就表示redis key中有null
+	 * 
+	 * @param map
+	 * @return
+	 * @throws Exception
+	 */
+	public String getRedisIDWithNULL(Map<String, Object> map) throws Exception {
+		String key = "";
+		for (ColumnMeta m : this.redisIDs) {
+			Object v = map.get(m.getFieldName());
 			if (key.isEmpty()) {
 				key = String.valueOf(v);
 			} else {

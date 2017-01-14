@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.bean;
 
 import java.lang.reflect.Field;
@@ -7,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.bean.watcher.BeanWatcher;
-import org.yx.bean.watcher.ContextWatcher;
 import org.yx.bean.watcher.IOCWatcher;
+import org.yx.bean.watcher.IntfImplement;
+import org.yx.bean.watcher.LifeCycleHandler;
 import org.yx.bean.watcher.Scaned;
 import org.yx.common.ClassScaner;
+import org.yx.common.StartConstants;
 import org.yx.db.Cached;
 import org.yx.exception.SumkException;
 import org.yx.listener.Listener;
@@ -27,12 +44,19 @@ public final class BeanPublisher {
 	 * 
 	 * @param packageNames
 	 */
-	public static synchronized void publishBeans(String... packageNames) {
+	public static synchronized void publishBeans(List<String> packageNames) {
+		if (packageNames == null || packageNames.isEmpty()) {
+			Log.get("sumk.SYS").info("sumk.ioc in app.properties cannot be empty");
+			return;
+		}
+		if (!packageNames.contains(StartConstants.INNER_PACKAGE)) {
+			packageNames.add(0, StartConstants.INNER_PACKAGE);
+		}
+		IntfImplement.beforeScan();
 		ClassScaner scaner = new ClassScaner();
-		Collection<String> clzs = scaner.parse(packageNames);
+		Collection<String> clzs = scaner.parse(packageNames.toArray(new String[packageNames.size()]));
 		for (String c : clzs) {
 			try {
-
 				Class<?> clz = BeanPublisher.class.getClassLoader().loadClass(c);
 				publish(new BeanEvent(clz));
 			} catch (Exception e) {
@@ -41,7 +65,7 @@ public final class BeanPublisher {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
 				}
-				Log.get("SYS.load").info(c + " load failed, ommit it.Error message:" + e.getMessage());
+				Log.get("SYS.load").debug(c + " ignored." + e.getMessage());
 			}
 		}
 		Log.get(BeanPublisher.class).debug(IOC.info());
@@ -57,7 +81,6 @@ public final class BeanPublisher {
 		if (target != null) {
 			return target;
 		}
-
 		target = IOC.get(name, f.getType());
 		if (target != null) {
 			return target;
@@ -68,7 +91,6 @@ public final class BeanPublisher {
 	private static Object getCacheObject(Field f) {
 		String name = f.getName();
 		Class<?> clz = f.getType();
-
 		Object target = IOC.cache(name, f.getType());
 		if (target != null) {
 			return target;
@@ -108,7 +130,6 @@ public final class BeanPublisher {
 		watchers.stream().filter(BeanWatcher.class::isInstance).forEach(w -> {
 			for (BeanWrapper bw : beanwrapers) {
 				BeanWatcher watcher = (BeanWatcher) w;
-
 				if (BeanWatcher.class.isAssignableFrom(bw.getTargetClass())
 						|| !watcher.acceptClass().isInstance(bw.getBean())) {
 					continue;
@@ -116,16 +137,13 @@ public final class BeanPublisher {
 				watcher.beanPost(bw);
 			}
 		});
-		watchers.stream().filter(ContextWatcher.class::isInstance)
-				.forEach(w -> ((ContextWatcher) w).contextInitialized());
+		LifeCycleHandler.instance.start();
 	}
 
 	private static void injectProperties(Collection<Object> beans) {
-
 		beans.forEach(bean -> {
 			Class<?> tempClz = bean.getClass();
 			while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
-
 				Field[] fs = tempClz.getDeclaredFields();
 				for (Field f : fs) {
 					Inject inj = f.getAnnotation(Inject.class);
@@ -133,8 +151,8 @@ public final class BeanPublisher {
 						Class<?> clz = inj.beanClz();
 						Object target = getInjectObject(f, clz);
 						if (target == null) {
-							SumkException.throwException(235435658,
-									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
+							SumkException.throwException(-235435658,
+									bean.getClass().getName() + "--" + f.getName() + " cannot injected.");
 						}
 						injectField(f, bean, target);
 						continue;
@@ -143,7 +161,7 @@ public final class BeanPublisher {
 					if (c != null) {
 						Object target = getCacheObject(f);
 						if (target == null) {
-							SumkException.throwException(235435658,
+							SumkException.throwException(23526568,
 									bean.getClass().getName() + "--" + f.getName() + " cannot injected");
 						}
 						injectField(f, bean, target);

@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.db.visit;
 
 import java.sql.Connection;
@@ -28,7 +43,7 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 	public List<Map<String, Object>> visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
 		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
-			Log.get("sumk.SQL.raw").trace(String.valueOf(maped));
+			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.ANY);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -44,17 +59,11 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 		if (SelectBuilder.class.isInstance(builder)) {
 			pm = ((SelectBuilder) builder).getPojoMeta();
 		}
-		return toMapList(ret, pm);
+		List<Map<String, Object>> list = toMapList(ret, pm);
+		statement.close();
+		return list;
 	}
 
-	/**
-	 * 返回的是pojo类的字段名
-	 * 
-	 * @param rs
-	 * @param pm
-	 * @return
-	 * @throws java.sql.SQLException
-	 */
 	public static List<Map<String, Object>> toMapList(ResultSet rs, PojoMeta pm) throws java.sql.SQLException {
 		List<Map<String, Object>> list = new ArrayList<>();
 		if (rs == null) {
@@ -67,7 +76,7 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 			rowData = new HashMap<>(columnCount * 2);
 			for (int i = 1; i <= columnCount; i++) {
 				if (pm == null) {
-					rowData.put(md.getColumnName(i), rs.getObject(i));
+					rowData.put(md.getColumnName(i).toLowerCase(), rs.getObject(i));
 					continue;
 				}
 				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));

@@ -1,3 +1,18 @@
+/**
+ * Copyright (C) 2016 - 2017 youtongluan.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * 		http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.yx.db.visit;
 
 import java.sql.Connection;
@@ -20,7 +35,7 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 	public Integer visit(SqlBuilder builder) throws Exception {
 		MapedSql maped = builder.toMapedSql();
 		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
-			Log.get("sumk.SQL.raw").trace(String.valueOf(maped));
+			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
 		}
 		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
@@ -32,6 +47,7 @@ public class DmlVisitor implements SumkDbVisitor<Integer> {
 		}
 		Log.get("sumk.SQL").debug(" <== {}", statement);
 		int ret = statement.executeUpdate();
+		statement.close();
 		EventLane.pubuish(conn, maped.getEvent());
 		return ret;
 	}
