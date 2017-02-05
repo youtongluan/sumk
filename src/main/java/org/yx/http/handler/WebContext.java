@@ -15,18 +15,19 @@
  */
 package org.yx.http.handler;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.HttpInfo;
+import org.yx.http.HttpUtil;
 
 public class WebContext {
 	private HttpInfo info;
 	private HttpServletRequest httpRequest;
 	private HttpServletResponse httpResponse;
-	private String charset = "UTF-8";
+	private Charset charset = HttpUtil.DEFAULT_CHARSET;
 	private String sign;
 	private Map<String, String> headers;
 	private Object data;
@@ -58,7 +59,7 @@ public class WebContext {
 		this.httpResponse = resp;
 	}
 
-	public String getCharset() {
+	public Charset getCharset() {
 		return charset;
 	}
 
@@ -86,8 +87,8 @@ public class WebContext {
 		return sign;
 	}
 
-	void setCharset(String charset) {
-		if (charset != null && charset.length() > 0) {
+	void setCharset(Charset charset) {
+		if (charset != null) {
 			this.charset = charset;
 		}
 

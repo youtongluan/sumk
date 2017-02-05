@@ -48,4 +48,6 @@ public @interface Upload {
 			".bmp" };
 
 	Store tempStore() default Store.VM;
+
+	String custom() default "";
 }

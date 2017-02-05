@@ -36,6 +36,16 @@ import org.yx.util.StringUtils;
 
 public class SumkServer {
 	private static volatile boolean started = false;
+	private static boolean httpEnable;
+	private static boolean rpcEnable;
+
+	public static boolean isHttpEnable() {
+		return httpEnable;
+	}
+
+	public static boolean isRpcEnable() {
+		return rpcEnable;
+	}
 
 	public static void main(String[] args) {
 		start(args);
@@ -45,7 +55,7 @@ public class SumkServer {
 		start(new ArrayList<String>());
 	}
 
-	public static void start(String[] args) {
+	public static void start(String... args) {
 		Set<String> argSet = new HashSet<>();
 		if (args != null && args.length > 0) {
 			argSet.addAll(Arrays.asList(args));
@@ -66,17 +76,20 @@ public class SumkServer {
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
-			if (StartContext.inst.get(StartConstants.NOSOA) == null) {
+			if (StartContext.inst.get(StartConstants.NOSOA) == null
+					&& AppInfo.getInt(StartConstants.SOA_PORT, -1) > 0) {
 				ps.add(AppInfo.get(StartConstants.SOA_PACKAGES));
+				rpcEnable = true;
 			}
 			if (StartContext.inst.get(StartConstants.NOHTTP) == null) {
 				ps.add(AppInfo.get(StartConstants.HTTP_PACKAGES));
+				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
-			if(AppInfo.getBoolean(StartConstants.SOA_PACKAGES+".client.start",false)){
+			if (AppInfo.getBoolean(StartConstants.SOA_PACKAGES + ".client.start", false)) {
 				Rpc.init();
 			}
-			StartContext.clear();
+
 		} catch (Throwable e) {
 			Log.printStack(e);
 			try {
@@ -97,6 +110,11 @@ public class SumkServer {
 				Log.setLogType(LogType.slf4j);
 				break;
 			default:
+				if (arg.contains("=")) {
+					String[] kv = arg.split("=", 2);
+					StartContext.inst.put(kv[0], kv[1]);
+					break;
+				}
 				StartContext.inst.put(arg, Boolean.TRUE);
 				break;
 			}

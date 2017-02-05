@@ -13,10 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.main;
+package org.yx.rpc;
 
-public class Bootstrap {
-	public static void main(String[] args) {
-		SumkServer.start(args);
-	}
+public class RpcThreadContext {
+	public String sn0;
+	public String sn;
 }

@@ -32,6 +32,12 @@ public class DateUtils {
 		return new SimpleDateFormat(fromat).format(d);
 	}
 
+	/**
+	 * 用yyyy-MM-dd HH:mm:ss进行序列化
+	 * 
+	 * @param d
+	 * @return
+	 */
 	public static String toDateTimeString(Date d) {
 		return toString(d, DATETIME);
 	}
@@ -44,6 +50,13 @@ public class DateUtils {
 		return sf.parse(d);
 	}
 
+	/**
+	 * 用yyyy-MM-dd HH:mm:ss进行反序列化
+	 * 
+	 * @param d
+	 * @return
+	 * @throws ParseException
+	 */
 	public static Date parse(String d) throws ParseException {
 		return parse(d, DATETIME);
 	}

@@ -34,8 +34,7 @@ public class ReqToStringHandler implements HttpHandler {
 			return false;
 		}
 		byte[] bs = (byte[]) ctx.getData();
-		String charset = ctx.getCharset();
-		String data = new String(bs, charset);
+		String data = new String(bs, ctx.getCharset());
 		ctx.setData(data);
 		return false;
 	}

@@ -20,18 +20,60 @@ import java.lang.reflect.Type;
 import java.util.Date;
 
 import org.yx.common.DateTimeTypeAdapter;
+import org.yx.conf.AppInfo;
 import org.yx.db.dao.Pojo;
 import org.yx.log.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 
-public class GsonUtil {
+public final class GsonUtil {
+
+	public static GsonBuilder gsonBuilder(String module) {
+		if (module == null || module.isEmpty()) {
+			module = "sumk";
+		}
+
+		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
+		String format = AppInfo.get(module + ".json.date.format");
+		if (StringUtils.isNotEmpty(format)) {
+			da.setDateFormat(format);
+		}
+
+		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
+		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", true)) {
+			gb.disableHtmlEscaping();
+		}
+		if (AppInfo.getBoolean(module + ".json.shownull", false)) {
+			gb.serializeNulls();
+		}
+		if (AppInfo.getBoolean(module + ".json.disableInnerClassSerialization", false)) {
+			gb.disableInnerClassSerialization();
+		}
+		if (AppInfo.getBoolean(module + ".json.generateNonExecutableJson", false)) {
+			gb.generateNonExecutableJson();
+		}
+		if (AppInfo.getBoolean(module + ".json.serializeSpecialFloatingPointValues", false)) {
+			gb.serializeSpecialFloatingPointValues();
+		}
+
+		if (AppInfo.getBoolean(module + ".json.longSerialize2String", false)) {
+			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
+		}
+
+		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
+			gb.setPrettyPrinting();
+		}
+		return gb;
+	}
 
 	private static Gson createGson() {
+		return gsonBuilder(null).create();
+	}
 
-		return new GsonBuilder().disableHtmlEscaping().registerTypeAdapter(Date.class, new DateTimeTypeAdapter())
-				.create();
+	public static Gson gson(String module) {
+		return gsonBuilder(module).create();
 	}
 
 	private static Gson[] gsons;

@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.asm.ProxyClassFactory;
+import org.yx.common.Ordered;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -228,7 +229,7 @@ public class BeanPool {
 	}
 
 	/**
-	 * 如果不存在，返回空的list
+	 * 如果不存在，返回空的list，如果实现了Ordered接口，将会自动排序
 	 * 
 	 * @param name
 	 * @param clz
@@ -261,6 +262,9 @@ public class BeanPool {
 			if (clz.isInstance(o)) {
 				list.add((T) o);
 			}
+		}
+		if (Ordered.class.isAssignableFrom(clz)) {
+			list.sort(null);
 		}
 		return list;
 

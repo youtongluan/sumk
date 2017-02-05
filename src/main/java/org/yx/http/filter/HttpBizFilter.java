@@ -13,25 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.sql;
+package org.yx.http.filter;
 
-import org.yx.conf.AppInfo;
-import org.yx.log.Log;
+import org.yx.bean.Plugin;
 
-public class SqlConstants {
+/**
+ * 这里面的所有方法，都不能抛出异常，否则会导致请求失败
+ */
+public interface HttpBizFilter extends Plugin {
+	/**
+	 * 在进入方法前调用
+	 */
+	public void beforeInvoke(HttpRequest req);
 
 	/**
-	 * 该属性表示用map做参数，但是map中的参数不能跟pojo中一一对应上
+	 * 
+	 * @param req
+	 * @param result
+	 *            如果不需要返回值，result就会是null
 	 */
-	static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
-	static {
-		AppInfo.addObserver((a, b) -> {
-			try {
-				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.sql.failIfPropertyNotMapped", true);
-			} catch (Exception e) {
-				Log.get("sumk.appInfo").info(e.getMessage(), e);
-			}
-		});
-	}
+	public void afterInvoke(HttpRequest req, Object result);
 
+	/**
+	 * invoke异常时调用
+	 * 
+	 * @param req
+	 * @param result
+	 *            如果不需要返回值，result就会是null
+	 */
+	public void error(HttpRequest req, Throwable ex);
 }

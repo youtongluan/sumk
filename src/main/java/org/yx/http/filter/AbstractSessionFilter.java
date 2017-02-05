@@ -16,14 +16,13 @@
 package org.yx.http.filter;
 
 import java.io.IOException;
-import java.util.Arrays;
+import java.nio.charset.Charset;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.commons.codec.binary.Base64;
 import org.yx.http.ErrorCode;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
@@ -31,6 +30,7 @@ import org.yx.redis.Redis;
 import org.yx.redis.RedisConstants;
 import org.yx.redis.RedisPool;
 import org.yx.util.UUIDSeed;
+import org.yx.util.secury.Base64Util;
 
 /**
  * 单节点使用
@@ -47,7 +47,7 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 		try {
 			LoginObject obj = login(sid, user, req);
 
-			String charset = HttpUtil.charset(req);
+			Charset charset = HttpUtil.charset(req);
 			if (obj == null) {
 				Log.get("loginAction").info(user + ":login Object must not be null");
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
@@ -58,10 +58,10 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
-			byte[] key = UUIDSeed.seq().substring(4).getBytes();
+			byte[] key = createEncryptKey(req);
 			session.put(sid, key);
 			resp.setHeader(Session.SESSIONID, sid);
-			resp.getOutputStream().write(Base64.encodeBase64String(Arrays.copyOf(key, key.length)).getBytes(charset));
+			resp.getOutputStream().write(Base64Util.encode(key));
 			resp.getOutputStream().write("\t\n".getBytes());
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
@@ -70,6 +70,11 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			Log.printStack(e);
 		}
 
+	}
+
+	protected byte[] createEncryptKey(HttpServletRequest req) {
+		byte[] key = UUIDSeed.seq().substring(4).getBytes();
+		return key;
 	}
 
 	protected String userName() {

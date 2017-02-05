@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.yx.bean.CachedBean;
+import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.db.annotation.CacheType;
 import org.yx.db.annotation.SoftDelete;
@@ -41,10 +41,7 @@ public class PojoMeta {
 	final ColumnMeta[] fieldMetas;
 
 	public final Class<?> pojoClz;
-	/**
-	 * 只有redis中是单主键的时候，这个才有用<br>
-	 * 它有可能长度为0，但不为null
-	 */
+
 	private ColumnMeta[] redisIDs;
 
 	private ColumnMeta[] primaryIDs;
@@ -81,11 +78,6 @@ public class PojoMeta {
 		return this.filedNameMap.get(filedName.toLowerCase());
 	}
 
-	/**
-	 * 这张表不需要进行缓存，或者没有配置redis
-	 * 
-	 * @return
-	 */
 	public boolean isNoCache() {
 		return table.cacheType() == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.redisIDs.length == 0;
 	}
@@ -94,11 +86,6 @@ public class PojoMeta {
 		return table.cacheType();
 	}
 
-	/**
-	 * 是否使用数据库主键作为redis的id
-	 * 
-	 * @return
-	 */
 	public boolean isPrimeKeySameWithReids() {
 		return primaryIDs == redisIDs;
 	}
@@ -150,7 +137,7 @@ public class PojoMeta {
 				this.primaryIDs = pids.toArray(new ColumnMeta[pids.size()]);
 			}
 		}
-		this.softDelete = CachedBean.get(SoftDeleteParser.class).parse(this.pojoClz.getAnnotation(SoftDelete.class));
+		this.softDelete = IOC.get(SoftDeleteParser.class).parse(this.pojoClz.getAnnotation(SoftDelete.class));
 		parseTable();
 		String arrayName = "[L" + this.pojoClz.getName() + ";";
 		try {
@@ -190,9 +177,6 @@ public class PojoMeta {
 		return this.pre;
 	}
 
-	/**
-	 * 当且仅当condition的redis主键全不为null，而非redis主键全为null时，才返回true
-	 */
 	public boolean isOnlyRedisID(Object condition) throws IllegalArgumentException, IllegalAccessException {
 		if (this.pojoClz.isInstance(condition)) {
 			for (ColumnMeta m : this.fieldMetas) {
@@ -226,23 +210,10 @@ public class PojoMeta {
 
 	}
 
-	/**
-	 * 获取按缓存顺序的redis key
-	 * 
-	 * @return
-	 */
 	public ColumnMeta[] getRedisIDs() {
 		return this.redisIDs;
 	}
 
-	/**
-	 * 
-	 * @param map
-	 *            里面的key是数据库字段的名字
-	 * @return
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 */
 	public Object buildFromDBColumn(Map<String, Object> map) throws InstantiationException, IllegalAccessException {
 		if (map == null) {
 			return null;
@@ -257,16 +228,6 @@ public class PojoMeta {
 		return ret;
 	}
 
-	/**
-	 * 将pojo转化成map，key是pojo中的字段名
-	 * 
-	 * @param source
-	 * @param withnull
-	 *            如果为true，那么null字段也会被包含进来
-	 * @return 如果对象类型不对，或者对象里面的值都是空的，就返回空map
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> populate(Object source, boolean withnull)
 			throws InstantiationException, IllegalAccessException {
@@ -275,8 +236,8 @@ public class PojoMeta {
 		}
 		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
-			Log.get("event").debug("{} is not instance of {}", source.getClass().getName(), this.pojoClz.getName());
-			return map;
+			SumkException.throwException(548092345,
+					source.getClass().getName() + " is not instance of " + this.pojoClz.getName());
 		}
 		for (ColumnMeta m : this.fieldMetas) {
 			Object v = m.value(source);
@@ -289,15 +250,6 @@ public class PojoMeta {
 		return map;
 	}
 
-	/**
-	 * 利用map组件成pojo
-	 * 
-	 * @param map
-	 * @return
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
-	 * @throws InstantiationException
-	 */
 	public Object buildPojo(Map<String, Object> map)
 			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
 		Object obj = this.pojoClz.newInstance();
@@ -333,17 +285,6 @@ public class PojoMeta {
 		return map;
 	}
 
-	/**
-	 * 获取redis的id（不包含前缀），必须全部的值都不为null，返回值才不为null
-	 * 
-	 * @param source
-	 *            pojo对象，或者Map<String,Object>
-	 * @param exceptionIfHasNull
-	 *            如果为true，有null存在就抛异常，如果为false，就返回null。source的内容比redisID多，
-	 *            不会有任何问题
-	 * @return
-	 * @throws Exception
-	 */
 	@SuppressWarnings("unchecked")
 	public String getRedisID(Object source, boolean exceptionIfHasNull) throws Exception {
 		if (Map.class.isInstance(source)) {
@@ -367,13 +308,6 @@ public class PojoMeta {
 		return key;
 	}
 
-	/**
-	 * 允许key中出现null。如果出现null，就表示redis key中有null
-	 * 
-	 * @param map
-	 * @return
-	 * @throws Exception
-	 */
 	public String getRedisIDWithNULL(Map<String, Object> map) throws Exception {
 		String key = "";
 		for (ColumnMeta m : this.redisIDs) {
@@ -393,7 +327,7 @@ public class PojoMeta {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {
 				if (exceptionIfHasNull) {
-					SumkException.throwException(1232142356, "value of " + m.getFieldName() + " cannot be null");
+					SumkException.throwException(1232142356, "redis key [" + m.getFieldName() + "] cannot be null");
 				}
 				return null;
 			}

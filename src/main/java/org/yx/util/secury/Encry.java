@@ -13,22 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.util.secury;
 
-public class SourceSn {
-	private static ThreadLocal<String> tl = new ThreadLocal<String>();
+public interface Encry {
 
-	public static void register(String sn) {
-		if (tl.get() == null) {
-			tl.set(sn);
-		}
-	}
+	public byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception;
 
-	public static String getSn0() {
-		return tl.get();
-	}
-
-	public static void removeSn0() {
-		tl.remove();
-	}
+	public byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception;
 }

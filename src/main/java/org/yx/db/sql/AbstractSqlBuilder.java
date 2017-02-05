@@ -19,12 +19,25 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.conf.AppInfo;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
+	static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
+	static {
+		AppInfo.addObserver((a, b) -> {
+			try {
+				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.sql.failIfPropertyNotMapped", true);
+			} catch (Exception e) {
+				Log.get("sumk.appInfo").info(e.getMessage(), e);
+			}
+		});
+	}
+
 	protected boolean withnull;
 
 	protected SumkDbVisitor<T> visitor;

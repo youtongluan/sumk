@@ -43,7 +43,8 @@ public final class IOC {
 	}
 
 	/**
-	 * 根据接口或类，查询它相关的bean。如果接口不存在，就返回空list
+	 * 根据接口或类，查询它相关的bean。如果接口不存在，就返回空list。<BR>
+	 * 如果clz实现了Ordered接口，返回值将会排序
 	 * 
 	 * @param clz
 	 *            一般是接口

@@ -27,8 +27,7 @@ public class ToByteHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		String bs = (String) ctx.getResult();
-		String charset = ctx.getCharset();
-		ctx.setResult(bs.getBytes(charset));
+		ctx.setResult(bs.getBytes(ctx.getCharset()));
 		return false;
 	}
 

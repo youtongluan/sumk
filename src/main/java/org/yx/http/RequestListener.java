@@ -15,31 +15,34 @@
  */
 package org.yx.http;
 
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletRequestEvent;
+import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.filter.Session;
+import org.yx.bean.Bean;
 
-public class HttpHeadersHolder {
-	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
+@Bean
+public class RequestListener implements ServletRequestListener {
 
-	static void setHttpRequest(HttpServletRequest req) {
-		_req.set(req);
+	@Override
+	public void requestDestroyed(ServletRequestEvent sre) {
+		if (sre == null) {
+			return;
+		}
+		HttpHeadersHolder.remove();
 	}
 
-	public static String getHeader(String name) {
-		return _req.get().getHeader(name);
-	}
+	@Override
+	public void requestInitialized(ServletRequestEvent sre) {
+		if (sre == null) {
+			return;
+		}
+		ServletRequest request = sre.getServletRequest();
+		if (HttpServletRequest.class.isInstance(request)) {
+			HttpHeadersHolder.setHttpRequest((HttpServletRequest) request);
+		}
 
-	public static HttpServletRequest getHttpRequest() {
-		return _req.get();
-	}
-
-	public static String token() {
-		return _req.get().getHeader(Session.SESSIONID);
-	}
-
-	static void remove() {
-		_req.remove();
 	}
 
 }

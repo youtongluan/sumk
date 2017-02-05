@@ -3,8 +3,7 @@ package org.test.web.demo;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.bean.Box;
-import org.yx.db.Cached;
-import org.yx.db.MemberUserDao;
+import org.yx.db.DB;
 import org.yx.demo.member.DemoUser;
 import org.yx.http.Login;
 import org.yx.http.filter.AbstractSessionFilter;
@@ -19,7 +18,7 @@ public class MyLoginServlet extends AbstractSessionFilter {
 
 		String password = req.getParameter("password");
 		String validCode = req.getParameter("code");
-		System.out.println("login的log：" + dao.queryById(log()));
+		System.out.println("login的log：" + DB.select().tableClass(DemoUser.class).byPrimaryId(log()).queryOne());
 		if (!"9999".equals(validCode)) {
 			return LoginObject.error("验证码错误");
 		}
@@ -31,16 +30,13 @@ public class MyLoginServlet extends AbstractSessionFilter {
 		return LoginObject.error("用户名或密码错误");
 	}
 
-	@Cached
-	private MemberUserDao dao;
-
 	public long log() {
 		long id = SeqUtil.next();
 		DemoUser user = new DemoUser();
 		user.setAge(2323443);
 		user.setId(id);
 		user.setName("登陆");
-		dao.insert(user);
+		DB.insert(user).execute();
 		return id;
 	}
 }

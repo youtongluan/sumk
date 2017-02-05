@@ -15,11 +15,33 @@
  */
 package org.yx.main;
 
+import java.io.InputStream;
+import java.util.EventListener;
+import java.util.List;
+
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+import javax.servlet.ServletRegistration;
+
+import org.yx.bean.IOC;
+import org.yx.bean.Loader;
+import org.yx.common.StartConstants;
+import org.yx.common.StartContext;
+import org.yx.http.ServletInfo;
+import org.yx.http.filter.HttpLoginWrapper;
+import org.yx.http.filter.LoginServlet;
+import org.yx.log.Log;
+import org.yx.util.CollectionUtils;
 
 /**
- * 用于web.xml启动sumkServer
+ * 如果使用tomcat等外部容器启动sumk，请在web.xml中添加：<BR>
+ * &lt;listener&gt;<br>
+ * &nbsp;&nbsp;
+ * &lt;listener-class&gt;org.yx.main.SumkLoaderListener&lt;/listener-class&gt;
+ * <br>
+ * &lt;/listener&gt;
  * 
  * @author 游夏
  *
@@ -28,7 +50,69 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		SumkServer.start();
+		Log.get("sumk.http").debug("contextInitialized");
+		SumkServer.start(new String[] { StartConstants.NOJETTY });
+		if (!SumkServer.isHttpEnable()) {
+			return;
+		}
+		ServletContext context = sce.getServletContext();
+		injectUserServlets(context);
+		@SuppressWarnings("unchecked")
+		List<ServletInfo> servlets = (List<ServletInfo>) StartContext.inst.get(ServletInfo.class);
+		for (ServletInfo info : servlets) {
+			Servlet bean = IOC.get(info.getServletClz());
+			ServletRegistration.Dynamic dynamic = bean != null ? context.addServlet(info.getPath(), bean)
+					: context.addServlet(info.getPath(), info.getServletClz());
+			dynamic.addMapping(info.getPath());
+
+		}
+
+		Object path = StartContext.inst.get(LoginServlet.class);
+		if (path != null && String.class.isInstance(path)) {
+			String loginPath = (String) path;
+			if (!loginPath.startsWith("/")) {
+				loginPath = "/" + loginPath;
+			}
+			Log.get("sumk.http").info("login path:{}", context.getContextPath() + loginPath);
+			context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
+		}
+		addListeners(context);
+	}
+
+	/**
+	 * @param context
+	 */
+	private void addListeners(ServletContext context) {
+		try {
+			InputStream in = Loader.getResourceAsStream("META-INF/http.listeners");
+			addListener(context, CollectionUtils.loadList(in));
+		} catch (Exception e) {
+			Log.printStack(e);
+			return;
+		}
+	}
+
+	private void addListener(ServletContext context, List<String> intfs) throws ClassNotFoundException {
+		for (String intf : intfs) {
+			Class<?> clz = Class.forName(intf);
+			if (!EventListener.class.isAssignableFrom(clz)) {
+				Log.get("sumk.http").info(intf + " is not implement EventListener");
+				continue;
+			}
+			@SuppressWarnings("unchecked")
+			List<EventListener> listeners = (List<EventListener>) IOC.getBeans(clz);
+			if (org.yx.util.CollectionUtils.isEmpty(listeners)) {
+				continue;
+			}
+			listeners.forEach(lis -> {
+				Log.get("sumk.http").trace("add web listener:{}", lis.getClass().getSimpleName());
+				context.addListener(lis);
+			});
+		}
+	}
+
+	private void injectUserServlets(ServletContext context) {
+
 	}
 
 	@Override

@@ -18,6 +18,7 @@ package org.yx.bean;
 import java.io.InputStream;
 
 public class Loader {
+
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
 		if (!clz.startsWith("org") && !clz.startsWith("com")) {
 			clz = "org.yx." + clz;
@@ -26,8 +27,13 @@ public class Loader {
 	}
 
 	public static InputStream getResourceAsStream(String name) {
-		return Loader.class.getClassLoader().getResourceAsStream(name.replace('.', '/'));
+		name = name.replace('.', '/');
+		InputStream in = Loader.class.getClassLoader().getResourceAsStream(name + "-impl");
+		if (in != null) {
+			return in;
+		}
+		return Loader.class.getClassLoader().getResourceAsStream(name);
 	}
 
-	public static final String JAVA_PRE = "java";
+	public static final String JAVA_PRE = "java.";
 }

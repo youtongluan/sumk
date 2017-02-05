@@ -16,26 +16,19 @@
 package org.yx.rpc;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 
 public final class ZkClientHolder {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
-	private static Charset defaultCharset;
+	private static Charset defaultCharset = StandardCharsets.UTF_8;
 	public static final String SOA_ROOT = "/SUMK_SOA";
-	static {
-		try {
-			defaultCharset = Charset.forName("UTF-8");
-		} catch (Exception e) {
-			Log.printStack(e);
-		}
-	}
 
 	/**
 	 * 如果不存在，就创建该节点（永久节点）

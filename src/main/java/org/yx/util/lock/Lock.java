@@ -60,7 +60,7 @@ public final class Lock implements Key {
 	}
 
 	public static Lock create(String name) {
-		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 30));
+		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 300));
 	}
 
 	/**

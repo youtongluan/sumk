@@ -68,7 +68,6 @@ public class LifeCycleHandler {
 		if (lifes == null || lifes.isEmpty()) {
 			return;
 		}
-		lifes.sort(null);
 		lifes.forEach(Plugin::start);
 	}
 
@@ -83,7 +82,6 @@ public class LifeCycleHandler {
 		if (lifes == null || lifes.isEmpty()) {
 			return;
 		}
-		lifes.sort(null);
 		Collections.reverse(lifes);
 		lifes.forEach(b -> {
 			try {
@@ -92,6 +90,7 @@ public class LifeCycleHandler {
 				Log.printStack(e);
 			}
 		});
+		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 
 }

@@ -15,9 +15,18 @@
  */
 package org.yx.http.handler;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.List;
+
+import org.yx.bean.IOC;
+import org.yx.common.BizExcutor;
 import org.yx.exception.HttpException;
-import org.yx.http.HttpInfo;
+import org.yx.http.HttpGson;
 import org.yx.http.Web;
+import org.yx.http.filter.HttpBizFilter;
+import org.yx.http.filter.HttpRequest;
+import org.yx.rpc.server.intf.ActionContext;
 
 public class InvokeHandler implements HttpHandler {
 
@@ -28,14 +37,56 @@ public class InvokeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-
 		HttpInfo info = ctx.getInfo();
 		if (!String.class.isInstance(ctx.getData())) {
 			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
 		}
-		Object obj = info.invokeByJsonArg((String) ctx.getData());
-		ctx.setResult(obj);
+		Object ret = info.accept(http -> {
+			if (http.getArgClz() == null || http.argTypes == null || http.argTypes.length == 0) {
+				return exec(http.m, http.obj, null);
+			}
+			Object[] params = new Object[http.getArgTypes().length];
+			Object argObj = HttpGson.gson.fromJson((String) ctx.getData(), http.argClz);
+			for (int i = 0, k = 0; i < params.length; i++) {
+				if (ActionContext.class.isInstance(http.getArgTypes()[i])) {
+
+					params[i] = null;
+					continue;
+				}
+				if (argObj == null) {
+					params[i] = null;
+					continue;
+				}
+				Field f = http.getFields()[k++];
+				params[i] = f.get(argObj);
+			}
+			return exec(http.m, http.obj, params);
+		});
+		ctx.setResult(ret);
 		return false;
+	}
+
+	private static Object exec(Method m, Object obj, Object[] params) throws Throwable {
+		List<HttpBizFilter> list = IOC.getBeans(HttpBizFilter.class);
+		if (list == null || list.isEmpty()) {
+			return BizExcutor.exec(m, obj, params);
+		}
+		HttpRequest req = new HttpRequest(params);
+		try {
+			for (HttpBizFilter f : list) {
+				f.beforeInvoke(req);
+			}
+			Object ret = BizExcutor.exec(m, obj, params);
+			for (HttpBizFilter f : list) {
+				f.afterInvoke(req, ret);
+			}
+			return ret;
+		} catch (Exception e) {
+			for (HttpBizFilter f : list) {
+				f.error(req, e);
+			}
+			throw e;
+		}
 	}
 
 }

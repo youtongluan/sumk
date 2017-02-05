@@ -16,13 +16,11 @@
 package org.yx.bean;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
 import org.yx.bean.watcher.BeanWatcher;
-import org.yx.bean.watcher.IOCWatcher;
 import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.LifeCycleHandler;
 import org.yx.bean.watcher.Scaned;
@@ -57,6 +55,7 @@ public final class BeanPublisher {
 		Collection<String> clzs = scaner.parse(packageNames.toArray(new String[packageNames.size()]));
 		for (String c : clzs) {
 			try {
+
 				Class<?> clz = BeanPublisher.class.getClassLoader().loadClass(c);
 				publish(new BeanEvent(clz));
 			} catch (Exception e) {
@@ -81,6 +80,7 @@ public final class BeanPublisher {
 		if (target != null) {
 			return target;
 		}
+
 		target = IOC.get(name, f.getType());
 		if (target != null) {
 			return target;
@@ -91,6 +91,7 @@ public final class BeanPublisher {
 	private static Object getCacheObject(Field f) {
 		String name = f.getName();
 		Class<?> clz = f.getType();
+
 		Object target = IOC.cache(name, f.getType());
 		if (target != null) {
 			return target;
@@ -110,26 +111,17 @@ public final class BeanPublisher {
 		}
 	}
 
-	@SuppressWarnings("rawtypes")
 	private static void autoWiredAll() {
 		BeanPool pool = InnerIOC.pool;
 		Map<Object, BeanWrapper> beanMap = pool.allBeans();
 		Collection<BeanWrapper> beanwrapers = beanMap.values();
 		Collection<Object> beans = beanMap.keySet();
-		List<IOCWatcher> watchers = new ArrayList<>(128);
-		beans.forEach(b -> {
-			if (IOCWatcher.class.isInstance(b)) {
-				watchers.add((IOCWatcher) b);
-			}
-		});
-		;
-		watchers.sort(null);
 
-		watchers.stream().filter(Scaned.class::isInstance).forEach(w -> ((Scaned) w).afterScaned());
+		IOC.getBeans(Scaned.class).forEach(w -> w.afterScaned());
 		injectProperties(beans);
-		watchers.stream().filter(BeanWatcher.class::isInstance).forEach(w -> {
+		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
 			for (BeanWrapper bw : beanwrapers) {
-				BeanWatcher watcher = (BeanWatcher) w;
+
 				if (BeanWatcher.class.isAssignableFrom(bw.getTargetClass())
 						|| !watcher.acceptClass().isInstance(bw.getBean())) {
 					continue;
@@ -141,9 +133,11 @@ public final class BeanPublisher {
 	}
 
 	private static void injectProperties(Collection<Object> beans) {
+
 		beans.forEach(bean -> {
 			Class<?> tempClz = bean.getClass();
 			while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
+
 				Field[] fs = tempClz.getDeclaredFields();
 				for (Field f : fs) {
 					Inject inj = f.getAnnotation(Inject.class);

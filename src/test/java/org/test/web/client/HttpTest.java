@@ -222,7 +222,7 @@ public class HttpTest {
 		MultipartEntity reqEntity = new MultipartEntity();
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("data", StringBody.create(req, "text/plain", Charset.forName(charset)));
-		reqEntity.addPart("img", new FileBody(new File("E:\\works\\logo.png")));
+		reqEntity.addPart("img", new FileBody(new File("E:\\doc\\logo.jpg")));
 
 		post.setEntity(reqEntity);
 		HttpResponse resp = client.execute(post);

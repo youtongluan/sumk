@@ -21,7 +21,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
+import org.yx.http.handler.HttpInfo;
 import org.yx.log.Log;
 
 /**
@@ -86,7 +88,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				HttpUtil.error(resp, -1004, "请求的模块不正确", HttpUtil.charset(req));
 				return;
 			}
-			HttpHeadersHolder.setHttpRequest(req);
+			ThreadContext.httpContext(act);
 			handle(act, info, req, resp);
 
 		} catch (Exception e) {
@@ -97,7 +99,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				Log.printStack(e);
 			}
 		} finally {
-			HttpHeadersHolder.remove();
+			ThreadContext.remove();
 		}
 	}
 

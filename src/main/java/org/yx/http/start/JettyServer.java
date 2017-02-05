@@ -15,32 +15,36 @@
  */
 package org.yx.http.start;
 
+import java.util.Arrays;
+import java.util.EventListener;
 import java.util.List;
 import java.util.concurrent.LinkedBlockingDeque;
+
+import javax.servlet.ServletContextListener;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.handler.ContextHandler.ContextScopeListener;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.http.ServletInfo;
-import org.yx.http.filter.HttpLoginWrapper;
-import org.yx.http.filter.LoginServlet;
 import org.yx.log.Log;
+import org.yx.main.SumkLoaderListener;
+import org.yx.util.CollectionUtils;
 import org.yx.util.StringUtils;
 
-public class HttpServer implements Plugin {
+public class JettyServer implements Plugin {
 
 	private final int port;
 	private Server server;
 	private boolean started = false;
 
-	public HttpServer(int port) {
+	public JettyServer(int port) {
 		super();
 		this.port = port;
 	}
@@ -68,21 +72,8 @@ public class HttpServer implements Plugin {
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = new ServletContextHandler();
 			context.setContextPath(AppInfo.get("http.web.root", "/intf"));
-			@SuppressWarnings("unchecked")
-			List<ServletInfo> servlets = (List<ServletInfo>) StartContext.inst.get(ServletInfo.class);
-			for (ServletInfo info : servlets) {
-				context.addServlet(info.getServletClz(), info.getPath());
-			}
-
-			Object path = StartContext.inst.get(LoginServlet.class);
-			if (path != null && String.class.isInstance(path)) {
-				String loginPath = (String) path;
-				if (!loginPath.startsWith("/")) {
-					loginPath = "/" + loginPath;
-				}
-				Log.get("http").info("login path:{}", context.getContextPath() + loginPath);
-				context.addServlet(HttpLoginWrapper.class, loginPath);
-			}
+			context.addEventListener(new SumkLoaderListener());
+			addUserListener(context, Arrays.asList(ServletContextListener.class, ContextScopeListener.class));
 			String resourcePath = AppInfo.get("http.resource");
 			if (StringUtils.isNotEmpty(resourcePath)) {
 				ResourceHandler resourceHandler = new ResourceHandler();
@@ -97,6 +88,17 @@ public class HttpServer implements Plugin {
 			System.exit(-1);
 		}
 
+	}
+
+	private void addUserListener(ServletContextHandler context, List<Class<? extends EventListener>> intfs) {
+		for (Class<? extends EventListener> intf : intfs) {
+			@SuppressWarnings("unchecked")
+			List<EventListener> listeners = (List<EventListener>) IOC.getBeans(intf);
+			if (CollectionUtils.isEmpty(listeners)) {
+				continue;
+			}
+			listeners.forEach(lis -> context.addEventListener(lis));
+		}
 	}
 
 	@Override

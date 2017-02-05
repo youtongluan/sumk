@@ -13,33 +13,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.filter;
 
-import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
-import org.yx.http.filter.Session;
+import org.yx.common.ThreadContext;
+import org.yx.http.HttpHolder;
+import org.yx.http.handler.HttpInfo;
 
-public class HttpHeadersHolder {
-	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
+public class HttpRequest {
+	private Object[] params;
 
-	static void setHttpRequest(HttpServletRequest req) {
-		_req.set(req);
+	public HttpRequest(Object[] args) {
+		super();
+		this.params = args;
 	}
 
-	public static String getHeader(String name) {
-		return _req.get().getHeader(name);
+	/**
+	 * 一个空属性，便于开发人员进行各种传值
+	 */
+	public Map<String, Object> custom;
+
+	public HttpInfo info() {
+		return HttpHolder.getHttpInfo(getAct());
 	}
 
-	public static HttpServletRequest getHttpRequest() {
-		return _req.get();
+	public String getAct() {
+		return ThreadContext.get().getAct();
 	}
 
-	public static String token() {
-		return _req.get().getHeader(Session.SESSIONID);
-	}
-
-	static void remove() {
-		_req.remove();
+	/**
+	 * http调用的参数
+	 * 
+	 * @return
+	 */
+	public Object[] getParams() {
+		return params;
 	}
 
 }

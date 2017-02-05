@@ -13,17 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.http;
 
-public abstract class StartConstants {
-	public static final String INNER_PACKAGE = "org.yx";
-	public static final String IOC_PACKAGES = "sumk.ioc";
-	public static final String SOA_PACKAGES = "soa";
-	public static final String HTTP_PACKAGES = "http";
-	public static final String SOA_PORT = "soa.port";
-	public static final String HTTP_PORT = "http.port";
+import org.yx.log.Log;
+import org.yx.util.GsonUtil;
 
-	public static final String NOSOA = "nosoa";
-	public static final String NOHTTP = "nohttp";
-	public static final String NOJETTY = "sumk.http.nojetty";
+import com.google.gson.Gson;
+
+public final class HttpGson {
+	public static Gson gson;
+	static {
+		try {
+			gson = GsonUtil.gsonBuilder("http").create();
+		} catch (Exception e) {
+			Log.printStack(e);
+			System.exit(-1);
+		}
+	}
 }

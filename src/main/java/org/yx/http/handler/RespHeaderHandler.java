@@ -36,7 +36,7 @@ public class RespHeaderHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
 		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset());
+		resp.setCharacterEncoding(ctx.getCharset().name());
 		String sessionID = ctx.getHeaders().get(Session.SESSIONID);
 		if (sessionID != null && sessionID.length() > 0) {
 			resp.setHeader(Session.SESSIONID, sessionID);

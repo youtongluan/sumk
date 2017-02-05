@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.6.4</version>
+	<version>1.7.0</version>
 
 	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>
@@ -42,11 +42,6 @@
 			<groupId>mysql</groupId>
 			<artifactId>mysql-connector-java</artifactId>
 			<version>5.1.39</version>
-		</dependency>
-		<dependency>
-			<groupId>commons-codec</groupId>
-			<artifactId>commons-codec</artifactId>
-			<version>1.6</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ow2.asm</groupId>
@@ -111,7 +106,7 @@
 		</dependency>
 		<!-- rpc中使用结束 -->
 		
-		<!-- http中使用，如果不用rpc，可以去掉 -->
+		<!-- http中使用，如果不用jetty，可以去掉 -->
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-servlet</artifactId>

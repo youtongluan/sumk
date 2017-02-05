@@ -15,29 +15,45 @@
  */
 package org.yx.http;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.conf.AppInfo;
+import org.yx.exception.HttpException;
+import org.yx.http.handler.ReqBodyHandler;
+import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtils;
 
 public final class HttpUtil {
-	public static String charset(HttpServletRequest req) {
-		String charset = AppInfo.get("http_charset");
-		if (StringUtils.isEmpty(charset)) {
-			charset = req.getCharacterEncoding();
+	static final int MAXLENGTH = 1024 * 1024 * 100;
+
+	public static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+	public static Charset charset(HttpServletRequest req) {
+		String charsetName = AppInfo.get("http.charset");
+		if (StringUtils.isEmpty(charsetName)) {
+			charsetName = req.getCharacterEncoding();
 		}
-		if (StringUtils.isEmpty(charset)) {
-			charset = "utf-8";
+		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
+			return DEFAULT_CHARSET;
 		}
-		return charset;
+
+		if (!Charset.isSupported(charsetName)) {
+			Log.get("sumk.http").error("charset '{}' is not supported", charsetName);
+			return DEFAULT_CHARSET;
+		}
+		return Charset.forName(charsetName);
 	}
 
-	public static void error(HttpServletResponse resp, int code, String errorMsg, String charset)
+	public static void error(HttpServletResponse resp, int code, String errorMsg, Charset charset)
 			throws UnsupportedEncodingException, IOException {
 		resp.setStatus(499);
 		ErrorResp r = new ErrorResp();
@@ -53,5 +69,27 @@ public final class HttpUtil {
 			return temp;
 		}
 		return bs;
+	}
+
+	/**
+	 * @param inputStream
+	 * @return
+	 * @throws IOException
+	 */
+	public static byte[] extractData(InputStream in) throws IOException {
+		int count = 0;
+		int n = 0;
+		byte[] temp = new byte[1024 * 4];
+		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		while (-1 != (n = in.read(temp))) {
+			output.write(temp, 0, n);
+			count += n;
+			if (count > MAXLENGTH) {
+				HttpException.throwException(ReqBodyHandler.class, "request body is too long");
+			}
+		}
+		byte[] bs = output.toByteArray();
+		output.close();
+		return extractData(bs);
 	}
 }

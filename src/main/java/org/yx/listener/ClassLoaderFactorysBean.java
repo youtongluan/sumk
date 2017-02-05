@@ -24,10 +24,11 @@ import java.util.List;
 import java.util.Set;
 
 import org.yx.bean.BeanWrapper;
+import org.yx.bean.Loader;
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.common.Ordered;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.main.Bootstrap;
 import org.yx.util.CollectionUtils;
 import org.yx.util.StringUtils;
 
@@ -68,7 +69,7 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 		if (StringUtils.isEmpty(sumkPath)) {
 			return;
 		}
-		InputStream in = Bootstrap.class.getClassLoader().getResourceAsStream("META-INF/" + sumkPath);
+		InputStream in = Loader.getResourceAsStream("META-INF/" + sumkPath);
 		if (in == null) {
 			Log.get("SYS").error(sumkPath + " file cannot found");
 			return;
@@ -76,7 +77,7 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 		List<String> sumks = CollectionUtils.loadList(in);
 		for (String listener : sumks) {
 			if (StringUtils.isNotEmpty(sumkPackage_pre)) {
-				listener = sumkPackage_pre + listener;
+				listener = AppInfo.get("sumk.class.load." + listener, sumkPackage_pre + listener);
 			}
 			Class<?> clz = this.getClass().getClassLoader().loadClass(listener);
 			if (!acceptClass().isAssignableFrom(clz)) {

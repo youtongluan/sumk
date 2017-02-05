@@ -32,6 +32,7 @@ import org.yx.rpc.ZKConst;
 import org.yx.rpc.ZkClientHolder;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.rpc.server.ServerListener;
+import org.yx.util.StringUtils;
 
 /**
  * 启动服务器端
@@ -55,11 +56,17 @@ public class SOAServer implements Plugin {
 			return;
 		}
 		try {
+			String ip = AppInfo.get("soa.host");
+			startServer(ip, port);
 
+			ip = AppInfo.get("soa.zk.host", ip);
+			if (StringUtils.isEmpty(ip) || "0.0.0.0".equals(ip)) {
+				ip = AppInfo.getIp();
+			}
+			String path = ZkClientHolder.SOA_ROOT + "/" + ip + ":" + port;
 			String zkUrl = AppInfo.getZKUrl();
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			ZkClientHolder.makeSure(client, ZkClientHolder.SOA_ROOT);
-			String path = ZkClientHolder.SOA_ROOT + "/" + AppInfo.getIp() + ":" + port;
 			client.delete(path);
 			client.createEphemeral(path, createZkRouteData());
 			client.unsubscribeStateChanges(new IZkStateListener() {
@@ -80,7 +87,6 @@ public class SOAServer implements Plugin {
 				}
 
 			});
-			startServer(AppInfo.getIp(), port);
 			started = true;
 		} catch (Exception e) {
 			Log.printStack(e);

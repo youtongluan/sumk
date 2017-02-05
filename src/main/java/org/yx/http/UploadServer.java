@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.handler.HttpHandlerChain;
+import org.yx.http.handler.HttpInfo;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
@@ -30,7 +31,7 @@ import org.yx.log.Log;
 public class UploadServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 1L;
-	final String MULTI = "multipart/form-data";
+	final static String MULTI = "multipart/form-data";
 
 	@Override
 	protected void handle(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp)

@@ -27,7 +27,7 @@ import org.yx.http.IntfHandlerFactorysBean;
 import org.yx.http.UploadHandlerFactorysBean;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.main.SumkServer;
 
 @Bean
 public class HttpStarter implements Plugin {
@@ -36,18 +36,23 @@ public class HttpStarter implements Plugin {
 
 	@Override
 	public void start() {
-		if (StringUtils.isEmpty(AppInfo.get(StartConstants.HTTP_PACKAGES)) || Boolean.getBoolean(StartConstants.NOHTTP)
-				|| StartContext.inst.get(StartConstants.NOHTTP) != null) {
+		if (!SumkServer.isHttpEnable()) {
 			return;
 		}
 		try {
 			HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
-			HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
-			int port = Integer.valueOf(AppInfo.get("http.port", "80"));
+			if (AppInfo.getBoolean("http.upload", true)) {
+				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
+			}
+			int port = AppInfo.getInt(StartConstants.HTTP_PORT, -1);
 			if (port < 1) {
 				return;
 			}
-			String hs = AppInfo.get("http.starter.class", "org.yx.http.start.HttpServer");
+			String nojetty = "sumk.http.nojetty";
+			if (StartContext.inst.get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
+				return;
+			}
+			String hs = AppInfo.get("http.starter.class", "org.yx.http.start.JettyServer");
 			if (!hs.contains(".")) {
 				return;
 			}

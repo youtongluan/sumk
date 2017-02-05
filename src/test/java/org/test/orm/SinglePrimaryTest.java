@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.demo.member.DemoUser;
 import org.yx.log.ConsoleLog;
-import org.yx.main.Bootstrap;
+import org.yx.main.SumkServer;
 import org.yx.orm.DemoUserDao;
 
 //单主键的测试
@@ -21,9 +21,7 @@ public class SinglePrimaryTest {
 	@Before
 	public void before() {
 		ConsoleLog.setDefaultLevel(ConsoleLog.DEBUG);
-		System.setProperty("nosoa", "true");
-		System.setProperty("nohttp", "true");
-		Bootstrap.main(null);
+		SumkServer.start("nosoa","nohttp");
 		dao = IOC.get(DemoUserDao.class);
 	}
 

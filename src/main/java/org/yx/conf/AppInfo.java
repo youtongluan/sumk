@@ -16,6 +16,8 @@
 package org.yx.conf;
 
 import java.io.InputStream;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
@@ -23,6 +25,7 @@ import java.util.Observer;
 import org.yx.db.annotation.ColumnType;
 import org.yx.log.Log;
 import org.yx.rpc.LocalhostUtil;
+import org.yx.util.StringUtils;
 
 public class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
@@ -37,12 +40,14 @@ public class AppInfo {
 	public static ColumnType modifyByColumnType = ColumnType.ID_DB;
 
 	private static List<Observer> observers = new ArrayList<>();
+	private static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	public static synchronized void addObserver(Observer ob) {
 		if (observers.contains(ob)) {
 			return;
 		}
 		observers.add(ob);
+		ob.update(null, null);
 	}
 
 	public static final PropertiesInfo info = new PropertiesInfo("app.properties") {
@@ -100,6 +105,12 @@ public class AppInfo {
 		return appId;
 	}
 
+	/**
+	 * key不存在的话，返回null
+	 * 
+	 * @param name
+	 * @return
+	 */
 	public static String get(String name) {
 		return info.get(name);
 	}
@@ -108,22 +119,46 @@ public class AppInfo {
 		return info.get(name, defaultValue);
 	}
 
+	/**
+	 * 这个方法不会抛出异常
+	 * 
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
 	public static int getInt(String name, int defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {
 			return defaultValue;
 		}
 		try {
-			return Integer.parseInt(name);
+			return Integer.parseInt(value);
 		} catch (Exception e) {
 			return defaultValue;
 		}
 	}
 
-	public static String systemCharset() {
-		return System.getProperty("sumk.app.charset", "UTF-8");
+	public static Charset systemCharset() {
+
+		String charsetName = info == null ? null : info.get("sumk.charset");
+		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
+			return DEFAULT_CHARSET;
+		}
+		if (!Charset.isSupported(charsetName)) {
+			Log.get("sumk.SYS").error("charset '{}' is not supported", charsetName);
+			return DEFAULT_CHARSET;
+		}
+		return Charset.forName(charsetName);
 	}
 
+	/**
+	 * name不存在或空字节的时候，返回defaultValue<br>
+	 * 否则，值为1或true的时候（大小写不敏感），返回true
+	 * 
+	 * @param name
+	 * @param defaultValue
+	 * @return
+	 */
 	public static boolean getBoolean(String name, boolean defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {

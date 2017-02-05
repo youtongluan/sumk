@@ -16,8 +16,10 @@
 package org.yx.common;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
+
+import org.yx.util.DateUtils;
+import org.yx.util.StringUtils;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -25,6 +27,15 @@ import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
 public class DateTimeTypeAdapter extends TypeAdapter<Date> {
+
+	private String dateFormat;
+
+	public void setDateFormat(String format) {
+		if (StringUtils.isEmpty(format)) {
+			this.dateFormat = null;
+		}
+		this.dateFormat = format;
+	}
 
 	@Override
 	public Date read(JsonReader in) throws IOException {
@@ -41,15 +52,18 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 		}
 
 		if (json.contains(":")) {
-			SimpleDateFormat format = null;
-			if (json.length() == 19) {
-				format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			String format = null;
+			if (this.dateFormat != null && json.length() == this.dateFormat.length()) {
+				format = this.dateFormat;
+			} else if (json.length() == 19) {
+				format = DateUtils.DATETIME;
 			} else if (json.length() == 23) {
-				format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
+				format = DateUtils.DATE_TIME_MILS;
+
 			}
 			if (format != null) {
 				try {
-					return format.parse(json);
+					return DateUtils.parse(json, format);
 				} catch (Exception e) {
 				}
 			}
@@ -70,7 +84,11 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 			out.nullValue();
 			return;
 		}
-		out.value(value.getTime());
+		if (this.dateFormat == null) {
+			out.value(value.getTime());
+			return;
+		}
+		out.value(DateUtils.toString(value, this.dateFormat));
 	}
 
 }

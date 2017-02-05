@@ -15,6 +15,9 @@
  */
 package org.yx.db;
 
+import java.sql.SQLException;
+
+import org.yx.db.conn.ConnectionPool;
 import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
 import org.yx.db.sql.Select;
@@ -31,7 +34,8 @@ import org.yx.db.visit.QueryVisitor;
  */
 public class DB {
 	/**
-	 * 进行插入，如果主键是单主键，并且主键是Long类型。 可以不用显示设置主键，系统会自动生成主键
+	 * 进行插入，如果主键是单主键，并且主键是Long类型。 可以不用显示设置主键，系统会自动生成主键<BR>
+	 * 要执行execute方法才能生效
 	 * 
 	 * @return
 	 */
@@ -39,12 +43,20 @@ public class DB {
 		return new Insert(DmlVisitor.visitor);
 	}
 
+	/**
+	 * 将pojo插入到数据库中<BR>
+	 * 要执行execute方法才能生效
+	 * 
+	 * @param pojo
+	 * @return
+	 */
 	public static Insert insert(Object pojo) {
 		return new Insert(DmlVisitor.visitor).insert(pojo);
 	}
 
 	/**
-	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。所有的更新都只能根据主键或者redis主键
+	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。所有的更新都只能根据主键或者redis主键<BR>
+	 * 要执行execute方法才能生效
 	 * 
 	 * @return
 	 */
@@ -53,7 +65,8 @@ public class DB {
 	}
 
 	/**
-	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。
+	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。<BR>
+	 * 要执行execute方法才能生效
 	 * 
 	 * @param pojo
 	 *            修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
@@ -67,6 +80,13 @@ public class DB {
 		return new Delete(DmlVisitor.visitor);
 	}
 
+	/**
+	 * 删除（包括软删除）pojo对象定义<BR>
+	 * 要执行execute方法才能生效
+	 * 
+	 * @param pojo
+	 * @return
+	 */
 	public static Delete delete(Object pojo) {
 		return new Delete(DmlVisitor.visitor).delete(pojo);
 	}
@@ -77,5 +97,23 @@ public class DB {
 
 	public static Select select(Object pojo) {
 		return new Select(QueryVisitor.visitor).addEqual(pojo);
+	}
+
+	/**
+	 * 手工提交当前事务。RawDB、NamedDB和mybatis的事务，也可以用这个方法进行提交
+	 * 
+	 * @throws SQLException
+	 */
+	public static void commit() throws SQLException {
+		ConnectionPool.get().commit();
+	}
+
+	/**
+	 * 手工回滚当前事务。RawDB、NamedDB和mybatis的事务，也可以用这个方法进行回滚
+	 * 
+	 * @throws SQLException
+	 */
+	public static void rollback() throws SQLException {
+		ConnectionPool.get().rollback();
 	}
 }

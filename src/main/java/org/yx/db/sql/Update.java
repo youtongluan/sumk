@@ -182,11 +182,11 @@ public class Update extends AbstractSqlBuilder<Integer> {
 			sb.append(fm.getDbColumn()).append(" =? ");
 			ms.addParam(value);
 		}
-		if (SqlConstants.FAIL_IF_PROPERTY_NOT_MAPPED && where != null && where.size() > 0) {
-			SumkException.throwException(234234, where.keySet() + "is not valid filed name");
+		if (FAIL_IF_PROPERTY_NOT_MAPPED && where != null && where.size() > 0) {
+			SumkException.throwException(234234, where.keySet() + " is not valid filed name");
 		}
 		CharSequence whereStr = whereItem.toCharSequence();
-		if (whereStr.length() == 0) {
+		if (whereStr == null || whereStr.length() == 0) {
 			SumkException.throwException(345445, "where cannot be null");
 		}
 		sb.append(" WHERE ").append(whereStr);

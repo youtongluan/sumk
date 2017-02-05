@@ -20,10 +20,9 @@ import java.lang.reflect.Constructor;
 import org.yx.bean.Bean;
 import org.yx.bean.Plugin;
 import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.main.SumkServer;
 
 @Bean
 public class SoaStarter implements Plugin {
@@ -33,17 +32,10 @@ public class SoaStarter implements Plugin {
 	@Override
 	public void start() {
 		try {
-			if (StringUtils.isEmpty(AppInfo.get(StartConstants.SOA_PACKAGES))
-					|| Boolean.getBoolean(StartConstants.NOSOA)
-					|| StartContext.inst.get(StartConstants.NOSOA) != null) {
+			if (!SumkServer.isRpcEnable()) {
 				return;
 			}
-			int port = -1;
-			try {
-				port = Integer.parseInt(AppInfo.get("soa.port", "9527"));
-			} catch (Exception e) {
-				Log.get("SYS.45").error("soa port {} is not a number");
-			}
+			int port = AppInfo.getInt(StartConstants.SOA_PORT, -1);
 			if (port > 0) {
 				String clzName = AppInfo.get("soa.starter.class", "org.yx.rpc.server.start.SOAServer");
 				Class<?> clz = Class.forName(clzName);

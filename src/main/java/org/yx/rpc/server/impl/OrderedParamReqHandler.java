@@ -15,10 +15,10 @@
  */
 package org.yx.rpc.server.impl;
 
+import org.yx.common.ThreadContext;
 import org.yx.exception.SoaException;
 import org.yx.rpc.ActionHolder;
 import org.yx.rpc.ActionInfo;
-import org.yx.rpc.SourceSn;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
@@ -44,8 +44,8 @@ public class OrderedParamReqHandler implements RequestHandler {
 		Response resp = new Response(req.getSn());
 		try {
 			String sn0 = StringUtils.isEmpty(req.getSn0()) ? req.getSn() : req.getSn0();
-			SourceSn.register(sn0);
 			String method = req.getMethod();
+			ThreadContext.rpcContext(method, sn0);
 			ActionInfo minfo = ActionHolder.getActionInfo(method);
 			Object ret = minfo.invokeByOrder(req.getParamArray());
 			resp.setJson(GsonUtil.toJson(ret));
@@ -56,7 +56,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.setException(new SoaException(1001, e.getMessage(), e));
 			resp.setMs(System.currentTimeMillis() - start);
 		} finally {
-			SourceSn.removeSn0();
+			ThreadContext.remove();
 		}
 		return resp;
 	}

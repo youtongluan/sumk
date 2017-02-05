@@ -13,17 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.util.secury;
 
-public abstract class StartConstants {
-	public static final String INNER_PACKAGE = "org.yx";
-	public static final String IOC_PACKAGES = "sumk.ioc";
-	public static final String SOA_PACKAGES = "soa";
-	public static final String HTTP_PACKAGES = "http";
-	public static final String SOA_PORT = "soa.port";
-	public static final String HTTP_PORT = "http.port";
+import java.util.Base64;
 
-	public static final String NOSOA = "nosoa";
-	public static final String NOHTTP = "nohttp";
-	public static final String NOJETTY = "sumk.http.nojetty";
+public class Base64Util {
+	/**
+	 * 标准方式解码，不含\r\n
+	 * 
+	 * @param src
+	 * @return
+	 */
+	public static byte[] decode(byte[] src) {
+		return Base64.getDecoder().decode(src);
+	}
+
+	/**
+	 * 使用标准方式进行编码
+	 * 
+	 * @param src
+	 * @return
+	 */
+	public static byte[] encode(byte[] src) {
+		return Base64.getEncoder().encode(src);
+	}
 }

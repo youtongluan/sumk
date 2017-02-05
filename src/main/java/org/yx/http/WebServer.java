@@ -19,6 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.handler.HttpHandlerChain;
+import org.yx.http.handler.HttpInfo;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 

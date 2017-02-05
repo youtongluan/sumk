@@ -15,6 +15,9 @@
  */
 package org.yx.redis;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
@@ -30,7 +33,7 @@ public class Redis {
 	private int tryCount;
 	private JedisPool pool;
 
-	private final static String UTF8 = "UTF-8";
+	private final static Charset UTF8 = StandardCharsets.UTF_8;
 
 	Redis(JedisPool pool, RedisParamter p) {
 		super();

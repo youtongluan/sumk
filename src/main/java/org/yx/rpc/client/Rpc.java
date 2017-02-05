@@ -18,12 +18,12 @@ package org.yx.rpc.client;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcUtils;
-import org.yx.rpc.SourceSn;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.GsonUtil;
 import org.yx.util.UUIDSeed;
@@ -57,7 +57,7 @@ public final class Rpc {
 		req.setStart(System.currentTimeMillis());
 		String sn = UUIDSeed.random();
 		req.setSn(sn);
-		String sn0 = SourceSn.getSn0();
+		String sn0 = ThreadContext.get().getSn0();
 		if (sn0 != null) {
 			req.setSn0(sn);
 		}

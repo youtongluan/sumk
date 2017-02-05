@@ -30,7 +30,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
-		this.failIfPropertyNotMapped = SqlConstants.FAIL_IF_PROPERTY_NOT_MAPPED;
+		this.failIfPropertyNotMapped = FAIL_IF_PROPERTY_NOT_MAPPED;
 		this.fromCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.fromCache"));
 		this.toCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.toCache"));
 		this.withnull = false;

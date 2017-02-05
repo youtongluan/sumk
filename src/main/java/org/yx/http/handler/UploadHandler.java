@@ -44,12 +44,11 @@ public class UploadHandler implements HttpHandler {
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		factory.setSizeThreshold(uploadInfo.maxSize());
 		ServletFileUpload upload = new ServletFileUpload(factory);
-		upload.setHeaderEncoding(ctx.getCharset());
+		upload.setHeaderEncoding(ctx.getCharset().name());
 		List<FileItem> list = (List<FileItem>) upload.parseRequest(request);
 		if (list == null || list.isEmpty()) {
 			HttpException.throwException(this.getClass(), "没有文件");
 		}
-
 		List<UploadFile> files = new ArrayList<>(list.size());
 		for (FileItem fi : list) {
 			String name = fi.getName();
@@ -58,7 +57,6 @@ public class UploadHandler implements HttpHandler {
 					ctx.setData(HttpUtil.extractData(fi.get()));
 					continue;
 				}
-
 				continue;
 			}
 			Log.get(this.getClass()).debug("fileupload#name:{},field:{}", name, fi.getFieldName());

@@ -23,9 +23,9 @@ import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
 import org.yx.common.MethodInfo;
 import org.yx.http.HttpHolder;
-import org.yx.http.HttpInfo;
 import org.yx.http.Upload;
 import org.yx.http.Web;
+import org.yx.http.handler.HttpInfo;
 import org.yx.log.Log;
 
 class HttpFactory {

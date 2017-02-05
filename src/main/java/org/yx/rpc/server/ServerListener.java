@@ -29,6 +29,7 @@ import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.rpc.codec.SumkCodecFactory;
 
@@ -66,7 +67,7 @@ public class ServerListener implements Runnable {
 	public void run() {
 		try {
 			acceptor = acceptors > 0 ? new NioSocketAcceptor(acceptors) : new NioSocketAcceptor();
-			acceptor.setReuseAddress(true);
+			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", true));
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
 			chain.addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
@@ -83,7 +84,7 @@ public class ServerListener implements Runnable {
 				conf.setKeepAlive(true);
 				conf.setReceiveBufferSize(100);
 				conf.setSendBufferSize(8192);
-				logger.info("set keep alive");
+
 			}
 			InetSocketAddress addr = null;
 			if (host == null || host.trim().length() == 0) {

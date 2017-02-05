@@ -13,16 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.start;
+package org.yx.http;
 
 import org.yx.bean.IOC;
 import org.yx.exception.BizException;
-import org.yx.http.ErrorCode;
 import org.yx.http.filter.LoginServlet;
 import org.yx.http.filter.UserSession;
 import org.yx.log.Log;
 
-public class UserSessionHolder {
+public class HttpSessionHolder {
 	static UserSession session;
 
 	public static UserSession userSession() {

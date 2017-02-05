@@ -54,4 +54,6 @@ public @interface Web {
 
 	public EncryptType responseEncrypt() default EncryptType.NONE;
 
+	String custom() default "";
+
 }
