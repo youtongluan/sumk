@@ -16,11 +16,13 @@
 package org.yx.rpc.client;
 
 import org.apache.mina.core.future.WriteFuture;
+import org.yx.exception.ConnectionException;
 import org.yx.exception.SoaException;
-import org.yx.rpc.client.route.RouteHolder;
+import org.yx.rpc.Host;
+import org.yx.rpc.client.route.Routes;
 import org.yx.rpc.client.route.WeightedRoute;
 
-public class ReqSender {
+class ReqSender {
 
 	/**
 	 * 同步发送
@@ -32,16 +34,37 @@ public class ReqSender {
 	 */
 	public static ReqResp send(Req req, long timeout) throws Throwable {
 		String method = req.getMethod();
-		WeightedRoute route = RouteHolder.getRoute(method);
+		WeightedRoute route = Routes.getRoute(method);
+		if (route == null) {
+			SoaException.throwException(2353454, "can not find route for " + method, null);
+		}
+		Host url = route.getUrl();
+		if (url == null) {
+			SoaException.throwException(345234, "route for " + method + " are all disabled", null);
+		}
+		ReqSession session = ReqSessionHolder.getSession(url);
+		RespFuture future = RequestLocker.register(req);
+		WriteFuture f = session.write(req);
+
+		if (f.getException() != null) {
+			throw new ConnectionException(345, f.getException().getMessage(), route.getUrl());
+		}
+		return future.getResponse(timeout);
+	}
+
+	public static RespFuture sendAsync(Req req) {
+		String method = req.getMethod();
+		WeightedRoute route = Routes.getRoute(method);
 		if (route == null) {
 			SoaException.throwException(2353454, "can not find route for " + method, null);
 		}
 		ReqSession session = ReqSessionHolder.getSession(route.getUrl());
 		RespFuture future = RequestLocker.register(req);
 		WriteFuture f = session.write(req);
+
 		if (f.getException() != null) {
-			throw f.getException();
+			throw new ConnectionException(345, f.getException().getMessage(), route.getUrl());
 		}
-		return future.getResponse(timeout);
+		return future;
 	}
 }

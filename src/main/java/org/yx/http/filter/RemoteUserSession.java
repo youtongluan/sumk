@@ -16,30 +16,29 @@
 package org.yx.http.filter;
 
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpHeadersHolder;
 import org.yx.redis.Redis;
 import org.yx.util.GsonUtil;
 
 public class RemoteUserSession implements UserSession {
 
 	private final Redis redis;
-	private static final String KEY_PRE = "USR_KEY_";
-	private static final String SESSION_OBJECT_PRE = "USR_OBJ_";
+	private static final String AES_KEY = "KEY";
+	private static final String SESSION_OBJECT = "OBJ";
 
-	private String sessionKey() {
-		return KEY_PRE + HttpHeadersHolder.token();
+	/**
+	 * 需要判断返回值是不是null,它不会返回空字符串
+	 * 
+	 * @return
+	 */
+	private String bigKey() {
+		return bigKey(org.yx.http.HttpHeadersHolder.token());
 	}
 
-	private String sessionKey(String sid) {
-		return KEY_PRE + sid;
-	}
-
-	private String userObjectKey() {
-		return SESSION_OBJECT_PRE + HttpHeadersHolder.token();
-	}
-
-	private String userObjectKey(String sid) {
-		return SESSION_OBJECT_PRE + sid;
+	private String bigKey(String token) {
+		if (token == null || token.isEmpty()) {
+			return null;
+		}
+		return "S#" + token;
 	}
 
 	public RemoteUserSession(Redis redis) {
@@ -47,22 +46,28 @@ public class RemoteUserSession implements UserSession {
 	}
 
 	@Override
-	public void put(String sessionId, byte[] key) {
-		redis.setex(sessionKey(sessionId), AppInfo.httpSessionTimeout, key);
+	public void putKey(String token, byte[] key) {
+		String bigkey = bigKey(token);
+		redis.hset(bigkey, AES_KEY, key);
+		redis.expire(bigkey, AppInfo.httpSessionTimeout);
 	}
 
 	@Override
-	public byte[] getkey(String sid) {
-		return redis.getBytes(this.sessionKey(sid));
-	}
-
-	@Override
-	public <T> T getUserObject(Class<T> clz) {
-		String key = userObjectKey();
-		if (key == null) {
+	public byte[] getKey(String sid) {
+		String bigKey = this.bigKey(sid);
+		if (bigKey == null) {
 			return null;
 		}
-		String json = redis.get(key);
+		return redis.hgetBinarry(bigKey, AES_KEY);
+	}
+
+	@Override
+	public <T extends SessionObject> T getUserObject(Class<T> clz) {
+		String bigKey = this.bigKey();
+		if (bigKey == null) {
+			return null;
+		}
+		String json = redis.hget(bigKey, SESSION_OBJECT);
 		if (json == null) {
 			return null;
 		}
@@ -72,32 +77,37 @@ public class RemoteUserSession implements UserSession {
 	@Override
 	public void flushSession() {
 
-		redis.expire(userObjectKey(), AppInfo.httpSessionTimeout + 300);
-		redis.expire(sessionKey(), AppInfo.httpSessionTimeout);
+		String bigKey = this.bigKey();
+		if (bigKey == null) {
+			return;
+		}
+		redis.expire(bigKey, AppInfo.httpSessionTimeout);
 	}
 
 	@Override
-	public void setSession(String sid, Object sessionObj) {
+	public void setSession(String sid, SessionObject sessionObj) {
+		String bigKey = this.bigKey(sid);
 		String json = GsonUtil.toJson(sessionObj);
-		redis.setex(this.userObjectKey(sid), AppInfo.httpSessionTimeout + 300, json);
+		redis.hset(bigKey, SESSION_OBJECT, json);
+		redis.expire(bigKey, AppInfo.httpSessionTimeout);
 	}
 
 	@Override
 	public void removeSession() {
-		String token = HttpHeadersHolder.token();
-		if (token == null) {
+		String bigKey = this.bigKey();
+		if (bigKey == null) {
 			return;
 		}
-		redis.del(sessionKey(), userObjectKey());
+		redis.del(bigKey);
 	}
 
 	@Override
-	public void updateSession(Object sessionObj) {
-		String token = HttpHeadersHolder.token();
-		if (token == null) {
+	public void updateSession(SessionObject sessionObj) {
+		String bigKey = this.bigKey();
+		if (bigKey == null) {
 			return;
 		}
-		setSession(HttpHeadersHolder.token(), GsonUtil.toJson(sessionObj));
+		setSession(bigKey, sessionObj);
 	}
 
 }

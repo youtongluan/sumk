@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.7.0</version>
+	<version>1.7.1</version>
 
 	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>
@@ -16,7 +16,7 @@
 	</licenses>
 	<developers>
 		<developer>
-			<name>jack you</name>
+			<name>youtongluan</name>
 			<email>3205207767@qq.com</email>
 		</developer>
 	</developers>

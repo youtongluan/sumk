@@ -21,6 +21,8 @@ import java.util.Arrays;
 
 import org.yx.http.Upload;
 import org.yx.http.Web;
+import org.yx.validate.Param;
+import org.yx.validate.ParamInfo;
 
 public final class HttpInfo {
 	public static interface Visitor {
@@ -32,6 +34,8 @@ public final class HttpInfo {
 
 	final Class<?>[] argTypes;
 	final Field[] fields;
+
+	final ParamInfo[] paramInfos;
 	final Web action;
 	final Upload upload;
 	final Object obj;
@@ -80,8 +84,12 @@ public final class HttpInfo {
 		return upload;
 	}
 
+	public ParamInfo[] getParamInfos() {
+		return paramInfos;
+	}
+
 	public HttpInfo(Object obj, Method m, Class<?> argClz, String[] argNames, Class<?>[] argTypes, Web action,
-			Upload upload) {
+			Upload upload, Param[] params) {
 		super();
 		this.obj = obj;
 		this.m = m;
@@ -91,6 +99,14 @@ public final class HttpInfo {
 		this.action = action;
 		this.m.setAccessible(true);
 		this.upload = upload;
+		this.paramInfos = new ParamInfo[params.length];
+		for (int i = 0; i < this.paramInfos.length; i++) {
+			Param p = params[i];
+			if (p == null) {
+				continue;
+			}
+			paramInfos[i] = new ParamInfo(p, argNames[i], argTypes[i]);
+		}
 		if (argClz != null) {
 			this.fields = argClz.getFields();
 			Arrays.stream(fields).forEachOrdered(f -> f.setAccessible(true));

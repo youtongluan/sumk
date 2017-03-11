@@ -52,6 +52,6 @@ public class ReqSessionHolder {
 	}
 
 	private static ReqSession createSession(Host url) {
-		return new ReqSession(url.getIp(), url.getPort());
+		return new ReqSession(url);
 	}
 }

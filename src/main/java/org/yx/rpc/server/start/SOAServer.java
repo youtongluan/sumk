@@ -45,6 +45,8 @@ public class SOAServer implements Plugin {
 	private boolean started = false;
 	private final int port;
 	private ServerListener server;
+	private String zkUrl;
+	private String path;
 
 	public SOAServer(int port) {
 		super();
@@ -57,23 +59,24 @@ public class SOAServer implements Plugin {
 		}
 		try {
 			String ip = AppInfo.get("soa.host");
-			startServer(ip, port);
 
 			ip = AppInfo.get("soa.zk.host", ip);
 			if (StringUtils.isEmpty(ip) || "0.0.0.0".equals(ip)) {
 				ip = AppInfo.getIp();
 			}
-			String path = ZkClientHolder.SOA_ROOT + "/" + ip + ":" + port;
-			String zkUrl = AppInfo.getZKUrl();
+			path = ZkClientHolder.SOA_ROOT + "/" + ip + ":" + port;
+			zkUrl = AppInfo.getZKUrl();
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			ZkClientHolder.makeSure(client, ZkClientHolder.SOA_ROOT);
+
+			startServer(ip, port);
+
 			client.delete(path);
-			client.createEphemeral(path, createZkRouteData());
-			client.unsubscribeStateChanges(new IZkStateListener() {
+			IZkStateListener stateListener = new IZkStateListener() {
 
 				@Override
 				public void handleStateChanged(KeeperState state) throws Exception {
-					Log.get("SYS.RPC").info("zk state changed:{}", state);
+					Log.get("sumk.rpc").info("zk state changed:{}", state);
 				}
 
 				@Override
@@ -83,10 +86,12 @@ public class SOAServer implements Plugin {
 
 				@Override
 				public void handleSessionEstablishmentError(Throwable error) throws Exception {
-					Log.get("SYS.RPC").error("SessionEstablishmentError#" + error.getMessage(), error);
+					Log.get("sumk.rpc").error("SessionEstablishmentError#" + error.getMessage(), error);
 				}
 
-			});
+			};
+			client.createEphemeral(path, createZkRouteData());
+			client.subscribeStateChanges(stateListener);
 			started = true;
 		} catch (Exception e) {
 			Log.printStack(e);
@@ -112,7 +117,13 @@ public class SOAServer implements Plugin {
 	}
 
 	@Override
-	public void stop() {
+	public synchronized void stop() {
+		ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+		if (client != null) {
+			client.unsubscribeAll();
+			client.delete(path);
+		}
+
 		if (this.server != null) {
 			try {
 				this.server.stop();

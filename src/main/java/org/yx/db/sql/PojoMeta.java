@@ -35,7 +35,7 @@ import org.yx.redis.RedisPool;
 import org.yx.util.StringUtils;
 
 public class PojoMeta {
-	private final static String KEY_SPLIT = ",";
+	private final static char KEY_SPLIT = ',';
 	private final Table table;
 
 	final ColumnMeta[] fieldMetas;
@@ -290,7 +290,7 @@ public class PojoMeta {
 		if (Map.class.isInstance(source)) {
 			return this.getRedisIDByMap((Map<String, Object>) source, exceptionIfHasNull);
 		}
-		String key = "";
+		StringBuilder key = new StringBuilder();
 		for (ColumnMeta m : this.redisIDs) {
 			Object v = m.value(source);
 			if (v == null) {
@@ -299,30 +299,28 @@ public class PojoMeta {
 				}
 				return null;
 			}
-			if (key.isEmpty()) {
-				key = String.valueOf(v);
-			} else {
-				key += KEY_SPLIT + v;
+			if (key.length() > 0) {
+				key.append(KEY_SPLIT);
 			}
+			key.append(v);
 		}
-		return key;
+		return key.toString();
 	}
 
 	public String getRedisIDWithNULL(Map<String, Object> map) throws Exception {
-		String key = "";
+		StringBuilder key = new StringBuilder();
 		for (ColumnMeta m : this.redisIDs) {
 			Object v = map.get(m.getFieldName());
-			if (key.isEmpty()) {
-				key = String.valueOf(v);
-			} else {
-				key += KEY_SPLIT + v;
+			if (key.length() > 0) {
+				key.append(KEY_SPLIT);
 			}
+			key.append(v);
 		}
-		return key;
+		return key.toString();
 	}
 
 	private String getRedisIDByMap(Map<String, Object> map, boolean exceptionIfHasNull) {
-		String key = "";
+		StringBuilder key = new StringBuilder();
 		for (ColumnMeta m : this.redisIDs) {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {
@@ -331,13 +329,12 @@ public class PojoMeta {
 				}
 				return null;
 			}
-			if (key.isEmpty()) {
-				key = String.valueOf(v);
-			} else {
-				key += KEY_SPLIT + v;
+			if (key.length() > 0) {
+				key.append(KEY_SPLIT);
 			}
+			key.append(v);
 		}
-		return key;
+		return key.toString();
 	}
 
 }

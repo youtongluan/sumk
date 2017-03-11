@@ -15,23 +15,25 @@
  */
 package org.yx.rpc.client.route;
 
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.common.Deamon;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.main.SumkServer;
 import org.yx.rpc.Host;
 
 public class HostChecker {
 
 	private static HostChecker holder = new HostChecker();
-	private static long maxDownTime = 1000 * 120;
+	private static long maxDownTime = AppInfo.getInt("soa.checker.maxtime", 1000 * 120);
 
 	private HostChecker() {
-		new Thread(new checker(), "socket_check").start();
+		SumkServer.runDeamon(new checker(), "host-checker");
 	}
 
 	public static HostChecker instance() {
@@ -40,11 +42,6 @@ public class HostChecker {
 
 	private ConcurrentHashMap<Host, Long> downUrls = new ConcurrentHashMap<Host, Long>();
 
-	/**
-	 * 判断该url是否可用，可用返回true，不可用返回false
-	 * 
-	 * @return
-	 */
 	public boolean isDowned(Host url) {
 		return downUrls.containsKey(url);
 	}
@@ -70,21 +67,15 @@ public class HostChecker {
 		downUrls.putIfAbsent(url, System.currentTimeMillis());
 	}
 
-	private class checker implements Runnable {
+	private class checker implements Deamon {
 
 		@Override
-		public void run() {
-			while (true) {
-				try {
-					check();
-					long t = 5000 - (2000 * downUrls.size());
-					if (t > 0) {
-						Thread.sleep(t);
-					}
-				} catch (Throwable e) {
-				}
+		public void run() throws InterruptedException {
+			check();
+			long t = 5000 - (2000 * downUrls.size());
+			if (t > 0) {
+				Thread.sleep(t);
 			}
-
 		}
 
 		private int getTimeOut(int urlSize) {
@@ -113,13 +104,13 @@ public class HostChecker {
 					}
 					Socket socket = new Socket();
 
-					socket.connect(new InetSocketAddress(url.getIp(), url.getPort()), timeout);
+					socket.connect(url.toInetSocketAddress(), timeout);
 					if (socket.isConnected()) {
 						socket.close();
 						downUrls.remove(url);
 					}
 				} catch (UnknownHostException e) {
-					Log.get("SYS.1").error(e.getMessage(), e);
+					Log.get("sumk.SYS").error(e.getMessage(), e);
 				} catch (Exception e) {
 				}
 			}

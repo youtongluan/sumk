@@ -55,7 +55,7 @@ class SoaFactory {
 			Soa act = m.getAnnotation(Soa.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
 			if (ActionHolder.getActionInfo(soaName) != null) {
-				Log.get("SYS.soa").error(soaName + " already existed");
+				Log.get("sumk.rpc").error(soaName + " already existed");
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);

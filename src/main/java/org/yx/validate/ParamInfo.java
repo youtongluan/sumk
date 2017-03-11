@@ -13,33 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.validate;
 
-import org.yx.bean.Bean;
-import org.yx.bean.Plugin;
-import org.yx.conf.AppInfo;
-import org.yx.redis.Redis;
-import org.yx.redis.RedisCounter;
-import org.yx.redis.RedisPool;
-import org.yx.util.SeqUtil;
+public class ParamInfo {
+	final Param param;
 
-@Bean
-public class SeqCounterBuilder implements Plugin {
+	final String paramName;
 
-	@Override
-	public void start() {
-		Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
-		if (counter == null) {
-			counter = RedisPool.getRedisExactly("session");
-		}
-		if (counter != null) {
-			SeqUtil.setCounter(new RedisCounter(counter));
-		}
+	final Class<?> type;
+
+	public ParamInfo(Param param, String paramName, Class<?> type) {
+		super();
+		this.param = param;
+		this.paramName = paramName;
+		this.type = type;
 	}
 
-	@Override
-	public void stop() {
+	/**
+	 * 参数字段的名字
+	 * 
+	 * @return
+	 */
+	public String getParamName() {
+		return paramName;
+	}
 
+	public Param getParam() {
+		return param;
+	}
+
+	public Class<?> getType() {
+		return type;
 	}
 
 }

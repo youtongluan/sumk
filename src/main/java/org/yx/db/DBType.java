@@ -18,7 +18,7 @@ package org.yx.db;
 import org.yx.exception.SumkException;
 
 public enum DBType {
-	WRITE(true, false), READONLY(false, true), ANY(true, true);
+	WRITE(true, false), READ(false, true), ANY(true, true);
 
 	public static DBType parse(String type) {
 		String type2 = type.toLowerCase();
@@ -29,7 +29,7 @@ public enum DBType {
 		case "r":
 		case "read":
 		case "readonly":
-			return READONLY;
+			return READ;
 		case "wr":
 		case "rw":
 		case "any":

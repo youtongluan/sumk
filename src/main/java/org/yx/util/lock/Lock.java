@@ -88,9 +88,9 @@ public final class Lock implements Key {
 		long begin = System.currentTimeMillis();
 		while (System.currentTimeMillis() - begin < maxWaitTime) {
 			if (tryLock()) {
-				logger.debug("locked success: {}={}", id, value);
 				return this;
 			}
+			logger.debug("locked failed: {}={}", id, value);
 			LockSupport.parkNanos(this.intervalTime);
 		}
 		return null;
@@ -99,5 +99,10 @@ public final class Lock implements Key {
 	void unlock() {
 		SLock.redis(id).evalsha(sha, 1, id, value);
 		logger.debug("unlock: {}={}", id, value);
+	}
+
+	@Override
+	public void close() {
+		SLock.unlock(this);
 	}
 }

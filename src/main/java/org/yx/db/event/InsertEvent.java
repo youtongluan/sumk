@@ -15,11 +15,12 @@
  */
 package org.yx.db.event;
 
+import java.util.List;
 import java.util.Map;
 
 public class InsertEvent extends ModifyEvent {
 
-	private Map<String, Object> pojo;
+	private List<Map<String, Object>> pojos;
 
 	/**
 	 * 
@@ -28,13 +29,13 @@ public class InsertEvent extends ModifyEvent {
 	 * @param idMap
 	 *            主键列表，包含所有的主键，即使它是null
 	 */
-	public InsertEvent(String table, Map<String, Object> pojo) {
+	public InsertEvent(String table, List<Map<String, Object>> pojos) {
 		super(table);
-		this.pojo = pojo;
+		this.pojos = pojos;
 	}
 
-	public Map<String, Object> getPojo() {
-		return pojo;
+	public List<Map<String, Object>> getPojos() {
+		return pojos;
 	}
 
 }

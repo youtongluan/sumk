@@ -121,7 +121,7 @@ public class ConnectionFactory {
 		}
 		Map<DBType, WeightedDataSourceRoute> map = DataSourceFactory.create(this.db);
 		this.write = map.get(DBType.WRITE);
-		this.read = map.get(DBType.READONLY);
+		this.read = map.get(DBType.READ);
 	}
 
 	public Connection getConnection(DBType type, Connection writeConn) {

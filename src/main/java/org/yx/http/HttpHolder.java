@@ -25,7 +25,7 @@ public class HttpHolder {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<String, Class<?>>();
 
-	private static Map<String, HttpInfo> actMap = new ConcurrentHashMap<String, HttpInfo>();
+	static Map<String, HttpInfo> actMap = new ConcurrentHashMap<String, HttpInfo>();
 
 	/**
 	 * 根据方法的全名，获取参数列表

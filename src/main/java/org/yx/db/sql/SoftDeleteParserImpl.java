@@ -15,11 +15,9 @@
  */
 package org.yx.db.sql;
 
-import org.yx.bean.Bean;
 import org.yx.db.annotation.SoftDelete;
 import org.yx.exception.SumkException;
 
-@Bean
 public class SoftDeleteParserImpl implements SoftDeleteParser {
 
 	public Object parseValue(Class<?> type, String value) {

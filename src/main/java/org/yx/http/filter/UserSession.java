@@ -22,16 +22,16 @@ public interface UserSession {
 	 * @param sid
 	 * @return null表示未登陆
 	 */
-	byte[] getkey(String sid);
+	byte[] getKey(String sid);
 
-	void put(String sid, byte[] key);
+	void putKey(String sid, byte[] key);
 
 	/**
 	 * 获取存储到session中的用户信息
 	 * 
 	 * @return
 	 */
-	<T> T getUserObject(Class<T> clz);
+	<T extends SessionObject> T getUserObject(Class<T> clz);
 
 	void flushSession();
 
@@ -39,14 +39,14 @@ public interface UserSession {
 	 * @param key
 	 * @param sessionObj
 	 */
-	void setSession(String key, Object sessionObj);
+	void setSession(String key, SessionObject sessionObj);
 
 	/**
 	 * 更新session中的用户信息
 	 * 
 	 * @param sessionObj
 	 */
-	void updateSession(Object sessionObj);
+	void updateSession(SessionObject sessionObj);
 
 	void removeSession();
 }

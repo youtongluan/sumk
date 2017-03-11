@@ -37,7 +37,7 @@ public class ProxySession implements SqlSession {
 
 	protected SqlSession readSession() {
 		ConnectionPool context = ConnectionPool.get();
-		return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.READONLY));
+		return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.READ));
 	}
 
 	protected SqlSession writeSession() {

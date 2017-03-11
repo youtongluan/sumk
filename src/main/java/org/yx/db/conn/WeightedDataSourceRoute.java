@@ -123,7 +123,7 @@ class WeightedDataSourceRoute {
 	}
 
 	public WeightedDataSourceRoute(WeightedDS... servers) {
-		List<WeightedDS> list = new ArrayList<>();
+		List<WeightedDS> list = new ArrayList<>(8);
 		Arrays.stream(servers).forEach(s -> list.add(s));
 		init(list);
 	}

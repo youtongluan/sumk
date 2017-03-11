@@ -39,7 +39,7 @@ public class ServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		Log.get("SYS.51").debug("create session:{}", session.getId());
+		Log.get("sumk.SYS").debug("create session:{}-{}", session.getServiceAddress(), session.getId());
 	}
 
 	@Override
@@ -54,14 +54,14 @@ public class ServerHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
 		if (session.getIdleCount(status) > 10000) {
-			Log.get("SYS.52").debug("session:{}, idle:{},will close", session.getId(), session.getIdleCount(status));
+			Log.get("sumk.SYS").debug("session:{}, idle:{},will close", session.getId(), session.getIdleCount(status));
 			session.close(true);
 		}
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		Log.get("SYS.53").error("session:" + session.getId() + ",message:" + cause.getMessage(), cause);
+		Log.get("sumk.SYS").error("session:" + session.getId() + ",message:" + cause.getMessage(), cause);
 		session.close(true);
 	}
 

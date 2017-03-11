@@ -20,8 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.conf.DBConfigUtils;
 import org.yx.conf.DBConfig;
+import org.yx.conf.DBConfigUtils;
 import org.yx.db.DBType;
 
 public class DataSourceFactory {
@@ -40,7 +40,7 @@ public class DataSourceFactory {
 		WeightedDataSourceRoute read = new WeightedDataSourceRoute();
 		WeightedDataSourceRoute write = new WeightedDataSourceRoute();
 		Map<DBType, WeightedDataSourceRoute> poolMap = new HashMap<>();
-		poolMap.put(DBType.READONLY, read);
+		poolMap.put(DBType.READ, read);
 		poolMap.put(DBType.WRITE, write);
 		for (String key : hmap.keySet()) {
 			Map<String, String> p = hmap.get(key);

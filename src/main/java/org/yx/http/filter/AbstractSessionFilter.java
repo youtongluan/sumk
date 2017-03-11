@@ -59,9 +59,9 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			session.put(sid, key);
+			session.putKey(sid, key);
 			resp.setHeader(Session.SESSIONID, sid);
-			resp.getOutputStream().write(Base64Util.encode(key));
+			outputKey(resp, key);
 			resp.getOutputStream().write("\t\n".getBytes());
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
@@ -70,6 +70,10 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			Log.printStack(e);
 		}
 
+	}
+
+	protected void outputKey(HttpServletResponse resp, byte[] key) throws IOException {
+		resp.getOutputStream().write(Base64Util.encode(key));
 	}
 
 	protected byte[] createEncryptKey(HttpServletRequest req) {

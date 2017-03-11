@@ -24,7 +24,7 @@ import java.util.Map;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtils;
 
-public class PropertiesInfo implements FileHandler {
+public abstract class PropertiesInfo implements FileHandler {
 
 	protected String fileName;
 
@@ -40,13 +40,7 @@ public class PropertiesInfo implements FileHandler {
 		return pro.get(key);
 	}
 
-	public String get(String key, String defaultValue) {
-		String value = pro.get(key);
-		if (value != null && value.length() > 0) {
-			return value;
-		}
-		return defaultValue;
-	}
+	abstract String get(String key, String defaultValue);
 
 	@Override
 	public URL[] listFile() {

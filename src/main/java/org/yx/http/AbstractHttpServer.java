@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
+import org.yx.exception.BizException;
 import org.yx.http.handler.HttpInfo;
 import org.yx.log.Log;
 
@@ -92,7 +93,11 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			handle(act, info, req, resp);
 
 		} catch (Exception e) {
-			Log.printStack(e);
+			if (BizException.class.isInstance(e)) {
+				Log.get("sumk.http").info("code:{},message:{}", BizException.class.cast(e).getCode(), e.getMessage());
+			} else {
+				Log.printStack(e);
+			}
 			try {
 				HttpUtil.error(resp, -1005, "请求格式不正确", HttpUtil.charset(req));
 			} catch (IOException e1) {

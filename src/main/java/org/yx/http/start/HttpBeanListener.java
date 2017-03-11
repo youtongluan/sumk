@@ -15,7 +15,6 @@
  */
 package org.yx.http.start;
 
-import org.yx.asm.AsmUtils;
 import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
 import org.yx.bean.BeanPool;
@@ -55,9 +54,6 @@ public class HttpBeanListener extends AbstractBeanListener {
 		}
 		try {
 			Class<?> clz = event.clz();
-			if (AsmUtils.notPublicOnly(clz.getModifiers()) || clz.isAnonymousClass() || clz.isLocalClass()) {
-				return;
-			}
 			if (LoginServlet.class.isAssignableFrom(clz)) {
 				Login login = clz.getAnnotation(Login.class);
 				if (login != null) {

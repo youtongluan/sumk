@@ -39,8 +39,10 @@ public class AppInfo {
 	 */
 	public static ColumnType modifyByColumnType = ColumnType.ID_DB;
 
-	private static List<Observer> observers = new ArrayList<>();
+	private static List<Observer> observers = new ArrayList<>(4);
 	private static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+	static NamePairs zkInfo = null;
 
 	public static synchronized void addObserver(Observer ob) {
 		if (observers.contains(ob)) {
@@ -50,7 +52,7 @@ public class AppInfo {
 		ob.update(null, null);
 	}
 
-	public static final PropertiesInfo info = new PropertiesInfo("app.properties") {
+	static final PropertiesInfo info = new PropertiesInfo("app.properties") {
 
 		private Integer intValue(String key) {
 			String temp = get(key);
@@ -80,6 +82,29 @@ public class AppInfo {
 			observers.forEach(ob -> {
 				ob.update(null, null);
 			});
+		}
+
+		@Override
+		public String get(String key) {
+			String ret = super.get(key);
+			if (ret == null && zkInfo != null) {
+				return zkInfo.getValue(key);
+			}
+			return ret;
+		}
+
+		public String get(String key, String defaultValue) {
+			String value = pro.get(key);
+			if (value != null && value.length() > 0) {
+				return value;
+			}
+			if (zkInfo != null) {
+				value = zkInfo.getValue(key);
+			}
+			if (value != null && value.length() > 0) {
+				return value;
+			}
+			return defaultValue;
 		}
 
 	};

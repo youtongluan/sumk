@@ -209,7 +209,7 @@ public final class AsmUtils {
 	}
 
 	public static List<Object> getImplicitFrame(String desc) {
-		List<Object> locals = new ArrayList<>();
+		List<Object> locals = new ArrayList<>(5);
 		if (desc.isEmpty()) {
 			return locals;
 		}

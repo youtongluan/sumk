@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.db.DBType;
-import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
@@ -99,9 +98,10 @@ public final class ConnectionPool implements AutoCloseable {
 		if (this.dbType == DBType.WRITE) {
 			return this.getWriteConnection();
 		}
-		if (this.dbType == DBType.READONLY) {
+		if (this.dbType == DBType.READ) {
 			if (type == DBType.WRITE) {
-				SumkException.throwException(5639234, "can not open write connection in readonly context");
+				return this.getWriteConnection();
+
 			}
 			return this.getReadConnection();
 		}
@@ -128,7 +128,7 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.readConn;
 		}
 		ConnectionFactory factory = ConnectionFactory.get(dbName);
-		Connection conn = factory.getConnection(DBType.READONLY, this.writeConn);
+		Connection conn = factory.getConnection(DBType.READ, this.writeConn);
 		this.readConn = conn;
 		Log.get("sumk.conn.open").trace("open read connection:{}", conn);
 		return conn;

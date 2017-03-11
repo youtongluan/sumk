@@ -15,6 +15,9 @@
  */
 package org.yx.http;
 
+/**
+ * 1000-2000之间的错误码，为系统所保留，应用系统的错误码，要避开这个区间
+ */
 public interface ErrorCode {
 	/**
 	 * 登陆失败
@@ -24,4 +27,14 @@ public interface ErrorCode {
 	 * session过期或冲突
 	 */
 	int SESSION_ERROR = 1002;
+
+	/**
+	 * 没有访问权限。一般是指该角色的权限不足
+	 */
+	int AUTHORITY_ERROR = 1003;
+
+	/**
+	 * 
+	 */
+	int VALIDATE_ERROR = 1010;
 }

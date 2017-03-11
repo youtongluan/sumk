@@ -22,6 +22,8 @@ import java.util.List;
 import org.yx.common.ActStatis;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
+import org.yx.exception.InvalidParamException;
+import org.yx.http.ErrorCode;
 import org.yx.http.HttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
@@ -80,8 +82,12 @@ public class HttpHandlerChain implements HttpHandler {
 			Log.printStack(e1);
 			HttpUtil.error(ctx.getHttpResponse(), -1013243, "data format error", ctx.getCharset());
 		} catch (BizException e2) {
-			Log.get("com.http.2").info("bussiness exception,code:{},message:{}", e2.getCode(), e2.getMessage());
+			Log.get("sumk.http").info("bussiness exception,code:{},message:{}", e2.getCode(), e2.getMessage());
 			HttpUtil.error(ctx.getHttpResponse(), e2.getCode(), e2.getMessage(), ctx.getCharset());
+		} catch (InvalidParamException e3) {
+			Log.get("sumk.http").info("InvalidParamException,message:{},paramName:{},arg:{}", e3.getMessage(),
+					e3.getInfo().getParamName(), e3.getParam());
+			HttpUtil.error(ctx.getHttpResponse(), ErrorCode.VALIDATE_ERROR, e3.getMessage(), ctx.getCharset());
 		} catch (final Throwable e) {
 			Throwable temp = e;
 			if (InvocationTargetException.class.isInstance(temp)) {
@@ -90,7 +96,7 @@ public class HttpHandlerChain implements HttpHandler {
 			while (temp != null) {
 				if (BizException.class.isInstance(temp)) {
 					BizException be = (BizException) temp;
-					Log.get("com.http.2").info("bussiness exception,code:{},message:{}", be.getCode(), be.getMessage());
+					Log.get("sumk.http").info("bussiness exception,code:{},message:{}", be.getCode(), be.getMessage());
 					HttpUtil.error(ctx.getHttpResponse(), be.getCode(), be.getMessage(), ctx.getCharset());
 					return true;
 				}

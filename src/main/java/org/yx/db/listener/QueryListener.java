@@ -58,7 +58,7 @@ public class QueryListener implements DBListener<QueryEvent> {
 				return;
 			}
 
-			List<Object> list = new ArrayList<>();
+			List<Object> list = new ArrayList<>(4);
 			for (Object obj : event.getResult()) {
 				if (id.equals(pm.getRedisID(obj, false))) {
 					list.add(obj);

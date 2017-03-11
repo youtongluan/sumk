@@ -86,20 +86,21 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		req.clearParams();
 
 		if (jsonedArg != null) {
-			Log.get("SYS.RPC").trace("args:{}", jsonedArg);
+			Log.get("sumk.rpc").trace("args:{}", jsonedArg);
 			String json_req = GsonUtil.toJson(req) + Protocols.LINE_SPLIT + jsonedArg;
 			this.encodeString(Protocols.REQ_PARAM_JSON, session, json_req, out);
 			return;
 		}
 
-		String json_req = String.format("%02d", params.length) + GsonUtil.toJson(req);
+		StringBuilder json_req = new StringBuilder();
+		json_req.append(String.format("%02d", params.length)).append(GsonUtil.toJson(req));
 		for (String p : params) {
-			json_req += Protocols.LINE_SPLIT + p;
+			json_req.append(Protocols.LINE_SPLIT).append(p);
 		}
 		this.encodeString(Protocols.REQ_PARAM_ORDER, session, json_req, out);
 	}
 
-	private void encodeString(int code, IoSession session, String message, ProtocolEncoderOutput out)
+	private void encodeString(int code, IoSession session, CharSequence message, ProtocolEncoderOutput out)
 			throws CharacterCodingException, ProtocolEncoderException {
 		code = code | Protocols.FORMAT_JSON;
 		int size = message.length();

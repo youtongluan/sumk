@@ -15,7 +15,6 @@
  */
 package org.yx.bean;
 
-import org.yx.asm.AsmUtils;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
 import org.yx.db.Cachable;
@@ -38,17 +37,12 @@ public class BeanFactory extends AbstractBeanListener {
 	public void listen(BeanEvent event) {
 		try {
 			Class<?> clz = event.clz();
-			if (clz.isInterface() || clz.isAnnotation() || clz.isAnonymousClass()) {
-				return;
-			}
-			if (AsmUtils.notPublicOnly(clz.getModifiers())) {
-				return;
-			}
 			Bean b = clz.getAnnotation(Bean.class);
 			if (b != null) {
 				InnerIOC.putClass(b.value(), clz);
 			}
-			if ("true".equals(AppInfo.get("sumk.ioc.cache.disable", "false"))) {
+
+			if (AppInfo.getBoolean("sumk.ioc.cached.disable", false)) {
 				return;
 			}
 			Cached c = clz.getAnnotation(Cached.class);

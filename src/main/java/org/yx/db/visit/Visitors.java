@@ -18,29 +18,41 @@ package org.yx.db.visit;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
-import org.yx.db.sql.ColumnMeta;
+import org.yx.db.conn.EventLane;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.SelectBuilder;
-import org.yx.db.sql.SqlBuilder;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
-import org.yx.util.Assert;
 
-public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
+public class Visitors {
 
-	public static QueryVisitor visitor = new QueryVisitor();
+	public static final SumkDbVisitor<Integer> modifyVisitor = builder -> {
+		MapedSql maped = builder.toMapedSql();
+		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
+			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
+		}
+		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
+		PreparedStatement statement = conn.prepareStatement(maped.getSql());
+		List<Object> params = maped.getParamters();
+		if (params != null && params.size() > 0) {
+			for (int i = 0; i < params.size(); i++) {
+				statement.setObject(i + 1, params.get(i));
+			}
+		}
+		Log.get("sumk.SQL").debug(" <== {}", statement);
+		int ret = statement.executeUpdate();
+		statement.close();
+		EventLane.pubuish(conn, maped.getEvent());
+		return ret;
+	};
 
-	@Override
-	public List<Map<String, Object>> visit(SqlBuilder builder) throws Exception {
+	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitor = builder -> {
 		MapedSql maped = builder.toMapedSql();
 		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
 			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
@@ -59,33 +71,28 @@ public class QueryVisitor implements SumkDbVisitor<List<Map<String, Object>>> {
 		if (SelectBuilder.class.isInstance(builder)) {
 			pm = ((SelectBuilder) builder).getPojoMeta();
 		}
-		List<Map<String, Object>> list = toMapList(ret, pm);
+		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
 		statement.close();
 		return list;
-	}
+	};
 
-	public static List<Map<String, Object>> toMapList(ResultSet rs, PojoMeta pm) throws java.sql.SQLException {
-		List<Map<String, Object>> list = new ArrayList<>();
-		if (rs == null) {
-			return list;
+	public static final SumkDbVisitor<List<?>> singleListQueryVisitor = builder -> {
+		MapedSql maped = builder.toMapedSql();
+		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
+			Log.get("sumk.SQL.single.visitor").trace(String.valueOf(maped));
 		}
-		ResultSetMetaData md = rs.getMetaData();
-		int columnCount = md.getColumnCount();
-		Map<String, Object> rowData = new HashMap<>();
-		while (rs.next()) {
-			rowData = new HashMap<>(columnCount * 2);
-			for (int i = 1; i <= columnCount; i++) {
-				if (pm == null) {
-					rowData.put(md.getColumnName(i).toLowerCase(), rs.getObject(i));
-					continue;
-				}
-				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
-				Assert.notNull(cm, md.getColumnName(i) + " has no mapper");
-				rowData.put(cm.getFieldName(), rs.getObject(i));
+		Connection conn = ConnectionPool.get().connection(DBType.ANY);
+		PreparedStatement statement = conn.prepareStatement(maped.getSql());
+		List<Object> params = maped.getParamters();
+		if (params != null && params.size() > 0) {
+			for (int i = 0; i < params.size(); i++) {
+				statement.setObject(i + 1, params.get(i));
 			}
-			list.add(rowData);
 		}
-		rs.close();
+		Log.get("sumk.SQL.single").debug(" ==> {}", statement);
+		ResultSet ret = statement.executeQuery();
+		List<?> list = ResultSetUtils.toList(ret);
+		statement.close();
 		return list;
-	}
+	};
 }

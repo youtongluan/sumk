@@ -15,6 +15,7 @@
  */
 package org.yx.http.start;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.http.handler.HttpInfo;
 import org.yx.log.Log;
+import org.yx.validate.Param;
 
 class HttpFactory {
 	private HttpNameResolver nameResolver = new HttpNameResolver();
@@ -55,20 +57,33 @@ class HttpFactory {
 			Web act = m.getAnnotation(Web.class);
 			Upload upload = m.getAnnotation(Upload.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
+			Log.get("sumk.http").debug("http action-{}:{}", soaName, classFullName);
 			if (HttpHolder.getHttpInfo(soaName) != null) {
-				Log.get("SYS.http").error(soaName + " already existed");
+				Log.get("sumk.http").error(soaName + " already existed");
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			int argSize = m.getParameterTypes().length;
 			if (argSize == 0) {
-				HttpHolder.putActInfo(soaName, new HttpInfo(obj, proxyedMethod, null, null, null, act, upload));
+				HttpHolder.putActInfo(soaName,
+						new HttpInfo(obj, proxyedMethod, null, null, null, act, upload, new Param[0]));
 				continue;
+			}
+			Annotation[][] paramAnno = m.getParameterAnnotations();
+			Param[] params = new Param[paramAnno.length];
+			for (int i = 0; i < paramAnno.length; i++) {
+				Annotation[] a = paramAnno[i];
+				for (Annotation a2 : a) {
+					if (Param.class == a2.annotationType()) {
+						params[i] = (Param) a2;
+						break;
+					}
+				}
 			}
 			MethodInfo mInfo = AsmUtils.createMethodInfo(classFullName, m);
 			Class<?> argClz = AsmUtils.CreateArgPojo(classFullName, mInfo);
-			HttpHolder.putActInfo(soaName,
-					new HttpInfo(obj, proxyedMethod, argClz, mInfo.getArgNames(), m.getParameterTypes(), act, upload));
+			HttpHolder.putActInfo(soaName, new HttpInfo(obj, proxyedMethod, argClz, mInfo.getArgNames(),
+					m.getParameterTypes(), act, upload, params));
 		}
 
 	}

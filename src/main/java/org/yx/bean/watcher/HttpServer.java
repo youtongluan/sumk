@@ -18,31 +18,48 @@ package org.yx.bean.watcher;
 import java.lang.reflect.Constructor;
 
 import org.yx.bean.Bean;
+import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.common.StartConstants;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.http.IntfHandlerFactorysBean;
+import org.yx.http.UploadHandlerFactorysBean;
+import org.yx.http.handler.HttpHandlerChain;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 
 @Bean
-public class SoaStarter implements Plugin {
+public class HttpServer implements Plugin {
 
 	private Plugin server;
 
 	@Override
 	public void start() {
+		if (!SumkServer.isHttpEnable()) {
+			return;
+		}
 		try {
-			if (!SumkServer.isRpcEnable()) {
+			HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
+			if (AppInfo.getBoolean("http.upload", true)) {
+				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
+			}
+			int port = AppInfo.getInt(StartConstants.HTTP_PORT, -1);
+			if (port < 1) {
 				return;
 			}
-			int port = AppInfo.getInt(StartConstants.SOA_PORT, -1);
-			if (port > 0) {
-				String clzName = AppInfo.get("soa.starter.class", "org.yx.rpc.server.start.SOAServer");
-				Class<?> clz = Class.forName(clzName);
-				Constructor<?> c = clz.getConstructor(int.class);
-				server = (Plugin) c.newInstance(port);
-				server.start();
+			String nojetty = "sumk.http.nojetty";
+			if (StartContext.inst.get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
+				return;
 			}
+			String hs = AppInfo.get("http.starter.class", "org.yx.http.start.JettyServer");
+			if (!hs.contains(".")) {
+				return;
+			}
+			Class<?> httpClz = Class.forName(hs);
+			Constructor<?> c = httpClz.getConstructor(int.class);
+			server = (Plugin) c.newInstance(port);
+			server.start();
 		} catch (Exception e) {
 			Log.printStack(e);
 			System.exit(-1);
@@ -52,7 +69,7 @@ public class SoaStarter implements Plugin {
 
 	@Override
 	public void stop() {
-		if (server != null) {
+		if (this.server != null) {
 			server.stop();
 		}
 	}
@@ -61,4 +78,5 @@ public class SoaStarter implements Plugin {
 	public int order() {
 		return 10000;
 	}
+
 }

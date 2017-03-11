@@ -33,7 +33,7 @@ public class EventLane {
 		}
 
 	};
-	private List<DBEvent> events = new ArrayList<DBEvent>();
+	private List<DBEvent> events = new ArrayList<DBEvent>(16);
 
 	public EventLane() {
 	}

@@ -134,9 +134,7 @@ public class BeanPool {
 		}
 		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
 		Object bean = proxyClz.newInstance();
-		BeanWrapper w = new BeanWrapper();
-		w.setBean(bean);
-		w.setTargetClass(clz);
+		BeanWrapper w = new BeanWrapper(bean, clz);
 		for (String name : names) {
 			put(name, w);
 		}
@@ -237,7 +235,7 @@ public class BeanPool {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getBeans(String name, Class<T> clz) {
-		List<T> list = new ArrayList<>();
+		List<T> list = new ArrayList<>(4);
 		if (name == null || name.length() == 0) {
 			name = getBeanName(clz);
 		}

@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.asm.AsmUtils;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.Table;
@@ -57,10 +56,6 @@ public class PojoMetaHolder {
 	}
 
 	public static void resolve(Class<?> pojoClz) {
-
-		if (pojoClz.isInterface() || pojoClz.isEnum() || AsmUtils.notPublicOnly(pojoClz.getModifiers())) {
-			return;
-		}
 		Table table = pojoClz.getAnnotation(Table.class);
 		if (table == null) {
 			return;

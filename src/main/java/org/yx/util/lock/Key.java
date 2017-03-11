@@ -21,11 +21,15 @@ package org.yx.util.lock;
  * @author 游夏
  *
  */
-public interface Key {
+public interface Key extends AutoCloseable {
 	/**
 	 * 钥匙的Id，肯定不为空
 	 * 
 	 * @return
 	 */
 	String getId();
+
+	@Override
+	void close();
+
 }

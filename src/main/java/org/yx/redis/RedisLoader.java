@@ -22,10 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtils;
-import org.yx.util.SeqUtil;
 import org.yx.util.StringUtils;
 
 import redis.clients.jedis.JedisPoolConfig;
@@ -46,10 +44,6 @@ public class RedisLoader {
 	public static void init() throws Exception {
 		try {
 			loadRedisByConfig();
-			Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "session"));
-			if (counter != null) {
-				SeqUtil.setCounter(new RedisCounter(counter));
-			}
 		} catch (Exception e) {
 			Log.get(RedisLoader.class).error("failed to load redis pool from redis.properties");
 			throw e;
@@ -60,7 +54,7 @@ public class RedisLoader {
 		String file = "redis.properties";
 		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(file);
 		if (in == null) {
-			Log.get("SYS").info("can not found redis property file:{}", file);
+			Log.get("sumk.SYS").info("can not found redis property file:{}", file);
 			return;
 		}
 		Map<String, String> p = CollectionUtils.loadMap(in);

@@ -182,7 +182,7 @@ public class ProxyMethodWritor {
 		mv.visitJumpInsn(GOTO, l5);
 		mv.visitLabel(l2);
 
-		List<Object> list = new ArrayList<Object>();
+		List<Object> list = new ArrayList<Object>(8);
 		list.add(currentClz);
 		list.addAll(argTypes);
 		list.add(AOPEXCUTOR);

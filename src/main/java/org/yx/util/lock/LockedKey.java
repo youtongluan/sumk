@@ -27,4 +27,9 @@ public class LockedKey implements Key {
 		return "LockedKey";
 	}
 
+	@Override
+	public void close() {
+
+	}
+
 }

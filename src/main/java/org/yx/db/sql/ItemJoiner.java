@@ -16,30 +16,33 @@
 package org.yx.db.sql;
 
 public class ItemJoiner {
-	public static ItemJoiner create() {
-		return new ItemJoiner(" AND ");
+
+	static ItemJoiner create() {
+		return create(" AND ");
+	}
+
+	static ItemJoiner create(CharSequence delimiter) {
+		return new ItemJoiner(delimiter, " ( ", " ) ");
 	}
 
 	private StringBuilder sb = new StringBuilder();
-	private final String delimiter;
-	private final String prefix;
-	private final String suffix;
+	private final CharSequence delimiter;
+	private final CharSequence prefix;
+	private final CharSequence suffix;
 	private boolean hasDelimiter;
 
-	public ItemJoiner(String delimiter, String pre, String suf) {
+	public ItemJoiner(CharSequence delimiter, CharSequence pre, CharSequence suf) {
 		this.delimiter = delimiter;
 		this.prefix = pre;
 		this.suffix = suf;
 	}
 
-	public ItemJoiner(String delimiter) {
-		this.delimiter = delimiter;
-		this.prefix = " ( ";
-		this.suffix = " ) ";
+	public ItemJoiner(CharSequence delimiter) {
+		this(delimiter, null, null);
 	}
 
 	/**
-	 * 表示开启一个选项
+	 * 表示开启一个选项。如果已经有选项了，会添加分隔符
 	 * 
 	 * @return
 	 */
@@ -56,11 +59,31 @@ public class ItemJoiner {
 		return this;
 	}
 
+	public ItemJoiner append(char v) {
+		sb.append(v);
+		return this;
+	}
+
 	public CharSequence toCharSequence() {
+		return this.toCharSequence(false);
+	}
+
+	public CharSequence toCharSequence(boolean forceBorder) {
 		if (sb == null || sb.length() == 0) {
 			return null;
 		}
-		return hasDelimiter ? new StringBuilder().append(prefix).append(sb).append(suffix) : sb;
+		if (!forceBorder && !hasDelimiter) {
+			return sb;
+		}
+		StringBuilder ret = new StringBuilder();
+		if (this.prefix != null) {
+			ret.append(this.prefix);
+		}
+		ret.append(sb);
+		if (this.suffix != null) {
+			ret.append(this.suffix);
+		}
+		return ret;
 	}
 
 	@Override
@@ -68,6 +91,13 @@ public class ItemJoiner {
 		return String.valueOf(this.toCharSequence());
 	}
 
+	/**
+	 * 添加一个非空的字符序列
+	 * 
+	 * @param item
+	 *            如果item为空，就不添加
+	 * @return
+	 */
 	public ItemJoiner addNotEmptyItem(CharSequence item) {
 		if (item == null || item.length() == 0) {
 			return this;

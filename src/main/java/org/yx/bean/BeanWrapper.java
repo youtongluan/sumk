@@ -15,24 +15,20 @@
  */
 package org.yx.bean;
 
-/**
- * 它的equal和hashcode都取决于它所代理的bean
- * 
- * @author 游夏
- *
- */
 public class BeanWrapper {
 
 	private Object bean;
 
 	private Class<?> targetClass;
 
-	public Object getBean() {
-		return bean;
+	BeanWrapper(Object bean, Class<?> targetClass) {
+		super();
+		this.bean = bean;
+		this.targetClass = targetClass;
 	}
 
-	public void setBean(Object bean) {
-		this.bean = bean;
+	public Object getBean() {
+		return bean;
 	}
 
 	public boolean isProxy() {
@@ -41,10 +37,6 @@ public class BeanWrapper {
 
 	public Class<?> getTargetClass() {
 		return targetClass;
-	}
-
-	public void setTargetClass(Class<?> targetClass) {
-		this.targetClass = targetClass;
 	}
 
 	@Override

@@ -97,7 +97,7 @@ public final class ActionInfo {
 	 */
 	public Object invokeByJsonArg(String args) throws Throwable {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(m, obj, null);
+			return BizExcutor.exec(m, obj, null, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
 		if (getArgClz() == null) {
@@ -118,7 +118,8 @@ public final class ActionInfo {
 			Field f = getFields()[k++];
 			params[i] = f.get(argObj);
 		}
-		return BizExcutor.exec(m, obj, params);
+
+		return BizExcutor.exec(m, obj, params, null);
 	}
 
 	/**
@@ -132,7 +133,7 @@ public final class ActionInfo {
 	 */
 	public Object invokeByOrder(String... args) throws Throwable {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(m, obj, null);
+			return BizExcutor.exec(m, obj, null, null);
 		}
 		Object[] params = new Object[getArgTypes().length];
 		if (getArgClz() == null) {
@@ -160,7 +161,8 @@ public final class ActionInfo {
 			params[i] = GsonUtil.fromJson(args[i], f.getGenericType());
 			k++;
 		}
-		return BizExcutor.exec(m, obj, params);
+
+		return BizExcutor.exec(m, obj, params, null);
 	}
 
 }

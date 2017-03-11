@@ -20,10 +20,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
+import org.yx.exception.ConnectionException;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcUtils;
+import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.GsonUtil;
 import org.yx.util.UUIDSeed;
@@ -35,17 +37,17 @@ public final class Rpc {
 
 	private static Map<String, Long> TimeoutMap = new ConcurrentHashMap<>();
 	private static long DEFAULT_TIMEOUT;
-	private static boolean strated;
+	private volatile static boolean strated;
 
 	public static synchronized void init() {
 		if (strated) {
 			return;
 		}
 		try {
-			DEFAULT_TIMEOUT = AppInfo.getInt("RPC.TIMEOUT", 30000);
+			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
 			String zkUrl = AppInfo.getZKUrl();
-			Log.get("SYS.2").info("zkUrl:{}", zkUrl);
-			new ZkRouteParser().parse(zkUrl);
+			Log.get("sumk.rpc").info("zkUrl:{}", zkUrl);
+			ZkRouteParser.get(zkUrl).readRouteAndListen();
 			strated = true;
 		} catch (Exception e) {
 			throw SumkException.create(e);
@@ -70,7 +72,12 @@ public final class Rpc {
 		ReqResp reqResp;
 		try {
 			reqResp = ReqSender.send(req, TimeoutMap.getOrDefault(RpcUtils.getAppId(req.getMethod()), DEFAULT_TIMEOUT));
+		} catch (SoaException ex) {
+			throw ex;
 		} catch (Throwable e) {
+			if (ConnectionException.class.isInstance(e)) {
+				HostChecker.instance().addDownUrl(ConnectionException.class.cast(e).getHost());
+			}
 			Log.printStack(e);
 			throw new SoaException(1022, e.getMessage(), e);
 		}

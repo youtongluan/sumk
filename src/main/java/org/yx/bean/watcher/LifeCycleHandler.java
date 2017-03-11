@@ -16,13 +16,13 @@
 package org.yx.bean.watcher;
 
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.log.Log;
+import org.yx.main.SumkServer;
 import org.yx.util.CollectionUtils;
 import org.yx.util.StringUtils;
 
@@ -43,7 +43,7 @@ public class LifeCycleHandler {
 				}
 				Class<?> clz = Loader.loadClass(key);
 				if (!Runnable.class.isAssignableFrom(clz)) {
-					Log.get("SYS").info("{} should implements Runnable", clz.getSimpleName());
+					Log.get("sumk.SYS").info("{} should implements Runnable", clz.getSimpleName());
 					continue;
 				}
 				Runnable r = (Runnable) clz.newInstance();
@@ -58,9 +58,7 @@ public class LifeCycleHandler {
 	public void start() {
 		startBeans();
 		runFromFile();
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			destory();
-		}));
+		Runtime.getRuntime().addShutdownHook(new Thread(SumkServer::stop));
 	}
 
 	private void startBeans() {
@@ -69,28 +67,6 @@ public class LifeCycleHandler {
 			return;
 		}
 		lifes.forEach(Plugin::start);
-	}
-
-	private boolean destoryed = false;
-
-	public synchronized void destory() {
-		if (destoryed) {
-			return;
-		}
-		destoryed = true;
-		List<Plugin> lifes = IOC.getBeans(Plugin.class);
-		if (lifes == null || lifes.isEmpty()) {
-			return;
-		}
-		Collections.reverse(lifes);
-		lifes.forEach(b -> {
-			try {
-				b.stop();
-			} catch (Exception e) {
-				Log.printStack(e);
-			}
-		});
-		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 
 }

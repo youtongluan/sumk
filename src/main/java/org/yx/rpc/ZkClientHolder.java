@@ -74,6 +74,9 @@ public final class ZkClientHolder {
 
 				@Override
 				public byte[] serialize(Object data) throws ZkMarshallingError {
+					if (byte[].class.isInstance(data)) {
+						return (byte[]) data;
+					}
 					if (String.class.isInstance(data)) {
 						return ((String) data).getBytes(defaultCharset);
 					}
@@ -82,6 +85,9 @@ public final class ZkClientHolder {
 
 				@Override
 				public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+					if (bytes.length == 0) {
+						return null;
+					}
 					return new String(bytes, defaultCharset);
 				}
 

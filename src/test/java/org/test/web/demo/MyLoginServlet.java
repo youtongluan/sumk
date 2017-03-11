@@ -23,7 +23,10 @@ public class MyLoginServlet extends AbstractSessionFilter {
 			return LoginObject.error("验证码错误");
 		}
 		if ("admin".equals(user) && "123456".equals(password)) {
-			this.userSession().setSession(token, "admin");
+			DemoSessionObject so=new DemoSessionObject();
+			so.setLoginTime(System.currentTimeMillis());
+			so.setUserId("admin");
+			this.userSession().setSession(token, so);
 			return LoginObject.success(null);
 		}
 

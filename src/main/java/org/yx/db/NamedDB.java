@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.db.sql.MapedSqlBuilder;
-import org.yx.db.visit.DmlVisitor;
-import org.yx.db.visit.QueryVisitor;
-import org.yx.db.visit.SingleListQueryVisitor;
+import org.yx.db.visit.Visitors;
 import org.yx.exception.SumkException;
 
 /**
@@ -42,7 +40,7 @@ public class NamedDB {
 	 */
 	public static int execute(String sql, Map<String, Object> map) {
 		try {
-			return DmlVisitor.visitor.visit(new MapedSqlBuilder(sql, map));
+			return Visitors.modifyVisitor.visit(new MapedSqlBuilder(sql, map));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -57,7 +55,7 @@ public class NamedDB {
 	 */
 	public static List<Map<String, Object>> list(String sql, Map<String, Object> map) {
 		try {
-			return QueryVisitor.visitor.visit(new MapedSqlBuilder(sql, map));
+			return Visitors.queryVisitor.visit(new MapedSqlBuilder(sql, map));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -72,7 +70,7 @@ public class NamedDB {
 	 */
 	public static List<?> singleColumnList(String sql, Map<String, Object> map) {
 		try {
-			return SingleListQueryVisitor.visitor.visit(new MapedSqlBuilder(sql, map));
+			return Visitors.singleListQueryVisitor.visit(new MapedSqlBuilder(sql, map));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -86,7 +84,7 @@ public class NamedDB {
 	 */
 	public static int count(String sql, Map<String, Object> map) {
 		try {
-			List<?> list = SingleListQueryVisitor.visitor.visit(new MapedSqlBuilder(sql, map));
+			List<?> list = Visitors.singleListQueryVisitor.visit(new MapedSqlBuilder(sql, map));
 			Number n = (Number) list.get(0);
 			return n.intValue();
 		} catch (Exception e) {

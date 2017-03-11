@@ -71,7 +71,7 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 		}
 		InputStream in = Loader.getResourceAsStream("META-INF/" + sumkPath);
 		if (in == null) {
-			Log.get("SYS").error(sumkPath + " file cannot found");
+			Log.get("sumk.SYS").error(sumkPath + " file cannot found");
 			return;
 		}
 		List<String> sumks = CollectionUtils.loadList(in);

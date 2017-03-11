@@ -22,6 +22,11 @@ public class RouteEvent {
 	private ZkData zkData;
 	private Host url;
 
+	/**
+	 * 本节点肯定有数据
+	 * 
+	 * @return
+	 */
 	public Host getUrl() {
 		return url;
 	}
@@ -30,6 +35,11 @@ public class RouteEvent {
 		return type;
 	}
 
+	/**
+	 * 删除时，这个节点的数据为空
+	 * 
+	 * @return
+	 */
 	public ZkData getZkData() {
 		return zkData;
 	}
@@ -42,18 +52,18 @@ public class RouteEvent {
 	}
 
 	public static RouteEvent create(Host url, ZkData data) {
-		return new RouteEvent(RouteEventType.Create, url, data);
+		return new RouteEvent(RouteEventType.CREATE, url, data);
 	}
 
 	public static RouteEvent delete(Host url) {
-		return new RouteEvent(RouteEventType.Delete, url, null);
+		return new RouteEvent(RouteEventType.DELETE, url, null);
 	}
 
 	public static RouteEvent modify(Host url, ZkData data) {
-		return new RouteEvent(RouteEventType.Modify, url, data);
+		return new RouteEvent(RouteEventType.MODIFY, url, data);
 	}
 }
 
 enum RouteEventType {
-	Create, Delete, Modify
+	CREATE, DELETE, MODIFY
 }

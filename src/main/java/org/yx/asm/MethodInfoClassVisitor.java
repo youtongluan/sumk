@@ -72,7 +72,7 @@ public class MethodInfoClassVisitor extends ClassVisitor {
 				int k = argNames.size();
 				if (!args[k].getDescriptor().equals(desc)) {
 
-					Log.get("SYS.20")
+					Log.get("sumk.SYS")
 							.error("current desc should be " + args[k].getDescriptor() + ",but really is " + desc);
 					return;
 				}

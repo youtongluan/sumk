@@ -13,18 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db;
+package org.yx.bean;
 
-import org.apache.ibatis.session.SqlSession;
+import java.lang.reflect.Field;
 
-public abstract class SqlSessionHolder {
-
-	public static SqlSession writeSession(String module) {
-		return org.yx.sumk.batis.SqlSessionHolder.session();
-	}
-
-	public static SqlSession readSession(String module) {
-		return org.yx.sumk.batis.SqlSessionHolder.session();
-	}
-
+/**
+ * 用户自定义bean的获取方式
+ */
+public interface BeanHandler {
+	/**
+	 * 根据inject的属性，获取bean
+	 * 
+	 * @param inject
+	 *            等待被注入字段的@Inject信息
+	 * @param field
+	 *            等待被注入字段的Field信息
+	 * @return
+	 */
+	Object handle(Inject inject, Field field);
 }

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yx.log.Log;
+import org.yx.main.SumkServer;
 
 public class FileMonitor {
 
@@ -44,22 +45,12 @@ public class FileMonitor {
 	}
 
 	public void start() {
-		Thread t = new Thread(() -> {
-			while (true) {
-				try {
-					Thread.sleep(1000);
-					for (FileHandler h : handlers) {
-						handle(h, true);
-					}
-				} catch (Exception e) {
-					Log.printStack(e);
-				}
-
+		SumkServer.runDeamon(() -> {
+			Thread.sleep(1000);
+			for (FileHandler h : handlers) {
+				handle(h, true);
 			}
-
 		}, "file-watcher");
-		t.setDaemon(true);
-		t.start();
 
 	}
 
@@ -86,7 +77,7 @@ public class FileMonitor {
 			if (modify == null || f.lastModified() > modify) {
 				lastModif.put(p, f.lastModified());
 				if (showLog) {
-					Log.get("SYS.11").info("##{} changed at {}", f, lastModif.get(p));
+					Log.get("sumk.SYS").info("##{} changed at {}", f, lastModif.get(p));
 				}
 				try (InputStream fin = url.openStream()) {
 					h.deal(fin);

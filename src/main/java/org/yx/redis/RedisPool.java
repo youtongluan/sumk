@@ -18,7 +18,9 @@ package org.yx.redis;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.util.SeqUtil;
 
 public class RedisPool {
 	private static final Map<String, Redis> map = new ConcurrentHashMap<>();
@@ -29,6 +31,13 @@ public class RedisPool {
 	static {
 		try {
 			RedisLoader.init();
+			Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
+			if (counter == null) {
+				counter = RedisPool.getRedisExactly("session");
+			}
+			if (counter != null) {
+				SeqUtil.setCounter(new RedisCounter(counter));
+			}
 		} catch (Exception e) {
 			Log.printStack(e);
 			System.exit(-1);

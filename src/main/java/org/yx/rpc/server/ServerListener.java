@@ -67,7 +67,7 @@ public class ServerListener implements Runnable {
 	public void run() {
 		try {
 			acceptor = acceptors > 0 ? new NioSocketAcceptor(acceptors) : new NioSocketAcceptor();
-			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", true));
+			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", false));
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
 			chain.addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
@@ -78,7 +78,8 @@ public class ServerListener implements Runnable {
 			}
 
 			acceptor.setHandler(handler);
-			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 120);
+
+			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt("soa.session.idle", 60 * 5));
 			if (SocketSessionConfig.class.isInstance(acceptor.getSessionConfig())) {
 				SocketSessionConfig conf = (SocketSessionConfig) acceptor.getSessionConfig();
 				conf.setKeepAlive(true);
@@ -92,10 +93,19 @@ public class ServerListener implements Runnable {
 			} else {
 				addr = new InetSocketAddress(host, port);
 			}
-			acceptor.bind(addr);
+			for (int i = 0; i < 12; i++) {
+				try {
+					acceptor.bind(addr);
+					break;
+				} catch (IOException e) {
+					Log.get("sumk.rpc").debug("waiting for listening to {}.{}", port, e.getMessage());
+					int time = AppInfo.getInt("soa.server.starting.sleep", 10000);
+					Thread.sleep(time);
+				}
+			}
 			logger.info("rpc listening on " + addr);
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			logger.error(e.getMessage(), e);
 			System.exit(-1);
 		}

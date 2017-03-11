@@ -18,13 +18,16 @@ package org.yx.main;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.yx.bean.BeanPublisher;
+import org.yx.bean.IOC;
+import org.yx.bean.Plugin;
 import org.yx.bean.ScanerFactorysBean;
-import org.yx.bean.watcher.LifeCycleHandler;
+import org.yx.common.Deamon;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
@@ -36,8 +39,35 @@ import org.yx.util.StringUtils;
 
 public class SumkServer {
 	private static volatile boolean started = false;
-	private static boolean httpEnable;
-	private static boolean rpcEnable;
+	private static volatile boolean httpEnable;
+	private static volatile boolean rpcEnable;
+
+	private static List<Thread> deamonThreads = new ArrayList<>(4);
+
+	public static synchronized void runDeamon(Deamon runnable, String threadName) {
+		if (destoryed) {
+			return;
+		}
+		Runnable r = () -> {
+			while (true) {
+				try {
+					if (destoryed) {
+						break;
+					}
+					runnable.run();
+				} catch (InterruptedException e1) {
+
+				} catch (Exception e) {
+					Log.printStack(e);
+				}
+			}
+			Log.get("sumk.SYS").info("{} stoped", threadName);
+		};
+		Thread t = new Thread(r, threadName);
+		t.setDaemon(true);
+		t.start();
+		deamonThreads.add(t);
+	}
 
 	public static boolean isHttpEnable() {
 		return httpEnable;
@@ -64,11 +94,13 @@ public class SumkServer {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static synchronized void start(Collection<String> args) {
-		if (started) {
-			return;
+	public static void start(Collection<String> args) {
+		synchronized (SumkServer.class) {
+			if (started) {
+				return;
+			}
+			started = true;
 		}
-		started = true;
 		try {
 			handleSystemArgs();
 			handleArgs(args);
@@ -141,7 +173,37 @@ public class SumkServer {
 		return list;
 	}
 
-	public synchronized static void stop() {
-		LifeCycleHandler.instance.destory();
+	private volatile static boolean destoryed = false;
+
+	/**
+	 * 
+	 * @return true表示应用已经停止了
+	 */
+	public static boolean isDestoryed() {
+		return destoryed;
+	}
+
+	public static void stop() {
+		synchronized (SumkServer.class) {
+			if (destoryed) {
+				return;
+			}
+			destoryed = true;
+		}
+		List<Plugin> lifes = IOC.getBeans(Plugin.class);
+		if (lifes == null || lifes.isEmpty()) {
+			return;
+		}
+		Collections.reverse(lifes);
+		lifes.forEach(b -> {
+			try {
+				b.stop();
+			} catch (Exception e) {
+				Log.printStack(e);
+			}
+		});
+		deamonThreads.forEach(Thread::interrupt);
+		deamonThreads.clear();
+		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 }

@@ -15,6 +15,9 @@
  */
 package org.yx.db.listener;
 
+import java.util.List;
+import java.util.Map;
+
 import org.yx.bean.Bean;
 import org.yx.db.annotation.CacheType;
 import org.yx.db.event.InsertEvent;
@@ -37,19 +40,21 @@ public class InsertListener implements DBListener<InsertEvent> {
 	public void listen(InsertEvent event) {
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
-			if (pm == null || pm.isNoCache()) {
+			List<Map<String, Object>> list = event.getPojos();
+			if (pm == null || pm.isNoCache() || list == null) {
 				return;
 			}
-			Object src = event.getPojo();
-			String id = pm.getRedisID(src, false);
-			if (id == null) {
-				return;
+			for (Map<String, Object> map : list) {
+				String id = pm.getRedisID(map, false);
+				if (id == null) {
+					continue;
+				}
+				if (pm.cacheType() == CacheType.LIST) {
+					RecordReq.del(pm, id);
+					return;
+				}
+				RecordReq.set(pm, id, GsonUtil.toJson(map));
 			}
-			if (pm.cacheType() == CacheType.LIST) {
-				RecordReq.del(pm, id);
-				return;
-			}
-			RecordReq.set(pm, id, GsonUtil.toJson(src));
 		} catch (Exception e) {
 			Log.printStack("db-listener", e);
 		}

@@ -15,6 +15,8 @@
  */
 package org.yx.rpc;
 
+import java.net.InetSocketAddress;
+
 public final class Host {
 	private String ip;
 	private int port;
@@ -40,6 +42,10 @@ public final class Host {
 
 	public int getPort() {
 		return port;
+	}
+
+	public InetSocketAddress toInetSocketAddress() {
+		return new InetSocketAddress(ip, port);
 	}
 
 	@Override

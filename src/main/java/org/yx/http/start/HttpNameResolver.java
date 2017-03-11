@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 class HttpNameResolver {
 
 	public String solve(Class<?> clz, Method m, String name) {
-		if (name != null) {
+		if (name != null && name.length() > 0) {
 			name = name.trim();
 			if (name.length() > 0) {
 				return name;

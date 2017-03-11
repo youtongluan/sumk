@@ -69,7 +69,7 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 		int protocol = in.getInt(in.position());
 		if ((protocol & 0xFF000000) != Protocols.MAGIC) {
 			int position = in.position();
-			Log.get("SYS.RPC").trace(in.getString(Profile.CHARSET_DEFAULT.newDecoder()));
+			Log.get("sumk.rpc").trace(in.getString(Profile.CHARSET_DEFAULT.newDecoder()));
 			in.position(position);
 			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));
 		}

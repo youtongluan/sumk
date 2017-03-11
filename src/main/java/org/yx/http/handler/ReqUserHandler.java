@@ -34,7 +34,7 @@ public class ReqUserHandler implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Exception {
 		String sessionID = ctx.getHeaders().get(Session.SESSIONID);
 		UserSession session = HttpSessionHolder.loadUserSession();
-		byte[] key = session.getkey(sessionID);
+		byte[] key = session.getKey(sessionID);
 
 		if (key == null) {
 			Log.get("session").info("session:{}, has expired", sessionID);

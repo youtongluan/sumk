@@ -27,6 +27,7 @@ import org.yx.http.Web;
 import org.yx.http.filter.HttpBizFilter;
 import org.yx.http.filter.HttpRequest;
 import org.yx.rpc.server.intf.ActionContext;
+import org.yx.validate.ParamInfo;
 
 public class InvokeHandler implements HttpHandler {
 
@@ -43,7 +44,7 @@ public class InvokeHandler implements HttpHandler {
 		}
 		Object ret = info.accept(http -> {
 			if (http.getArgClz() == null || http.argTypes == null || http.argTypes.length == 0) {
-				return exec(http.m, http.obj, null);
+				return exec(http.m, http.obj, null, null);
 			}
 			Object[] params = new Object[http.getArgTypes().length];
 			Object argObj = HttpGson.gson.fromJson((String) ctx.getData(), http.argClz);
@@ -60,30 +61,33 @@ public class InvokeHandler implements HttpHandler {
 				Field f = http.getFields()[k++];
 				params[i] = f.get(argObj);
 			}
-			return exec(http.m, http.obj, params);
+			return exec(http.m, http.obj, params, info.paramInfos);
 		});
 		ctx.setResult(ret);
 		return false;
 	}
 
-	private static Object exec(Method m, Object obj, Object[] params) throws Throwable {
+	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos) throws Throwable {
 		List<HttpBizFilter> list = IOC.getBeans(HttpBizFilter.class);
 		if (list == null || list.isEmpty()) {
-			return BizExcutor.exec(m, obj, params);
+			return BizExcutor.exec(m, obj, params, paramInfos);
 		}
 		HttpRequest req = new HttpRequest(params);
 		try {
 			for (HttpBizFilter f : list) {
 				f.beforeInvoke(req);
 			}
-			Object ret = BizExcutor.exec(m, obj, params);
+			Object ret = BizExcutor.exec(m, obj, params, paramInfos);
 			for (HttpBizFilter f : list) {
 				f.afterInvoke(req, ret);
 			}
 			return ret;
 		} catch (Exception e) {
 			for (HttpBizFilter f : list) {
-				f.error(req, e);
+				Exception e2 = f.error(req, e);
+				if (e2 != null) {
+					e = e2;
+				}
 			}
 			throw e;
 		}

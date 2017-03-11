@@ -18,6 +18,7 @@ import org.yx.http.Web;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
 import org.yx.rpc.Soa;
+import org.yx.validate.Param;
 
 public class Demo {
 
@@ -32,7 +33,7 @@ public class Demo {
 	}
 
 	@Web(value = "base64", requestEncrypt = EncryptType.BASE64, responseEncrypt = EncryptType.BASE64)
-	public List<String> base64(String echo, List<String> names) {
+	public List<String> base64(@Param(maxLength=20) String echo, List<String> names) {
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
 			list.add(echo + " " + name);
@@ -42,7 +43,7 @@ public class Demo {
 
 	@Web(value = "upload", requestEncrypt = EncryptType.BASE64)
 	@Upload
-	public String upload(String name, int age) throws FileNotFoundException, IOException {
+	public String upload(String name, @Param(required=true) Integer age) throws FileNotFoundException, IOException {
 		List<UploadFile> files = UploadFileHolder.getFiles();
 		for (UploadFile f : files) {
 			System.out.println(f.getName());
@@ -57,7 +58,7 @@ public class Demo {
 
 	@Web(value = "aes_base64", requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
 	public List<String> aes_base64(String echo, List<String> names) {
-		Assert.assertEquals("admin", HttpSessionHolder.getUserObject(String.class));
+		Assert.assertEquals("admin", HttpSessionHolder.getUserObject(DemoSessionObject.class).getUserId());
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
 			list.add(echo + " " + name);

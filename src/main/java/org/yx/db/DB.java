@@ -22,8 +22,7 @@ import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
 import org.yx.db.sql.Select;
 import org.yx.db.sql.Update;
-import org.yx.db.visit.DmlVisitor;
-import org.yx.db.visit.QueryVisitor;
+import org.yx.db.visit.Visitors;
 
 /**
  * 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
@@ -40,7 +39,7 @@ public class DB {
 	 * @return
 	 */
 	public static Insert insert() {
-		return new Insert(DmlVisitor.visitor);
+		return new Insert(Visitors.modifyVisitor);
 	}
 
 	/**
@@ -51,7 +50,7 @@ public class DB {
 	 * @return
 	 */
 	public static Insert insert(Object pojo) {
-		return new Insert(DmlVisitor.visitor).insert(pojo);
+		return new Insert(Visitors.modifyVisitor).insert(pojo);
 	}
 
 	/**
@@ -61,7 +60,7 @@ public class DB {
 	 * @return
 	 */
 	public static Update update() {
-		return new Update(DmlVisitor.visitor);
+		return new Update(Visitors.modifyVisitor);
 	}
 
 	/**
@@ -73,11 +72,11 @@ public class DB {
 	 * @return
 	 */
 	public static Update update(Object pojo) {
-		return new Update(DmlVisitor.visitor).update(pojo);
+		return new Update(Visitors.modifyVisitor).update(pojo);
 	}
 
 	public static Delete delete() {
-		return new Delete(DmlVisitor.visitor);
+		return new Delete(Visitors.modifyVisitor);
 	}
 
 	/**
@@ -88,15 +87,15 @@ public class DB {
 	 * @return
 	 */
 	public static Delete delete(Object pojo) {
-		return new Delete(DmlVisitor.visitor).delete(pojo);
+		return new Delete(Visitors.modifyVisitor).delete(pojo);
 	}
 
 	public static Select select() {
-		return new Select(QueryVisitor.visitor);
+		return new Select(Visitors.queryVisitor);
 	}
 
 	public static Select select(Object pojo) {
-		return new Select(QueryVisitor.visitor).addEqual(pojo);
+		return new Select(Visitors.queryVisitor).addEqual(pojo);
 	}
 
 	/**

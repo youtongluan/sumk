@@ -40,6 +40,7 @@ public interface HttpBizFilter extends Plugin {
 	 * @param req
 	 * @param result
 	 *            如果不需要返回值，result就会是null
+	 * @return 返回修改后的异常信息，如果返回null，就表示没有修改异常
 	 */
-	public void error(HttpRequest req, Throwable ex);
+	public Exception error(HttpRequest req, Exception ex);
 }

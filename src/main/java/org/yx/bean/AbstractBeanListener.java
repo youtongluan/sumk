@@ -26,7 +26,7 @@ import org.yx.util.StringUtils;
 
 public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 
-	protected List<String> packages = new ArrayList<String>();
+	protected List<String> packages = new ArrayList<String>(128);
 	protected boolean valid = false;
 
 	public AbstractBeanListener(String packs) {

@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Set;
 
 import org.yx.exception.SumkException;
@@ -106,9 +107,9 @@ public final class SLock {
 		if (list == null || list.isEmpty() || key == null || key == LockedKey.key) {
 			return;
 		}
-		Iterator<Lock> it = list.iterator();
-		while (it.hasNext()) {
-			Lock lock = it.next();
+		ListIterator<Lock> it = list.listIterator(list.size());
+		while (it.hasPrevious()) {
+			Lock lock = it.previous();
 			if (lock.getId().equals(key.getId())) {
 				lock.unlock();
 				it.remove();
@@ -134,6 +135,13 @@ public final class SLock {
 		return tryLock(name, Integer.MAX_VALUE);
 	}
 
+	/**
+	 * 尝试加锁，如果锁定失败，就返回null
+	 * 
+	 * @param lock
+	 * @param maxWaitTime
+	 * @return
+	 */
 	public static Key tryLock(Lock lock, long maxWaitTime) {
 		if (getLock(lock) != null) {
 			return LockedKey.key;

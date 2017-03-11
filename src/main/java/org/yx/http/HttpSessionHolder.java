@@ -18,6 +18,7 @@ package org.yx.http;
 import org.yx.bean.IOC;
 import org.yx.exception.BizException;
 import org.yx.http.filter.LoginServlet;
+import org.yx.http.filter.SessionObject;
 import org.yx.http.filter.UserSession;
 import org.yx.log.Log;
 
@@ -54,7 +55,7 @@ public class HttpSessionHolder {
 	 * 
 	 * @return
 	 */
-	public static Object getUserObject(Class<?> clz) {
+	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
 		return loadUserSession().getUserObject(clz);
 	}
 
@@ -75,7 +76,7 @@ public class HttpSessionHolder {
 	 * 
 	 * @param sessionObj
 	 */
-	public static void updateUserObject(Object sessionObj) {
+	public static void updateUserObject(SessionObject sessionObj) {
 		loadUserSession().updateSession(sessionObj);
 	}
 

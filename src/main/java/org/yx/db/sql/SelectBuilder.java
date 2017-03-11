@@ -85,7 +85,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			sql.append(" ORDER BY ").append(order);
 		}
 		if (this.offset >= 0 && this.limit > 0) {
-			sql.append(" LIMIT ").append(this.offset).append(",").append(this.limit);
+			sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
 		}
 		ms.sql = sql.toString();
 		return ms;
@@ -98,7 +98,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		StringBuilder sb = new StringBuilder();
 		for (Order order : this.orderby) {
 			if (sb.length() > 0) {
-				sb.append(",");
+				sb.append(',');
 			}
 			sb.append(order.toString(this.pojoMeta));
 		}
@@ -153,7 +153,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (this.in == null || this.in.isEmpty()) {
 			return null;
 		}
-		ItemJoiner joiner = new ItemJoiner(" OR ");
+		ItemJoiner joiner = ItemJoiner.create(" OR ");
 		List<Map<String, Object>> list = this.in;
 		for (Map<String, Object> map : list) {
 			CharSequence sub = this.parseEqual(map);

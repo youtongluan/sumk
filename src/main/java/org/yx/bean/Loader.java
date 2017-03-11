@@ -15,12 +15,15 @@
  */
 package org.yx.bean;
 
+import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.Enumeration;
 
 public class Loader {
 
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
-		if (!clz.startsWith("org") && !clz.startsWith("com")) {
+		if (!clz.startsWith("org") && !clz.startsWith("com") && !clz.startsWith("net")) {
 			clz = "org.yx." + clz;
 		}
 		return Loader.class.getClassLoader().loadClass(clz);
@@ -28,11 +31,19 @@ public class Loader {
 
 	public static InputStream getResourceAsStream(String name) {
 		name = name.replace('.', '/');
-		InputStream in = Loader.class.getClassLoader().getResourceAsStream(name + "-impl");
+		InputStream in = loader().getResourceAsStream(name + "-impl");
 		if (in != null) {
 			return in;
 		}
-		return Loader.class.getClassLoader().getResourceAsStream(name);
+		return loader().getResourceAsStream(name);
+	}
+
+	private static ClassLoader loader() {
+		return Loader.class.getClassLoader();
+	}
+
+	public static Enumeration<URL> getResources(String name) throws IOException {
+		return loader().getResources(name);
 	}
 
 	public static final String JAVA_PRE = "java.";

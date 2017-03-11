@@ -19,9 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.db.sql.RawSqlBuilder;
-import org.yx.db.visit.DmlVisitor;
-import org.yx.db.visit.QueryVisitor;
-import org.yx.db.visit.SingleListQueryVisitor;
+import org.yx.db.visit.Visitors;
 import org.yx.exception.SumkException;
 
 /**
@@ -39,7 +37,7 @@ public class RawDB {
 	 */
 	public static int execute(String sql, Object... params) {
 		try {
-			return DmlVisitor.visitor.visit(new RawSqlBuilder(sql, params));
+			return Visitors.modifyVisitor.visit(new RawSqlBuilder(sql, params));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -53,7 +51,7 @@ public class RawDB {
 	 */
 	public static List<Map<String, Object>> list(String sql, Object... params) {
 		try {
-			return QueryVisitor.visitor.visit(new RawSqlBuilder(sql, params));
+			return Visitors.queryVisitor.visit(new RawSqlBuilder(sql, params));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -70,7 +68,7 @@ public class RawDB {
 	 */
 	public static List<?> singleColumnList(String sql, Object... params) {
 		try {
-			return SingleListQueryVisitor.visitor.visit(new RawSqlBuilder(sql, params));
+			return Visitors.singleListQueryVisitor.visit(new RawSqlBuilder(sql, params));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}
@@ -84,7 +82,7 @@ public class RawDB {
 	 */
 	public static int count(String sql, Object... params) {
 		try {
-			List<?> list = SingleListQueryVisitor.visitor.visit(new RawSqlBuilder(sql, params));
+			List<?> list = Visitors.singleListQueryVisitor.visit(new RawSqlBuilder(sql, params));
 			Number n = (Number) list.get(0);
 			return n.intValue();
 		} catch (Exception e) {

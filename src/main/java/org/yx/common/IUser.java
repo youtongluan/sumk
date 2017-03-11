@@ -13,17 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.visit;
+package org.yx.common;
 
-public class Vistors {
-	static ResultHandler pojoHandler;
-	static ResultHandler pojoListHandler;
+public interface IUser {
+	Long getId();
 
-	public static ResultHandler pojoHandler() {
-		return pojoHandler;
-	}
-
-	public static ResultHandler pojoListHandler() {
-		return pojoListHandler;
-	}
+	String getName();
 }

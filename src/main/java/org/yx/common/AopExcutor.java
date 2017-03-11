@@ -19,6 +19,7 @@ import java.sql.SQLException;
 
 import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
+import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
@@ -46,7 +47,11 @@ public class AopExcutor {
 	}
 
 	public void rollback(Throwable e) {
-		Log.printStack(e);
+		if (BizException.class.isInstance(e)) {
+			Log.get("sumk.SYS").info("code:{},message:{}", BizException.class.cast(e).getCode(), e.getMessage());
+		} else {
+			Log.printStack(e);
+		}
 		if (dbCtx != null) {
 			try {
 				dbCtx.rollback();
@@ -57,7 +62,7 @@ public class AopExcutor {
 		if (RuntimeException.class.isInstance(e)) {
 			throw (RuntimeException) e;
 		}
-		throw SumkException.create(e);
+		throw new SumkException(1076971, "业务执行出错", e);
 	}
 
 	public void commit() {

@@ -55,6 +55,6 @@ public class DBExec {
 	 * @throws Exception
 	 */
 	public static void query(ResultContainer container, DBExecutor executor) throws Exception {
-		exec(container, executor, DBType.READONLY);
+		exec(container, executor, DBType.READ);
 	}
 }
