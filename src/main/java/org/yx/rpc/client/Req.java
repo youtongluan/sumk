@@ -15,87 +15,111 @@
  */
 package org.yx.rpc.client;
 
+import java.util.StringJoiner;
+
 public class Req {
 
-	protected String sn;
+	private String n;
 
-	protected String sn0;
+	private String sn;
 
-	protected Integer ver;
+	private String rootSn;
 
-	protected String jsonedParam;
+	private String fatherSn;
 
-	protected String[] paramArray;
+	private String j;
 
-	/**
-	 * 将所有的参数序列化为一个json
-	 * 
-	 * @return
-	 */
+	private String[] p;
+
+	private String m;
+
+	private String secret;
+
+	private String sign;
+
+	private String src;
+
+	private long s;
+
+	private void parseSn() {
+		if (n == null) {
+			this.sn = "";
+			return;
+		}
+		String[] ss = n.split(",", 3);
+		this.sn = ss[0];
+		this.rootSn = ss.length < 2 ? this.sn : ss[1];
+		this.fatherSn = ss.length < 3 ? this.rootSn : ss[2];
+		;
+	}
+
+	public void setFullSn(String sn, String rootSn, String fatherSn) {
+		StringJoiner joiner = new StringJoiner(",");
+		joiner.add(sn);
+		if (rootSn == null) {
+			this.n = joiner.toString();
+			return;
+		}
+		joiner.add(rootSn);
+		if (fatherSn == null) {
+			this.n = joiner.toString();
+			return;
+		}
+		joiner.add(fatherSn);
+		this.n = joiner.toString();
+	}
+
 	public String getJsonedParam() {
-		return jsonedParam;
+		return j;
 	}
 
 	public void setJsonedParam(String jsonedParam) {
-		this.jsonedParam = jsonedParam;
+		this.j = jsonedParam;
 	}
 
 	public String[] getParamArray() {
-		return paramArray;
+		return p;
 	}
 
 	public void setParamArray(String[] paramArray) {
-		this.paramArray = paramArray;
+		this.p = paramArray;
 	}
 
-	protected String method;
-
-	protected String secret;
-
-	protected String sign;
-
-	protected String src;
-
-	protected long start;
-
 	public long getStart() {
-		return start;
+		return s;
 	}
 
 	public void setStart(long start) {
-		this.start = start;
+		this.s = start;
 	}
 
 	public String getSn() {
+		if (sn == null) {
+			parseSn();
+		}
 		return sn;
 	}
 
-	public void setSn(String sn) {
-		this.sn = sn;
+	public String getRootSn() {
+		if (sn == null) {
+			parseSn();
+		}
+		return rootSn;
 	}
 
-	public String getSn0() {
-		return sn0;
-	}
-
-	public void setSn0(String sn0) {
-		this.sn0 = sn0;
-	}
-
-	public Integer getVer() {
-		return ver;
-	}
-
-	public void setVer(Integer ver) {
-		this.ver = ver;
+	public String getFatherSn() {
+		if (sn == null) {
+			parseSn();
+		}
+		return fatherSn;
 	}
 
 	public String getMethod() {
-		return method;
+		return m;
 	}
 
 	public void setMethod(String method) {
-		this.method = method;
+		this.m = method;
 	}
 
 	public String getSign() {
@@ -123,8 +147,8 @@ public class Req {
 	}
 
 	public void clearParams() {
-		this.jsonedParam = null;
-		this.paramArray = null;
+		this.j = null;
+		this.p = null;
 	}
 
 }

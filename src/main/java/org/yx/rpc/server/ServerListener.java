@@ -116,6 +116,7 @@ public class ServerListener implements Runnable {
 		if (this.acceptor == null) {
 			return;
 		}
+
 		this.acceptor.dispose(false);
 	}
 

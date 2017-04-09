@@ -26,7 +26,7 @@ public class DataSourceWraper extends BasicDataSource {
 
 	public DataSourceWraper(String name, String type) {
 		this.name = name;
-		this.type = DBType.parse(type);
+		this.type = DBType.parseFromConfigFile(type);
 		if (!this.type.isWritable()) {
 			this.setDefaultReadOnly(true);
 		}

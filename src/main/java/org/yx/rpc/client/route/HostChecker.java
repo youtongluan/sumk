@@ -36,7 +36,7 @@ public class HostChecker {
 		SumkServer.runDeamon(new checker(), "host-checker");
 	}
 
-	public static HostChecker instance() {
+	public static HostChecker get() {
 		return holder;
 	}
 

@@ -29,11 +29,12 @@ public final class Lock implements Key {
 	private String id;
 	String value;
 	int maxLockTime;
+
 	int intervalTime;
 
 	public Lock(String keyId, String value, int maxLockTime, int intervalTime) {
 		Assert.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
-		Assert.isTrue(intervalTime > 1000 && maxLockTime > 0 && value != null && value.length() > 0,
+		Assert.isTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
 				"lock param is not valid");
 		this.id = keyId;
 		this.value = value;
@@ -52,7 +53,7 @@ public final class Lock implements Key {
 	 * @param maxLockTime
 	 *            最大的锁住时间，单位秒
 	 * @param intervalTime
-	 *            两次重试之间的间隔时间，单位纳秒
+	 *            两次重试之间的间隔时间，单位ms
 	 * @return
 	 */
 	public static Lock create(String name, int maxLockTime, int intervalTime) {
@@ -72,7 +73,7 @@ public final class Lock implements Key {
 	 * @return
 	 */
 	public static Lock create(String name, int maxLockTime) {
-		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 1000 * 1000 * 10));
+		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 10));
 	}
 
 	boolean tryLock() {
@@ -91,7 +92,7 @@ public final class Lock implements Key {
 				return this;
 			}
 			logger.debug("locked failed: {}={}", id, value);
-			LockSupport.parkNanos(this.intervalTime);
+			LockSupport.parkNanos(this.intervalTime * 1000, 000L);
 		}
 		return null;
 	}

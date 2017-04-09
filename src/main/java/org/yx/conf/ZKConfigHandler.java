@@ -17,7 +17,7 @@ package org.yx.conf;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.yx.rpc.ZkClientHolder;
+import org.yx.util.ZkClientHolder;
 
 public class ZKConfigHandler {
 
@@ -26,7 +26,7 @@ public class ZKConfigHandler {
 		if (!client.exists(path)) {
 			return null;
 		}
-		String data = client.readData(path);
+		String data = ZkClientHolder.data2String(client.readData(path));
 		if (listener != null) {
 			client.subscribeDataChanges(path, listener);
 		}

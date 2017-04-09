@@ -17,12 +17,15 @@ package org.yx.db.conn;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yx.conf.DBConfig;
 import org.yx.conf.DBConfigUtils;
 import org.yx.db.DBType;
+import org.yx.util.Assert;
 
 public class DataSourceFactory {
 	/**
@@ -37,11 +40,9 @@ public class DataSourceFactory {
 	 */
 	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
 		Map<String, Map<String, String>> hmap = parse(db);
-		WeightedDataSourceRoute read = new WeightedDataSourceRoute();
-		WeightedDataSourceRoute write = new WeightedDataSourceRoute();
-		Map<DBType, WeightedDataSourceRoute> poolMap = new HashMap<>();
-		poolMap.put(DBType.READ, read);
-		poolMap.put(DBType.WRITE, write);
+		List<WeightedDS> readDSList = new ArrayList<>(4);
+		List<WeightedDS> writeDSList = new ArrayList<>(4);
+
 		for (String key : hmap.keySet()) {
 			Map<String, String> p = hmap.get(key);
 			DBConfig dc = new DBConfig();
@@ -51,20 +52,27 @@ public class DataSourceFactory {
 				ds.setDefaultReadOnly(false);
 				WeightedDS w = new WeightedDS(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
-				write.addServer(w);
+				writeDSList.add(w);
 				if (ds.getType() == DBType.ANY) {
 					WeightedDS r = new WeightedDS(ds);
 					r.setWeight(dc.getRead_weight() > 0 ? dc.getRead_weight() : 1);
-					read.addServer(r);
+					readDSList.add(r);
 				}
 			} else if (ds.getType().isReadable()) {
 				ds.setDefaultReadOnly(true);
 				WeightedDS r = new WeightedDS(ds);
 				int w = dc.getRead_weight() > 0 ? dc.getRead_weight() : dc.getWeight();
 				r.setWeight(w > 0 ? w : 1);
-				read.addServer(r);
+				readDSList.add(r);
 			}
 		}
+		Assert.isTrue(readDSList.size() > 0, "you have not config any read datasource");
+		Assert.isTrue(writeDSList.size() > 0, "you have not config any write datasource");
+		WeightedDataSourceRoute read = new WeightedDataSourceRoute(readDSList);
+		WeightedDataSourceRoute write = new WeightedDataSourceRoute(writeDSList);
+		Map<DBType, WeightedDataSourceRoute> poolMap = new HashMap<>();
+		poolMap.put(DBType.READ, read);
+		poolMap.put(DBType.WRITE, write);
 		return poolMap;
 	}
 

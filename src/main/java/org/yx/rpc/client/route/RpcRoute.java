@@ -13,15 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.rpc.client.route;
 
-public interface ZKConst {
+import java.util.Collection;
 
-	public static final String SOA_ROOT = "/SUMK_SOA";
+import org.yx.rpc.Host;
+import org.yx.util.WeightedRoute;
 
-	public static final String METHODS = "methods";
-	public static final String METHOD_SPLIT = "#";
-	public static final String FEATURE = "feature";
-	public static final String WEIGHT = "weight";
-	public static final String START = "start";
+public class RpcRoute extends WeightedRoute<ServerMachine> {
+
+	/**
+	 * @param servers
+	 */
+	public RpcRoute(Collection<ServerMachine> servers) {
+		super(servers.toArray(new ServerMachine[servers.size()]));
+	}
+
+	@Override
+	protected boolean isDowned(ServerMachine server) {
+		return HostChecker.get().isDowned(server.url);
+	}
+
+	/**
+	 * @return
+	 */
+	public Host getUrl() {
+		ServerMachine server = this.getServer();
+		return server == null ? null : server.url;
+	}
+
 }

@@ -26,6 +26,7 @@ import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -87,9 +88,9 @@ public class ProxyClassVistor extends ClassVisitor {
 			if (dbBiz == null) {
 				return null;
 			}
-			String methodDesc = Type.getMethodDescriptor(method);
 
-			if (!desc.equals(methodDesc)) {
+			if (!desc.equals(Type.getMethodDescriptor(method))
+					|| !Objects.equals(Type.getReturnType(method), Type.getReturnType(desc))) {
 				return null;
 			}
 

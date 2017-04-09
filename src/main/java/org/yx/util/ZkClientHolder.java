@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.util;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -23,20 +23,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.yx.util.GsonUtil;
 
 public final class ZkClientHolder {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
-	private static Charset defaultCharset = StandardCharsets.UTF_8;
-	public static final String SOA_ROOT = "/SUMK_SOA";
+	public static final Charset SERIAL_CHARSET = StandardCharsets.UTF_8;
 
-	/**
-	 * 如果不存在，就创建该节点（永久节点）
-	 * 
-	 * @param client
-	 * @param dataPath
-	 */
-	public static void makeSure(ZkClient client, String dataPath) {
+	public static void makeSure(ZkClient client, final String dataPath) {
 		int start = 0, index;
 		while (true) {
 			index = dataPath.indexOf("/", start + 1);
@@ -74,21 +66,21 @@ public final class ZkClientHolder {
 
 				@Override
 				public byte[] serialize(Object data) throws ZkMarshallingError {
+					if (data == null) {
+						return null;
+					}
 					if (byte[].class.isInstance(data)) {
 						return (byte[]) data;
 					}
 					if (String.class.isInstance(data)) {
-						return ((String) data).getBytes(defaultCharset);
+						return ((String) data).getBytes(SERIAL_CHARSET);
 					}
-					return GsonUtil.toJson(data).getBytes(defaultCharset);
+					return GsonUtil.toJson(data).getBytes(SERIAL_CHARSET);
 				}
 
 				@Override
 				public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-					if (bytes.length == 0) {
-						return null;
-					}
-					return new String(bytes, defaultCharset);
+					return bytes;
 				}
 
 			});
@@ -97,5 +89,12 @@ public final class ZkClientHolder {
 			}
 		}
 		return map.get(url);
+	}
+
+	public static String data2String(byte[] zkData) {
+		if (zkData == null) {
+			return null;
+		}
+		return new String(zkData, SERIAL_CHARSET);
 	}
 }

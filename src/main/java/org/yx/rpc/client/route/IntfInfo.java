@@ -16,16 +16,32 @@
 package org.yx.rpc.client.route;
 
 public class IntfInfo {
-	private String intf;
-	int weight;
-	long timeout;
-	int clientCount;
+	private String n;
+	private Integer w;
+	private Integer c;
 
-	public String getIntf() {
-		return intf;
+	public String getName() {
+		return n;
 	}
 
-	public void setIntf(String intf) {
-		this.intf = intf;
+	public void setName(String name) {
+		this.n = name;
 	}
+
+	public Integer getWeight() {
+		return w;
+	}
+
+	public void setWeight(Integer weight) {
+		this.w = weight;
+	}
+
+	public Integer getClientCount() {
+		return c;
+	}
+
+	public void setClientCount(Integer clientCount) {
+		this.c = clientCount;
+	}
+
 }

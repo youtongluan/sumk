@@ -34,10 +34,10 @@ import org.I0Itec.zkclient.ZkClient;
 import org.yx.main.SumkServer;
 import org.yx.rpc.Host;
 import org.yx.rpc.ZKConst;
-import org.yx.rpc.ZkClientHolder;
 import org.yx.util.CollectionUtils;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtils;
+import org.yx.util.ZkClientHolder;
 
 public class ZkRouteParser {
 	private String zkUrl;
@@ -63,7 +63,7 @@ public class ZkRouteParser {
 		Map<Host, ZkData> datas = new HashMap<>();
 		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
 
-		List<String> paths = zk.getChildren(ZkClientHolder.SOA_ROOT);
+		List<String> paths = zk.getChildren(ZKConst.SOA_ROOT);
 		this.childs = new HashSet<>(paths);
 
 		final IZkDataListener nodeListener = new IZkDataListener() {
@@ -71,7 +71,7 @@ public class ZkRouteParser {
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
-				ServerData d = parser.getZkNodeData(dataPath);
+				ServerData d = parser.buildZkNodeData(dataPath, ZkClientHolder.data2String((byte[]) data));
 				if (d == null) {
 					parser.handle(RouteEvent.delete(Host.create(dataPath)));
 					return;
@@ -86,11 +86,11 @@ public class ZkRouteParser {
 
 		};
 
-		zk.subscribeChildChanges(ZkClientHolder.SOA_ROOT, new IZkChildListener() {
+		zk.subscribeChildChanges(ZKConst.SOA_ROOT, new IZkChildListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
 
 			@Override
-			public synchronized void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
+			public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
 				List<String> createChilds = new ArrayList<>();
 				Set<String> deleteChilds = new HashSet<>(parser.childs);
 				for (String zkChild : currentChilds) {
@@ -112,13 +112,14 @@ public class ZkRouteParser {
 
 				for (String delete : deleteChilds) {
 					parser.handle(RouteEvent.delete(Host.create(delete)));
+					zk.unsubscribeDataChanges(parentPath + "/" + delete, nodeListener);
 				}
 			}
 
 		});
 		for (String path : paths) {
 			ServerData d = getZkNodeData(path);
-			zk.subscribeDataChanges(ZkClientHolder.SOA_ROOT + "/" + path, nodeListener);
+			zk.subscribeDataChanges(ZKConst.SOA_ROOT + "/" + path, nodeListener);
 			if (d == null) {
 				continue;
 			}
@@ -134,15 +135,16 @@ public class ZkRouteParser {
 		}, "rpc-client-route");
 	}
 
-	/**
-	 * @param path
-	 *            节点的简单名称，不是完整路径
-	 * @throws IOException
-	 */
 	private ServerData getZkNodeData(String path) throws IOException {
-		Host url = Host.create(path);
 		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
-		String json = zk.readData(ZkClientHolder.SOA_ROOT + "/" + path);
+		String json = ZkClientHolder.data2String(zk.readData(ZKConst.SOA_ROOT + "/" + path));
+		return buildZkNodeData(path, json);
+	}
+
+	private ServerData buildZkNodeData(String path, String json) throws IOException {
+		if (path.contains("/")) {
+			path = path.substring(path.lastIndexOf("/") + 1);
+		}
 		Map<String, String> map = CollectionUtils.loadMap(new StringReader(json));
 		String methods = map.get(ZKConst.METHODS);
 		if (StringUtils.isEmpty(methods)) {
@@ -150,17 +152,20 @@ public class ZkRouteParser {
 		}
 		ZkData data = new ZkData();
 		data.setWeight(map.get(ZKConst.WEIGHT));
-		Arrays.stream(methods.split(",")).forEach(m -> {
+		Arrays.stream(methods.split(ZKConst.METHOD_SPLIT)).forEach(m -> {
+			if (m.length() == 0) {
+				return;
+			}
 			if (m.startsWith("{")) {
 				IntfInfo intf = GsonUtil.fromJson(m, IntfInfo.class);
 				data.addIntf(intf);
 				return;
 			}
 			IntfInfo intf = new IntfInfo();
-			intf.setIntf(m);
+			intf.setName(m);
 			data.addIntf(intf);
 		});
-		return new ServerData(url, data);
+		return new ServerData(Host.create(path), data);
 	}
 
 	public void handle(RouteEvent event) {

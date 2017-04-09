@@ -15,6 +15,10 @@
  */
 package org.yx.rpc.client;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
@@ -27,41 +31,62 @@ import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ReqSession {
 
-	protected IoSession session;
+	protected volatile IoSession session;
+
 	private NioSocketConnector connector;
 	private Host addr;
+	private Lock lock = new ReentrantLock();
+
+	private static final int CONNECT_TIMEOUT = 5000;
 
 	private void ensureSession() {
 		if (session != null && !session.isClosing()) {
 			return;
 		}
-		synchronized (this) {
-			if (connector == null || connector.isDisposing() || connector.isDisposed()) {
-				Log.get("sumk.rpc").debug("create connector for {}", addr);
-				connector = new NioSocketConnector(1);
-				connector.setConnectTimeoutMillis(5000);
-				connector.setHandler(new ClientHandler());
-				connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+		boolean locked = false;
+		try {
+			locked = lock.tryLock(CONNECT_TIMEOUT + 10, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		if (locked) {
+			try {
+				connect();
+			} finally {
+				lock.unlock();
 			}
+		}
 
-			if (session == null || session.isClosing()) {
-				Log.get("sumk.rpc").debug("create session for {}", addr);
-				ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
+		if (session == null || session.isClosing()) {
+			throw new ConnectionException(6454345, "error in create channel", addr);
+		}
+	}
 
-				cf.awaitUninterruptibly(connector.getConnectTimeoutMillis() + 1);
-				try {
-					IoSession se = cf.getSession();
-					if (se != null) {
-						this.session = se;
-						return;
-					}
-					cf.cancel();
-				} catch (Exception e) {
-					throw new ConnectionException(7311234, "error in create channel.cause by " + e.getMessage(), addr);
+	private void connect() {
+		if (connector == null || connector.isDisposing() || connector.isDisposed()) {
+			Log.get("sumk.rpc").debug("create connector for {}", addr);
+			connector = new NioSocketConnector(1);
+			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
+			connector.setHandler(new ClientHandler());
+			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+		}
+
+		if (session == null || session.isClosing()) {
+			Log.get("sumk.rpc").debug("create session for {}", addr);
+			ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
+
+			cf.awaitUninterruptibly(CONNECT_TIMEOUT + 1);
+			try {
+				IoSession se = cf.getSession();
+				if (se != null) {
+					this.session = se;
+					return;
 				}
-				throw new ConnectionException(6454345, "error in create channel", addr);
-
+				cf.cancel();
+			} catch (Exception e) {
+				throw new ConnectionException(7311234, "error in create channel.cause by " + e.getMessage(), addr);
 			}
+
 		}
 	}
 

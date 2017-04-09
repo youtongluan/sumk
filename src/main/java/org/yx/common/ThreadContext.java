@@ -26,7 +26,9 @@ public class ThreadContext {
 
 	private String act;
 
-	private String sn0;
+	private String rootSn;
+
+	private String contextSn;
 
 	/**
 	 * 附带的信息，有可能为null
@@ -47,8 +49,8 @@ public class ThreadContext {
 		return act;
 	}
 
-	public String getSn0() {
-		return sn0;
+	public String getContextSn() {
+		return this.contextSn;
 	}
 
 	private static ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
@@ -62,14 +64,15 @@ public class ThreadContext {
 
 	public static ThreadContext httpContext(String act) {
 		ThreadContext c = new ThreadContext(ActionType.HTTP, act);
-		c.sn0 = ActionType.HTTP + "_" + UUIDSeed.seq();
+		c.contextSn = ActionType.HTTP + "_" + UUIDSeed.seq();
 		holder.set(c);
 		return c;
 	}
 
-	public static ThreadContext rpcContext(String act, String sn0) {
+	public static ThreadContext rpcContext(String act, String rootSn, String contextSn) {
 		ThreadContext c = new ThreadContext(ActionType.RPC, act);
-		c.sn0 = sn0;
+		c.rootSn = rootSn;
+		c.contextSn = contextSn;
 		holder.set(c);
 		return c;
 	}
@@ -81,4 +84,9 @@ public class ThreadContext {
 	public static void remove() {
 		holder.remove();
 	}
+
+	public String getRootSn() {
+		return rootSn;
+	}
+
 }

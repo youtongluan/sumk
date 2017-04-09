@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.rpc.client;
 
-public interface ZKConst {
+import org.yx.exception.SoaException;
 
-	public static final String SOA_ROOT = "/SUMK_SOA";
+public class RpcFuture {
+	private RespFuture target;
 
-	public static final String METHODS = "methods";
-	public static final String METHOD_SPLIT = "#";
-	public static final String FEATURE = "feature";
-	public static final String WEIGHT = "weight";
-	public static final String START = "start";
+	RpcFuture(RespFuture target) {
+		super();
+		this.target = target;
+	}
+
+	public String get(long timeout) throws SoaException {
+		ReqResp reqResp = target.getResponse(timeout);
+		return reqResp.getResp().getJson();
+	}
+
+	public String get() throws SoaException {
+		return get(1000L * 3600 * 24);
+	}
 }

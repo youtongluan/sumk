@@ -90,6 +90,7 @@ public class ConnectionFactory {
 				factory.parseDatasource();
 				factoryMap.put(dbName, factory);
 			}
+			Log.get("sumk.db").debug("{}", factory);
 			return factory;
 		} catch (Exception e) {
 			Log.printStack(e);
@@ -145,6 +146,11 @@ public class ConnectionFactory {
 			SumkException.throwException(100001, "获取" + db + "写连接失败", e);
 		}
 		return null;
+	}
+
+	@Override
+	public String toString() {
+		return "datasource[" + db + "] write=" + write + " ,read=" + read;
 	}
 
 }

@@ -15,6 +15,7 @@
  */
 package org.yx.db.sql;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -139,12 +140,7 @@ public class PojoMeta {
 		}
 		this.softDelete = IOC.get(SoftDeleteParser.class).parse(this.pojoClz.getAnnotation(SoftDelete.class));
 		parseTable();
-		String arrayName = "[L" + this.pojoClz.getName() + ";";
-		try {
-			this.pojoArrayClz = Class.forName(arrayName, false, this.getClass().getClassLoader());
-		} catch (Exception e) {
-			SumkException.throwException(3425345, arrayName + " can not be loaded", e);
-		}
+		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}
 
 	private void parseTable() {

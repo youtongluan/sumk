@@ -39,7 +39,7 @@ public class HttpInfoWatcher implements Plugin {
 		if (!AppInfo.getBoolean("sumk.http.print.actions", false)) {
 			return;
 		}
-		Log.get("sumk.http").info("\n{}\n", GsonUtil.gsonBuilder("httpinfo").create().toJson(infos()));
+		Log.get("sumk.http").info("------\n{}\n", GsonUtil.gsonBuilder("httpinfo").create().toJson(infos()));
 
 	}
 
@@ -89,7 +89,7 @@ public class HttpInfoWatcher implements Plugin {
 				}
 			}
 			map.put("params", list);
-			map.put("result", descript(http.getM().getReturnType()));
+			map.put("result", describe(http.getM().getReturnType()));
 		});
 		return ret;
 	}
@@ -100,7 +100,7 @@ public class HttpInfoWatcher implements Plugin {
 	 * @param clazz
 	 * @return
 	 */
-	private static Map<String, String> descript(Class<?> clazz) {
+	private static Map<String, String> describe(Class<?> clazz) {
 		Map<String, String> map = new HashMap<>();
 		Class<?> tempClz = clazz;
 		while (tempClz != null && !tempClz.getName().startsWith("java.")) {

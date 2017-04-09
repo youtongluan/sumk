@@ -21,6 +21,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.LockSupport;
 
 import org.yx.exception.SoaException;
+import org.yx.log.Log;
 import org.yx.rpc.server.Response;
 
 public class RequestLocker {
@@ -33,6 +34,7 @@ public class RequestLocker {
 	}
 
 	public static void unLockAndSetResult(Response resp) {
+		Log.get("sumk.SOA").trace("unlock:{}" + resp.getSn());
 		RespFuture r = locks.remove(resp.getSn());
 		if (r == null) {
 			return;
@@ -43,11 +45,11 @@ public class RequestLocker {
 }
 
 class RespFuture {
-	Response resp = null;
-	private Req req;
-	private Thread thread;
+	Response resp;
+	private final Req req;
+	private final Thread thread;
 
-	public RespFuture(Req req) {
+	RespFuture(Req req) {
 		this.req = req;
 		this.thread = Thread.currentThread();
 	}
@@ -59,9 +61,9 @@ class RespFuture {
 	ReqResp getResponse(long timeout) {
 		long start = req.getStart() > 100000 ? req.getStart() : System.currentTimeMillis();
 		long end = start + timeout;
-		do {
+		while (resp == null && RequestLocker.locks.containsKey(req.getSn()) && end > System.currentTimeMillis()) {
 			LockSupport.parkUntil(end);
-		} while (resp == null && RequestLocker.locks.containsKey(req.getSn()) && end > System.currentTimeMillis());
+		}
 		if (resp == null) {
 			String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
 			SoaException.throwException(142234, msg, new TimeoutException(msg));

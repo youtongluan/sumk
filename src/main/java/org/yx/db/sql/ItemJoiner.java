@@ -25,6 +25,10 @@ public class ItemJoiner {
 		return new ItemJoiner(delimiter, " ( ", " ) ");
 	}
 
+	public static ItemJoiner create(CharSequence delimiter, CharSequence pre, CharSequence suf) {
+		return new ItemJoiner(delimiter, pre, suf);
+	}
+
 	private StringBuilder sb = new StringBuilder();
 	private final CharSequence delimiter;
 	private final CharSequence prefix;
@@ -104,6 +108,14 @@ public class ItemJoiner {
 		}
 		this.item().append(item);
 		return this;
+	}
+
+	public void append(long v) {
+		this.append(String.valueOf(v));
+	}
+
+	public void append(int v) {
+		this.append(String.valueOf(v));
 	}
 
 }

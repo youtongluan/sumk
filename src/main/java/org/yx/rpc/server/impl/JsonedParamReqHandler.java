@@ -24,7 +24,6 @@ import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
 
 public class JsonedParamReqHandler implements RequestHandler {
 
@@ -43,9 +42,8 @@ public class JsonedParamReqHandler implements RequestHandler {
 		long start = System.currentTimeMillis();
 		Response resp = new Response(req.getSn());
 		try {
-			String sn0 = StringUtils.isEmpty(req.getSn0()) ? req.getSn() : req.getSn0();
 			String method = req.getMethod();
-			ThreadContext.rpcContext(method, sn0);
+			ThreadContext.rpcContext(method, req.getRootSn(), req.getSn());
 			ActionInfo minfo = ActionHolder.getActionInfo(method);
 			Object ret = minfo.invokeByJsonArg(req.getJsonedParam());
 			resp.setJson(GsonUtil.toJson(ret));

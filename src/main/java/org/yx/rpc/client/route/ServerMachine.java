@@ -16,36 +16,35 @@
 package org.yx.rpc.client.route;
 
 import org.yx.rpc.Host;
+import org.yx.util.WeightedRoute;
 
-public class ServerMachine {
+public class ServerMachine implements WeightedRoute.Server {
 
 	public Host getUrl() {
 		return url;
 	}
 
-	public Host url;
-	public int weight;
-	/**
-	 * RPC的超时时间
-	 */
-	public Integer timeout;
+	public final Host url;
+
+	private int weight;
+
 	/**
 	 * 客户端应该初始化的最大实例个数。
 	 */
-	public Integer serverCount;
+	Integer serverCount;
 
 	public ServerMachine(Host url, int weight) {
-
 		this.url = url;
-		this.weight = weight;
+		setWeight(weight);
 	}
 
+	@Override
 	public int getWeight() {
 		return weight;
 	}
 
 	public void setWeight(int weight) {
-		this.weight = weight;
+		this.weight = weight > 0 ? weight : 0;
 	}
 
 	@Override

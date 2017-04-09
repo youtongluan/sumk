@@ -24,10 +24,10 @@ import java.util.Set;
 import org.yx.rpc.Host;
 
 public class Routes {
-	private final Map<String, WeightedRoute> routes;
+	private final Map<String, RpcRoute> routes;
 	private final Map<Host, ZkData> zkDatas;
 
-	private Routes(Map<Host, ZkData> zkDatas, Map<String, WeightedRoute> routes) {
+	private Routes(Map<Host, ZkData> zkDatas, Map<String, RpcRoute> routes) {
 		super();
 		this.zkDatas = zkDatas;
 		this.routes = routes;
@@ -35,11 +35,11 @@ public class Routes {
 
 	private static volatile Routes ROUTE = new Routes(Collections.emptyMap(), Collections.emptyMap());
 
-	public static WeightedRoute getRoute(String method) {
-		Map<String, WeightedRoute> routes = ROUTE.routes;
+	public static RpcRoute getRoute(String method) {
+		Map<String, RpcRoute> routes = ROUTE.routes;
 
 		for (;; method = method.substring(0, method.lastIndexOf("."))) {
-			WeightedRoute r = routes.get(method);
+			RpcRoute r = routes.get(method);
 			if (r != null) {
 				return r;
 			}
@@ -55,7 +55,7 @@ public class Routes {
 	 * @param route
 	 * @param data
 	 */
-	private static void _refresh(Map<Host, ZkData> data, Map<String, WeightedRoute> route) {
+	private static void _refresh(Map<Host, ZkData> data, Map<String, RpcRoute> route) {
 		Routes r = new Routes(data, route);
 		Routes.ROUTE = r;
 	}
@@ -80,21 +80,24 @@ public class Routes {
 
 	public static synchronized void refresh(Map<Host, ZkData> datas) {
 		Map<String, Set<ServerMachine>> map = new HashMap<>();
-		for (Host url : datas.keySet()) {
-			Map<String, ServerMachine> ms = createServerMachine(url, datas.get(url));
-			for (String m : ms.keySet()) {
+		datas.forEach((url, data) -> {
+			Map<String, ServerMachine> ms = createServerMachine(url, data);
+			ms.forEach((m, serverMachine) -> {
 				Set<ServerMachine> server = map.get(m);
 				if (server == null) {
 					server = new HashSet<>();
 					map.put(m, server);
 				}
-				server.add(ms.get(m));
+				server.add(serverMachine);
+			});
+		});
+		Map<String, RpcRoute> routes = new HashMap<>();
+		map.forEach((method, servers) -> {
+			if (servers == null || servers.isEmpty()) {
+				return;
 			}
-		}
-		Map<String, WeightedRoute> routes = new HashMap<>();
-		for (String method : map.keySet()) {
-			routes.put(method, new WeightedRoute(map.get(method)));
-		}
+			routes.put(method, new RpcRoute(servers));
+		});
 		_refresh(datas, routes);
 	}
 
@@ -107,10 +110,10 @@ public class Routes {
 	 */
 	private static Map<String, ServerMachine> createServerMachine(Host url, ZkData data) {
 		Map<String, ServerMachine> servers = new HashMap<>();
-		int weight = data.weight > 0 ? data.weight : 5;
+		int weight = data.weight > 0 ? data.weight : 100;
 		data.getIntfs().forEach(intf -> {
 			ServerMachine server = new ServerMachine(url, weight);
-			servers.put(intf.getIntf(), server);
+			servers.put(intf.getName(), server);
 		});
 		return servers;
 	}

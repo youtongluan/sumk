@@ -80,12 +80,6 @@ public final class Seq {
 
 	}
 
-	/**
-	 * 
-	 * @param name
-	 *            一般是表名，同表的seq重复概率大幅下降。在redis正常的时候，几乎不可能重复
-	 * @return
-	 */
 	public long next(String name) {
 		if (name != null) {
 			name = name.trim();
@@ -104,12 +98,6 @@ public final class Seq {
 		return next(null);
 	}
 
-	/**
-	 * 从seq中获取生成时的时间
-	 * 
-	 * @param seq
-	 * @return
-	 */
 	public static long getDate(long seq) {
 		long num = seq & 0x7FFFFFFFFF000000L;
 		num >>= 24;

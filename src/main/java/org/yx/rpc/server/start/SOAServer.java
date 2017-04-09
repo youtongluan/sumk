@@ -17,7 +17,6 @@ package org.yx.rpc.server.start;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.StringJoiner;
 
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -26,13 +25,16 @@ import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
+import org.yx.db.sql.ItemJoiner;
 import org.yx.log.Log;
 import org.yx.rpc.ActionHolder;
 import org.yx.rpc.ZKConst;
-import org.yx.rpc.ZkClientHolder;
+import org.yx.rpc.client.route.IntfInfo;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.rpc.server.ServerListener;
+import org.yx.util.GsonUtil;
 import org.yx.util.StringUtils;
+import org.yx.util.ZkClientHolder;
 
 /**
  * 启动服务器端
@@ -64,10 +66,10 @@ public class SOAServer implements Plugin {
 			if (StringUtils.isEmpty(ip) || "0.0.0.0".equals(ip)) {
 				ip = AppInfo.getIp();
 			}
-			path = ZkClientHolder.SOA_ROOT + "/" + ip + ":" + port;
+			path = ZKConst.SOA_ROOT + "/" + ip + ":" + port;
 			zkUrl = AppInfo.getZKUrl();
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
-			ZkClientHolder.makeSure(client, ZkClientHolder.SOA_ROOT);
+			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);
 
 			startServer(ip, port);
 
@@ -106,29 +108,48 @@ public class SOAServer implements Plugin {
 	}
 
 	private String createZkRouteData() {
-		Set<String> methods = ActionHolder.soaSet();
-		StringJoiner sj = new StringJoiner("\n");
-		if (methods != null && methods.size() > 0) {
-			sj.add(ZKConst.METHODS + "=" + String.join(",", methods.toArray(new String[methods.size()])));
+		Set<String> methodSet = ActionHolder.soaSet();
+		String[] methods = methodSet.toArray(new String[methodSet.size()]);
+		final ItemJoiner sj = new ItemJoiner("\n", null, null);
+		if (methods.length > 0) {
+			ItemJoiner methodJoiner = new ItemJoiner(ZKConst.METHOD_SPLIT, null, null);
+			for (String method : methods) {
+				String methodJson = AppInfo.get("soa.methods." + method);
+				if (methodJson != null && methodJson.startsWith("{")) {
+					IntfInfo info = GsonUtil.fromJson(methodJson, IntfInfo.class);
+					info.setName(method);
+					methodJoiner.item().append(GsonUtil.toJson(info));
+					continue;
+				}
+
+				methodJoiner.item().append(method);
+			}
+			sj.item().append(ZKConst.METHODS).append('=').append(methodJoiner.toCharSequence());
 		}
-		sj.add(ZKConst.FEATURE + "=" + Profile.featureInHex());
-		sj.add(ZKConst.START + "=" + System.currentTimeMillis());
-		return sj.toString();
+		sj.item().append(ZKConst.FEATURE).append('=').append(Profile.featureInHex());
+		sj.item().append(ZKConst.START).append('=').append(System.currentTimeMillis());
+		sj.item().append(ZKConst.WEIGHT).append('=').append(AppInfo.getInt("soa.weight", 100));
+
+		String zkData = sj.toString();
+		Log.get("sumk.SOA").debug("server zk data:\n{}", zkData);
+		return zkData;
 	}
 
 	@Override
 	public synchronized void stop() {
-		ZkClient client = ZkClientHolder.getZkClient(zkUrl);
-		if (client != null) {
+		try {
+			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			client.unsubscribeAll();
 			client.delete(path);
+			client.close();
+		} catch (Exception e) {
 		}
 
 		if (this.server != null) {
 			try {
 				this.server.stop();
 			} catch (IOException e) {
-				Log.printStack("rpc", e);
+				Log.printStack("sumk.rpc", e);
 			}
 		}
 	}

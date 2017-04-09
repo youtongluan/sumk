@@ -13,15 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.bean;
 
-public interface ZKConst {
+import java.lang.annotation.Annotation;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-	public static final String SOA_ROOT = "/SUMK_SOA";
+public class AopMetaHolder {
+	private static Map<Integer, Annotation[]> map = new ConcurrentHashMap<>();
 
-	public static final String METHODS = "methods";
-	public static final String METHOD_SPLIT = "#";
-	public static final String FEATURE = "feature";
-	public static final String WEIGHT = "weight";
-	public static final String START = "start";
+	public static void put(Integer key, Annotation[] value) {
+		map.put(key, value);
+	}
+
+	public static Annotation[] get(Integer key) {
+		return map.get(key);
+	}
 }

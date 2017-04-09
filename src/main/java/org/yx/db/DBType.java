@@ -18,9 +18,16 @@ package org.yx.db;
 import org.yx.exception.SumkException;
 
 public enum DBType {
-	WRITE(true, false), READ(false, true), ANY(true, true);
 
-	public static DBType parse(String type) {
+	WRITE(true, false),
+
+	READ(false, true),
+
+	READONLY(false, true),
+
+	ANY(true, true);
+
+	public static DBType parseFromConfigFile(String type) {
 		String type2 = type.toLowerCase();
 		switch (type2) {
 		case "w":

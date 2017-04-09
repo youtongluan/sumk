@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.db.DBType;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
@@ -34,17 +35,16 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 
 	};
-	private String dbName;
-	private DBType dbType;
+	private final String dbName;
+
+	private final DBType dbType;
 
 	private Connection readConn;
 	private Connection writeConn;
 
 	public static ConnectionPool create(String dbName, DBType dbType) {
 		List<ConnectionPool> list = connectionHolder.get();
-		ConnectionPool context = new ConnectionPool();
-		context.dbName = dbName;
-		context.dbType = dbType;
+		ConnectionPool context = new ConnectionPool(dbName, dbType);
 		list.add(0, context);
 		return context;
 	}
@@ -57,7 +57,9 @@ public final class ConnectionPool implements AutoCloseable {
 		return create(dbName, dbType);
 	}
 
-	private ConnectionPool() {
+	private ConnectionPool(String dbName, DBType dbType) {
+		this.dbName = dbName;
+		this.dbType = dbType;
 	}
 
 	public static ConnectionPool get() {
@@ -85,27 +87,23 @@ public final class ConnectionPool implements AutoCloseable {
 		EventLane.removeALL();
 	}
 
-	/**
-	 * 获取其它类型的session<BR>
-	 * 如果已经存在同一数据源的写连接，就返回那个写连接
-	 * 
-	 * @param type
-	 *            建议类型，与真正的连接类型未必会一致
-	 * @return
-	 * @throws SQLException
-	 */
 	public Connection connection(DBType type) {
-		if (this.dbType == DBType.WRITE) {
+		switch (this.dbType) {
+		case WRITE:
 			return this.getWriteConnection();
-		}
-		if (this.dbType == DBType.READ) {
+		case READONLY:
 			if (type == DBType.WRITE) {
-				return this.getWriteConnection();
-
+				SumkException.throwException(5639234, "can not open write connection in readonly context");
 			}
 			return this.getReadConnection();
+		case READ:
+			if (type == DBType.WRITE) {
+				return this.getWriteConnection();
+			}
+			return this.getReadConnection();
+		default:
+			return this.connectionByUser(type);
 		}
-		return this.connectionByUser(type);
 	}
 
 	private Connection connectionByUser(DBType type) {

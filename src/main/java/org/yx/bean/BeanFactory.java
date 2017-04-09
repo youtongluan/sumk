@@ -21,12 +21,6 @@ import org.yx.db.Cachable;
 import org.yx.db.Cached;
 import org.yx.exception.SumkException;
 
-/**
- * 用于创建Bean实例
- * 
- * @author 游夏
- *
- */
 public class BeanFactory extends AbstractBeanListener {
 
 	public BeanFactory() {

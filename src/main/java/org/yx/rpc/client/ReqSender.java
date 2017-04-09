@@ -20,7 +20,7 @@ import org.yx.exception.ConnectionException;
 import org.yx.exception.SoaException;
 import org.yx.rpc.Host;
 import org.yx.rpc.client.route.Routes;
-import org.yx.rpc.client.route.WeightedRoute;
+import org.yx.rpc.client.route.RpcRoute;
 
 class ReqSender {
 
@@ -30,11 +30,16 @@ class ReqSender {
 	 * @param req
 	 * @param timeout
 	 * @return
-	 * @throws Throwable
+	 * @throws Exception
 	 */
-	public static ReqResp send(Req req, long timeout) throws Throwable {
+	public static ReqResp send(Req req, long timeout) throws Exception {
+		RespFuture future = sendAsync(req, timeout / 2);
+		return future.getResponse(timeout);
+	}
+
+	public static RespFuture sendAsync(Req req, long writeTimeout) throws Exception {
 		String method = req.getMethod();
-		WeightedRoute route = Routes.getRoute(method);
+		RpcRoute route = Routes.getRoute(method);
 		if (route == null) {
 			SoaException.throwException(2353454, "can not find route for " + method, null);
 		}
@@ -45,22 +50,9 @@ class ReqSender {
 		ReqSession session = ReqSessionHolder.getSession(url);
 		RespFuture future = RequestLocker.register(req);
 		WriteFuture f = session.write(req);
-
-		if (f.getException() != null) {
-			throw new ConnectionException(345, f.getException().getMessage(), route.getUrl());
+		if (writeTimeout > 0 && !f.await(writeTimeout)) {
+			throw new ConnectionException(543234, "rpc write timeout", route.getUrl());
 		}
-		return future.getResponse(timeout);
-	}
-
-	public static RespFuture sendAsync(Req req) {
-		String method = req.getMethod();
-		WeightedRoute route = Routes.getRoute(method);
-		if (route == null) {
-			SoaException.throwException(2353454, "can not find route for " + method, null);
-		}
-		ReqSession session = ReqSessionHolder.getSession(route.getUrl());
-		RespFuture future = RequestLocker.register(req);
-		WriteFuture f = session.write(req);
 
 		if (f.getException() != null) {
 			throw new ConnectionException(345, f.getException().getMessage(), route.getUrl());

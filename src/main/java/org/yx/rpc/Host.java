@@ -18,22 +18,22 @@ package org.yx.rpc;
 import java.net.InetSocketAddress;
 
 public final class Host {
-	private String ip;
-	private int port;
+	private final String ip;
+	private final int port;
+
+	private Host(String ip, int port) {
+		super();
+		this.ip = ip;
+		this.port = port;
+	}
 
 	public static Host create(String addr) {
-		Host url = new Host();
 		String[] hs = addr.split(":");
-		url.ip = hs[0];
-		url.port = Integer.valueOf(hs[1]);
-		return url;
+		return new Host(hs[0], Integer.valueOf(hs[1]));
 	}
 
 	public static Host create(String ip, int port) {
-		Host url = new Host();
-		url.ip = ip;
-		url.port = port;
-		return url;
+		return new Host(ip, port);
 	}
 
 	public String getIp() {

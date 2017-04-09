@@ -18,8 +18,9 @@ package org.yx.db.conn;
 import javax.sql.DataSource;
 
 import org.yx.exception.SumkException;
+import org.yx.util.WeightedRoute;
 
-class WeightedDS {
+class WeightedDS implements WeightedRoute.Server {
 
 	public WeightedDS(DataSource ds) {
 		super();
@@ -38,8 +39,8 @@ class WeightedDS {
 	}
 
 	public void setWeight(int weight) {
-		if (weight < 1) {
-			SumkException.throwException(2454335, "db weight must big than 0,but exact is " + weight);
+		if (weight < 0) {
+			SumkException.throwException(2454335, "db weight must big than or equals 0,but exact is " + weight);
 		}
 		this.weight = weight;
 	}

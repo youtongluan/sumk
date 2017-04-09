@@ -29,7 +29,6 @@ import org.yx.util.StringUtils;
 public class ZkData {
 	private Collection<IntfInfo> intfs = new ArrayList<IntfInfo>();
 	int weight;
-	long timeout;
 	int clientCount;
 
 	public Collection<IntfInfo> getIntfs() {
