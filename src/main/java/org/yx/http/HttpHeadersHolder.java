@@ -17,7 +17,7 @@ package org.yx.http;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.filter.Session;
+import org.yx.http.filter.UserSession;
 
 public class HttpHeadersHolder {
 	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
@@ -35,7 +35,7 @@ public class HttpHeadersHolder {
 	}
 
 	public static String token() {
-		return _req.get().getHeader(Session.SESSIONID);
+		return _req.get().getHeader(UserSession.SESSIONID);
 	}
 
 	static void remove() {

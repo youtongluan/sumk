@@ -29,20 +29,15 @@ import org.yx.log.Log;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisConstants;
 import org.yx.redis.RedisPool;
+import org.yx.util.StringUtils;
 import org.yx.util.UUIDSeed;
 import org.yx.util.secury.Base64Util;
 
-/**
- * 单节点使用
- * 
- * @author 游夏
- *
- */
 public abstract class AbstractSessionFilter implements LoginServlet {
 
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String user = req.getParameter(userName());
-		final String sid = createToken();
+		final String sid = createSessionId();
 
 		try {
 			LoginObject obj = login(sid, user, req);
@@ -59,8 +54,11 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			session.putKey(sid, key);
-			resp.setHeader(Session.SESSIONID, sid);
+			session.putKey(sid, key, obj.getUserId());
+			resp.setHeader(UserSession.SESSIONID, sid);
+			if (StringUtils.isNotEmpty(obj.getUserId())) {
+				resp.setHeader(UserSession.TOKEN, obj.getUserId());
+			}
 			outputKey(resp, key);
 			resp.getOutputStream().write("\t\n".getBytes());
 			if (obj.getJson() != null) {
@@ -88,11 +86,11 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 	private UserSession session;
 
 	/**
-	 * 存放在sid中的token
+	 * 存放在sid中的sessionId
 	 * 
 	 * @return
 	 */
-	protected String createToken() {
+	protected String createSessionId() {
 		return UUIDSeed.random();
 	}
 
@@ -121,7 +119,7 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 	}
 
 	/**
-	 * @param token
+	 * @param sessionId
 	 *            http头部sid的信息
 	 * @param user
 	 *            对应于http parameter的username
@@ -131,6 +129,6 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 	 *            验证码,对应于http parameter的code
 	 * @return 登陆信息，无论成功与否，返回值不能是null
 	 */
-	protected abstract LoginObject login(String token, String user, HttpServletRequest req);
+	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
 
 }

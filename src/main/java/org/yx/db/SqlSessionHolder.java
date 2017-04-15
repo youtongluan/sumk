@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.server.start;
+package org.yx.db;
 
-import java.lang.reflect.Method;
+import org.apache.ibatis.session.SqlSession;
 
-import org.yx.conf.AppInfo;
+public abstract class SqlSessionHolder {
 
-class SoaNameResolver {
-
-	public String solve(Class<?> clz, Method m, String soaName) {
-		if (soaName != null) {
-			soaName = soaName.trim();
-			if (soaName.length() > 0) {
-				return soaName;
-			}
-		}
-		return AppInfo.groupId() + "." + AppInfo.appId() + "." + m.getName();
+	public static SqlSession writeSession(String module) {
+		return org.yx.sumk.batis.SqlSessionHolder.session();
 	}
+
+	public static SqlSession readSession(String module) {
+		return org.yx.sumk.batis.SqlSessionHolder.session();
+	}
+
 }

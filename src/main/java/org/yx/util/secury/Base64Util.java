@@ -16,16 +16,23 @@
 package org.yx.util.secury;
 
 import java.util.Base64;
+import java.util.Base64.Decoder;
+import java.util.Base64.Encoder;
 
 public class Base64Util {
+
+	private static Decoder decoder = Base64.getMimeDecoder();
+
+	private static Encoder encoder = Base64.getEncoder();
+
 	/**
-	 * 标准方式解码，不含\r\n
+	 * 解码，是否含有\r\n都能解码
 	 * 
 	 * @param src
 	 * @return
 	 */
 	public static byte[] decode(byte[] src) {
-		return Base64.getDecoder().decode(src);
+		return decoder.decode(src);
 	}
 
 	/**
@@ -35,6 +42,6 @@ public class Base64Util {
 	 * @return
 	 */
 	public static byte[] encode(byte[] src) {
-		return Base64.getEncoder().encode(src);
+		return encoder.encode(src);
 	}
 }

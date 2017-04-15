@@ -27,7 +27,7 @@ public class MyLoginServlet extends AbstractSessionFilter {
 			so.setLoginTime(System.currentTimeMillis());
 			so.setUserId("admin");
 			this.userSession().setSession(token, so);
-			return LoginObject.success(null);
+			return LoginObject.success(null,so.getUserId());
 		}
 
 		return LoginObject.error("用户名或密码错误");

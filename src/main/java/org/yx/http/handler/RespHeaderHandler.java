@@ -18,7 +18,7 @@ package org.yx.http.handler;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.Web;
-import org.yx.http.filter.Session;
+import org.yx.http.filter.UserSession;
 
 /**
  * 用来写入内容主题，是最后一个handler
@@ -37,9 +37,9 @@ public class RespHeaderHandler implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Throwable {
 		HttpServletResponse resp = ctx.getHttpResponse();
 		resp.setCharacterEncoding(ctx.getCharset().name());
-		String sessionID = ctx.getHeaders().get(Session.SESSIONID);
+		String sessionID = ctx.getHeaders().get(UserSession.SESSIONID);
 		if (sessionID != null && sessionID.length() > 0) {
-			resp.setHeader(Session.SESSIONID, sessionID);
+			resp.setHeader(UserSession.SESSIONID, sessionID);
 		}
 		return false;
 	}

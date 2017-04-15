@@ -21,9 +21,6 @@ import org.yx.util.GsonUtil;
 import org.yx.util.UUIDSeed;
 
 public final class Rpc {
-	private static String getAppId() {
-		return AppInfo.getAppId();
-	}
 
 	public static void init() {
 		Executor.init();
@@ -36,7 +33,7 @@ public final class Rpc {
 		ThreadContext context = ThreadContext.get();
 		req.setFullSn(sn, context.getRootSn(), context.getContextSn());
 		req.setMethod(method);
-		req.setSrc(getAppId());
+		req.setSrc(AppInfo.appId());
 		return req;
 	}
 

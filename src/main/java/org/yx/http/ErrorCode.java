@@ -34,6 +34,11 @@ public interface ErrorCode {
 	int AUTHORITY_ERROR = 1003;
 
 	/**
+	 * 用户在其它地方登录了
+	 */
+	int LOGIN_AGAIN = 1004;
+
+	/**
 	 * 
 	 */
 	int VALIDATE_ERROR = 1010;

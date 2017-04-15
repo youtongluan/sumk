@@ -110,7 +110,7 @@ public class Demo {
 ####RPC服务器端：
 
 ```java
-@Soa //只需要这个注解，就能接收RPC请求，默认接口名是 [appId.小写的类名.小写的方法名]
+@Soa //只需要这个注解，就能接收RPC请求，默认接口名是 [groupId.appId.方法名]
 public List<String> echo(String echo,List<String> names){
 	List<String> list=new ArrayList<String>();
 	for(String name:names){
@@ -128,7 +128,7 @@ Rpc.init();// 如果在app.preperties中添加soa.client.start=true，就可以�
 List<String> names=Arrays.asList("游夏","游侠");
 String echo=",how are you";
 //返回是json格式。key的格式是包名的最后一个单词+类名+方法名
-String result=Rpc.call("demo.EchoAction.echo", echo,names);
+String result=Rpc.call("groupId.appId.echo", echo,names);
 ```
 
 <br>

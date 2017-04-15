@@ -16,8 +16,10 @@
 package org.yx.http.filter;
 
 import org.yx.conf.AppInfo;
+import org.yx.http.HttpSessionHolder;
 import org.yx.redis.Redis;
 import org.yx.util.GsonUtil;
+import org.yx.util.StringUtils;
 
 public class RemoteUserSession implements UserSession {
 
@@ -25,20 +27,17 @@ public class RemoteUserSession implements UserSession {
 	private static final String AES_KEY = "KEY";
 	private static final String SESSION_OBJECT = "OBJ";
 
-	/**
-	 * 需要判断返回值是不是null,它不会返回空字符串
-	 * 
-	 * @return
-	 */
+	private static final String SINGLE_SESSION_PRE = "SINGLE_SES_";
+
 	private String bigKey() {
 		return bigKey(org.yx.http.HttpHeadersHolder.token());
 	}
 
-	private String bigKey(String token) {
-		if (token == null || token.isEmpty()) {
+	private String bigKey(String sessionId) {
+		if (sessionId == null || sessionId.isEmpty()) {
 			return null;
 		}
-		return "S#" + token;
+		return "S#" + sessionId;
 	}
 
 	public RemoteUserSession(Redis redis) {
@@ -46,10 +45,20 @@ public class RemoteUserSession implements UserSession {
 	}
 
 	@Override
-	public void putKey(String token, byte[] key) {
-		String bigkey = bigKey(token);
+	public void putKey(String sessionId, byte[] key, String userId) {
+		String bigkey = bigKey(sessionId);
 		redis.hset(bigkey, AES_KEY, key);
 		redis.expire(bigkey, AppInfo.httpSessionTimeout);
+		if ((!HttpSessionHolder.isSingleLogin()) || StringUtils.isEmpty(userId)) {
+			return;
+		}
+
+		String userSessionKey = SINGLE_SESSION_PRE + userId;
+		String oldSessionId = redis.get(userSessionKey);
+		if (StringUtils.isNotEmpty(oldSessionId)) {
+			redis.del(bigKey(oldSessionId));
+		}
+		redis.setex(userSessionKey, AppInfo.httpSessionTimeout, sessionId);
 	}
 
 	@Override
@@ -108,6 +117,14 @@ public class RemoteUserSession implements UserSession {
 			return;
 		}
 		setSession(bigKey, sessionObj);
+	}
+
+	@Override
+	public boolean isLogin(String userId) {
+		if (StringUtils.isEmpty(userId)) {
+			return false;
+		}
+		return redis.exists(SINGLE_SESSION_PRE + userId) == Boolean.TRUE;
 	}
 
 }

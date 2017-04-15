@@ -27,12 +27,18 @@ public class LoginObject {
 	 */
 	private String json;
 
+	private String userId;
+
 	public String getJson() {
 		return json;
 	}
 
 	public String getErrorMsg() {
 		return errorMsg;
+	}
+
+	public String getUserId() {
+		return userId;
 	}
 
 	/**
@@ -55,8 +61,21 @@ public class LoginObject {
 	 * @return
 	 */
 	public static LoginObject success(String text) {
+		return success(text, null);
+	}
+
+	/**
+	 * 
+	 * @param text
+	 *            登陆成功，要返回给客户端的信息
+	 * @param userId
+	 *            用户的id(或者其它用于唯一识别用户的标识),如果规定用户只能在一个地方登录，就要用这个方法
+	 * @return
+	 */
+	public static LoginObject success(String text, String userId) {
 		LoginObject obj = new LoginObject();
 		obj.json = text;
+		obj.userId = userId;
 		return obj;
 	}
 }

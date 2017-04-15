@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.common.Deamon;
-import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.rpc.Host;
@@ -30,7 +29,6 @@ import org.yx.rpc.Host;
 public class HostChecker {
 
 	private static HostChecker holder = new HostChecker();
-	private static long maxDownTime = AppInfo.getInt("soa.checker.maxtime", 1000 * 120);
 
 	private HostChecker() {
 		SumkServer.runDeamon(new checker(), "host-checker");
@@ -40,7 +38,7 @@ public class HostChecker {
 		return holder;
 	}
 
-	private ConcurrentHashMap<Host, Long> downUrls = new ConcurrentHashMap<Host, Long>();
+	private ConcurrentHashMap<Host, Long> downUrls = new ConcurrentHashMap<>();
 
 	public boolean isDowned(Host url) {
 		return downUrls.containsKey(url);
@@ -97,11 +95,6 @@ public class HostChecker {
 			int timeout = getTimeOut(urls.length);
 			for (Host url : urls) {
 				try {
-					long t = downUrls.get(url);
-					if (System.currentTimeMillis() - t >= maxDownTime) {
-						downUrls.remove(url);
-						continue;
-					}
 					Socket socket = new Socket();
 
 					socket.connect(url.toInetSocketAddress(), timeout);

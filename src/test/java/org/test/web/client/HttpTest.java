@@ -27,13 +27,14 @@ import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.yx.demo.member.DemoUser;
-import org.yx.http.filter.Session;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 import org.yx.util.secury.EncryUtil;
 import org.yx.util.secury.MD5Utils;
 
 public class HttpTest {
+
+	private static final String SID = "sid";
 
 	private String getUrl(String act) {
 		return "http://localhost:8080/intf/webserver/demo?act=" + act;
@@ -107,7 +108,7 @@ public class HttpTest {
 	public void aes_base64() throws Exception {
 		String charset = "UTF-8";
 		HttpResponse resp = login();
-		String sessionId = resp.getFirstHeader(Session.SESSIONID).getValue();
+		String sessionId = resp.getFirstHeader(SID).getValue();
 		Log.get("login").info("sessionId:{}", sessionId);
 		String logined = EntityUtils.toString(resp.getEntity());
 		int ln = logined.indexOf("\t\n");
@@ -117,7 +118,7 @@ public class HttpTest {
 		HttpClient client = HttpClientBuilder.create().build();
 		String act = "aes_base64";
 		HttpPost post = new HttpPost(getUrl(act));
-		post.setHeader(Session.SESSIONID, sessionId);
+		post.setHeader(SID, sessionId);
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
@@ -143,7 +144,7 @@ public class HttpTest {
 		 * 非表单MIME的方式提交 去掉application/x-www-form-urlencoded，内容也不要URLEncoder编码
 		 */
 		post = new HttpPost(getUrl(act));
-		post.setHeader(Session.SESSIONID, sessionId);
+		post.setHeader(SID, sessionId);
 		System.out.println("req:" + req);
 		se = new StringEntity("data=" + req, charset);
 		post.setEntity(se);
@@ -160,7 +161,7 @@ public class HttpTest {
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
 		post = new HttpPost(getUrl("bizError"));
-		post.setHeader(Session.SESSIONID, sessionId);
+		post.setHeader(SID, sessionId);
 		resp = client.execute(post);
 		Assert.assertEquals(499, resp.getStatusLine().getStatusCode());
 		resEntity = resp.getEntity();
@@ -173,7 +174,7 @@ public class HttpTest {
 	public void aes_sign() throws Exception {
 		String charset = "UTF-8";
 		HttpResponse resp = login();
-		String sessionId = resp.getFirstHeader(Session.SESSIONID).getValue();
+		String sessionId = resp.getFirstHeader(SID).getValue();
 		Log.get("login").info("sessionId:{}", sessionId);
 		String logined = EntityUtils.toString(resp.getEntity());
 		int ln = logined.indexOf("\t\n");
@@ -190,7 +191,7 @@ public class HttpTest {
 		String sign = MD5Utils.encrypt(GsonUtil.toJson(json).getBytes(charset));
 		System.out.println("sign:" + sign);
 		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
-		post.setHeader(Session.SESSIONID, sessionId);
+		post.setHeader(SID, sessionId);
 
 		StringEntity se = new StringEntity(req, charset);
 		post.setEntity(se);

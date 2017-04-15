@@ -16,6 +16,7 @@
 package org.yx.http;
 
 import org.yx.bean.IOC;
+import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.filter.LoginServlet;
 import org.yx.http.filter.SessionObject;
@@ -80,4 +81,7 @@ public class HttpSessionHolder {
 		loadUserSession().updateSession(sessionObj);
 	}
 
+	public static boolean isSingleLogin() {
+		return AppInfo.getBoolean("http.session.single", false);
+	}
 }

@@ -16,15 +16,21 @@
 package org.yx.http.filter;
 
 public interface UserSession {
+
 	/**
-	 * 获取当前的session的加密key
-	 * 
-	 * @param sid
-	 * @return null表示未登陆
+	 * 用户的sessionId<br>
+	 * sid
 	 */
+	String SESSIONID = "sid";
+	/**
+	 * 客户端用来传userid或者其它唯一识别用户的标识<br>
+	 * stoken
+	 */
+	String TOKEN = "stoken";
+
 	byte[] getKey(String sid);
 
-	void putKey(String sid, byte[] key);
+	void putKey(String sid, byte[] key, String userId);
 
 	/**
 	 * 获取存储到session中的用户信息
@@ -35,11 +41,7 @@ public interface UserSession {
 
 	void flushSession();
 
-	/**
-	 * @param key
-	 * @param sessionObj
-	 */
-	void setSession(String key, SessionObject sessionObj);
+	void setSession(String sessionId, SessionObject sessionObj);
 
 	/**
 	 * 更新session中的用户信息
@@ -49,4 +51,6 @@ public interface UserSession {
 	void updateSession(SessionObject sessionObj);
 
 	void removeSession();
+
+	boolean isLogin(String userId);
 }

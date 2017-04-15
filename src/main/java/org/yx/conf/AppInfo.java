@@ -30,7 +30,9 @@ import org.yx.util.StringUtils;
 public class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
-	private static String appId = "sumk";
+
+	private static String groupId = "sumk";
+	private static String appId = "demo";
 
 	public static int httpSessionTimeout = 3600;
 
@@ -70,8 +72,12 @@ public class AppInfo {
 		public void deal(InputStream in) throws Exception {
 			super.deal(in);
 			String id = get("sumk.appId");
-			if (id != null) {
+			if (id != null && id.length() > 0) {
 				AppInfo.appId = id;
+			}
+			id = get("sumk.groupId");
+			if (id != null && id.length() > 0) {
+				AppInfo.groupId = id;
 			}
 
 			Integer temp = intValue("http.session.timeout");
@@ -126,8 +132,22 @@ public class AppInfo {
 		return "0.0.0.0";
 	}
 
-	public static String getAppId() {
+	/**
+	 * 当前应用的id
+	 * 
+	 * @return
+	 */
+	public static String appId() {
 		return appId;
+	}
+
+	/**
+	 * 大系统的id
+	 * 
+	 * @return
+	 */
+	public static String groupId() {
+		return groupId;
 	}
 
 	/**

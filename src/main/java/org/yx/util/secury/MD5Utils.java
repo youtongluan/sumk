@@ -24,10 +24,13 @@ import java.security.MessageDigest;
 public class MD5Utils {
 
 	public static String encrypt(byte[] data) throws Exception {
+		return parseByte2HexStr(encryptByte(data));
+	}
+
+	public static byte[] encryptByte(byte[] data) throws Exception {
 		MessageDigest md = MessageDigest.getInstance("md5");
 		md.update(data);
-		byte[] md5Result = md.digest();
-		return parseByte2HexStr(md5Result);
+		return md.digest();
 	}
 
 	private static String parseByte2HexStr(byte buf[]) {

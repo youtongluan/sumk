@@ -35,7 +35,7 @@ public class DBConfig {
 	public DBConfig() {
 		properties = new HashMap<>();
 		properties.put("driverClassName", "com.mysql.jdbc.Driver");
-		properties.put("validationQuery", "select 1");
+
 		properties.put("maxTotal", "30");
 		properties.put("minIdle", "2");
 		properties.put("maxIdle", "10");

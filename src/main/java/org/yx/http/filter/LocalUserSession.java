@@ -25,21 +25,26 @@ import org.yx.conf.AppInfo;
 import org.yx.http.HttpHeadersHolder;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
+import org.yx.util.StringUtils;
 
 public class LocalUserSession implements UserSession {
 
 	private Map<String, TimedObject> map = new ConcurrentHashMap<>();
 	private Map<String, byte[]> keyMap = new ConcurrentHashMap<>();
 
-	/**
-	 * 
-	 * @param sessionId
-	 * @param key
-	 * @return true表示保存成功，flase失败
-	 */
+	private Map<String, String> userSessionMap = new ConcurrentHashMap<>();
+
 	@Override
-	public void putKey(String sessionId, byte[] key) {
+	public void putKey(String sessionId, byte[] key, String userId) {
 		keyMap.put(sessionId, key);
+		if (StringUtils.isEmpty(userId)) {
+			return;
+		}
+		String oldSession = userSessionMap.put(userId, sessionId);
+		if (oldSession != null) {
+			keyMap.remove(oldSession);
+			map.remove(oldSession);
+		}
 	}
 
 	public LocalUserSession() {
@@ -86,11 +91,11 @@ public class LocalUserSession implements UserSession {
 	}
 
 	@Override
-	public void setSession(String key, SessionObject sessionObj) {
+	public void setSession(String sessionId, SessionObject sessionObj) {
 		TimedObject to = new TimedObject();
 		to.setTarget(sessionObj);
 		to.setEvictTime(System.currentTimeMillis() + AppInfo.httpSessionTimeout * 1000);
-		map.put(key, to);
+		map.put(sessionId, to);
 	}
 
 	@Override
@@ -115,6 +120,14 @@ public class LocalUserSession implements UserSession {
 			return;
 		}
 		setSession(token, sessionObj);
+	}
+
+	@Override
+	public boolean isLogin(String userId) {
+		if (StringUtils.isEmpty(userId)) {
+			return false;
+		}
+		return this.userSessionMap.containsKey(userId);
 	}
 
 }

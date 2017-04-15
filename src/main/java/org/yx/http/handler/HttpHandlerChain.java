@@ -67,7 +67,8 @@ public class HttpHandlerChain implements HttpHandler {
 					if (Log.isTraceEnable("handle")) {
 						if (String.class.isInstance(ctx.getData())) {
 							String s = ((String) ctx.getData());
-							Log.get(this.getClass(), "handle").trace("{}:{}", h.getClass().getSimpleName(), s);
+							Log.get(this.getClass(), "handle").trace("{} with data:{}", h.getClass().getSimpleName(),
+									s);
 						} else {
 							Log.get(this.getClass(), "handle").trace(h.getClass().getSimpleName());
 						}

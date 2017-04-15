@@ -9,56 +9,78 @@ import java.util.Map;
 import java.util.Random;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.test.soa.demo.EchoAction;
 import org.yx.conf.AppInfo;
 import org.yx.demo.member.DemoUser;
-import org.yx.rpc.client.RpcFuture;
 import org.yx.rpc.client.Rpc;
+import org.yx.rpc.client.RpcFuture;
 import org.yx.util.GsonUtil;
-/**
- * rpc端口的开启可能会慢点。所以服务器刚启动的时候，马上连接，有可能会获取session失败
- */
+
+// RPC是异步启动的，所以有可能打印启动成功，但实际上还没有
 public class RpcTest {
 
-	@Test
-	public void call() {
+	@Before
+	public void before(){
 		Rpc.init();
-		List<String> names = Arrays.asList("游夏", "游侠");
-		String echo = "how are you";
-		String ret = Rpc.call(AppInfo.getAppId() + ".echoaction.echo", echo, names);
-		System.out.println("result:" + ret);
-		Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
 	}
-
+	
+	private String pre(){
+		return AppInfo.groupId()+"."+AppInfo.appId();
+	}
+	
 	@Test
-	public void callInJson() {
-		Rpc.init();
-		List<String> names = Arrays.asList("游夏", "游侠");
-		String echo = "how are you";
-		Map<String, Object> map = new HashMap<>();
-		map.put("echo", echo);
-		map.put("names", names);
-		String ret = Rpc.callInJson(AppInfo.getAppId() + ".echoaction.echo", GsonUtil.toJson(map));
+	public void test() {
+		List<String> names=Arrays.asList("游夏","游侠");
+		String echo="how are you";
+		//ret是json格式
+		String ret=Rpc.call(pre()+".echo", echo,names);
+		System.out.println("result:"+ret);
 		Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
+		for(int i=0;i<5;i++){
+			Map<String,Object> map=new HashMap<>();
+			map.put("echo", echo);
+			map.put("names", names);
+			ret=Rpc.callInJson(pre()+".echo", GsonUtil.toJson(map));
+			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
+			ret=Rpc.call(pre()+".echo", echo,names);
+			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
+			System.out.println("test:"+ret);
+		}
 	}
-
-	Random r = new Random();
-
+	
+	
+	Random r=new Random();
+	
+	private List<DemoUser> create(){
+		List<DemoUser> list=new ArrayList<DemoUser>();
+		for(int i=0;i<10;i++){
+			DemoUser obj=new DemoUser();
+			obj.setAge(r.nextInt(100));
+			obj.setName("名字"+r.nextInt());
+			obj.setId(r.nextLong());
+			list.add(obj);
+		}
+		return list;
+	}
+	
 	@Test
 	public void db_insert() throws IOException {
-		Rpc.init();
-		for (int j = 0; j < 5; j++) {
-			List<DemoUser> list = new ArrayList<DemoUser>();
-			for (int i = 0; i < 10; i++) {
-				DemoUser obj = new DemoUser();
-				obj.setAge(r.nextInt(100));
-				obj.setName("RPC" + r.nextInt());
-				obj.setId(r.nextLong());
-				list.add(obj);
-			}
-			String ret = Rpc.call(AppInfo.getAppId() + ".dbdemo.add", list);
-			Assert.assertEquals(list.size() + "", ret);
+		for(int j=0;j<5;j++){
+			List<DemoUser> list=create();
+			String ret;
+			Map<String,Object> map=new HashMap<>();
+			map.put("users", list);
+			ret=Rpc.callInJson(pre()+".add", GsonUtil.toJson(map));
+			System.out.println("返回的信息："+ret);
+			Assert.assertEquals(list.size()+"", ret);
+			
+			
+			list=create();
+			ret=Rpc.call(pre()+".add", list);
+			System.out.println("返回的信息："+ret);
+			Assert.assertEquals(list.size()+"", ret);
 		}
 	}
 	
@@ -74,8 +96,8 @@ public class RpcTest {
 			Map<String,Object> map=new HashMap<>();
 			map.put("echo", echo+i);
 			map.put("names", names);
-			retList.add(Rpc.callInJsonAsync(AppInfo.getAppId()+".echoaction.echo", GsonUtil.toJson(map)));
-			retList2.add(Rpc.callAsync(AppInfo.getAppId()+".echoaction.echo", echo+i,names));
+			retList.add(Rpc.callInJsonAsync(pre()+".echo", GsonUtil.toJson(map)));
+			retList2.add(Rpc.callAsync(pre()+".echo", echo+i,names));
 		}
 		
 		for(int i=0;i<5;i++){
