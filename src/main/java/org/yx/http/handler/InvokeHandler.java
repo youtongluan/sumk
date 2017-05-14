@@ -19,17 +19,19 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.yx.bean.IOC;
 import org.yx.common.BizExcutor;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpGson;
 import org.yx.http.Web;
 import org.yx.http.filter.HttpBizFilter;
-import org.yx.http.filter.HttpRequest;
-import org.yx.rpc.server.intf.ActionContext;
 import org.yx.validate.ParamInfo;
 
 public class InvokeHandler implements HttpHandler {
+
+	private static final Object STOP = new Object();
 
 	@Override
 	public boolean accept(Web web) {
@@ -38,48 +40,52 @@ public class InvokeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		HttpInfo info = ctx.getInfo();
+		HttpNode info = ctx.getHttpNode();
 		if (!String.class.isInstance(ctx.getData())) {
 			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
 		}
 		Object ret = info.accept(http -> {
-			if (http.getArgClz() == null || http.argTypes == null || http.argTypes.length == 0) {
-				return exec(http.m, http.obj, null, null);
+			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
+				return exec(http.method, http.obj, null, null, ctx);
 			}
-			Object[] params = new Object[http.getArgTypes().length];
+			Object[] params = new Object[http.argTypes.length];
 			Object argObj = HttpGson.gson.fromJson((String) ctx.getData(), http.argClz);
 			for (int i = 0, k = 0; i < params.length; i++) {
-				if (ActionContext.class.isInstance(http.getArgTypes()[i])) {
 
-					params[i] = null;
-					continue;
-				}
 				if (argObj == null) {
 					params[i] = null;
 					continue;
 				}
-				Field f = http.getFields()[k++];
+				Field f = http.fields[k++];
 				params[i] = f.get(argObj);
 			}
-			return exec(http.m, http.obj, params, info.paramInfos);
+			return exec(http.method, http.obj, params, info.paramInfos, ctx);
 		});
+		if (STOP == ret) {
+			return true;
+		}
 		ctx.setResult(ret);
 		return false;
 	}
 
-	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos) throws Throwable {
+	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos, WebContext ctx)
+			throws Throwable {
 		List<HttpBizFilter> list = IOC.getBeans(HttpBizFilter.class);
 		if (list == null || list.isEmpty()) {
 			return BizExcutor.exec(m, obj, params, paramInfos);
 		}
-		HttpRequest req = new HttpRequest(params);
+		HttpServletRequest req = ctx.getHttpRequest();
 		try {
 			for (HttpBizFilter f : list) {
-				f.beforeInvoke(req);
+				if (!f.beforeInvoke(req, ctx.getHttpResponse(), ctx.getCharset())) {
+					return STOP;
+				}
 			}
 			Object ret = BizExcutor.exec(m, obj, params, paramInfos);
 			for (HttpBizFilter f : list) {
-				f.afterInvoke(req, ret);
+				if (!f.afterInvoke(req, ctx.getHttpResponse(), ctx.getCharset(), ret)) {
+					return STOP;
+				}
 			}
 			return ret;
 		} catch (Exception e) {

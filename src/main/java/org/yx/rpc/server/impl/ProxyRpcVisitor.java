@@ -13,34 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.rpc.server.impl;
 
-import org.yx.http.Web;
-import org.yx.util.secury.EncryUtil;
+import org.yx.common.CalleeNode;
+import org.yx.common.CalleeNode.Visitor;
+import org.yx.rpc.codec.Request;
 
-/**
- * base64解码
- * 
- * @author 游夏
- *
- */
-public class AesDecodeHandler implements HttpHandler {
+class ProxyRpcVisitor implements Visitor {
 
-	@Override
-	public boolean accept(Web web) {
-		return web.requestEncrypt().isAes();
+	private AbstractRpcVisitor visitor;
+
+	public static ProxyRpcVisitor proxy(AbstractRpcVisitor visitor, Request req) {
+		ProxyRpcVisitor v = new ProxyRpcVisitor();
+		v.visitor = visitor;
+		visitor.req = req;
+		return v;
+	}
+
+	private ProxyRpcVisitor() {
 	}
 
 	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.getHttpNode().argClz == null) {
-			return false;
-		}
-		byte[] bs = (byte[]) ctx.getData();
-		byte[] key = ctx.getKey();
-		byte[] data = EncryUtil.decrypt(bs, key);
-		ctx.setData(data);
-		return false;
+	public Object visit(CalleeNode info) throws Throwable {
+
+		return this.visitor.visit(info);
+	}
+
+	static abstract class AbstractRpcVisitor implements Visitor {
+		protected Request req;
 	}
 
 }

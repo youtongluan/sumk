@@ -15,36 +15,24 @@
  */
 package org.yx.http.handler;
 
+import org.yx.exception.BizException;
+import org.yx.http.ErrorCode;
+import org.yx.http.HttpUtil;
 import org.yx.http.Web;
-import org.yx.util.secury.Base64Util;
 
-/**
- * base64解码
- * 
- * @author 游夏
- *
- */
-public class Base64DecodeHandler implements HttpHandler {
+public class ReqTypeChecker implements HttpHandler {
 
 	@Override
 	public boolean accept(Web web) {
-		return web.requestEncrypt().isBase64();
+		return true;
 	}
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-
-		if (ctx.getHttpNode().argClz == null) {
-			return false;
+		String type = HttpUtil.getType(ctx.getHttpRequest());
+		if (!ctx.getHttpNode().acceptType(type)) {
+			BizException.throwException(ErrorCode.TYPE_ERROR, "客户端类别错误");
 		}
-		byte[] bs;
-		if (String.class.isInstance(ctx.getData())) {
-			bs = ((String) ctx.getData()).getBytes(ctx.getCharset());
-		} else {
-			bs = (byte[]) ctx.getData();
-		}
-		byte[] data = Base64Util.decode(bs);
-		ctx.setData(data);
 		return false;
 	}
 

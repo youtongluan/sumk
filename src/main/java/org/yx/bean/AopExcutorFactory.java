@@ -18,7 +18,7 @@ package org.yx.bean;
 import java.lang.annotation.Annotation;
 
 import org.yx.common.AopExcutor;
-import org.yx.common.Transaction;
+import org.yx.common.DBTransaction;
 
 public class AopExcutorFactory {
 	public static AopExcutor create(Integer key) {
@@ -27,9 +27,9 @@ public class AopExcutorFactory {
 			for (Annotation a : annotations) {
 				if (Box.class.isInstance(a)) {
 					Box b = (Box) a;
-					Transaction trans = null;
-					if (b.dbName().length() > 0) {
-						trans = new Transaction(b.dbName(), b.dbType(), b.embed());
+					DBTransaction trans = null;
+					if (b.dbName().length() > 0 && b.transaction() != Transaction.NONE) {
+						trans = new DBTransaction(b.dbName(), b.dbType(), b.transaction() == Transaction.EMBED);
 					}
 					return new AopExcutor(trans);
 				}

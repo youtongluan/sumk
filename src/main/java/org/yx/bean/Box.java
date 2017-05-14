@@ -33,7 +33,7 @@ public @interface Box {
 	DBType dbType() default DBType.ANY;
 
 	/**
-	 * 是否支持事务传递
+	 * 事务传递特性，相当于spring的Propagation
 	 */
-	boolean embed() default true;
+	Transaction transaction() default Transaction.NORMAL;
 }

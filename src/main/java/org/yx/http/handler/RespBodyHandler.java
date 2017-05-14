@@ -28,7 +28,7 @@ public class RespBodyHandler implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Throwable {
 		byte[] data = (byte[]) ctx.getResult();
 		ctx.getHttpResponse().getOutputStream().write(data);
-		return true;
+		return false;
 	}
 
 }

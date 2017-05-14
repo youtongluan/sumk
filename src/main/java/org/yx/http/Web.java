@@ -44,16 +44,18 @@ public @interface Web {
 	 */
 	String value() default "";
 
-	public String description() default "";
+	String description() default "";
 
-	public boolean requireLogin() default false;
+	boolean requireLogin() default false;
 
-	public EncryptType requestEncrypt() default EncryptType.NONE;
+	EncryptType requestEncrypt() default EncryptType.NONE;
 
-	public boolean sign() default false;
+	boolean sign() default false;
 
-	public EncryptType responseEncrypt() default EncryptType.NONE;
+	EncryptType responseEncrypt() default EncryptType.NONE;
 
 	String custom() default "";
+
+	String[] type() default { "" };
 
 }

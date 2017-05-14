@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.http.HttpUtil;
 
 public class WebContext {
-	private HttpInfo info;
+	private HttpNode node;
 	private HttpServletRequest httpRequest;
 	private HttpServletResponse httpResponse;
 	private Charset charset = HttpUtil.DEFAULT_CHARSET;
@@ -52,9 +52,9 @@ public class WebContext {
 		this.result = result;
 	}
 
-	public WebContext(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp) {
+	public WebContext(String act, HttpNode node, HttpServletRequest req, HttpServletResponse resp) {
 		this.act = act;
-		this.info = info;
+		this.node = node;
 		this.httpRequest = req;
 		this.httpResponse = resp;
 	}
@@ -79,8 +79,8 @@ public class WebContext {
 		return httpResponse;
 	}
 
-	public HttpInfo getInfo() {
-		return info;
+	public HttpNode getHttpNode() {
+		return node;
 	}
 
 	public String getSign() {

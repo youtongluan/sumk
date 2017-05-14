@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.HttpInfo;
+import org.yx.http.handler.HttpNode;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
@@ -34,13 +34,13 @@ public class UploadServer extends AbstractHttpServer {
 	final static String MULTI = "multipart/form-data";
 
 	@Override
-	protected void handle(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp)
+	protected void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
 		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
 			Log.get(this.getClass()).error("the MIME of act is " + MULTI + ",not " + req.getContentType());
 			return;
 		}
-		if (info.getUpload() == null) {
+		if (info.upload == null) {
 
 			Log.get(this.getClass()).error(act + " has error type, it must be have @Upload");
 			return;

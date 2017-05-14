@@ -39,7 +39,7 @@ public class UploadHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
 		HttpServletRequest request = ctx.getHttpRequest();
-		Upload uploadInfo = ctx.getInfo().getUpload();
+		Upload uploadInfo = ctx.getHttpNode().upload;
 
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		factory.setSizeThreshold(uploadInfo.maxSize());

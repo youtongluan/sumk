@@ -13,42 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.bean;
 
-import java.util.Map;
-
-import org.yx.common.ThreadContext;
-import org.yx.http.HttpHolder;
-import org.yx.http.handler.HttpInfo;
-
-public class HttpRequest {
-	private Object[] params;
-
-	public HttpRequest(Object[] args) {
-		super();
-		this.params = args;
-	}
+public enum Transaction {
+	/**
+	 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
+	 */
+	NORMAL,
 
 	/**
-	 * 一个空属性，便于开发人员进行各种传值
+	 * 内嵌事务，相当于spring的NESTED
 	 */
-	public Map<String, Object> custom;
-
-	public HttpInfo info() {
-		return HttpHolder.getHttpInfo(getAct());
-	}
-
-	public String getAct() {
-		return ThreadContext.get().getAct();
-	}
-
+	EMBED,
 	/**
-	 * http调用的参数
-	 * 
-	 * @return
+	 * 没有事务
 	 */
-	public Object[] getParams() {
-		return params;
-	}
-
+	NONE;
 }

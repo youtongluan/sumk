@@ -63,9 +63,6 @@ public class ZkRouteParser {
 		Map<Host, ZkData> datas = new HashMap<>();
 		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
 
-		List<String> paths = zk.getChildren(ZKConst.SOA_ROOT);
-		this.childs = new HashSet<>(paths);
-
 		final IZkDataListener nodeListener = new IZkDataListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
 
@@ -86,7 +83,7 @@ public class ZkRouteParser {
 
 		};
 
-		zk.subscribeChildChanges(ZKConst.SOA_ROOT, new IZkChildListener() {
+		List<String> paths = zk.subscribeChildChanges(ZKConst.SOA_ROOT, new IZkChildListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
 
 			@Override
@@ -117,6 +114,7 @@ public class ZkRouteParser {
 			}
 
 		});
+		this.childs = new HashSet<>(paths);
 		for (String path : paths) {
 			ServerData d = getZkNodeData(path);
 			zk.subscribeDataChanges(ZKConst.SOA_ROOT + "/" + path, nodeListener);

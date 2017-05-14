@@ -15,39 +15,37 @@
  */
 package org.yx.common;
 
-import org.yx.exception.SumkException;
+import java.lang.reflect.Method;
 
-public class AopExcutor {
+public final class MethodDesc {
 
-	private DBTransaction transaction;
+	private Method method;
+	private String[] argNames;
+	private String[] descs;
+	private String[] signatures;
 
-	public AopExcutor(DBTransaction transaction) {
-		this.transaction = transaction;
+	public String[] getArgNames() {
+		return argNames;
 	}
 
-	public void before(Object[] params) {
-		if (this.transaction != null) {
-			transaction.begin();
-		}
+	public String[] getDescs() {
+		return descs;
 	}
 
-	public void onError(Throwable e) {
-		if (this.transaction != null) {
-			transaction.rollback(e);
-		}
-		throw new SumkException(345323, "业务执行出错", e);
+	public String[] getSignatures() {
+		return signatures;
 	}
 
-	public void after(Object result) {
-		if (this.transaction != null) {
-			transaction.commit();
-		}
+	public MethodDesc(Method method, String[] argNames, String[] descs, String[] signatures) {
+		super();
+		this.method = method;
+		this.argNames = argNames;
+		this.descs = descs;
+		this.signatures = signatures;
 	}
 
-	public void close() {
-		if (this.transaction != null) {
-			transaction.close();
-		}
+	public Method getMethod() {
+		return method;
 	}
 
 }

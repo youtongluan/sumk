@@ -21,11 +21,12 @@ import java.util.List;
 
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
-import org.yx.common.MethodInfo;
+import org.yx.common.MethodDesc;
 import org.yx.log.Log;
-import org.yx.rpc.ActionHolder;
-import org.yx.rpc.ActionInfo;
+import org.yx.rpc.RpcActionHolder;
+import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.Soa;
+import org.yx.validate.ParamFactory;
 
 class SoaFactory {
 	private SoaNameResolver nameResolver = new SoaNameResolver();
@@ -54,20 +55,20 @@ class SoaFactory {
 		for (final Method m : actMethods) {
 			Soa act = m.getAnnotation(Soa.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
-			if (ActionHolder.getActionInfo(soaName) != null) {
+			if (RpcActionHolder.getActionNode(soaName) != null) {
 				Log.get("sumk.rpc").error(soaName + " already existed");
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			int argSize = m.getParameterTypes().length;
 			if (argSize == 0) {
-				ActionHolder.putActInfo(soaName, new ActionInfo(obj, proxyedMethod, null, null, null, act));
+				RpcActionHolder.putActNode(soaName, new RpcActionNode(obj, proxyedMethod, null, null, null, null, act));
 				continue;
 			}
-			MethodInfo mInfo = AsmUtils.createMethodInfo(classFullName, m);
+			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
 			Class<?> argClz = AsmUtils.CreateArgPojo(classFullName, mInfo);
-			ActionHolder.putActInfo(soaName,
-					new ActionInfo(obj, proxyedMethod, argClz, mInfo.getArgNames(), m.getParameterTypes(), act));
+			RpcActionHolder.putActNode(soaName, new RpcActionNode(obj, proxyedMethod, argClz, mInfo.getArgNames(),
+					m.getParameterTypes(), ParamFactory.create(m), act));
 		}
 
 	}

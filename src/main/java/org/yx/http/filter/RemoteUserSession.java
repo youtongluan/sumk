@@ -58,7 +58,7 @@ public class RemoteUserSession implements UserSession {
 		if (StringUtils.isNotEmpty(oldSessionId)) {
 			redis.del(bigKey(oldSessionId));
 		}
-		redis.setex(userSessionKey, AppInfo.httpSessionTimeout, sessionId);
+		redis.setex(userSessionKey, AppInfo.getInt("http.session.single.timeout", 3600 * 24), sessionId);
 	}
 
 	@Override

@@ -15,20 +15,19 @@
  */
 package org.yx.http.start;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
-import org.yx.common.MethodInfo;
+import org.yx.common.MethodDesc;
 import org.yx.http.HttpHolder;
 import org.yx.http.Upload;
 import org.yx.http.Web;
-import org.yx.http.handler.HttpInfo;
+import org.yx.http.handler.HttpNode;
 import org.yx.log.Log;
-import org.yx.validate.Param;
+import org.yx.validate.ParamFactory;
 
 class HttpFactory {
 	private HttpNameResolver nameResolver = new HttpNameResolver();
@@ -65,25 +64,13 @@ class HttpFactory {
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			int argSize = m.getParameterTypes().length;
 			if (argSize == 0) {
-				HttpHolder.putActInfo(soaName,
-						new HttpInfo(obj, proxyedMethod, null, null, null, act, upload, new Param[0]));
+				HttpHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, null, null, null, null, act, upload));
 				continue;
 			}
-			Annotation[][] paramAnno = m.getParameterAnnotations();
-			Param[] params = new Param[paramAnno.length];
-			for (int i = 0; i < paramAnno.length; i++) {
-				Annotation[] a = paramAnno[i];
-				for (Annotation a2 : a) {
-					if (Param.class == a2.annotationType()) {
-						params[i] = (Param) a2;
-						break;
-					}
-				}
-			}
-			MethodInfo mInfo = AsmUtils.createMethodInfo(classFullName, m);
+			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
 			Class<?> argClz = AsmUtils.CreateArgPojo(classFullName, mInfo);
-			HttpHolder.putActInfo(soaName, new HttpInfo(obj, proxyedMethod, argClz, mInfo.getArgNames(),
-					m.getParameterTypes(), act, upload, params));
+			HttpHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, argClz, mInfo.getArgNames(),
+					m.getParameterTypes(), ParamFactory.create(m), act, upload));
 		}
 
 	}

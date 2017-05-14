@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.http.handler.HttpInfo;
+import org.yx.http.handler.HttpNode;
 import org.yx.log.Log;
 
 /**
@@ -78,13 +78,13 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				HttpUtil.error(resp, -1002, "请求格式不正确", HttpUtil.charset(req));
 				return;
 			}
-			HttpInfo info = HttpHolder.getHttpInfo(act);
+			HttpNode info = HttpHolder.getHttpInfo(act);
 			if (info == null) {
 				Log.get(this.getClass()).error(act + " donot found handler");
 				HttpUtil.error(resp, -1003, "请求格式不正确", HttpUtil.charset(req));
 				return;
 			}
-			if (PATH_CHECK && !validPath(info.getObj().getClass(), path)) {
+			if (PATH_CHECK && !validPath(info.obj.getClass(), path)) {
 				Log.get(this.getClass()).error(act + " in error package");
 				HttpUtil.error(resp, -1004, "请求的模块不正确", HttpUtil.charset(req));
 				return;
@@ -112,6 +112,6 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		resp.setContentType("application/json;charset=" + HttpUtil.charset(req));
 	}
 
-	protected abstract void handle(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp)
+	protected abstract void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception;
 }

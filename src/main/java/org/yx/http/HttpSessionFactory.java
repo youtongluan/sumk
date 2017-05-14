@@ -13,14 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.server.intf;
+package org.yx.http;
 
-/**
- * 继承这个对象的参数，表示是上下文环境，不需要client传递
- * 
- * @author 游夏
- *
- */
-public interface ActionContext {
+import org.yx.http.filter.UserSession;
 
+public interface HttpSessionFactory {
+	UserSession create();
 }

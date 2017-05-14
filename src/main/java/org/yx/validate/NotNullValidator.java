@@ -13,17 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.validate;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.yx.bean.Bean;
+import org.yx.exception.InvalidParamException;
 
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Login {
-	String path() default "/login";
+/**
+ * 用于做非空验证
+ * 
+ * @author youxia
+ * 
+ */
+@Bean
+public class NotNullValidator implements Validator {
+
+	@Override
+	public void valid(ParamInfo param, Object arg) throws InvalidParamException {
+		if (param.param.required() && arg == null) {
+			throw new InvalidParamException("#必填", param, arg);
+		}
+
+	}
+
 }

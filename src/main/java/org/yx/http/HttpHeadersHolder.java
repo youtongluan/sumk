@@ -20,6 +20,12 @@ import javax.servlet.http.HttpServletRequest;
 import org.yx.http.filter.UserSession;
 
 public class HttpHeadersHolder {
+
+	/**
+	 * http请求的类型，要类型一致才能访问
+	 */
+	public static final String TYPE = "stype";
+
 	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
 
 	static void setHttpRequest(HttpServletRequest req) {
@@ -36,6 +42,10 @@ public class HttpHeadersHolder {
 
 	public static String token() {
 		return _req.get().getHeader(UserSession.SESSIONID);
+	}
+
+	public static String getType() {
+		return HttpUtil.getType(_req.get());
 	}
 
 	static void remove() {

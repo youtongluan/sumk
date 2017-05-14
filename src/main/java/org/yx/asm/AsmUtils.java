@@ -32,8 +32,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.common.MethodInfo;
-import org.yx.rpc.server.intf.ActionContext;
+import org.yx.common.MethodDesc;
 
 public final class AsmUtils {
 
@@ -106,7 +105,7 @@ public final class AsmUtils {
 	 * @return
 	 * @throws Exception
 	 */
-	public static Class<?> CreateArgPojo(String clzName, MethodInfo p) throws Exception {
+	public static Class<?> CreateArgPojo(String clzName, MethodDesc p) throws Exception {
 		String fullName = clzName + "_" + p.getMethod().getName();
 		if (p.getArgNames() == null || p.getArgNames().length == 0) {
 			return null;
@@ -114,12 +113,10 @@ public final class AsmUtils {
 
 		ClassWriter cw = new ClassWriter(0);
 		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC, fullName.replace('.', '/'), null, "java/lang/Object", null);
-		Class<?>[] argTypes = p.getMethod().getParameterTypes();
+
 		int argCount = 0;
 		for (int i = 0; i < p.getArgNames().length; i++) {
-			if (ActionContext.class.isInstance(argTypes[i])) {
-				continue;
-			}
+
 			argCount++;
 			String arg = p.getArgNames()[i];
 			String desc = p.getDescs()[i];
@@ -135,12 +132,12 @@ public final class AsmUtils {
 
 	}
 
-	public static MethodInfo createMethodInfo(String classFullName, Method m) throws IOException {
+	public static MethodDesc buildMethodDesc(String classFullName, Method m) throws IOException {
 		ClassReader cr = new ClassReader(openStreamForClass(classFullName));
 		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(m);
 		cr.accept(cv, 0);
-		return new MethodInfo(m, cv.argNames.toArray(new String[0]), cv.descriptor,
-				cv.signatures.toArray(new String[0]));
+		return new MethodDesc(m, cv.argNames.toArray(new String[cv.argNames.size()]), cv.descriptor,
+				cv.signatures.toArray(new String[cv.signatures.size()]));
 	}
 
 	public static Method getMethod(Class<?> clz, String methodName, Class<?>[] paramTypes) {

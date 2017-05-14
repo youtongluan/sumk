@@ -29,6 +29,7 @@ import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
+import org.yx.conf.AppInfo;
 import org.yx.http.ServletInfo;
 import org.yx.http.filter.HttpLoginWrapper;
 import org.yx.http.filter.LoginServlet;
@@ -67,8 +68,8 @@ public class SumkLoaderListener implements ServletContextListener {
 
 		}
 
-		Object path = StartContext.inst.get(LoginServlet.class);
-		if (path != null && String.class.isInstance(path)) {
+		String path = AppInfo.get("http.login.path", "/login");
+		if (IOC.getBeans(LoginServlet.class).size() > 0) {
 			String loginPath = (String) path;
 			if (!loginPath.startsWith("/")) {
 				loginPath = "/" + loginPath;

@@ -13,39 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.validate;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-public final class MethodInfo {
+public class ParamFactory {
 
-	private Method method;
-	private String[] argNames;
-	private String[] descs;
-	private String[] signatures;
-
-	public String[] getArgNames() {
-		return argNames;
+	public static Param[] create(Method m) {
+		Annotation[][] paramAnno = m.getParameterAnnotations();
+		Param[] params = new Param[paramAnno.length];
+		for (int i = 0; i < paramAnno.length; i++) {
+			Annotation[] a = paramAnno[i];
+			for (Annotation a2 : a) {
+				if (Param.class == a2.annotationType()) {
+					params[i] = (Param) a2;
+					break;
+				}
+			}
+		}
+		return params;
 	}
-
-	public String[] getDescs() {
-		return descs;
-	}
-
-	public String[] getSignatures() {
-		return signatures;
-	}
-
-	public MethodInfo(Method method, String[] argNames, String[] descs, String[] signatures) {
-		super();
-		this.method = method;
-		this.argNames = argNames;
-		this.descs = descs;
-		this.signatures = signatures;
-	}
-
-	public Method getMethod() {
-		return method;
-	}
-
 }

@@ -19,13 +19,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.http.handler.HttpInfo;
+import org.yx.http.handler.HttpNode;
 
 public class HttpHolder {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<String, Class<?>>();
 
-	static Map<String, HttpInfo> actMap = new ConcurrentHashMap<String, HttpInfo>();
+	static Map<String, HttpNode> actMap = new ConcurrentHashMap<String, HttpNode>();
 
 	/**
 	 * 根据方法的全名，获取参数列表
@@ -50,11 +50,11 @@ public class HttpHolder {
 	 * @param method
 	 * @return
 	 */
-	public static HttpInfo getHttpInfo(String name) {
+	public static HttpNode getHttpInfo(String name) {
 		return actMap.get(name);
 	}
 
-	public static void putActInfo(String name, HttpInfo actInfo) {
+	public static void putActInfo(String name, HttpNode actInfo) {
 		actMap.putIfAbsent(name, actInfo);
 	}
 

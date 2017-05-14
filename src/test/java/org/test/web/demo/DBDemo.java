@@ -16,7 +16,7 @@ import org.yx.util.SeqUtil;
 
 public class DBDemo {
 
-	@Box(embed = false) //embed = false会强制开启新的事务
+	@Box
 	public long insert(long id, boolean success) {
 		if (id == 0) {
 			id = SeqUtil.next();

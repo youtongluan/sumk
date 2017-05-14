@@ -54,23 +54,23 @@ public class HttpInfoWatcher implements Plugin {
 			Map<String, Object> map = new LinkedHashMap<>();
 			ret.add(map);
 			map.put("name", name);
-			if (http.getAction() != null) {
-				Web web = http.getAction();
+			if (http.action != null) {
+				Web web = http.action;
 				map.put("requireLogin", web.requireLogin());
 				map.put("requestEncrypt", web.requestEncrypt());
 				map.put("responseEncrypt", web.responseEncrypt());
 				map.put("sign", web.sign());
 				map.put("description", web.description());
 			}
-			map.put("upload", http.getUpload() != null);
+			map.put("upload", http.upload != null);
 			List<Map<String, Object>> list = new ArrayList<>();
-			int paramSize = http.getArgNames() == null ? 0 : http.getArgNames().length;
+			int paramSize = http.argNames == null ? 0 : http.argNames.length;
 			for (int i = 0; i < paramSize; i++) {
 				Map<String, Object> param = new LinkedHashMap<>();
 				list.add(param);
-				param.put("name", http.getArgNames()[i]);
-				param.put("type", http.getArgTypes()[i].getName());
-				ParamInfo pi = http.getParamInfos()[i];
+				param.put("name", http.argNames[i]);
+				param.put("type", http.argTypes[i].getName());
+				ParamInfo pi = http.paramInfos == null ? null : http.paramInfos[i];
 				if (pi != null) {
 					Param p = pi.getParam();
 					if (StringUtils.isNotEmpty(p.cnName())) {
@@ -89,7 +89,7 @@ public class HttpInfoWatcher implements Plugin {
 				}
 			}
 			map.put("params", list);
-			map.put("result", describe(http.getM().getReturnType()));
+			map.put("result", describe(http.method.getReturnType()));
 		});
 		return ret;
 	}

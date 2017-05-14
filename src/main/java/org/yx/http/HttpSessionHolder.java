@@ -18,31 +18,33 @@ package org.yx.http;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.http.filter.LoginServlet;
+import org.yx.http.filter.LocalUserSession;
+import org.yx.http.filter.RemoteUserSession;
 import org.yx.http.filter.SessionObject;
 import org.yx.http.filter.UserSession;
 import org.yx.log.Log;
+import org.yx.redis.Redis;
+import org.yx.redis.RedisConstants;
+import org.yx.redis.RedisPool;
 
 public class HttpSessionHolder {
 	static UserSession session;
 
 	public static UserSession userSession() {
 		if (session == null) {
-			LoginServlet serv = IOC.get(LoginServlet.class);
-			session = serv.userSession();
+			initSession();
 		}
 		return session;
 	}
 
 	/**
-	 * 如果没有登陆，会抛出异常，而不是提示登录
+	 * 如果userSession初始化不成功，会抛出异常
 	 * 
 	 * @return
 	 */
 	public static UserSession loadUserSession() {
 		if (session == null) {
-			LoginServlet serv = IOC.get(LoginServlet.class);
-			session = serv.userSession();
+			initSession();
 		}
 		if (session == null) {
 			Log.get("session").info("session has not created");
@@ -83,5 +85,20 @@ public class HttpSessionHolder {
 
 	public static boolean isSingleLogin() {
 		return AppInfo.getBoolean("http.session.single", false);
+	}
+
+	private static synchronized void initSession() {
+		if (session != null) {
+			return;
+		}
+		Redis redis = RedisPool.getRedisExactly(RedisConstants.SESSION);
+		HttpSessionFactory factory = IOC.get(HttpSessionFactory.class);
+		if (factory == null) {
+			factory = () -> redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
+		}
+		session = factory.create();
+		if (LocalUserSession.class.isInstance(session)) {
+			Log.get("loginAction").info("use local session.");
+		}
 	}
 }

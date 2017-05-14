@@ -1,4 +1,5 @@
 ReqHeaderHandler
+ReqTypeChecker
 UploadHandler
 ReqUserHandler
 Base64DecodeHandler

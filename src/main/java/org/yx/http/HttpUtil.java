@@ -35,7 +35,14 @@ import org.yx.util.StringUtils;
 public final class HttpUtil {
 	static final int MAXLENGTH = 1024 * 1024 * 100;
 
-	public static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+
+	public static final int ERROR_HTTP_STATUS = 499;
+
+	public static String getType(HttpServletRequest req) {
+		String type = req.getHeader(HttpHeadersHolder.TYPE);
+		return type == null ? "" : type;
+	}
 
 	public static Charset charset(HttpServletRequest req) {
 		String charsetName = AppInfo.get("http.charset");
@@ -55,7 +62,16 @@ public final class HttpUtil {
 
 	public static void error(HttpServletResponse resp, int code, String errorMsg, Charset charset)
 			throws UnsupportedEncodingException, IOException {
-		resp.setStatus(499);
+		resp.setStatus(ERROR_HTTP_STATUS);
+		ErrorResp r = new ErrorResp();
+		r.setCode(code);
+		r.setMessage(errorMsg);
+		resp.getOutputStream().write(GsonUtil.toJson(r).getBytes(charset));
+	}
+
+	public static void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
+			throws UnsupportedEncodingException, IOException {
+		resp.setStatus(httpStatus);
 		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);

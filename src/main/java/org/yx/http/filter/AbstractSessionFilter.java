@@ -23,12 +23,11 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.conf.AppInfo;
 import org.yx.http.ErrorCode;
+import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
-import org.yx.redis.Redis;
-import org.yx.redis.RedisConstants;
-import org.yx.redis.RedisPool;
 import org.yx.util.StringUtils;
 import org.yx.util.UUIDSeed;
 import org.yx.util.secury.Base64Util;
@@ -54,12 +53,36 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			session.putKey(sid, key, obj.getUserId());
+			String userToken = obj.getUserId();
+			if (StringUtils.isNotEmpty(userToken)) {
+				String type = this.getType();
+				if (StringUtils.isNotEmpty(type)) {
+					type = new String(Base64Util.encode(type.toUpperCase().getBytes()));
+					userToken = type + "_" + userToken;
+				}
+			}
+			session.putKey(sid, key, userToken);
 			resp.setHeader(UserSession.SESSIONID, sid);
-			if (StringUtils.isNotEmpty(obj.getUserId())) {
-				resp.setHeader(UserSession.TOKEN, obj.getUserId());
+			if (StringUtils.isNotEmpty(userToken)) {
+				resp.setHeader(UserSession.TOKEN, userToken);
 			}
 			outputKey(resp, key);
+			if (AppInfo.getBoolean("http.cookie.enable", true)) {
+				StringBuilder cookie = new StringBuilder();
+				String contextPath = req.getContextPath();
+
+				if (!contextPath.startsWith("/")) {
+					contextPath = "/" + contextPath;
+				}
+				cookie.append(UserSession.SESSIONID).append('=').append(sid);
+				if (StringUtils.isNotEmpty(userToken)) {
+					cookie.append('&').append(UserSession.TOKEN).append('=').append(userToken);
+				}
+				cookie.append("; path=").append(contextPath);
+
+				resp.setHeader("Set-Cookie", cookie.toString());
+			}
+
 			resp.getOutputStream().write("\t\n".getBytes());
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
@@ -94,27 +117,12 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 		return UUIDSeed.random();
 	}
 
-	private synchronized void initSession() {
-		if (session != null) {
-			return;
-		}
-		Redis redis = RedisPool.getRedisExactly(RedisConstants.SESSION);
-		session = redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
-		if (LocalUserSession.class.isInstance(session)) {
-			Log.get("loginAction").info("use local session.");
-		}
-	}
-
 	@Override
 	public void init(ServletConfig config) {
-		initSession();
+		session = HttpSessionHolder.loadUserSession();
 	}
 
-	@Override
-	public UserSession userSession() {
-		if (session == null) {
-			initSession();
-		}
+	protected UserSession userSession() {
 		return session;
 	}
 
@@ -130,5 +138,10 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 	 * @return 登陆信息，无论成功与否，返回值不能是null
 	 */
 	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
+
+	@Override
+	public String getType() {
+		return "";
+	}
 
 }

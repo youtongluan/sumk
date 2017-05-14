@@ -36,7 +36,7 @@ public class ReqBodyHandler implements HttpHandler {
 			Log.get(ReqBodyHandler.class).debug("data is not null");
 			return false;
 		}
-		if (ctx.getInfo().getArgClz() == null) {
+		if (ctx.getHttpNode().argClz == null) {
 			return false;
 		}
 		HttpServletRequest req = ctx.getHttpRequest();

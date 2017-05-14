@@ -19,7 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.HttpInfo;
+import org.yx.http.handler.HttpNode;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
@@ -33,9 +33,9 @@ public class WebServer extends AbstractHttpServer {
 	private static final long serialVersionUID = 74378082364534491L;
 
 	@Override
-	protected void handle(String act, HttpInfo info, HttpServletRequest req, HttpServletResponse resp)
+	protected void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
-		if (info.getUpload() != null) {
+		if (info.upload != null) {
 			Log.get(this.getClass()).error(act + " type error.It is not uploader");
 			return;
 		}

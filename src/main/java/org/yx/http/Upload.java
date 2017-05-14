@@ -49,5 +49,7 @@ public @interface Upload {
 
 	Store tempStore() default Store.VM;
 
+	String[] type() default { "" };
+
 	String custom() default "";
 }

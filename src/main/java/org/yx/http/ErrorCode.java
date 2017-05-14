@@ -39,7 +39,12 @@ public interface ErrorCode {
 	int LOGIN_AGAIN = 1004;
 
 	/**
-	 * 
+	 * 参数验证错误
 	 */
 	int VALIDATE_ERROR = 1010;
+
+	/**
+	 * type类型错误
+	 */
+	int TYPE_ERROR = 1020;
 }

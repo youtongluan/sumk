@@ -18,12 +18,12 @@ package org.yx.rpc;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import org.yx.common.BizExcutor;
+import org.yx.common.CalleeNode;
 import org.yx.exception.SumkException;
-import org.yx.rpc.server.intf.ActionContext;
 import org.yx.util.GsonUtil;
+import org.yx.validate.Param;
 
 /**
  * soa服务的信息
@@ -31,59 +31,13 @@ import org.yx.util.GsonUtil;
  * @author 游夏
  *
  */
-public final class ActionInfo {
+public final class RpcActionNode extends CalleeNode {
+	public final Soa action;
 
-	private Method m;
-	private String[] argNames;
-
-	private Class<?>[] argTypes;
-	private Field[] fields;
-	private Soa action;
-	private Object obj;
-
-	private Class<?> argClz;
-
-	public Field[] getFields() {
-		return fields;
-	}
-
-	public Method getM() {
-		return m;
-	}
-
-	public String[] getArgNames() {
-		return argNames;
-	}
-
-	public Class<?>[] getArgTypes() {
-		return argTypes;
-	}
-
-	public Soa getAction() {
-		return action;
-	}
-
-	public Object getObj() {
-		return obj;
-	}
-
-	public Class<?> getArgClz() {
-		return argClz;
-	}
-
-	public ActionInfo(Object obj, Method m, Class<?> argClz, String[] argNames, Class<?>[] argTypes, Soa action) {
-		super();
-		this.obj = obj;
-		this.m = m;
-		this.argClz = argClz;
-		this.argNames = argNames;
-		this.argTypes = argTypes;
+	public RpcActionNode(Object obj, Method method, Class<?> argClz, String[] argNames, Class<?>[] argTypes,
+			Param[] params, Soa action) {
+		super(obj, method, argClz, argNames, argTypes, params);
 		this.action = action;
-		this.m.setAccessible(true);
-		if (argClz != null) {
-			this.fields = argClz.getFields();
-			Arrays.stream(fields).forEachOrdered(f -> f.setAccessible(true));
-		}
 	}
 
 	/**
@@ -97,29 +51,23 @@ public final class ActionInfo {
 	 */
 	public Object invokeByJsonArg(String args) throws Throwable {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(m, obj, null, null);
+			return BizExcutor.exec(method, obj, null, null);
 		}
-		Object[] params = new Object[getArgTypes().length];
-		if (getArgClz() == null) {
-
-			return null;
+		Object[] params = new Object[argTypes.length];
+		if (argClz == null) {
+			SumkException.throwException(54214657, method.getName() + " args parse error");
 		}
 		Object argObj = GsonUtil.fromJson(args, argClz);
 		for (int i = 0, k = 0; i < params.length; i++) {
-			if (ActionContext.class.isInstance(getArgTypes()[i])) {
 
-				params[i] = null;
-				continue;
-			}
 			if (argObj == null) {
 				params[i] = null;
 				continue;
 			}
-			Field f = getFields()[k++];
+			Field f = fields[k++];
 			params[i] = f.get(argObj);
 		}
-
-		return BizExcutor.exec(m, obj, params, null);
+		return BizExcutor.exec(method, obj, params, this.paramInfos);
 	}
 
 	/**
@@ -133,26 +81,21 @@ public final class ActionInfo {
 	 */
 	public Object invokeByOrder(String... args) throws Throwable {
 		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(m, obj, null, null);
+			return BizExcutor.exec(method, obj, null, null);
 		}
-		Object[] params = new Object[getArgTypes().length];
-		if (getArgClz() == null) {
-
-			return null;
+		Object[] params = new Object[argTypes.length];
+		if (argClz == null) {
+			SumkException.throwException(54214657, method.getName() + " args parse error");
 		}
 		if (args == null || args.length == 0) {
-			SumkException.throwException(12012, m.getName() + "的参数不能为空");
+			SumkException.throwException(12012, method.getName() + "的参数不能为空");
 		}
 		if (args.length != argTypes.length) {
 			SumkException.throwException(12013,
-					m.getName() + "需要传递的参数有" + argTypes.length + "个，实际传递的是" + args.length + "个");
+					method.getName() + "需要传递的参数有" + argTypes.length + "个，实际传递的是" + args.length + "个");
 		}
 		for (int i = 0, k = 0; i < params.length; i++) {
-			if (ActionContext.class.isInstance(getArgTypes()[i])) {
 
-				params[i] = null;
-				continue;
-			}
 			if (args[k] == null) {
 				params[i] = null;
 				continue;
@@ -161,8 +104,7 @@ public final class ActionInfo {
 			params[i] = GsonUtil.fromJson(args[i], f.getGenericType());
 			k++;
 		}
-
-		return BizExcutor.exec(m, obj, params, null);
+		return BizExcutor.exec(method, obj, params, this.paramInfos);
 	}
 
 }

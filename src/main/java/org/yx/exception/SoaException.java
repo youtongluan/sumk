@@ -18,6 +18,9 @@ package org.yx.exception;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+/**
+ * 这个异常是框架使用，开发者只需去捕获这个异常，不要去抛出这个异常
+ */
 public class SoaException extends CodeBaseException {
 
 	private static final long serialVersionUID = 453453343454L;

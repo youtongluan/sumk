@@ -19,11 +19,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ActionHolder {
+public class RpcActionHolder {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<String, Class<?>>();
 
-	private static Map<String, ActionInfo> actMap = new ConcurrentHashMap<String, ActionInfo>();
+	private static Map<String, RpcActionNode> actMap = new ConcurrentHashMap<String, RpcActionNode>();
 
 	/**
 	 * 根据方法的全名，获取参数列表
@@ -48,11 +48,11 @@ public class ActionHolder {
 	 * @param method
 	 * @return
 	 */
-	public static ActionInfo getActionInfo(String soaName) {
+	public static RpcActionNode getActionNode(String soaName) {
 		return actMap.get(soaName);
 	}
 
-	public static void putActInfo(String soaName, ActionInfo actInfo) {
+	public static void putActNode(String soaName, RpcActionNode actInfo) {
 		actMap.putIfAbsent(soaName, actInfo);
 	}
 

@@ -59,11 +59,11 @@ public class HttpHandlerChain implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		long begin = System.currentTimeMillis();
-		boolean success = false;
+		boolean success = true;
 		try {
 			for (int i = 0; i < this.handlers.size(); i++) {
 				HttpHandler h = this.handlers.get(i);
-				if (h.accept(ctx.getInfo().getAction())) {
+				if (h.accept(ctx.getHttpNode().action)) {
 					if (Log.isTraceEnable("handle")) {
 						if (String.class.isInstance(ctx.getData())) {
 							String s = ((String) ctx.getData());
@@ -75,24 +75,27 @@ public class HttpHandlerChain implements HttpHandler {
 					}
 					if (h.handle(ctx)) {
 						success = true;
-						return true;
 					}
 				}
 			}
-		} catch (HttpException e1) {
-			Log.printStack(e1);
-			HttpUtil.error(ctx.getHttpResponse(), -1013243, "data format error", ctx.getCharset());
-		} catch (BizException e2) {
-			Log.get("sumk.http").info("bussiness exception,code:{},message:{}", e2.getCode(), e2.getMessage());
-			HttpUtil.error(ctx.getHttpResponse(), e2.getCode(), e2.getMessage(), ctx.getCharset());
-		} catch (InvalidParamException e3) {
-			Log.get("sumk.http").info("InvalidParamException,message:{},paramName:{},arg:{}", e3.getMessage(),
-					e3.getInfo().getParamName(), e3.getParam());
-			HttpUtil.error(ctx.getHttpResponse(), ErrorCode.VALIDATE_ERROR, e3.getMessage(), ctx.getCharset());
 		} catch (final Throwable e) {
+			success = false;
 			Throwable temp = e;
 			if (InvocationTargetException.class.isInstance(temp)) {
 				temp = ((InvocationTargetException) temp).getTargetException();
+			}
+
+			if (HttpException.class.isInstance(temp)) {
+				Log.printStack(temp);
+				HttpUtil.error(ctx.getHttpResponse(), -1013243, "data format error", ctx.getCharset());
+				return true;
+			}
+			if (InvalidParamException.class.isInstance(temp)) {
+				InvalidParamException e3 = InvalidParamException.class.cast(temp);
+				Log.get("sumk.http").info("InvalidParamException,message:{},paramName:{},arg:{}", e3.getMessage(),
+						e3.getInfo().getParamName(), e3.getParam());
+				HttpUtil.error(ctx.getHttpResponse(), ErrorCode.VALIDATE_ERROR, e3.getMessage(), ctx.getCharset());
+				return true;
 			}
 			while (temp != null) {
 				if (BizException.class.isInstance(temp)) {

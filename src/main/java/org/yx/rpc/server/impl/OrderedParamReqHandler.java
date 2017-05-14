@@ -15,14 +15,17 @@
  */
 package org.yx.rpc.server.impl;
 
+import org.yx.common.CalleeNode;
 import org.yx.common.ThreadContext;
 import org.yx.exception.SoaException;
-import org.yx.rpc.ActionHolder;
-import org.yx.rpc.ActionInfo;
+import org.yx.exception.SumkException;
+import org.yx.rpc.RpcActionHolder;
+import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
+import org.yx.rpc.server.impl.ProxyRpcVisitor.AbstractRpcVisitor;
 import org.yx.util.GsonUtil;
 
 public class OrderedParamReqHandler implements RequestHandler {
@@ -44,8 +47,11 @@ public class OrderedParamReqHandler implements RequestHandler {
 		try {
 			String method = req.getMethod();
 			ThreadContext.rpcContext(method, req.getRootSn(), req.getSn());
-			ActionInfo minfo = ActionHolder.getActionInfo(method);
-			Object ret = minfo.invokeByOrder(req.getParamArray());
+			RpcActionNode node = RpcActionHolder.getActionNode(method);
+			if (node == null) {
+				SumkException.throwException(123546, method + " is not a valid rpc interface");
+			}
+			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(), req));
 			resp.setJson(GsonUtil.toJson(ret));
 			resp.setException(null);
 			resp.setMs(System.currentTimeMillis() - start);
@@ -57,6 +63,15 @@ public class OrderedParamReqHandler implements RequestHandler {
 			ThreadContext.remove();
 		}
 		return resp;
+	}
+
+	private static class RpcVisitor extends AbstractRpcVisitor {
+
+		@Override
+		public Object visit(CalleeNode info) throws Throwable {
+			return RpcActionNode.class.cast(info).invokeByOrder(req.getParamArray());
+		}
+
 	}
 
 }

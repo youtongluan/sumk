@@ -27,7 +27,7 @@ import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.db.sql.ItemJoiner;
 import org.yx.log.Log;
-import org.yx.rpc.ActionHolder;
+import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.client.route.IntfInfo;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
@@ -102,13 +102,12 @@ public class SOAServer implements Plugin {
 	}
 
 	private void startServer(String ip, int port) throws Exception {
-
 		server = new ServerListener(ip, port, IOC.get(ReqHandlerFactorysBean.class).create());
 		server.run();
 	}
 
 	private String createZkRouteData() {
-		Set<String> methodSet = ActionHolder.soaSet();
+		Set<String> methodSet = RpcActionHolder.soaSet();
 		String[] methods = methodSet.toArray(new String[methodSet.size()]);
 		final ItemJoiner sj = new ItemJoiner("\n", null, null);
 		if (methods.length > 0) {

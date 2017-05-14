@@ -23,14 +23,14 @@ import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
-public class Transaction {
+public class DBTransaction {
 
 	private ConnectionPool dbCtx = null;
 	private boolean embed;
 	private String dbName;
 	private DBType dbType;
 
-	public Transaction(String dbName, DBType dbType, boolean embed) {
+	public DBTransaction(String dbName, DBType dbType, boolean embed) {
 		super();
 		this.embed = embed;
 		this.dbName = dbName;
@@ -38,7 +38,7 @@ public class Transaction {
 	}
 
 	public void begin() {
-		Log.get(Transaction.class).trace("begin with embed:{}", embed);
+		Log.get(DBTransaction.class).trace("begin with embed:{}", embed);
 
 		dbCtx = embed ? ConnectionPool.createIfAbsent(dbName, dbType) : ConnectionPool.create(dbName, dbType);
 	}
