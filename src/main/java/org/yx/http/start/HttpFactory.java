@@ -23,6 +23,7 @@ import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
 import org.yx.common.MethodDesc;
 import org.yx.http.HttpHolder;
+import org.yx.http.HttpSettings;
 import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.http.handler.HttpNode;
@@ -54,7 +55,10 @@ class HttpFactory {
 		String classFullName = clz.getName();
 		for (final Method m : httpMethods) {
 			Web act = m.getAnnotation(Web.class);
-			Upload upload = m.getAnnotation(Upload.class);
+			Upload upload = null;
+			if (HttpSettings.isUploadEnable()) {
+				upload = m.getAnnotation(Upload.class);
+			}
 			String soaName = nameResolver.solve(clz, m, act.value());
 			Log.get("sumk.http").debug("http action-{}:{}", soaName, classFullName);
 			if (HttpHolder.getHttpInfo(soaName) != null) {

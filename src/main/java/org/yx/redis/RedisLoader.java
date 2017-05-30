@@ -22,7 +22,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yx.bean.Loader;
+import org.yx.conf.AppInfo;
+import org.yx.conf.SingleResourceFactory;
 import org.yx.log.Log;
+import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
 import org.yx.util.StringUtils;
 
@@ -40,25 +44,36 @@ public class RedisLoader {
 	}
 
 	private static final String SLAVE_PRE = "slave.";
+	private static final String REDIS_FILE = "redis.properties";
 
 	public static void init() throws Exception {
 		try {
 			loadRedisByConfig();
 		} catch (Exception e) {
-			Log.get(RedisLoader.class).error("failed to load redis pool from redis.properties");
+			Log.get("sumk.redis").error("can not load redis config,normal is in {}", REDIS_FILE);
 			throw e;
 		}
 	}
 
+	private static InputStream loadConfig() throws Exception {
+		String resourceFactory = AppInfo.get("sumk.redis.conf.factory", "redis.RedisPropertiesFactory");
+		if (resourceFactory == null || resourceFactory.isEmpty()) {
+			return null;
+		}
+		Class<?> factoryClz = Loader.loadClass(resourceFactory);
+		Assert.isTrue(SingleResourceFactory.class.isAssignableFrom(factoryClz),
+				resourceFactory + " should extend from SingleResourceFactory");
+		SingleResourceFactory factory = (SingleResourceFactory) factoryClz.newInstance();
+		return factory.openInput(REDIS_FILE);
+	}
+
 	private static void loadRedisByConfig() throws IOException, Exception {
-		String file = "redis.properties";
-		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(file);
+		InputStream in = loadConfig();
 		if (in == null) {
-			Log.get("sumk.SYS").info("can not found redis property file:{}", file);
 			return;
 		}
 		Map<String, String> p = CollectionUtils.loadMap(in);
-		Log.get(RedisLoader.class).debug("config:{}", p);
+		Log.get("sumk.redis").debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {
 			if (StringUtils.isEmpty(kk)) {

@@ -33,7 +33,7 @@ public class MultikeyDao {
 		Multikey obj = new Multikey();
 		obj.setId1(id1).setId2(id2);
 		obj.setName("全部更新，除名字外都清空");
-		DB.update(obj).fullUpdate().execute();
+		DB.update(obj).fullUpdate(true).execute();
 	}
 
 	@Box

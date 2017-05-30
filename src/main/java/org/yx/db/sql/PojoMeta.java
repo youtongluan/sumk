@@ -65,6 +65,12 @@ public class PojoMeta {
 		return this.pojoArrayClz;
 	}
 
+	/**
+	 * 
+	 * @param columnDBName
+	 *            大小写不敏感
+	 * @return
+	 */
 	public ColumnMeta getByColumnDBName(String columnDBName) {
 		if (columnDBName == null || columnDBName.isEmpty()) {
 			return null;
@@ -72,6 +78,11 @@ public class PojoMeta {
 		return this.columnDBNameMap.get(columnDBName.toLowerCase());
 	}
 
+	/**
+	 * @param filedName
+	 *            大小写敏感
+	 * @return
+	 */
 	public ColumnMeta getByFieldName(String filedName) {
 		if (filedName == null || filedName.isEmpty()) {
 			return null;
@@ -160,7 +171,8 @@ public class PojoMeta {
 		}
 
 		String _pre = table.preInCache();
-		this.pre = StringUtils.isEmpty(_pre) ? this.pojoClz.getSimpleName() : _pre;
+
+		this.pre = StringUtils.isEmpty(_pre) ? "{" + this.pojoClz.getSimpleName() + "}" : _pre;
 		this.tableName = StringUtils.isEmpty(table.value()) ? this.pojoClz.getSimpleName().toLowerCase()
 				: table.value();
 	}

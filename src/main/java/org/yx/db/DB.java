@@ -55,7 +55,8 @@ public class DB {
 
 	/**
 	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。所有的更新都只能根据主键或者redis主键<BR>
-	 * 要执行execute方法才能生效
+	 * 要执行execute方法才能生效<BR>
+	 * 如果显式指定where条件，每个条件里都必须包含所有的redis主键字段
 	 * 
 	 * @return
 	 */
@@ -65,14 +66,15 @@ public class DB {
 
 	/**
 	 * 默认是局部更新，要调用fullUpdate()，才能进行全部更新。<BR>
-	 * 要执行execute方法才能生效
+	 * 要执行execute方法才能生效<BR>
+	 * 如果显式指定where条件，每个条件里都必须包含所有的redis主键字段
 	 * 
 	 * @param pojo
 	 *            修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
 	 * @return
 	 */
 	public static Update update(Object pojo) {
-		return new Update(Visitors.modifyVisitor).update(pojo);
+		return new Update(Visitors.modifyVisitor).updateTo(pojo);
 	}
 
 	public static Delete delete() {

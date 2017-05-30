@@ -5,9 +5,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import org.junit.Assert;
 import org.yx.bean.Bean;
 import org.yx.bean.Box;
 import org.yx.db.DB;
+import org.yx.db.sql.Select;
 import org.yx.db.visit.MapResultHandler;
 import org.yx.demo.member.DemoUser;
 import org.yx.util.SBuilder;
@@ -17,9 +19,6 @@ public class DemoUserDaoImpl implements DemoUserDao {
 
 	public Random r = new Random();
 
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#insert(org.yx.demo.member.DemoUser)
-	 */
 	@Override
 	@Box
 	public Long insert(DemoUser obj) {
@@ -34,9 +33,6 @@ public class DemoUserDaoImpl implements DemoUserDao {
 	}
 
 	// 更新部分字段
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#updatePart(org.yx.demo.member.DemoUser)
-	 */
 	@Override
 	@Box
 	public void updatePart(DemoUser obj) {
@@ -45,21 +41,15 @@ public class DemoUserDaoImpl implements DemoUserDao {
 	}
 
 	// 更新全部字段
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#fullUpate(long)
-	 */
 	@Override
 	@Box
 	public void fullUpate(long id) {
 		DemoUser obj = new DemoUser();
 		obj.setId(id);
 		obj.setName("全部更新，除名字外都清空");
-		DB.update(obj).fullUpdate().execute();
+		DB.update(obj).fullUpdate(true).execute();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#softDelete(long)
-	 */
 	@Override
 	@Box
 	public void softDelete(long id) {
@@ -68,18 +58,12 @@ public class DemoUserDaoImpl implements DemoUserDao {
 		DB.delete(obj).execute();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#query(long)
-	 */
 	@Override
 	@Box
 	public DemoUser query(long id) {
 		return DB.select().tableClass(DemoUser.class).byPrimaryId(id).queryOne();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.yx.orm.DemoUserDao#select()
-	 */
 	@Override
 	@Box
 	public void select() throws ParseException {
@@ -91,13 +75,16 @@ public class DemoUserDaoImpl implements DemoUserDao {
 
 		System.out.println("查询name=kkk and age=12");
 		list = DB.select(obj).queryList(); // 查询name=kkk
+		Assert.assertEquals(list.size(), DB.select(obj).count());
 
 		System.out.println("用map做条件，查询(id=10000 and age =16) or (id=20000)的记录。用map做条件的时候，key的大小写不敏感，但值类型要跟pojo类定义的一致");
-		list = DB.select()
+		
+		Select select = DB.select()
 				.tableClass(DemoUser.class)
 				.addEqual(SBuilder.map("id", 10000).put("age", 16).toMap())
-				.addEqual(SBuilder.map("id", 20000).toMap())
-				.queryList();
+				.addEqual(SBuilder.map("id", 20000).toMap());
+		list=select.queryList();
+		Assert.assertEquals(list.size(), select.count());
 
 		System.out.println("返回结果是List<Map>的例子。查询lastupdate<当前时间的记录，按lastupdate升序排列，并且limit 10,10（相当于每页10条的第二页数据）");
 		list = DB.select()

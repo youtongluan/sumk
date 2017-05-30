@@ -23,9 +23,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.conf.AppInfo;
 import org.yx.http.ErrorCode;
+import org.yx.http.HttpHeader;
 import org.yx.http.HttpSessionHolder;
+import org.yx.http.HttpSettings;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
 import org.yx.util.StringUtils;
@@ -62,25 +63,33 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				}
 			}
 			session.putKey(sid, key, userToken);
-			resp.setHeader(UserSession.SESSIONID, sid);
+			resp.setHeader(HttpHeader.SESSIONID, sid);
 			if (StringUtils.isNotEmpty(userToken)) {
-				resp.setHeader(UserSession.TOKEN, userToken);
+				resp.setHeader(HttpHeader.TOKEN, userToken);
 			}
 			outputKey(resp, key);
-			if (AppInfo.getBoolean("http.cookie.enable", true)) {
+			if (HttpSettings.isCookieEnable()) {
 				StringBuilder cookie = new StringBuilder();
 				String contextPath = req.getContextPath();
 
 				if (!contextPath.startsWith("/")) {
 					contextPath = "/" + contextPath;
 				}
-				cookie.append(UserSession.SESSIONID).append('=').append(sid);
-				if (StringUtils.isNotEmpty(userToken)) {
-					cookie.append('&').append(UserSession.TOKEN).append('=').append(userToken);
-				}
-				cookie.append("; path=").append(contextPath);
+				StringBuilder attr = new StringBuilder().append(";Path=").append(contextPath);
+				cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
 
-				resp.setHeader("Set-Cookie", cookie.toString());
+				resp.addHeader("Set-Cookie", cookie.toString());
+				if (StringUtils.isNotEmpty(userToken)) {
+					cookie.setLength(0);
+					cookie.append(HttpHeader.TOKEN).append('=').append(userToken).append(attr);
+					resp.addHeader("Set-Cookie", cookie.toString());
+				}
+				String type = this.getType();
+				if (StringUtils.isNotEmpty(type)) {
+					cookie.setLength(0);
+					cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
+					resp.addHeader("Set-Cookie", cookie.toString());
+				}
 			}
 
 			resp.getOutputStream().write("\t\n".getBytes());

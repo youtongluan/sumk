@@ -21,6 +21,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 可用于缓存的dao,用于类上表示加入IOC，作用与属性上，表示要注入
+ * 
+ * @see Cachable
+ */
 @Target({ ElementType.TYPE, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

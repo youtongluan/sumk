@@ -16,11 +16,13 @@
 package org.yx.db.listener;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yx.bean.Bean;
 import org.yx.db.annotation.CacheType;
 import org.yx.db.event.UpdateEvent;
+import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
@@ -43,36 +45,56 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			if (pm == null || pm.isNoCache()) {
 				return;
 			}
-			Map<String, Object> where = event.getWhere();
-			String id = pm.getRedisID(where, true);
-			if (event.isFullUpdate()) {
-				String id_new = pm.getRedisID(event.getTo(), true);
-				if (!id.equals(id_new)) {
-					RecordReq.del(pm, id);
-				}
-				if (pm.cacheType() == CacheType.LIST) {
-					RecordReq.del(pm, id_new);
-				} else {
-					RecordReq.set(pm, id_new, GsonUtil.toJson(event.getTo()));
-				}
-				return;
+			List<Map<String, Object>> wheres = event.getWheres();
+			for (Map<String, Object> where : wheres) {
+				handleUpdate(event, pm, where);
 			}
-
-			RecordReq.del(pm, id);
-
-			Map<String, Object> to = event.getTo();
-			Map<String, Object> where2 = new HashMap<>(where);
-			where2.putAll(to);
-			String id_new = pm.getRedisID(where2, true);
-
-			if (id.equals(id_new)) {
-				return;
-			}
-			RecordReq.del(pm, id_new);
 
 		} catch (Exception e) {
 			Log.printStack("db-listener", e);
 		}
+	}
+
+	private void handleUpdate(UpdateEvent event, PojoMeta pm, Map<String, Object> where) throws Exception {
+		String id = pm.getRedisID(where, true);
+		Map<String, Object> to = new HashMap<>(event.getTo());
+		if (!event.isUpdateDBID()) {
+			ColumnMeta[] m_ids = pm.getPrimaryIDs();
+			if (m_ids != null && m_ids.length > 0) {
+				for (ColumnMeta m : m_ids) {
+					String name = m.getFieldName();
+					Object v = where.get(name);
+					if (v != null) {
+						to.put(name, v);
+					} else {
+						to.remove(name);
+					}
+				}
+			}
+		}
+		if (event.isFullUpdate()) {
+			String id_new = pm.getRedisID(to, true);
+			if (!id.equals(id_new)) {
+				RecordReq.del(pm, id);
+			}
+			if (pm.cacheType() == CacheType.LIST) {
+				RecordReq.del(pm, id_new);
+			} else {
+				RecordReq.set(pm, id_new, GsonUtil.toJson(to));
+			}
+			return;
+		}
+
+		RecordReq.del(pm, id);
+
+		Map<String, Object> where2 = new HashMap<>(where);
+		where2.putAll(to);
+		String id_new = pm.getRedisID(where2, true);
+
+		if (id.equals(id_new)) {
+			return;
+		}
+		RecordReq.del(pm, id_new);
 	}
 
 	@Override

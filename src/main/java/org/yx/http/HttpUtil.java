@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -35,12 +34,8 @@ import org.yx.util.StringUtils;
 public final class HttpUtil {
 	static final int MAXLENGTH = 1024 * 1024 * 100;
 
-	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
-
-	public static final int ERROR_HTTP_STATUS = 499;
-
 	public static String getType(HttpServletRequest req) {
-		String type = req.getHeader(HttpHeadersHolder.TYPE);
+		String type = HttpHeadersHolder.getValueFromHeaderOrCookie(HttpHeader.TYPE);
 		return type == null ? "" : type;
 	}
 
@@ -49,20 +44,20 @@ public final class HttpUtil {
 		if (StringUtils.isEmpty(charsetName)) {
 			charsetName = req.getCharacterEncoding();
 		}
-		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
-			return DEFAULT_CHARSET;
+		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(HttpSettings.DEFAULT_CHARSET.name())) {
+			return HttpSettings.DEFAULT_CHARSET;
 		}
 
 		if (!Charset.isSupported(charsetName)) {
 			Log.get("sumk.http").error("charset '{}' is not supported", charsetName);
-			return DEFAULT_CHARSET;
+			return HttpSettings.DEFAULT_CHARSET;
 		}
 		return Charset.forName(charsetName);
 	}
 
 	public static void error(HttpServletResponse resp, int code, String errorMsg, Charset charset)
 			throws UnsupportedEncodingException, IOException {
-		resp.setStatus(ERROR_HTTP_STATUS);
+		resp.setStatus(HttpSettings.ERROR_HTTP_STATUS);
 		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);
@@ -108,4 +103,5 @@ public final class HttpUtil {
 		output.close();
 		return extractData(bs);
 	}
+
 }

@@ -53,7 +53,7 @@ class Executor {
 		ReqResp reqResp;
 		try {
 
-			reqResp = ReqSender.send(req, TimeoutMap.getOrDefault(RpcUtils.getAppId(req.getMethod()), DEFAULT_TIMEOUT));
+			reqResp = ReqSender.send(req, TimeoutMap.getOrDefault(RpcUtils.getAppId(req.getApi()), DEFAULT_TIMEOUT));
 		} catch (SoaException ex) {
 			throw ex;
 		} catch (Throwable e) {

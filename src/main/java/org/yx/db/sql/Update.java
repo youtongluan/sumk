@@ -16,25 +16,25 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.conf.AppInfo;
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
+import org.yx.util.CollectionUtils;
 
-public class Update extends AbstractSqlBuilder<Integer> {
+public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
 	protected ColumnType _byType;
-	protected Object _where;
+
+	protected Map<String, Object> updateTo;
 	protected boolean _updateDBID = true;
 
 	/**
-	 * 只有在where条件不为null的时候，这个条件才能起作用
-	 * 
 	 * @param update
 	 *            如果为false，则数据库主键不会被更新。默认为true。
 	 * @return
@@ -45,18 +45,29 @@ public class Update extends AbstractSqlBuilder<Integer> {
 	}
 
 	/**
-	 * 设置where条件，如果没有设置该条件。就用pojo的数据库主键或者redis主键<BR>
-	 * 调用本方法后，byDBID和byCacheID方法将被忽略<BR>
-	 * <B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B>
-	 * 
-	 * @param where
-	 * @return
+	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
 	 */
-	public Update where(Object where) {
-		this._where = where;
+	public Update failIfPropertyNotMapped(boolean fail) {
+		this.failIfPropertyNotMapped = fail;
 		return this;
 	}
 
+	/**
+	 * 设置where条件，如果没有设置该条件。就用pojo的数据库主键或者redis主键
+	 * <LI>调用本方法后，byDBID和byCacheID方法将被忽略<BR>
+	 * <LI>本方法可以被多次调用，多次调用之间是OR关系。
+	 * <LI><B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B>
+	 * 
+	 * @param pojo
+	 *            bean类型或Map<String, Object>.如果是pojo对象，其中的null字段会被忽略掉
+	 * @return
+	 */
+	public Update addWhere(Object pojo) {
+		this._addIn(pojo, false);
+		return this;
+	}
+
+	@Override
 	public int execute() {
 		return this.accept(visitor);
 	}
@@ -65,8 +76,13 @@ public class Update extends AbstractSqlBuilder<Integer> {
 		super(visitor);
 	}
 
-	public Update fullUpdate() {
-		this.withnull = true;
+	/**
+	 * 设置为true的话，整条记录全部更新，包括null字段。默认为false
+	 * 
+	 * @return
+	 */
+	public Update fullUpdate(boolean fullUpdate) {
+		this.withnull = fullUpdate;
 		return this;
 	}
 
@@ -74,7 +90,7 @@ public class Update extends AbstractSqlBuilder<Integer> {
 		if (_byType != null) {
 			return _byType;
 		}
-		return AppInfo.modifyByColumnType;
+		return OrmSettings.modifyByColumnType;
 	}
 
 	/**
@@ -98,15 +114,30 @@ public class Update extends AbstractSqlBuilder<Integer> {
 	}
 
 	/**
-	 * 设置对象类型的参数， <B>目前不支持批量</B>
+	 * 记录被更新后的最终状态。
+	 * <LI>有可能是部分字段，有可能是全部字段
+	 * <LI>有可能只是单条记录变成这样，有可能是多条记录变成这样
 	 * 
 	 * @param pojo
 	 *            Pojo或Map类型.如果是Map类型，要设置tableClass。
 	 *            <B>如果本表使用了缓存，并且没有where条件，本参数必须包含所有redis主键</B>
 	 * @return
 	 */
-	public Update update(Object pojo) {
-		this._addIn(pojo);
+	@SuppressWarnings("unchecked")
+	public Update updateTo(Object pojo) {
+		if (Map.class.isInstance(pojo)) {
+			this.updateTo = new HashMap<>((Map<String, Object>) pojo);
+			return this;
+		}
+		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass());
+		if (this.pojoMeta == null) {
+			SumkException.throwException(36541, pojo.getClass() + " does not config as a table");
+		}
+		try {
+			this.updateTo = this.pojoMeta.populate(pojo, withnull);
+		} catch (Exception e) {
+			SumkException.throwException(-345461, e.getMessage(), e);
+		}
 		return this;
 	}
 
@@ -115,85 +146,113 @@ public class Update extends AbstractSqlBuilder<Integer> {
 		return this;
 	}
 
-	/**
-	 * 
-	 * @param pojo
-	 *            只能是pojo对象，不能是map
-	 * @param withnull
-	 *            这个值为true，就会更新全部字段，否则只更新不为null的字段
-	 * @param byType
-	 *            ColumnType.ID_DB或ColumnType.ID_REDIS
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws InstantiationException
-	 * @throws IllegalAccessException
-	 */
-
 	public MapedSql toMapedSql() throws Exception {
-		this.checkIn();
-		Map<String, Object> pojo = this.in.get(0);
+		if (this.updateTo == null || this.updateTo.isEmpty()) {
+			SumkException.throwException(-34601, "updateTo is null or empty");
+		}
 		this.pojoMeta = this.getPojoMeta();
+		this.checkMap(this.updateTo, this.pojoMeta);
+		if (CollectionUtils.isEmpty(this.in)) {
+			return this.toMapedSqlWithoutWhere();
+		}
+		return this.toMapedSqlWithWhere();
+	}
+
+	/**
+	 * where条件不为空的时候
+	 */
+	protected MapedSql toMapedSqlWithWhere() throws Exception {
+		Map<String, Object> pojo = this.updateTo;
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE ").append(pojoMeta.getTableName());
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
-		ItemJoiner whereItem = new ItemJoiner(" AND ", "", "");
-		ColumnType byType = byType();
+		sb.append("UPDATE ").append(pojoMeta.getTableName());
 		boolean notFirst = false;
-		List<Object> whereParams = new ArrayList<>();
-		Map<String, Object> paramMap = new HashMap<>();
-		Map<String, Object> where = null;
-		boolean updateDBID = this._updateDBID;
-		if (updateDBID) {
-			updateDBID = this._where != null;
-		}
-		if (this._where != null) {
 
-			where = pojoMeta.populate(_where, false);
-		}
 		for (ColumnMeta fm : fms) {
-			Object value = null;
-			if (where != null) {
-				if (where.containsKey(fm.getFieldName())) {
-					value = where.remove(fm.getFieldName());
-					whereItem.item().append(fm.getDbColumn()).append(" =? ");
-					whereParams.add(value);
-					paramMap.put(fm.getFieldName(), value);
-				}
-			} else if (fm.accept(byType)) {
-				value = fm.value(pojo);
-				if (value == null) {
-					SumkException.throwException(234, fm.getFieldName() + " cannot be null");
-				}
-				whereItem.item().append(fm.getDbColumn()).append(" =? ");
-				whereParams.add(value);
-				paramMap.put(fm.getFieldName(), value);
-				continue;
-			}
-			value = fm.value(pojo);
+			Object value = fm.value(pojo);
 			if (value == null && !withnull) {
 				continue;
 			}
-			if (fm.accept(ColumnType.ID_DB) && !updateDBID) {
+			if (fm.accept(ColumnType.ID_DB) && !this._updateDBID) {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
 			notFirst = true;
-			sb.append(fm.getDbColumn()).append(" =? ");
+			sb.append(fm.getDbColumn()).append("=? ");
 			ms.addParam(value);
 		}
-		if (FAIL_IF_PROPERTY_NOT_MAPPED && where != null && where.size() > 0) {
-			SumkException.throwException(234234, where.keySet() + " is not valid filed name");
+
+		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
+
+		for (Map<String, Object> where : this.in) {
+			this.checkMap(where, this.pojoMeta);
+			ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
+			for (ColumnMeta fm : fms) {
+				Object value = null;
+				if (where.containsKey(fm.getFieldName())) {
+					value = where.get(fm.getFieldName());
+					andItem.item().append(fm.getDbColumn()).append("=? ");
+					ms.addParam(value);
+				}
+			}
+			orItem.item().append(andItem.toCharSequence());
 		}
-		CharSequence whereStr = whereItem.toCharSequence();
+		CharSequence whereStr = orItem.toCharSequence(true);
 		if (whereStr == null || whereStr.length() == 0) {
 			SumkException.throwException(345445, "where cannot be null");
 		}
-		sb.append(" WHERE ").append(whereStr);
+		sb.append(whereStr);
+		ms.sql = sb.toString();
+		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), pojoMeta.populate(pojo, false), this.in,
+				this.withnull, this._updateDBID);
+		ms.event = event;
+		return ms;
+	}
+
+	protected MapedSql toMapedSqlWithoutWhere() throws Exception {
+		MapedSql ms = new MapedSql();
+		StringBuilder sb = new StringBuilder();
+		sb.append("UPDATE ").append(pojoMeta.getTableName());
+		ColumnMeta[] fms = pojoMeta.fieldMetas;
+		ItemJoiner whereItem = new ItemJoiner(" AND ", " WHERE ", null);
+		ColumnType byType = byType();
+		boolean notFirst = false;
+		List<Object> whereParams = new ArrayList<>();
+		Map<String, Object> paramMap = new HashMap<>();
+		for (ColumnMeta fm : fms) {
+			Object value = null;
+			if (fm.accept(byType)) {
+				value = fm.value(this.updateTo);
+				if (value == null) {
+					SumkException.throwException(234, fm.getFieldName() + " cannot be null");
+				}
+				whereItem.item().append(fm.getDbColumn()).append("=? ");
+				whereParams.add(value);
+				paramMap.put(fm.getFieldName(), value);
+				continue;
+			}
+			value = fm.value(this.updateTo);
+			if (value == null && !withnull) {
+				continue;
+			}
+			if (fm.accept(ColumnType.ID_DB) && !this._updateDBID) {
+				continue;
+			}
+			sb.append(notFirst ? " , " : " SET ");
+			notFirst = true;
+			sb.append(fm.getDbColumn()).append("=? ");
+			ms.addParam(value);
+		}
+		CharSequence whereStr = whereItem.toCharSequence(true);
+		if (whereStr == null || whereStr.length() == 0) {
+			SumkException.throwException(-345445, "where cannot be null");
+		}
+		sb.append(whereStr);
 		ms.addParams(whereParams);
 		ms.sql = sb.toString();
-		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), pojoMeta.populate(pojo, false), paramMap,
-				this.withnull);
+		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), this.updateTo, Collections.singletonList(paramMap),
+				this.withnull, this._updateDBID);
 		ms.event = event;
 		return ms;
 	}

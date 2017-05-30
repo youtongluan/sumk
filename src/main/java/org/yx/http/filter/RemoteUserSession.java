@@ -17,6 +17,7 @@ package org.yx.http.filter;
 
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpSessionHolder;
+import org.yx.http.HttpSettings;
 import org.yx.redis.Redis;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtils;
@@ -25,12 +26,13 @@ public class RemoteUserSession implements UserSession {
 
 	private final Redis redis;
 	private static final String AES_KEY = "KEY";
+
 	private static final String SESSION_OBJECT = "OBJ";
 
 	private static final String SINGLE_SESSION_PRE = "SINGLE_SES_";
 
 	private String bigKey() {
-		return bigKey(org.yx.http.HttpHeadersHolder.token());
+		return bigKey(org.yx.http.HttpHeadersHolder.sessionId());
 	}
 
 	private String bigKey(String sessionId) {
@@ -48,7 +50,7 @@ public class RemoteUserSession implements UserSession {
 	public void putKey(String sessionId, byte[] key, String userId) {
 		String bigkey = bigKey(sessionId);
 		redis.hset(bigkey, AES_KEY, key);
-		redis.expire(bigkey, AppInfo.httpSessionTimeout);
+		redis.expire(bigkey, HttpSettings.httpSessionTimeout());
 		if ((!HttpSessionHolder.isSingleLogin()) || StringUtils.isEmpty(userId)) {
 			return;
 		}
@@ -90,7 +92,7 @@ public class RemoteUserSession implements UserSession {
 		if (bigKey == null) {
 			return;
 		}
-		redis.expire(bigKey, AppInfo.httpSessionTimeout);
+		redis.expire(bigKey, HttpSettings.httpSessionTimeout());
 	}
 
 	@Override
@@ -98,7 +100,7 @@ public class RemoteUserSession implements UserSession {
 		String bigKey = this.bigKey(sid);
 		String json = GsonUtil.toJson(sessionObj);
 		redis.hset(bigKey, SESSION_OBJECT, json);
-		redis.expire(bigKey, AppInfo.httpSessionTimeout);
+		redis.expire(bigKey, HttpSettings.httpSessionTimeout());
 	}
 
 	@Override

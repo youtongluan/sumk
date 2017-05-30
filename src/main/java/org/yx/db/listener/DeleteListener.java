@@ -15,6 +15,9 @@
  */
 package org.yx.db.listener;
 
+import java.util.List;
+import java.util.Map;
+
 import org.yx.bean.Bean;
 import org.yx.db.event.DeleteEvent;
 import org.yx.db.sql.PojoMeta;
@@ -38,9 +41,14 @@ public class DeleteListener implements DBListener<DeleteEvent> {
 			if (pm == null || pm.isNoCache()) {
 				return;
 			}
-			Object src = event.getWhere();
-			String id = pm.getRedisID(src, true);
-			RecordReq.del(pm, id);
+			List<Map<String, Object>> wheres = event.getWheres();
+			if (wheres == null || wheres.isEmpty()) {
+				return;
+			}
+			for (Map<String, Object> src : wheres) {
+				String id = pm.getRedisID(src, true);
+				RecordReq.del(pm, id);
+			}
 		} catch (Exception e) {
 			Log.printStack("db-listener", e);
 		}

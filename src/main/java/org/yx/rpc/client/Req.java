@@ -31,7 +31,7 @@ public class Req {
 
 	private String[] p;
 
-	private String m;
+	private String a;
 
 	private String secret;
 
@@ -114,12 +114,12 @@ public class Req {
 		return fatherSn;
 	}
 
-	public String getMethod() {
-		return m;
+	public String getApi() {
+		return a;
 	}
 
-	public void setMethod(String method) {
-		this.m = method;
+	public void setApi(String api) {
+		this.a = api;
 	}
 
 	public String getSign() {

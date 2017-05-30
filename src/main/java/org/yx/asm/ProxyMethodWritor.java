@@ -60,7 +60,7 @@ import org.yx.conf.AppInfo;
 public class ProxyMethodWritor {
 	private static final int SINGLE = AppInfo.getInt("sumk.aop.single", 1);
 	private static final int WIDTH = AppInfo.getInt("sumk.aop.width", 2);
-	static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 30000));
+	static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 31024));
 
 	private static void jReturn(MethodVisitor mv, Class<?> c) {
 		if (c == Integer.TYPE || c == Boolean.TYPE || c == Byte.TYPE || c == Character.TYPE || c == Short.TYPE) {

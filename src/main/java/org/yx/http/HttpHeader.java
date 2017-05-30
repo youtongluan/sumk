@@ -13,31 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.http;
 
-import javax.servlet.http.HttpServletResponse;
+import org.yx.conf.AppInfo;
 
-import org.yx.http.Web;
+public interface HttpHeader {
+	/**
+	 * 用户的sessionId<br>
+	 * sid
+	 */
+	String SESSIONID = AppInfo.get("http.header.sid", "sid");
+	/**
+	 * 客户端用来传userid或者其它唯一识别用户的标识<br>
+	 * stoken
+	 */
+	String TOKEN = AppInfo.get("http.header.stoken", "stoken");
 
-/**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
- */
-public class RespHeaderHandler implements HttpHandler {
-
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset().name());
-
-		return false;
-	}
-
+	/**
+	 * http请求的类型，要类型一致才能访问
+	 */
+	String TYPE = AppInfo.get("http.header.stype", "stype");
 }

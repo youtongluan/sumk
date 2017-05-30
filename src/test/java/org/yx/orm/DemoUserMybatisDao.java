@@ -43,7 +43,7 @@ public class DemoUserMybatisDao {
 		DemoUser obj = new DemoUser();
 		obj.setId(id);
 		obj.setName("全部更新，除名字外都清空");
-		DB.update(obj).fullUpdate().execute();
+		DB.update(obj).fullUpdate(true).execute();
 	}
 
 	@Box

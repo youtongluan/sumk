@@ -16,21 +16,31 @@
 package org.yx.db.sql;
 
 import org.yx.db.visit.SumkDbVisitor;
+import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtils;
 
-public class Delete extends AbstractSqlBuilder<Integer> {
+public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 
 	public Delete(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
 	}
 
+	@Override
 	public int execute() {
 		return this.accept(visitor);
 	}
 
 	/**
-	 * 删除的条件，目前不支持批量。如果是map类型，就要设置tableClass<BR>
-	 * 暂不支持批量删除
+	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 */
+	public Delete failIfPropertyNotMapped(boolean fail) {
+		this.failIfPropertyNotMapped = fail;
+		return this;
+	}
+
+	/**
+	 * 删除的条件。如果是map类型，就要设置tableClass<BR>
+	 * 多次执行delete，相互之间是or条件
 	 * 
 	 * @param pojo
 	 * @return
@@ -47,7 +57,7 @@ public class Delete extends AbstractSqlBuilder<Integer> {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		if (CollectionUtils.isEmpty(this.in)) {
-			return null;
+			SumkException.throwException(64342245, "can not delete all records");
 		}
 		this.pojoMeta = this.getPojoMeta();
 		SoftDeleteMeta sm = this.pojoMeta.softDelete;

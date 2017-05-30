@@ -15,9 +15,14 @@
  */
 package org.yx.rpc.server.impl;
 
+import java.util.List;
+
+import org.yx.bean.IOC;
 import org.yx.common.CalleeNode;
 import org.yx.common.CalleeNode.Visitor;
+import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Request;
+import org.yx.rpc.server.RpcFilter;
 
 class ProxyRpcVisitor implements Visitor {
 
@@ -35,8 +40,29 @@ class ProxyRpcVisitor implements Visitor {
 
 	@Override
 	public Object visit(CalleeNode info) throws Throwable {
-
-		return this.visitor.visit(info);
+		List<RpcFilter> list = IOC.getBeans(RpcFilter.class);
+		if (list == null || list.isEmpty()) {
+			return this.visitor.visit(info);
+		}
+		RpcActionNode node = (RpcActionNode) info;
+		try {
+			for (RpcFilter f : list) {
+				f.beforeInvoke(node, visitor.req);
+			}
+			Object ret = this.visitor.visit(info);
+			for (RpcFilter f : list) {
+				f.afterInvoke(node, visitor.req, ret);
+			}
+			return ret;
+		} catch (Exception e) {
+			for (RpcFilter f : list) {
+				Exception e2 = f.error(node, visitor.req, e);
+				if (e2 != null) {
+					e = e2;
+				}
+			}
+			throw e;
+		}
 	}
 
 	static abstract class AbstractRpcVisitor implements Visitor {

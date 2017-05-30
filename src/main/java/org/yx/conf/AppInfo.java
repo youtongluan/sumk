@@ -15,36 +15,45 @@
  */
 package org.yx.conf;
 
-import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observer;
 
-import org.yx.db.annotation.ColumnType;
+import org.yx.bean.Loader;
 import org.yx.log.Log;
 import org.yx.rpc.LocalhostUtil;
 import org.yx.util.StringUtils;
 
-public class AppInfo {
+public final class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
-	private static String groupId = "sumk";
-	private static String appId = "demo";
-
-	public static int httpSessionTimeout = 3600;
-
-	/**
-	 * 默认情况下，DB操作是根据数据库中的主键，还是redis中的主键。
-	 */
-	public static ColumnType modifyByColumnType = ColumnType.ID_DB;
-
-	private static List<Observer> observers = new ArrayList<>(4);
+	static List<Observer> observers = new ArrayList<>(4);
 	private static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-	static NamePairs zkInfo = null;
+	private static SystemConfig info;
+	static {
+		try {
+			Class<?> clz = Loader.loadClass("org.yx.conf.SystemConfigImpl");
+			Object obj = clz.newInstance();
+			if (SystemConfig.class.isInstance(obj)) {
+				Log.get("sumk.SYS").debug("use SystemConfigImpl for appInfo");
+				info = (SystemConfig) obj;
+			}
+		} catch (Throwable e) {
+		}
+		try {
+			if (info == null) {
+				info = new AppPropertiesInfo();
+			}
+			info.initAppInfo();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+	}
 
 	public static synchronized void addObserver(Observer ob) {
 		if (observers.contains(ob)) {
@@ -53,67 +62,6 @@ public class AppInfo {
 		observers.add(ob);
 		ob.update(null, null);
 	}
-
-	static final PropertiesInfo info = new PropertiesInfo("app.properties") {
-
-		private Integer intValue(String key) {
-			String temp = get(key);
-			if (temp != null) {
-				try {
-					return Integer.valueOf(temp);
-				} catch (Exception e) {
-					Log.get(AppInfo.class).error(key + "=" + temp + ", is not valid Integer,ignore it");
-				}
-			}
-			return null;
-		}
-
-		@Override
-		public void deal(InputStream in) throws Exception {
-			super.deal(in);
-			String id = get("sumk.appId");
-			if (id != null && id.length() > 0) {
-				AppInfo.appId = id;
-			}
-			id = get("sumk.groupId");
-			if (id != null && id.length() > 0) {
-				AppInfo.groupId = id;
-			}
-
-			Integer temp = intValue("http.session.timeout");
-			if (temp != null) {
-				AppInfo.httpSessionTimeout = temp;
-			}
-
-			observers.forEach(ob -> {
-				ob.update(null, null);
-			});
-		}
-
-		@Override
-		public String get(String key) {
-			String ret = super.get(key);
-			if (ret == null && zkInfo != null) {
-				return zkInfo.getValue(key);
-			}
-			return ret;
-		}
-
-		public String get(String key, String defaultValue) {
-			String value = pro.get(key);
-			if (value != null && value.length() > 0) {
-				return value;
-			}
-			if (zkInfo != null) {
-				value = zkInfo.getValue(key);
-			}
-			if (value != null && value.length() > 0) {
-				return value;
-			}
-			return defaultValue;
-		}
-
-	};
 
 	public static String getZKUrl() {
 		return info.get("sumk.zkurl");
@@ -138,7 +86,7 @@ public class AppInfo {
 	 * @return
 	 */
 	public static String appId() {
-		return appId;
+		return info.get("sumk.appId", "app");
 	}
 
 	/**
@@ -147,7 +95,7 @@ public class AppInfo {
 	 * @return
 	 */
 	public static String groupId() {
-		return groupId;
+		return info.get("sumk.groupId", "sumk");
 	}
 
 	/**

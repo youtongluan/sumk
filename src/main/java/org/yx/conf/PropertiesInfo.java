@@ -24,7 +24,7 @@ import java.util.Map;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtils;
 
-public abstract class PropertiesInfo implements FileHandler {
+public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 
 	protected String fileName;
 
@@ -39,8 +39,6 @@ public abstract class PropertiesInfo implements FileHandler {
 	public String get(String key) {
 		return pro.get(key);
 	}
-
-	abstract String get(String key, String defaultValue);
 
 	@Override
 	public URL[] listFile() {
@@ -58,6 +56,11 @@ public abstract class PropertiesInfo implements FileHandler {
 			return;
 		}
 		pro = Collections.unmodifiableMap(CollectionUtils.loadMap(in));
+	}
+
+	public void start() {
+		FileMonitor.inst.handle(this, false);
+		FileMonitor.inst.start();
 	}
 
 }

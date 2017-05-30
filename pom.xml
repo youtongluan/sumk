@@ -3,11 +3,11 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.yx</groupId>
 	<artifactId>sumk</artifactId>
-	<version>1.7.4</version>
+	<version>1.7.6</version>
 
 	<name>org.yx:sumk</name>
 	<description>A framewort for internet company</description>
-	<url>https://www.oschina.net/p/sumk</url>
+	<url>https://github.com/youtongluan/sumk</url>
 	<licenses>
 		<license>
 			<name>The Apache License, Version 2.0</name>

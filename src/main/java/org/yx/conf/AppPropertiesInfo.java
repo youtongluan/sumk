@@ -13,31 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.conf;
 
-import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 
-import org.yx.http.Web;
+class AppPropertiesInfo extends PropertiesInfo {
 
-/**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
- */
-public class RespHeaderHandler implements HttpHandler {
-
-	@Override
-	public boolean accept(Web web) {
-		return true;
+	AppPropertiesInfo() {
+		super("app.properties");
 	}
 
 	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset().name());
+	public void deal(InputStream in) throws Exception {
+		super.deal(in);
 
-		return false;
+		AppInfo.observers.forEach(ob -> {
+			ob.update(null, null);
+		});
+	}
+
+	public String get(String key, String defaultValue) {
+		String value = pro.get(key);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		return defaultValue;
+	}
+
+	@Override
+	public void initAppInfo() {
+		this.start();
 	}
 
 }

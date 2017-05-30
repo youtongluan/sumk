@@ -35,7 +35,6 @@ public class AESEncry implements Encry {
 
 	@Override
 	public byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-		algorithm = "AES";
 		if (contentBytes == null || contentBytes.length == 0) {
 			return contentBytes;
 		}

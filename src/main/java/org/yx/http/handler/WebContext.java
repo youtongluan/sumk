@@ -21,13 +21,13 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.HttpUtil;
+import org.yx.http.HttpSettings;
 
 public class WebContext {
 	private HttpNode node;
 	private HttpServletRequest httpRequest;
 	private HttpServletResponse httpResponse;
-	private Charset charset = HttpUtil.DEFAULT_CHARSET;
+	private Charset charset = HttpSettings.DEFAULT_CHARSET;
 	private String sign;
 	private Map<String, String> headers;
 	private Object data;

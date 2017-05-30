@@ -23,7 +23,8 @@ import org.yx.db.visit.Visitors;
 import org.yx.exception.SumkException;
 
 /**
- * 以?为占位符的原生sql。推荐通过常量或其它方式引用
+ * 以?为占位符的原生sql。推荐通过常量或其它方式引用<BR>
+ * sql的参数支持以List的方式传入
  * 
  * @author 游夏
  *

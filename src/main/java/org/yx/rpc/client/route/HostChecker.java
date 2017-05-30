@@ -20,10 +20,11 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
-import org.yx.common.Deamon;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
+import org.yx.main.SumkThreadPool;
 import org.yx.rpc.Host;
 
 public class HostChecker {
@@ -31,7 +32,8 @@ public class HostChecker {
 	private static HostChecker holder = new HostChecker();
 
 	private HostChecker() {
-		SumkServer.runDeamon(new checker(), "host-checker");
+		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(new Checker(), 5,
+				AppInfo.getInt("soa.hosts.check.period", 3), TimeUnit.SECONDS);
 	}
 
 	public static HostChecker get() {
@@ -65,29 +67,21 @@ public class HostChecker {
 		downUrls.putIfAbsent(url, System.currentTimeMillis());
 	}
 
-	private class checker implements Deamon {
-
-		@Override
-		public void run() throws InterruptedException {
-			check();
-			long t = 5000 - (2000 * downUrls.size());
-			if (t > 0) {
-				Thread.sleep(t);
-			}
-		}
+	private class Checker implements Runnable {
 
 		private int getTimeOut(int urlSize) {
 			if (urlSize == 1) {
-				return 3000;
+				return AppInfo.getInt("soa.socket.connecttimeout.1", 3000);
 			} else if (urlSize == 2) {
-				return 2500;
+				return AppInfo.getInt("soa.socket.connecttimeout.2", 2500);
 			} else if (urlSize > 5) {
-				return 1000;
+				return AppInfo.getInt("soa.socket.connecttimeout.5", 1000);
 			}
-			return 2000;
+			return AppInfo.getInt("soa.socket.connecttimeout.3", 2000);
 		}
 
-		private void check() {
+		@Override
+		public void run() {
 			if (downUrls.isEmpty()) {
 				return;
 			}

@@ -123,12 +123,6 @@ public abstract class WeightedRoute<T extends Server> {
 		return null;
 	}
 
-	/**
-	 * true表示该节点是无效的<BR>
-	 * 
-	 * @param server
-	 * @return
-	 */
 	protected abstract boolean isDowned(T server);
 
 	@Override

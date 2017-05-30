@@ -58,6 +58,13 @@ public final class IOC {
 		return InnerIOC.pool.toString();
 	}
 
+	/**
+	 * 
+	 * @param name
+	 *            一般使用null做参数
+	 * @param clz
+	 * @return
+	 */
 	public static <T> T cache(String name, Class<T> clz) {
 		if (name == null || name.isEmpty()) {
 			name = BeanPool.getBeanName(clz);

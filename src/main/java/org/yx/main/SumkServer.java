@@ -27,7 +27,6 @@ import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.bean.ScanerFactorysBean;
-import org.yx.common.Deamon;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
@@ -38,36 +37,9 @@ import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtils;
 
 public class SumkServer {
-	private static volatile boolean started = false;
+	private static volatile boolean started;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
-
-	private static List<Thread> deamonThreads = new ArrayList<>(4);
-
-	public static synchronized void runDeamon(Deamon runnable, String threadName) {
-		if (destoryed) {
-			return;
-		}
-		Runnable r = () -> {
-			while (true) {
-				try {
-					if (destoryed) {
-						break;
-					}
-					runnable.run();
-				} catch (InterruptedException e1) {
-
-				} catch (Exception e) {
-					Log.printStack(e);
-				}
-			}
-			Log.get("sumk.SYS").info("{} stoped", threadName);
-		};
-		Thread t = new Thread(r, threadName);
-		t.setDaemon(true);
-		t.start();
-		deamonThreads.add(t);
-	}
 
 	public static boolean isHttpEnable() {
 		return httpEnable;
@@ -123,6 +95,7 @@ public class SumkServer {
 			}
 
 		} catch (Throwable e) {
+			e.printStackTrace();
 			Log.printStack(e);
 			try {
 				Thread.sleep(1000);
@@ -190,6 +163,7 @@ public class SumkServer {
 			}
 			destoryed = true;
 		}
+		SumkThreadPool.shutdown();
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
 		if (lifes == null || lifes.isEmpty()) {
 			return;
@@ -202,8 +176,6 @@ public class SumkServer {
 				Log.printStack(e);
 			}
 		});
-		deamonThreads.forEach(Thread::interrupt);
-		deamonThreads.clear();
 		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 }

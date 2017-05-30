@@ -13,31 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.rpc.server;
 
-import javax.servlet.http.HttpServletResponse;
+import org.yx.common.Ordered;
+import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.codec.Request;
 
-import org.yx.http.Web;
+public interface RpcFilter extends Ordered {
 
-/**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
- */
-public class RespHeaderHandler implements HttpHandler {
+	public void beforeInvoke(RpcActionNode node, Request req) throws Exception;
 
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
+	public void afterInvoke(RpcActionNode node, Request req, Object result) throws Exception;
 
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset().name());
-
-		return false;
-	}
-
+	public Exception error(RpcActionNode node, Request req, Exception ex);
 }

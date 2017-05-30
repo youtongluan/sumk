@@ -31,7 +31,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.yx.main.SumkServer;
+import org.yx.main.SumkThreadPool;
 import org.yx.rpc.Host;
 import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtils;
@@ -124,7 +124,7 @@ public class ZkRouteParser {
 			datas.put(d.url, d.data);
 		}
 		Routes.refresh(datas);
-		SumkServer.runDeamon(() -> {
+		SumkThreadPool.runDeamon(() -> {
 			RouteEvent event = queue.take();
 			if (event == null) {
 				return;

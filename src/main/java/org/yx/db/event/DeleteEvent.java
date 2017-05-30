@@ -15,19 +15,20 @@
  */
 package org.yx.db.event;
 
+import java.util.List;
 import java.util.Map;
 
 public class DeleteEvent extends ModifyEvent {
 
-	private Map<String, Object> map;
+	private List<Map<String, Object>> wheres;
 
-	public DeleteEvent(String table, Map<String, Object> where) {
+	public DeleteEvent(String table, List<Map<String, Object>> wheres) {
 		super(table);
-		this.map = where;
+		this.wheres = wheres;
 	}
 
-	public Map<String, Object> getWhere() {
-		return map;
+	public List<Map<String, Object>> getWheres() {
+		return this.wheres;
 	}
 
 }

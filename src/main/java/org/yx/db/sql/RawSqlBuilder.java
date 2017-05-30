@@ -23,13 +23,16 @@ public class RawSqlBuilder implements SqlBuilder {
 	private String _sql;
 	private List<Object> _params;
 
+	@SuppressWarnings("unchecked")
 	public RawSqlBuilder(String sql, Object[] params) {
 		this._sql = sql;
 		if (params == null || params.length == 0) {
 			this._params = new ArrayList<>();
-			return;
+		} else if (params.length == 1 && List.class.isInstance(params[0])) {
+			this._params = (List<Object>) params[0];
+		} else {
+			this._params = Arrays.asList(params);
 		}
-		this._params = Arrays.asList(params);
 	}
 
 	@Override

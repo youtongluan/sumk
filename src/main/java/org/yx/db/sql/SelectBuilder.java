@@ -15,11 +15,11 @@
  */
 package org.yx.db.sql;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
 
-import org.yx.conf.AppInfo;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.Assert;
@@ -30,13 +30,12 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
-		this.failIfPropertyNotMapped = FAIL_IF_PROPERTY_NOT_MAPPED;
-		this.fromCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.fromCache"));
-		this.toCache = !"false".equalsIgnoreCase(AppInfo.get("sumk.sql.toCache"));
+		this.fromCache = OrmSettings.FROM_CACHE;
+		this.toCache = OrmSettings.TO_CACHE;
 		this.withnull = false;
 	}
 
-	protected static String[] COMPARES = { ">", ">=", "<", "<=" };
+	protected static final String[] COMPARES = { ">", ">=", "<", "<=" };
 
 	List<String> selectColumns;
 
@@ -54,11 +53,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	boolean fromCache;
 	boolean toCache;
 
-	private MapedSql ms;
-
 	protected boolean allowEmptyWhere;
-
-	protected boolean failIfPropertyNotMapped;
 
 	/**
 	 * sql不包含"where"
@@ -68,12 +63,12 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
-		this.ms = new MapedSql();
+		List<Object> paramters = new ArrayList<>(10);
 		this.pojoMeta = getPojoMeta();
 		Assert.notNull(pojoMeta, "pojo meta cannot be null");
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
-		CharSequence where = this.buildWhere();
+		CharSequence where = this.buildWhere(paramters);
 		if (StringUtils.isEmpty(where) && !this.allowEmptyWhere) {
 			SumkException.throwException(63254325, "empty where");
 		}
@@ -87,8 +82,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (this.offset >= 0 && this.limit > 0) {
 			sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
 		}
-		ms.sql = sql.toString();
-		return ms;
+		return new MapedSql(sql.toString(), paramters);
 	}
 
 	protected CharSequence buildOrder() {
@@ -116,31 +110,39 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return sj.toString();
 	}
 
-	protected CharSequence buildWhere() {
+	/**
+	 * 将参数解析成sql，eq和in条件的时候，会判断是否都是使用redis主键<BR>
+	 * 使用全局变量，但不能改变全局变量的值
+	 * 
+	 * @param 用于存储PreparedStatement中的参数列表
+	 * @return 不包含“WHERE”
+	 */
+	protected CharSequence buildWhere(List<Object> paramters) {
 		ItemJoiner joiner = new ItemJoiner(" AND ", "", "");
-		joiner.addNotEmptyItem(buildValid()).addNotEmptyItem(buildIn()).addNotEmptyItem(buildCompare());
+		joiner.addNotEmptyItem(buildValid(paramters)).addNotEmptyItem(buildIn(paramters))
+				.addNotEmptyItem(buildCompare(paramters));
 		return joiner.toCharSequence();
 	}
 
-	private CharSequence buildValid() {
+	private CharSequence buildValid(List<Object> paramters) {
 		SoftDeleteMeta sm = this.pojoMeta.softDelete;
 		if (sm == null) {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder();
 		sb.append(sm.columnName).append(" =? ");
-		ms.addParam(sm.validValue);
+		paramters.add(sm.validValue);
 		return sb;
 	}
 
-	private CharSequence buildCompare() {
+	private CharSequence buildCompare(List<Object> paramters) {
 		if (this._compare == null) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create();
 		for (int i = 0; i < COMPARES.length && i < this._compare.length; i++) {
 			Map<String, Object> map = this._compare[i];
-			CharSequence sub = this.parseMap(map, COMPARES[i]);
+			CharSequence sub = this.parseMap(map, COMPARES[i], paramters);
 			if (sub == null) {
 				continue;
 			}
@@ -149,14 +151,14 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return joiner.toCharSequence();
 	}
 
-	private CharSequence buildIn() {
+	private CharSequence buildIn(List<Object> paramters) {
 		if (this.in == null || this.in.isEmpty()) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" OR ");
 		List<Map<String, Object>> list = this.in;
 		for (Map<String, Object> map : list) {
-			CharSequence sub = this.parseEqual(map);
+			CharSequence sub = this.parseEqual(map, paramters);
 			if (sub == null) {
 				continue;
 			}
@@ -173,10 +175,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	 * @param 比较符号：=、>、>=等
 	 * @return 如果src为空，就返回null
 	 */
-	private CharSequence parseMap(Map<String, Object> src, String compare) {
+	private CharSequence parseMap(Map<String, Object> src, String compare, List<Object> paramters) {
 		if (CollectionUtils.isEmpty(src)) {
 			return null;
 		}
+
 		ItemJoiner joiner = ItemJoiner.create();
 		src.forEach((filedName, v) -> {
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
@@ -184,31 +187,31 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				return;
 			}
 			if (cm == null) {
-				if (failIfPropertyNotMapped) {
+				if (this.failIfPropertyNotMapped) {
 					SumkException.throwException(234, filedName + " has no mapper");
 				}
 				return;
 			}
 			joiner.item().append(cm.getDbColumn()).append(compare).append(" ? ");
-			ms.addParam(v);
+			paramters.add(v);
 		});
 
 		return joiner.toCharSequence();
 	}
 
-	private CharSequence parseEqual(Map<String, Object> src) {
+	private CharSequence parseEqual(Map<String, Object> src, List<Object> paramters) {
 		if (CollectionUtils.isEmpty(src)) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create();
 		src.forEach((filedName, v) -> {
-			if (v == null && !this.withnull) {
 
+			if (v == null && !this.withnull) {
 				return;
 			}
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
-				if (failIfPropertyNotMapped) {
+				if (this.failIfPropertyNotMapped) {
 					SumkException.throwException(234, filedName + " has no mapper");
 				}
 				return;
@@ -217,8 +220,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				joiner.item().append(cm.getDbColumn()).append(" IS NULL ");
 				return;
 			}
-			joiner.item().append(cm.getDbColumn()).append(" = ? ");
-			ms.addParam(v);
+			joiner.item().append(cm.getDbColumn()).append("=? ");
+			paramters.add(v);
 		});
 
 		return joiner.toCharSequence();

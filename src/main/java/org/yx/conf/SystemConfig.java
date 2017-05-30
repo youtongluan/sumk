@@ -13,31 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
-
-import javax.servlet.http.HttpServletResponse;
-
-import org.yx.http.Web;
+package org.yx.conf;
 
 /**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
+ * 实现类要有定期刷新或监听变更的功能
  */
-public class RespHeaderHandler implements HttpHandler {
+public interface SystemConfig {
+	String get(String key);
 
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
+	String get(String key, String defaultValue);
 
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset().name());
-
-		return false;
-	}
-
+	void initAppInfo();
 }

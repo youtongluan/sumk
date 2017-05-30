@@ -45,7 +45,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 		long start = System.currentTimeMillis();
 		Response resp = new Response(req.getSn());
 		try {
-			String method = req.getMethod();
+			String method = req.getApi();
 			ThreadContext.rpcContext(method, req.getRootSn(), req.getSn());
 			RpcActionNode node = RpcActionHolder.getActionNode(method);
 			if (node == null) {

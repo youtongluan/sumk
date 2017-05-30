@@ -15,38 +15,39 @@
  */
 package org.yx.db.event;
 
+import java.util.List;
 import java.util.Map;
 
 public class UpdateEvent extends ModifyEvent {
 
-	private Map<String, Object> to;
-	private Map<String, Object> where;
-	private boolean fullUpdate;
+	private final Map<String, Object> to;
+	private final List<Map<String, Object>> wheres;
+	private final boolean fullUpdate;
+	private final boolean updateDBID;
 
-	/**
-	 * 
-	 * @param table
-	 * @param pojo
-	 * @param idMap
-	 *            主键列表，包含所有的主键，即使它是null
-	 */
-	public UpdateEvent(String table, Map<String, Object> to, Map<String, Object> where, boolean fullUpdate) {
+	public UpdateEvent(String table, Map<String, Object> to, List<Map<String, Object>> wheres, boolean fullUpdate,
+			boolean updateDBID) {
 		super(table);
 		this.to = to;
-		this.where = where;
+		this.wheres = wheres;
 		this.fullUpdate = fullUpdate;
+		this.updateDBID = updateDBID;
 	}
 
 	public boolean isFullUpdate() {
-		return fullUpdate;
+		return this.fullUpdate;
+	}
+
+	public boolean isUpdateDBID() {
+		return this.updateDBID;
 	}
 
 	public Map<String, Object> getTo() {
 		return to;
 	}
 
-	public Map<String, Object> getWhere() {
-		return where;
+	public List<Map<String, Object>> getWheres() {
+		return wheres;
 	}
 
 }

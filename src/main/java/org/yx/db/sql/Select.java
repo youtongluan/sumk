@@ -32,9 +32,21 @@ import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
 import org.yx.util.SBuilder;
 
+/**
+ * 比较跟整个addEqual是add关系。同一种比较类型，比如less，它的一个key只能设置一次，后设置的会覆盖前面设置的<BR>
+ * 比较中用到的key，都是java中的key，大小写敏感
+ */
 public class Select extends SelectBuilder {
 	public Select(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
+	}
+
+	/**
+	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 */
+	public Select failIfPropertyNotMapped(boolean fail) {
+		this.failIfPropertyNotMapped = fail;
+		return this;
 	}
 
 	/**
@@ -91,7 +103,7 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 设置大于
+	 * 设置大于,一个key只能设置一次，后设置的会覆盖前面设置的。<BR>
 	 */
 	public Select bigThan(String key, Object value) {
 		return setCompare(0, key, value);
@@ -248,18 +260,6 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 如果为true，参数中存在无法解析的属性时，将会被忽略，而不是抛出异常
-	 * 
-	 * @param fail
-	 *            默认为false。sumk.sql.failIfPropertyNotMapped=true可以将全局参数设为true
-	 * @return
-	 */
-	public Select failIfPropertyNotMapped(boolean fail) {
-		this.failIfPropertyNotMapped = fail;
-		return this;
-	}
-
-	/**
 	 * 如果为true，在判断是否相等时，会将null值解析成is null。否则将忽略null值
 	 * 
 	 * @param v
@@ -323,7 +323,7 @@ public class Select extends SelectBuilder {
 			return this;
 		}
 		this.pojoMeta = this.getPojoMeta();
-		Assert.notNull(this.pojoMeta, "make suer tableClass() has been called");
+		Assert.notNull(this.pojoMeta, "make sure tableClass() has been called");
 		ColumnMeta[] cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
 		Assert.isTrue(cms != null && cms.length == 1,
 				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "redis") + " key table");
@@ -424,4 +424,13 @@ public class Select extends SelectBuilder {
 		return list.get(0);
 	}
 
+	/**
+	 * 根据select的条件，查询符合条件的记录数。其中offset、limit、order by属性被过滤掉<BR>
+	 * 这个方法可以在select执行前调用，也可以在select执行后调用
+	 * 
+	 * @return
+	 */
+	public int count() {
+		return new Count(this).execute();
+	}
 }

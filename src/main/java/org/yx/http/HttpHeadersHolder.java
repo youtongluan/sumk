@@ -15,16 +15,10 @@
  */
 package org.yx.http;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.filter.UserSession;
-
-public class HttpHeadersHolder {
-
-	/**
-	 * http请求的类型，要类型一致才能访问
-	 */
-	public static final String TYPE = "stype";
+public final class HttpHeadersHolder {
 
 	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
 
@@ -40,8 +34,32 @@ public class HttpHeadersHolder {
 		return _req.get();
 	}
 
-	public static String token() {
-		return _req.get().getHeader(UserSession.SESSIONID);
+	public static String sessionId() {
+		return getValueFromHeaderOrCookie(HttpHeader.SESSIONID);
+	}
+
+	static String getValueFromHeaderOrCookie(String name) {
+		HttpServletRequest req = _req.get();
+		if (req == null) {
+			return null;
+		}
+		String value = req.getHeader(name);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		if (!HttpSettings.isCookieEnable()) {
+			return null;
+		}
+		Cookie[] cookies = req.getCookies();
+		if (cookies == null || cookies.length == 0) {
+			return null;
+		}
+		for (Cookie cookie : cookies) {
+			if (name.equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
+		return null;
 	}
 
 	public static String getType() {
@@ -50,6 +68,10 @@ public class HttpHeadersHolder {
 
 	static void remove() {
 		_req.remove();
+	}
+
+	public static String getToken() {
+		return getValueFromHeaderOrCookie(HttpHeader.TOKEN);
 	}
 
 }

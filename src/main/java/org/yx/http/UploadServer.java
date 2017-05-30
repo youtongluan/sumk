@@ -36,6 +36,11 @@ public class UploadServer extends AbstractHttpServer {
 	@Override
 	protected void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
+		if (HttpHandlerChain.upload == null) {
+			Log.get("sumk.http").error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
+			HttpUtil.error(resp, ErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用", HttpUtil.charset(req));
+			return;
+		}
 		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
 			Log.get(this.getClass()).error("the MIME of act is " + MULTI + ",not " + req.getContentType());
 			return;

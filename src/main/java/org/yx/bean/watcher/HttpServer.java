@@ -23,6 +23,7 @@ import org.yx.bean.Plugin;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.http.HttpSettings;
 import org.yx.http.IntfHandlerFactorysBean;
 import org.yx.http.UploadHandlerFactorysBean;
 import org.yx.http.handler.HttpHandlerChain;
@@ -41,7 +42,7 @@ public class HttpServer implements Plugin {
 		}
 		try {
 			HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
-			if (AppInfo.getBoolean("http.upload", true)) {
+			if (HttpSettings.isUploadEnable()) {
 				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
 			}
 			int port = AppInfo.getInt(StartConstants.HTTP_PORT, -1);

@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.redis;
 
-import javax.servlet.http.HttpServletResponse;
+import java.io.InputStream;
 
-import org.yx.http.Web;
+import org.yx.conf.SingleResourceFactory;
+import org.yx.log.Log;
 
-/**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
- */
-public class RespHeaderHandler implements HttpHandler {
+public class RedisPropertiesFactory implements SingleResourceFactory {
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.getHttpResponse();
-		resp.setCharacterEncoding(ctx.getCharset().name());
-
-		return false;
+	public InputStream openInput(String fileName) throws Exception {
+		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(fileName);
+		if (in != null) {
+			return in;
+		}
+		Log.get("sumk.redis").info("can not found redis property file:{}", fileName);
+		return null;
 	}
 
 }

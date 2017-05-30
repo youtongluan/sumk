@@ -17,6 +17,11 @@ package org.yx.sumk.batis;
 
 import org.apache.ibatis.session.SqlSession;
 
+/**
+ * 不要作为全局变量，要作为方法的局部变量，要在@Box里面调用
+ * 因为数据库连接池重写了connection.close()，所以可以尽情的调用session.close()<BR>
+ * 供外部调用的类
+ */
 public abstract class SqlSessionHolder {
 
 	public static SqlSession session() {

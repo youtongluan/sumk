@@ -18,43 +18,44 @@ package org.yx.conf;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
 
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
+import org.yx.main.SumkThreadPool;
 
 public class FileMonitor {
 
 	public final static FileMonitor inst = new FileMonitor();
+	private static volatile boolean started;
 	private List<FileHandler> handlers = new CopyOnWriteArrayList<>();
 	private Map<String, Long> lastModif = new HashMap<String, Long>();
 
 	private FileMonitor() {
 	}
 
-	static {
-		inst.start();
-	}
-
 	public void addHandle(FileHandler h) {
 		this.handlers.add(h);
-		handle(h, false);
 	}
 
 	public void start() {
-		SumkServer.runDeamon(() -> {
-			Thread.sleep(1000);
+		if (started) {
+			return;
+		}
+		long seconds = Integer.getInteger("sumk.fileMonitor.period", 60);
+		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
 			for (FileHandler h : handlers) {
 				handle(h, true);
 			}
-		}, "file-watcher");
-
+		}, seconds, seconds, TimeUnit.SECONDS);
+		started = true;
 	}
 
-	private synchronized void handle(FileHandler h, boolean showLog) {
+	public synchronized void handle(FileHandler h, boolean showLog) {
 		URL[] urls = h.listFile();
 		if (urls == null) {
 			return;
@@ -77,7 +78,7 @@ public class FileMonitor {
 			if (modify == null || f.lastModified() > modify) {
 				lastModif.put(p, f.lastModified());
 				if (showLog) {
-					Log.get("sumk.SYS").info("##{} changed at {}", f, lastModif.get(p));
+					Log.get("sumk.SYS").info("##{} changed at {}", f, Instant.ofEpochMilli(lastModif.get(p)));
 				}
 				try (InputStream fin = url.openStream()) {
 					h.deal(fin);

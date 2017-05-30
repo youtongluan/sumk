@@ -37,7 +37,7 @@ public final class Rpc {
 		String sn = UUIDSeed.random();
 		ThreadContext context = ThreadContext.get();
 		req.setFullSn(sn, context.getRootSn(), context.getContextSn());
-		req.setMethod(method);
+		req.setApi(method);
 		req.setSrc(AppInfo.appId());
 		return req;
 	}

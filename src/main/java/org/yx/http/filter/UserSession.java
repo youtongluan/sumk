@@ -17,17 +17,6 @@ package org.yx.http.filter;
 
 public interface UserSession {
 
-	/**
-	 * 用户的sessionId<br>
-	 * sid
-	 */
-	String SESSIONID = "sid";
-	/**
-	 * 客户端用来传userid或者其它唯一识别用户的标识<br>
-	 * stoken
-	 */
-	String TOKEN = "stoken";
-
 	byte[] getKey(String sid);
 
 	void putKey(String sid, byte[] key, String userId);

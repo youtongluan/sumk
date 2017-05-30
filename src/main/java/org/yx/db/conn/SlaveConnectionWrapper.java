@@ -50,7 +50,6 @@ public class SlaveConnectionWrapper extends ConnectionWrapper {
 
 	@Override
 	public void close() throws SQLException {
-
 		super.close();
 	}
 

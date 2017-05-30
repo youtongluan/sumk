@@ -25,7 +25,7 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.yx.log.Log;
 
-public class MethodInfoClassVisitor extends ClassVisitor {
+class MethodInfoClassVisitor extends ClassVisitor {
 
 	public final List<String> argNames;
 	public final List<String> signatures;
@@ -55,7 +55,8 @@ public class MethodInfoClassVisitor extends ClassVisitor {
 		final Type[] args = Type.getArgumentTypes(desc);
 
 		if (!name.equals(m.getName()) || !AsmUtils.sameType(args, m.getParameterTypes())) {
-			return super.visitMethod(access, name, desc, signature, exceptions);
+
+			return null;
 		}
 		MethodVisitor v = super.visitMethod(access, name, desc, signature, exceptions);
 		return new MethodVisitor(Vars.ASM_VER, v) {
@@ -69,11 +70,12 @@ public class MethodInfoClassVisitor extends ClassVisitor {
 				if ("this".equals(name) || argNames.size() >= argSize || argNames.contains(name)) {
 					return;
 				}
+
 				int k = argNames.size();
 				if (!args[k].getDescriptor().equals(desc)) {
 
-					Log.get("sumk.SYS")
-							.error("current desc should be " + args[k].getDescriptor() + ",but really is " + desc);
+					Log.get("sumk.SYS.asm").error("clz:{},method,parsed args:{},except desc:{},in fact desc:{}",
+							m.getDeclaringClass().getName(), argNames.toString(), args[k].getDescriptor(), desc);
 					return;
 				}
 				argNames.add(name);

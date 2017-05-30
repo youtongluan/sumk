@@ -29,12 +29,8 @@ import org.junit.Test;
 import org.yx.demo.member.DemoUser;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
-import org.yx.util.secury.EncryUtil;
-import org.yx.util.secury.MD5Utils;
 
 public class HttpTest {
-
-	private static final String SID = "sid";
 
 	private String getUrl(String act) {
 		return "http://localhost:8080/intf/webserver/demo?act=" + act;
@@ -71,7 +67,7 @@ public class HttpTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "小明");
 		String req = GsonUtil.toJson(json);
-		String sign = MD5Utils.encrypt(req.getBytes(charset));
+		String sign = Encrypt.sign(req.getBytes(charset));
 		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
 		StringEntity se = new StringEntity(req, charset);
 		post.setEntity(se);
@@ -107,22 +103,19 @@ public class HttpTest {
 	@Test
 	public void aes_base64() throws Exception {
 		String charset = "UTF-8";
-		HttpResponse resp = login();
-		String sessionId = resp.getFirstHeader(SID).getValue();
-		Log.get("login").info("sessionId:{}", sessionId);
+		HttpClient client = HttpClientBuilder.create().build();
+		HttpResponse resp = login(client);
 		String logined = EntityUtils.toString(resp.getEntity());
 		int ln = logined.indexOf("\t\n");
 		String key_str = logined.substring(0, ln);
 		Log.get("login").info("key:{}", key_str);
 		byte[] key = Base64.decodeBase64(key_str);
-		HttpClient client = HttpClientBuilder.create().build();
 		String act = "aes_base64";
 		HttpPost post = new HttpPost(getUrl(act));
-		post.setHeader(SID, sessionId);
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		byte[] conts = EncryUtil.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
+		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
 		String req = Base64.encodeBase64String(conts);
 		System.out.println("req:" + req);
 		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
@@ -136,15 +129,14 @@ public class HttpTest {
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		byte[] contentBytes = Base64.decodeBase64(raw);
-		String ret = new String(EncryUtil.decrypt(contentBytes, key), charset);
+		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
 		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
 		/*
-		 * 非表单MIME的方式提交 去掉application/x-www-form-urlencoded，内容也不要URLEncoder编码
+		 * 非表单MIME的方式提交,去掉application/x-www-form-urlencoded，内容也不要URLEncoder编码
 		 */
 		post = new HttpPost(getUrl(act));
-		post.setHeader(SID, sessionId);
 		System.out.println("req:" + req);
 		se = new StringEntity("data=" + req, charset);
 		post.setEntity(se);
@@ -156,12 +148,11 @@ public class HttpTest {
 		raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		contentBytes = Base64.decodeBase64(raw);
-		ret = new String(EncryUtil.decrypt(contentBytes, key), charset);
+		ret = new String(Encrypt.decrypt(contentBytes, key), charset);
 		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
 		post = new HttpPost(getUrl("bizError"));
-		post.setHeader(SID, sessionId);
 		resp = client.execute(post);
 		Assert.assertEquals(499, resp.getStatusLine().getStatusCode());
 		resEntity = resp.getEntity();
@@ -173,25 +164,22 @@ public class HttpTest {
 	@Test
 	public void aes_sign() throws Exception {
 		String charset = "UTF-8";
-		HttpResponse resp = login();
-		String sessionId = resp.getFirstHeader(SID).getValue();
-		Log.get("login").info("sessionId:{}", sessionId);
+		HttpClient client = HttpClientBuilder.create().build();
+		HttpResponse resp = login(client);
 		String logined = EntityUtils.toString(resp.getEntity());
 		int ln = logined.indexOf("\t\n");
 		String key_str = logined.substring(0, ln);
 		Log.get("login").info("key:{}", key_str);
 		byte[] key = Base64.decodeBase64(key_str);
-		HttpClient client = HttpClientBuilder.create().build();
 		String act = "aes_sign";
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "小明");
-		byte[] conts = EncryUtil.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
+		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
 		String req = Base64.encodeBase64String(conts);
 		Log.get("aes_sign").info("req:" + req);
-		String sign = MD5Utils.encrypt(GsonUtil.toJson(json).getBytes(charset));
+		String sign = Encrypt.sign(GsonUtil.toJson(json).getBytes(charset));
 		System.out.println("sign:" + sign);
 		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
-		post.setHeader(SID, sessionId);
 
 		StringEntity se = new StringEntity(req, charset);
 		post.setEntity(se);
@@ -203,7 +191,7 @@ public class HttpTest {
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		byte[] contentBytes = Base64.decodeBase64(raw);
-		String ret = new String(EncryUtil.decrypt(contentBytes, key), charset);
+		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
 		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("hello 小明", ret);
 	}
@@ -233,8 +221,7 @@ public class HttpTest {
 		Log.get("upload").info(EntityUtils.toString(resEntity, charset));
 	}
 
-	private HttpResponse login() throws Exception {
-		HttpClient client = HttpClientBuilder.create().build();
+	private HttpResponse login(HttpClient client) throws Exception {
 		HttpGet post = new HttpGet("http://localhost:8080/intf/login?username=admin&password=123456&code=9999");
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();

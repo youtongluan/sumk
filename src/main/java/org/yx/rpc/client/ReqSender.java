@@ -38,7 +38,7 @@ class ReqSender {
 	}
 
 	public static RespFuture sendAsync(Req req, long writeTimeout) throws Exception {
-		String method = req.getMethod();
+		String method = req.getApi();
 		RpcRoute route = Routes.getRoute(method);
 		if (route == null) {
 			SoaException.throwException(2353454, "can not find route for " + method, null);

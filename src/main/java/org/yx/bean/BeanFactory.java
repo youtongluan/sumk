@@ -23,8 +23,13 @@ import org.yx.exception.SumkException;
 
 public class BeanFactory extends AbstractBeanListener {
 
+	private boolean cachedScan;
+	private boolean useRedis;
+
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
+		this.cachedScan = AppInfo.getBoolean("sumk.ioc.cached.enable", true);
+		this.useRedis = AppInfo.getBoolean("sumk.dao.cache", true);
 	}
 
 	@Override
@@ -36,7 +41,7 @@ public class BeanFactory extends AbstractBeanListener {
 				InnerIOC.putClass(b.value(), clz);
 			}
 
-			if (AppInfo.getBoolean("sumk.ioc.cached.disable", false)) {
+			if (!this.cachedScan) {
 				return;
 			}
 			Cached c = clz.getAnnotation(Cached.class);
@@ -45,7 +50,7 @@ public class BeanFactory extends AbstractBeanListener {
 				if (!Cachable.class.isInstance(bean)) {
 					SumkException.throwException(35423543, clz.getName() + " is not instance of Cachable");
 				}
-				if ("cache".equals(AppInfo.get("sumk.dao.cache", "cache"))) {
+				if (this.useRedis) {
 					Cachable cache = (Cachable) bean;
 					cache.setCacheEnable(true);
 				}

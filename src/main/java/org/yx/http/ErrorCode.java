@@ -47,4 +47,9 @@ public interface ErrorCode {
 	 * type类型错误
 	 */
 	int TYPE_ERROR = 1020;
+
+	/**
+	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用
+	 */
+	int UPLOAD_DISABLED = 1030;
 }

@@ -20,35 +20,57 @@ import org.I0Itec.zkclient.IZkDataListener;
 /**
  * 用于操作zk中的appinfo对应的变量信息
  */
-public class NamePairsParser {
+public abstract class ZKNamePairsConfig implements SystemConfig {
 
-	public static void initAppInfo() {
+	private NamePairs zkInfo = new NamePairs(null);
+
+	private void setZkInfo(NamePairs info) {
+		zkInfo = info == null ? new NamePairs(null) : info;
+	}
+
+	public void initAppInfo() {
 		NamePairs info = fromZK(new IZkDataListener() {
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
-				AppInfo.zkInfo = data == null ? null : new NamePairs((String) data);
+				ZKNamePairsConfig.this.setZkInfo(new NamePairs((String) data));
 			}
 
 			@Override
 			public void handleDataDeleted(String dataPath) throws Exception {
-				AppInfo.zkInfo = null;
+				ZKNamePairsConfig.this.setZkInfo(new NamePairs(null));
 			}
 
 		});
-		if (info != null) {
-			info = info.unmodify();
-		}
-		AppInfo.zkInfo = info;
+		this.setZkInfo(info);
 	}
 
-	public static NamePairs fromZK(IZkDataListener listener) {
-		String zkUrl = AppInfo.info.get("sumk.zkurl");
-		if (zkUrl == null) {
-			return null;
+	protected NamePairs fromZK(IZkDataListener listener) {
+		return ZKConfigHandler.readAndListen(getZkUrl(), getDataPath(), listener);
+	}
+
+	/**
+	 * 配置数据在zk上的节点名称
+	 */
+	protected abstract String getDataPath();
+
+	/**
+	 * zk的地址
+	 */
+	protected abstract String getZkUrl();
+
+	@Override
+	public String get(String key) {
+		return zkInfo.getValue(key);
+	}
+
+	@Override
+	public String get(String key, String defaultValue) {
+		String v = get(key);
+		if (v == null || v.isEmpty()) {
+			return defaultValue;
 		}
-		String path = AppInfo.info.get("sumk.zk.config", "sumk/config/app");
-		return ZKConfigHandler.readAndListen(zkUrl, path, listener);
+		return v;
 	}
 
 }

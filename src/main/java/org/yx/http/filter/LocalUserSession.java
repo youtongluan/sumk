@@ -23,8 +23,9 @@ import java.util.concurrent.TimeUnit;
 import org.yx.common.TimedObject;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpHeadersHolder;
+import org.yx.http.HttpSettings;
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
+import org.yx.main.SumkThreadPool;
 import org.yx.util.StringUtils;
 
 public class LocalUserSession implements UserSession {
@@ -49,10 +50,8 @@ public class LocalUserSession implements UserSession {
 
 	public LocalUserSession() {
 		Log.get("session").info("use local user session");
-		SumkServer.runDeamon(() -> {
-			if (SumkServer.isDestoryed()) {
-				return;
-			}
+		long seconds = AppInfo.getInt("http.localsession.period", 60);
+		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
 			Set<String> set = map.keySet();
 			long now = System.currentTimeMillis();
 			for (String key : set) {
@@ -65,15 +64,13 @@ public class LocalUserSession implements UserSession {
 					keyMap.remove(key);
 				}
 			}
-			Thread.sleep(TimeUnit.MINUTES.toMillis(1));
-
-		}, "local-session");
+		}, seconds, seconds, TimeUnit.SECONDS);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends SessionObject> T getUserObject(Class<T> clz) {
-		TimedObject to = map.get(HttpHeadersHolder.token());
+		TimedObject to = map.get(HttpHeadersHolder.sessionId());
 		if (to == null) {
 			return null;
 		}
@@ -82,11 +79,11 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public void flushSession() {
-		TimedObject to = map.get(HttpHeadersHolder.token());
+		TimedObject to = map.get(HttpHeadersHolder.sessionId());
 		if (to == null) {
 			return;
 		}
-		to.setEvictTime(System.currentTimeMillis() + AppInfo.httpSessionTimeout * 1000);
+		to.setEvictTime(System.currentTimeMillis() + HttpSettings.httpSessionTimeout() * 1000);
 
 	}
 
@@ -94,18 +91,18 @@ public class LocalUserSession implements UserSession {
 	public void setSession(String sessionId, SessionObject sessionObj) {
 		TimedObject to = new TimedObject();
 		to.setTarget(sessionObj);
-		to.setEvictTime(System.currentTimeMillis() + AppInfo.httpSessionTimeout * 1000);
+		to.setEvictTime(System.currentTimeMillis() + HttpSettings.httpSessionTimeout() * 1000);
 		map.put(sessionId, to);
 	}
 
 	@Override
 	public void removeSession() {
-		String token = HttpHeadersHolder.token();
-		if (token == null) {
+		String sessionId = HttpHeadersHolder.sessionId();
+		if (sessionId == null) {
 			return;
 		}
-		map.remove(token);
-		keyMap.remove(token);
+		map.remove(sessionId);
+		keyMap.remove(sessionId);
 	}
 
 	@Override
@@ -115,11 +112,11 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public void updateSession(SessionObject sessionObj) {
-		String token = HttpHeadersHolder.token();
-		if (token == null) {
+		String sessionId = HttpHeadersHolder.sessionId();
+		if (sessionId == null) {
 			return;
 		}
-		setSession(token, sessionObj);
+		setSession(sessionId, sessionObj);
 	}
 
 	@Override
