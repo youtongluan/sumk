@@ -1,11 +1,11 @@
-#sumk
+# sumk
 &emsp;&emsp;sumk的定位是为互联网公司提供一个**开发速度快**、又能很容易进行**横向扩展**的**高性能**框架。
 同时具备接口交互（RPC和HTTP）、数据缓存、读写分离、负载均衡、故障转移、异常处理等功能。**一站式**解决互联网公司面临的常见问题。<BR>
 &emsp;&emsp;具体的技术实现上，sumk拥有一套类似于传统"SSH"的体系。
 引入sumk以及它的依赖包，再加入一些特定注解，就能将一个普通的项目，转化成web或微服务项目（内置jetty，类似于tomcat。从1.7.0开始，支持tomcat7及以上版本，支持所有servlet3.0的监听器）。
 [点此查看http应用的搭建](https://github.com/youtongluan/sumk-http-demo)<BR>
 
-###sumk的优势
+### sumk的优势
 * **搭建简单**。对于创业初期的互联网公司，搭建框架在人力上以及技术上，都是一个难题。使用sumk可以快速搭建应用框架，并集成了常见的登陆、加解密、用户提示等功能。 <BR>
 * **适合阶段广**。既适合移动互联网的早期阶段，也适合于后期的大用户、高并发阶段。从早期阶段，过渡到后期，只需要修改少量配置文件，就能进行分布式部署以及应用拆分。<BR>
 * **更快的开发速度**。互联网领域的时间观念是非常强的，早一天出产品，就早一点拥有市场。sumk颠覆了原有的Action->service->dao的三层结构。无论开发还是修改接口，都只需要修改少量文件，能很大程度提高开发速度<BR>
@@ -14,7 +14,7 @@
 * **少走弯路**。因为传统软件开发对性能、并发不是很敏感。很多企业做大之后，就发现自己的产品有很多性能问题，横向扩展很难。sumk的接口层都支持分布式部署，数据库层支持多数据库(异构数据库)、读写分离、实时缓存<BR>
 
 
-###现有主要模块
+### 现有主要模块
 * **sumk-core**：这个模块类似于spring-core，它的核心是IOC。除此之外，它还有许多彩蛋等待你去挖掘<br>
 	* **sumk-tx**：类似于spring-tx，使用@Box来开启事务，连接的开关，以及事务的提交、回滚对开发人员透明。sumk-tx支持异构数据源、读写分离等互联网经常遇到的场景。<br>
 		* **sumk-orm**：类似于hibernate。最大特点是跟redis缓存结合在一起，在查询数据的时候，会根据情况优先从redis查询数据，没查到的数据再从数据库查询，然后将数据组装在一起。DB类目前只支持mysql，但RawDB、NamedDB以及sumk-tx都与数据库类型无关。sumk-orm的入口类是DB。此外还提供RawDB和NamedDB两个类，作为DB的补充。<br>
@@ -25,7 +25,7 @@
 
 <BR>
 
-###sumk-core与传统Spring框架的对应关系<BR>
+### sumk-core与传统Spring框架的对应关系<BR>
 我将列出sumk-core中元素与Spirng的对应关系，让大家更易入手<br><BR>
 
 |sumk的元素 |spring的元素                        |作用                                                  |
@@ -37,13 +37,13 @@
 |IOC.get() |SpringContextUtil.getBean()|在框架外部获得sumk/spring的bean  |
 <BR>
 
-###环境搭建
+### 环境搭建
 * 安装JDK8、eclipse及maven
 * 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/sumk.ini中
 * 安装redis服务器（可选），如果有redis服务器，就将redis.properties的注释打开
 * zookeeper服务器（可选），目前只有RPC功能有用到zookeeper。`org.test.Main`启动的时候，会启动测试环境内置的zookeeper，这样做的目的是便于新手入门
 
-###执行测试用例
+### 执行测试用例
 * 将sumk作为web或soa框架使用
 	* [org.test.Main](https://github.com/youtongluan/sumk/blob/master/src/test/java/org/test/Main.java)启动服务器，同时提供RPC和WEB访问的能力
 	* [org.test.web.client.HttpTest](https://github.com/youtongluan/sumk/blob/master/src/test/java/org/test/web/client/HttpTest.java) 使用HttpClient模拟web浏览器的行为。包括用户登陆、加解密等。被调用的服务器端代码在org.test.web.demo包底下
@@ -52,9 +52,9 @@
 * 单独使用sumkDB（也可以只使用sumkDB中的事务管理，连ORM都不用）的测试用例在[org.test.orm](https://github.com/youtongluan/sumk/tree/master/src/test/java/org/test/orm)包底下。真正的代码在[org.yx.orm](https://github.com/youtongluan/sumk/tree/master/src/test/java/org/yx/orm)
 
 
-###示例代码
+### 示例代码
 
-####sumk的事务及ORM
+#### sumk的事务及ORM
 
 ```
 	@Box  //@Box表示启用sumkDB的事务管理，类似于spring的@Transaction
@@ -90,7 +90,7 @@ RawDB和NamedDB是DB类的补充，以下是简单例子：<BR>
 ```
 
 
-####http服务器端：
+#### http服务器端：
 
 ```java
 public class Demo {
@@ -107,7 +107,7 @@ public class Demo {
 ```
 * 客户端就是一般的http请求，请求路径是http://localhost/intf/webserver/demo?act=echo，请求实体是data={"echo":"hi",“names”:["张三","李四"]}<br>
 
-####RPC服务器端：
+#### RPC服务器端：
 
 ```java
 @Soa //只需要这个注解，就能接收RPC请求，默认接口名是 [groupId.appId.方法名]
@@ -120,7 +120,7 @@ public List<String> echo(String echo,List<String> names){
 }
 ```
 
-####RPC客户端：
+#### RPC客户端：
 
 ```Java
 Rpc.init();// 如果在app.preperties中添加soa.client.start=true，就可以不用这行代码
@@ -133,7 +133,7 @@ String result=Rpc.call("groupId.appId.echo", echo,names);
 
 <br>
 
-###作者心声
-雁过留声，人过留名，我也想在职业生涯结束后，留下点什么。所以***我会长期维护sumk的***，虽然进度不一定能保障。<BR>
+### 作者心声
+雁过留声，人过留名，我也想在职业生涯结束后，留下点什么。所以 ***我会长期维护sumk的***，虽然进度不一定能保障。<BR>
 
 作者：游夏，QQ：3205207767
