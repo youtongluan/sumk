@@ -16,9 +16,14 @@
 package org.yx.main;
 
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.List;
 
+import javax.servlet.DispatcherType;
+import javax.servlet.Filter;
+import javax.servlet.FilterRegistration;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
@@ -26,11 +31,12 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 
 import org.yx.bean.IOC;
+import org.yx.bean.InnerBeanUtil;
 import org.yx.bean.Loader;
 import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.http.ServletInfo;
+import org.yx.http.SumkFilter;
+import org.yx.http.SumkServlet;
 import org.yx.http.filter.HttpLoginWrapper;
 import org.yx.http.filter.LoginServlet;
 import org.yx.log.Log;
@@ -57,16 +63,8 @@ public class SumkLoaderListener implements ServletContextListener {
 			return;
 		}
 		ServletContext context = sce.getServletContext();
-		injectUserServlets(context);
-		@SuppressWarnings("unchecked")
-		List<ServletInfo> servlets = (List<ServletInfo>) StartContext.inst.get(ServletInfo.class);
-		for (ServletInfo info : servlets) {
-			Servlet bean = IOC.get(info.getServletClz());
-			ServletRegistration.Dynamic dynamic = bean != null ? context.addServlet(info.getPath(), bean)
-					: context.addServlet(info.getPath(), info.getServletClz());
-			dynamic.addMapping(info.getPath());
-
-		}
+		addFilters(context);
+		addServlets(context);
 
 		String path = AppInfo.get("http.login.path", "/login");
 		if (IOC.getBeans(LoginServlet.class).size() > 0) {
@@ -78,6 +76,49 @@ public class SumkLoaderListener implements ServletContextListener {
 			context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
 		}
 		addListeners(context);
+	}
+
+	private void addServlets(ServletContext context) {
+		List<Servlet> servlets = IOC.getBeans(Servlet.class);
+		for (Servlet bean : servlets) {
+			SumkServlet sumk = InnerBeanUtil.getAnnotation(bean.getClass(), Servlet.class, SumkServlet.class);
+			if (sumk == null) {
+				continue;
+			}
+			String name = sumk.name();
+			if (name.isEmpty()) {
+				name = bean.getClass().getSimpleName();
+			}
+			ServletRegistration.Dynamic dynamic = context.addServlet(name, bean);
+			dynamic.setLoadOnStartup(sumk.loadOnStartup());
+			dynamic.addMapping(sumk.value());
+		}
+	}
+
+	private void addFilters(ServletContext context) {
+		List<Filter> filters = IOC.getBeans(Filter.class);
+		if (org.yx.util.CollectionUtils.isEmpty(filters)) {
+			return;
+		}
+		for (Filter bean : filters) {
+			SumkFilter sumk = InnerBeanUtil.getAnnotation(bean.getClass(), Filter.class, SumkFilter.class);
+			if (sumk == null) {
+				continue;
+			}
+			String name = sumk.name();
+			if (name.isEmpty()) {
+				name = bean.getClass().getSimpleName();
+			}
+			Log.get("sumk.http").trace("add web filter : {} - {}", name, sumk.getClass().getSimpleName());
+			FilterRegistration.Dynamic r = context.addFilter(name, bean);
+			DispatcherType[] type = sumk.dispatcherType();
+			EnumSet<DispatcherType> types = null;
+			if (type.length > 0) {
+				types = EnumSet.copyOf(Arrays.asList(type));
+			}
+
+			r.addMappingForUrlPatterns(types, sumk.isMatchAfter(), sumk.value());
+		}
 	}
 
 	/**
@@ -110,10 +151,6 @@ public class SumkLoaderListener implements ServletContextListener {
 				context.addListener(lis);
 			});
 		}
-	}
-
-	private void injectUserServlets(ServletContext context) {
-
 	}
 
 	@Override

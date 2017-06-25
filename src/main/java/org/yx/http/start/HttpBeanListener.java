@@ -33,7 +33,6 @@ public class HttpBeanListener extends AbstractBeanListener {
 	}
 
 	private HttpFactory factory;
-	private ServletFactory servletFactory;
 
 	@Override
 	public void listen(BeanEvent event) {
@@ -46,12 +45,10 @@ public class HttpBeanListener extends AbstractBeanListener {
 				return;
 			}
 			factory = new HttpFactory();
-			servletFactory = new ServletFactory();
 		}
 		try {
 			Class<?> clz = event.clz();
 			factory.resolve(clz);
-			servletFactory.resolve(clz);
 		} catch (Exception e) {
 			Log.printStack(e);
 		}

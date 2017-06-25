@@ -21,14 +21,16 @@ import java.util.Map;
 public class UpdateEvent extends ModifyEvent {
 
 	private final Map<String, Object> to;
+	private final Map<String, Number> incrMap;
 	private final List<Map<String, Object>> wheres;
 	private final boolean fullUpdate;
 	private final boolean updateDBID;
 
-	public UpdateEvent(String table, Map<String, Object> to, List<Map<String, Object>> wheres, boolean fullUpdate,
-			boolean updateDBID) {
+	public UpdateEvent(String table, Map<String, Object> to, Map<String, Number> incrMap,
+			List<Map<String, Object>> wheres, boolean fullUpdate, boolean updateDBID) {
 		super(table);
 		this.to = to;
+		this.incrMap = incrMap == null || incrMap.isEmpty() ? null : incrMap;
 		this.wheres = wheres;
 		this.fullUpdate = fullUpdate;
 		this.updateDBID = updateDBID;
@@ -48,6 +50,10 @@ public class UpdateEvent extends ModifyEvent {
 
 	public List<Map<String, Object>> getWheres() {
 		return wheres;
+	}
+
+	public Map<String, Number> getIncrMap() {
+		return incrMap;
 	}
 
 }

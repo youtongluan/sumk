@@ -25,7 +25,7 @@ import org.yx.db.sql.Update;
 import org.yx.db.visit.Visitors;
 
 /**
- * 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
+ * ORM的入口。 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
  * 大小写敏感性的原则是：数据库字段大小写不敏感，java字段大小写敏感。所以本类中的参数大小写敏感
  * 
  * @author 游夏

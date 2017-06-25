@@ -29,19 +29,19 @@ public class RespToStringHandler implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Throwable {
 		Object obj = ctx.getResult();
 		if (obj == null) {
-			ctx.setResult(HttpGson.gson.toJson(obj));
+			ctx.setResult(HttpGson.gson().toJson(obj));
 			return false;
 		}
 		Class<?> clz = obj.getClass();
 		if (clz.isArray()) {
-			ctx.setResult(HttpGson.gson.toJson(obj));
+			ctx.setResult(HttpGson.gson().toJson(obj));
 			return false;
 		}
 		if (clz.isPrimitive() || clz.equals(String.class)) {
 			ctx.setResult(String.valueOf(obj));
 			return false;
 		}
-		ctx.setResult(HttpGson.gson.toJson(obj));
+		ctx.setResult(HttpGson.gson().toJson(obj));
 		return false;
 	}
 

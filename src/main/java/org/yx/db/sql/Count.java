@@ -37,7 +37,7 @@ public class Count implements Executable {
 	@Override
 	public int execute() {
 		List<Object> paramters = new ArrayList<>(8);
-		select.pojoMeta = select.getPojoMeta();
+		select.pojoMeta = select.parsePojoMeta(true);
 		Assert.notNull(select.pojoMeta, "pojo meta cannot be null");
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT count(*) FROM ").append(select.pojoMeta.getTableName());

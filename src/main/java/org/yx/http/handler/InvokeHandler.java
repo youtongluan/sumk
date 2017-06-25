@@ -49,7 +49,7 @@ public class InvokeHandler implements HttpHandler {
 				return exec(http.method, http.obj, null, null, ctx);
 			}
 			Object[] params = new Object[http.argTypes.length];
-			Object argObj = HttpGson.gson.fromJson((String) ctx.getData(), http.argClz);
+			Object argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
 			for (int i = 0, k = 0; i < params.length; i++) {
 
 				if (argObj == null) {

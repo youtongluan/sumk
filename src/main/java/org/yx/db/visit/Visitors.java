@@ -69,7 +69,7 @@ public class Visitors {
 		ResultSet ret = statement.executeQuery();
 		PojoMeta pm = null;
 		if (SelectBuilder.class.isInstance(builder)) {
-			pm = ((SelectBuilder) builder).getPojoMeta();
+			pm = ((SelectBuilder) builder).parsePojoMeta(true);
 		}
 		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
 		statement.close();

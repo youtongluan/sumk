@@ -36,7 +36,7 @@ import org.yx.util.SBuilder;
  * 比较跟整个addEqual是add关系。同一种比较类型，比如less，它的一个key只能设置一次，后设置的会覆盖前面设置的<BR>
  * 比较中用到的key，都是java中的key，大小写敏感
  */
-public class Select extends SelectBuilder {
+public final class Select extends SelectBuilder {
 	public Select(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
 	}
@@ -322,8 +322,7 @@ public class Select extends SelectBuilder {
 		if (ids == null || ids.length == 0) {
 			return this;
 		}
-		this.pojoMeta = this.getPojoMeta();
-		Assert.notNull(this.pojoMeta, "make sure tableClass() has been called");
+		this.pojoMeta = this.parsePojoMeta(true);
 		ColumnMeta[] cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
 		Assert.isTrue(cms != null && cms.length == 1,
 				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "redis") + " key table");
@@ -365,7 +364,7 @@ public class Select extends SelectBuilder {
 	public <T> List<T> queryList() {
 		try {
 			ResultHandler handler = this.resultHandler();
-			this.pojoMeta = this.getPojoMeta();
+			this.pojoMeta = this.parsePojoMeta(true);
 			List<T> list = new ArrayList<>();
 			List<Map<String, Object>> origin = this.in;
 			Exchange exchange = new Exchange(origin);
@@ -396,7 +395,7 @@ public class Select extends SelectBuilder {
 			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
 					&& (limit <= 0 || limit >= MAX_CACHE_LIMIT) && exchange.getCanToRedis() != null
 					&& exchange.getCanToRedis().size() > 0) {
-				QueryEvent event = new QueryEvent(this.getPojoMeta().getTableName());
+				QueryEvent event = new QueryEvent(this.parsePojoMeta(true).getTableName());
 				event.setIn(exchange.getCanToRedis());
 				event.setResult(tmp);
 				DBEventPublisher.publish(event);

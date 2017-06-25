@@ -33,7 +33,6 @@ import org.yx.rpc.client.route.IntfInfo;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.rpc.server.ServerListener;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
 import org.yx.util.ZkClientHolder;
 
 /**
@@ -60,13 +59,10 @@ public class SOAServer implements Plugin {
 			return;
 		}
 		try {
-			String ip = AppInfo.get("soa.host");
+			String ip = AppInfo.get("soa.host", AppInfo.getIp());
 
-			ip = AppInfo.get("soa.zk.host", ip);
-			if (StringUtils.isEmpty(ip) || "0.0.0.0".equals(ip)) {
-				ip = AppInfo.getIp();
-			}
-			path = ZKConst.SOA_ROOT + "/" + ip + ":" + port;
+			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
+					+ AppInfo.get("soa.zk.port", String.valueOf(port));
 			zkUrl = AppInfo.getZKUrl();
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);

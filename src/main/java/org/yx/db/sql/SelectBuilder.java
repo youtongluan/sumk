@@ -22,7 +22,6 @@ import java.util.StringJoiner;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.Assert;
 import org.yx.util.CollectionUtils;
 import org.yx.util.StringUtils;
 
@@ -64,8 +63,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	@Override
 	public MapedSql toMapedSql() throws Exception {
 		List<Object> paramters = new ArrayList<>(10);
-		this.pojoMeta = getPojoMeta();
-		Assert.notNull(pojoMeta, "pojo meta cannot be null");
+		this.pojoMeta = parsePojoMeta(true);
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
@@ -105,7 +103,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		}
 		StringJoiner sj = new StringJoiner(",");
 		for (ColumnMeta cm : this.pojoMeta.fieldMetas) {
-			sj.add(cm.getDbColumn());
+			sj.add(cm.dbColumn);
 		}
 		return sj.toString();
 	}
@@ -192,7 +190,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				}
 				return;
 			}
-			joiner.item().append(cm.getDbColumn()).append(compare).append(" ? ");
+			joiner.item().append(cm.dbColumn).append(compare).append(" ? ");
 			paramters.add(v);
 		});
 
@@ -217,10 +215,10 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				return;
 			}
 			if (v == null) {
-				joiner.item().append(cm.getDbColumn()).append(" IS NULL ");
+				joiner.item().append(cm.dbColumn).append(" IS NULL ");
 				return;
 			}
-			joiner.item().append(cm.getDbColumn()).append("=? ");
+			joiner.item().append(cm.dbColumn).append("=? ");
 			paramters.add(v);
 		});
 
@@ -242,7 +240,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		 */
 		public String toString(PojoMeta pm) {
 			ColumnMeta cm = pm.getByFieldName(name);
-			String dbName = cm == null ? name : cm.getDbColumn();
+			String dbName = cm == null ? name : cm.dbColumn;
 			if (desc) {
 				return dbName + " desc";
 			}

@@ -15,49 +15,42 @@
  */
 package org.yx.util;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.yx.util.date.SumkDate;
+
 public class DateUtils {
-	public final static String DATETIME = "yyyy-MM-dd HH:mm:ss";
-	public final static String DATE_TIME_MILS = "yyyy-MM-dd HH:mm:ss.SSS";
-	public final static String DATE = "yyyy-MM-dd";
-	public final static String TIME = "HH:mm:ss";
 
 	public static String toString(Date d, String fromat) {
-		if (d == null) {
-			return null;
-		}
-		return new SimpleDateFormat(fromat).format(d);
+		return SumkDate.toString(d, fromat);
 	}
 
 	/**
-	 * 用yyyy-MM-dd HH:mm:ss进行序列化
+	 * 用yyyy-MM-dd HH:mm:ss进行序列化<BR>
+	 * 如果date为null，就返回null
 	 * 
 	 * @param d
 	 * @return
 	 */
 	public static String toDateTimeString(Date d) {
-		return toString(d, DATETIME);
+		return toString(d, SumkDate.DATE_TIME);
 	}
 
-	public static Date parse(String d, String fromat) throws ParseException {
-		if (d == null) {
-			return null;
-		}
-		SimpleDateFormat sf = new SimpleDateFormat(fromat);
-		return sf.parse(d);
+	public static Date parse(String d, String format) throws Exception {
+		return SumkDate.parse(d, format);
 	}
 
 	/**
-	 * 用yyyy-MM-dd HH:mm:ss进行反序列化
-	 * 
-	 * @param d
-	 * @return
-	 * @throws ParseException
+	 * 用yyyy-MM-dd HH:mm:ss进行反序列化<br>
+	 * 如果分钟、小时等属性等参数溢出，会自动进行调整，不会出错<BR>
+	 * 如果date为null，就返回null
 	 */
-	public static Date parse(String d) throws ParseException {
-		return parse(d, DATETIME);
+	public static Date parseDateTime(String d) throws Exception {
+		return SumkDate.parse(d, SumkDate.DATE_TIME);
 	}
+
+	public static SumkDate toSumkDate(Date d) {
+		return new SumkDate(d);
+	}
+
 }

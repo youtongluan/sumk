@@ -35,7 +35,7 @@ public final class HttpUtil {
 	static final int MAXLENGTH = 1024 * 1024 * 100;
 
 	public static String getType(HttpServletRequest req) {
-		String type = HttpHeadersHolder.getValueFromHeaderOrCookie(HttpHeader.TYPE);
+		String type = HttpHeadersHolder.fromHeaderOrCookieOrParamter(req, HttpHeader.TYPE);
 		return type == null ? "" : type;
 	}
 
@@ -74,6 +74,7 @@ public final class HttpUtil {
 	}
 
 	public static byte[] extractData(byte[] bs) {
+
 		if (bs != null && bs.length > 4 && bs[0] == 100 && bs[1] == 97 && bs[2] == 116 && bs[3] == 97 && bs[4] == 61) {
 			byte[] temp = new byte[bs.length - 5];
 			System.arraycopy(bs, 5, temp, 0, temp.length);
@@ -82,11 +83,6 @@ public final class HttpUtil {
 		return bs;
 	}
 
-	/**
-	 * @param inputStream
-	 * @return
-	 * @throws IOException
-	 */
 	public static byte[] extractData(InputStream in) throws IOException {
 		int count = 0;
 		int n = 0;

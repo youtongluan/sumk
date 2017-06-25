@@ -40,7 +40,9 @@ public class PojoMeta {
 	private final Table table;
 
 	final ColumnMeta[] fieldMetas;
-
+	/**
+	 * 数据库表所对应的java pojo类
+	 */
 	public final Class<?> pojoClz;
 
 	private ColumnMeta[] redisIDs;
@@ -65,12 +67,6 @@ public class PojoMeta {
 		return this.pojoArrayClz;
 	}
 
-	/**
-	 * 
-	 * @param columnDBName
-	 *            大小写不敏感
-	 * @return
-	 */
 	public ColumnMeta getByColumnDBName(String columnDBName) {
 		if (columnDBName == null || columnDBName.isEmpty()) {
 			return null;
@@ -78,16 +74,11 @@ public class PojoMeta {
 		return this.columnDBNameMap.get(columnDBName.toLowerCase());
 	}
 
-	/**
-	 * @param filedName
-	 *            大小写敏感
-	 * @return
-	 */
-	public ColumnMeta getByFieldName(String filedName) {
-		if (filedName == null || filedName.isEmpty()) {
+	public ColumnMeta getByFieldName(String fieldName) {
+		if (fieldName == null || fieldName.isEmpty()) {
 			return null;
 		}
-		return this.filedNameMap.get(filedName.toLowerCase());
+		return this.filedNameMap.get(fieldName.toLowerCase());
 	}
 
 	public boolean isNoCache() {
@@ -134,7 +125,7 @@ public class PojoMeta {
 		List<ColumnMeta> rids = new ArrayList<ColumnMeta>();
 		List<ColumnMeta> pids = new ArrayList<ColumnMeta>();
 		for (ColumnMeta m : this.fieldMetas) {
-			columnDBNameMap.put(m.getDbColumn().toLowerCase(), m);
+			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
 			filedNameMap.put(m.getFieldName().toLowerCase(), m);
 			if (m.isRedisID()) {
 				rids.add(m);
@@ -287,7 +278,7 @@ public class PojoMeta {
 			if (!withnull && v == null) {
 				continue;
 			}
-			String name = m.getDbColumn();
+			String name = m.dbColumn;
 			map.put(name, v);
 		}
 		return map;

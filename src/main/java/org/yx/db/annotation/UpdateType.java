@@ -13,31 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.db.annotation;
 
-import org.yx.conf.AppInfo;
-
-public interface HttpHeader {
+public enum UpdateType {
 	/**
-	 * 用户的sessionId<br>
-	 * sid
+	 * 根据用户传入的值
 	 */
-	String SESSIONID = AppInfo.get("http.header.sid", "sid");
+	CUSTOM,
 	/**
-	 * 客户端用来传userid或者其它唯一识别用户的标识<br>
-	 * stoken
+	 * 不能更新
 	 */
-	String TOKEN = AppInfo.get("http.header.stoken", "stoken");
-
+	NONE,
 	/**
-	 * http请求的类型，要类型一致才能访问
+	 * 仅用于自增长，这个选项仅针对数字类型才有效
 	 */
-	String TYPE = AppInfo.get("http.header.stype", "stype");
-
+	INCR,
 	/**
-	 * http请求的类型，要类型一致才能访问
+	 * 将当前时间填入数据库，该选项仅针对日期类型
 	 */
-	String CLIENT = AppInfo.get("http.header.sclient", "sclient");
-
-	String CLIENT_PC = AppInfo.get("http.header.sclient.pc", "PC");
+	CURRENT_TIME
 }

@@ -23,16 +23,19 @@ import java.util.Map;
 
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.event.UpdateEvent;
+import org.yx.db.kit.NumUtil;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtils;
 
-public class Update extends AbstractSqlBuilder<Integer> implements Executable {
+public final class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
-	protected ColumnType _byType;
+	private ColumnType _byType;
 
-	protected Map<String, Object> updateTo;
-	protected boolean _updateDBID = true;
+	private Map<String, Object> updateTo;
+	private boolean _updateDBID = true;
+
+	private Map<String, Number> incrMap;
 
 	/**
 	 * @param update
@@ -86,7 +89,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		return this;
 	}
 
-	protected ColumnType byType() {
+	private ColumnType byType() {
 		if (_byType != null) {
 			return _byType;
 		}
@@ -121,6 +124,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 * @param pojo
 	 *            Pojo或Map类型.如果是Map类型，要设置tableClass。
 	 *            <B>如果本表使用了缓存，并且没有where条件，本参数必须包含所有redis主键</B>
+	 *            <B>如果本字段包含在自增长里面，那它将会被排除掉</B>
 	 * @return
 	 */
 	@SuppressWarnings("unchecked")
@@ -150,7 +154,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		if (this.updateTo == null || this.updateTo.isEmpty()) {
 			SumkException.throwException(-34601, "updateTo is null or empty");
 		}
-		this.pojoMeta = this.getPojoMeta();
+		this.pojoMeta = this.parsePojoMeta(true);
 		this.checkMap(this.updateTo, this.pojoMeta);
 		if (CollectionUtils.isEmpty(this.in)) {
 			return this.toMapedSqlWithoutWhere();
@@ -161,16 +165,26 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	/**
 	 * where条件不为空的时候
 	 */
-	protected MapedSql toMapedSqlWithWhere() throws Exception {
-		Map<String, Object> pojo = this.updateTo;
+	private MapedSql toMapedSqlWithWhere() throws Exception {
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
 		sb.append("UPDATE ").append(pojoMeta.getTableName());
 		boolean notFirst = false;
+		Map<String, Object> to = new HashMap<>(this.updateTo);
 
 		for (ColumnMeta fm : fms) {
-			Object value = fm.value(pojo);
+			String fieldName = fm.getFieldName();
+
+			if (this.incrMap != null && this.incrMap.containsKey(fieldName)) {
+				to.remove(fieldName);
+				sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append('=').append(fm.dbColumn)
+						.append(" +? ");
+				notFirst = true;
+				ms.addParam(this.incrMap.get(fieldName));
+				continue;
+			}
+			Object value = fm.value(this.updateTo);
 			if (value == null && !withnull) {
 				continue;
 			}
@@ -178,8 +192,8 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
+			sb.append(fm.dbColumn).append("=? ");
 			notFirst = true;
-			sb.append(fm.getDbColumn()).append("=? ");
 			ms.addParam(value);
 		}
 
@@ -192,7 +206,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				Object value = null;
 				if (where.containsKey(fm.getFieldName())) {
 					value = where.get(fm.getFieldName());
-					andItem.item().append(fm.getDbColumn()).append("=? ");
+					andItem.item().append(fm.dbColumn).append("=? ");
 					ms.addParam(value);
 				}
 			}
@@ -204,13 +218,13 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		sb.append(whereStr);
 		ms.sql = sb.toString();
-		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), pojoMeta.populate(pojo, false), this.in,
-				this.withnull, this._updateDBID);
+		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in, this.withnull,
+				this._updateDBID);
 		ms.event = event;
 		return ms;
 	}
 
-	protected MapedSql toMapedSqlWithoutWhere() throws Exception {
+	private MapedSql toMapedSqlWithoutWhere() throws Exception {
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
 		sb.append("UPDATE ").append(pojoMeta.getTableName());
@@ -220,16 +234,27 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		boolean notFirst = false;
 		List<Object> whereParams = new ArrayList<>();
 		Map<String, Object> paramMap = new HashMap<>();
+		Map<String, Object> to = new HashMap<>(this.updateTo);
 		for (ColumnMeta fm : fms) {
+			String fieldName = fm.getFieldName();
 			Object value = null;
 			if (fm.accept(byType)) {
 				value = fm.value(this.updateTo);
 				if (value == null) {
-					SumkException.throwException(234, fm.getFieldName() + " cannot be null");
+					SumkException.throwException(234, fieldName + " cannot be null");
 				}
-				whereItem.item().append(fm.getDbColumn()).append("=? ");
+				whereItem.item().append(fm.dbColumn).append("=? ");
 				whereParams.add(value);
-				paramMap.put(fm.getFieldName(), value);
+				paramMap.put(fieldName, value);
+				continue;
+			}
+
+			if (this.incrMap != null && this.incrMap.containsKey(fieldName)) {
+				to.remove(fieldName);
+				sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append('=').append(fm.dbColumn)
+						.append(" +? ");
+				notFirst = true;
+				ms.addParam(this.incrMap.get(fieldName));
 				continue;
 			}
 			value = fm.value(this.updateTo);
@@ -240,8 +265,8 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
+			sb.append(fm.dbColumn).append("=? ");
 			notFirst = true;
-			sb.append(fm.getDbColumn()).append("=? ");
 			ms.addParam(value);
 		}
 		CharSequence whereStr = whereItem.toCharSequence(true);
@@ -251,9 +276,36 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		sb.append(whereStr);
 		ms.addParams(whereParams);
 		ms.sql = sb.toString();
-		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), this.updateTo, Collections.singletonList(paramMap),
-				this.withnull, this._updateDBID);
+		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap,
+				Collections.singletonList(paramMap), this.withnull, this._updateDBID);
 		ms.event = event;
 		return ms;
 	}
+
+	/**
+	 * 增加或减少表中数字类型字段的值
+	 * 
+	 * @param fieldName
+	 *            需要增长或减少的字段的名字,不能是redis主键
+	 * @param v
+	 *            如果是减少，直接用负数就行了
+	 * @return
+	 */
+	public Update incrNum(String fieldName, Number v) {
+		if (v == null) {
+			throw new SumkException(5349238, "cannot incr " + fieldName + "(java) by null");
+		}
+		PojoMeta pm = this.parsePojoMeta(true);
+		ColumnMeta columnMeta = pm.getByFieldName(fieldName);
+		if (columnMeta == null) {
+			throw new SumkException(5912239, "cannot found java field " + fieldName + " in " + pm.pojoClz);
+		}
+		v = NumUtil.toType(v, columnMeta.field.getType(), true);
+		if (this.incrMap == null) {
+			this.incrMap = new HashMap<>();
+		}
+		this.incrMap.put(fieldName, v);
+		return this;
+	}
+
 }

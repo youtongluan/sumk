@@ -51,7 +51,7 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			}
 
 		} catch (Exception e) {
-			Log.printStack("db-listener", e);
+			Log.printStack("sumk.db-listener", e);
 		}
 	}
 
@@ -77,7 +77,7 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			if (!id.equals(id_new)) {
 				RecordReq.del(pm, id);
 			}
-			if (pm.cacheType() == CacheType.LIST) {
+			if (pm.cacheType() == CacheType.LIST || event.getIncrMap() != null) {
 				RecordReq.del(pm, id_new);
 			} else {
 				RecordReq.set(pm, id_new, GsonUtil.toJson(to));

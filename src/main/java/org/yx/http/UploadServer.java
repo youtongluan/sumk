@@ -18,6 +18,7 @@ package org.yx.http;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.bean.Bean;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.HttpNode;
 import org.yx.http.handler.WebContext;
@@ -27,6 +28,7 @@ import org.yx.log.Log;
  * 
  * @author Administrator
  */
+@Bean
 @SumkServlet(value = { "/upload/*" }, loadOnStartup = -1)
 public class UploadServer extends AbstractHttpServer {
 

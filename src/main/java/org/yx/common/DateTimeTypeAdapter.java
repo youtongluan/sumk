@@ -20,6 +20,7 @@ import java.util.Date;
 
 import org.yx.util.DateUtils;
 import org.yx.util.StringUtils;
+import org.yx.util.date.SumkDate;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
@@ -56,10 +57,9 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 			if (this.dateFormat != null && json.length() == this.dateFormat.length()) {
 				format = this.dateFormat;
 			} else if (json.length() == 19) {
-				format = DateUtils.DATETIME;
+				format = SumkDate.DATE_TIME;
 			} else if (json.length() == 23) {
-				format = DateUtils.DATE_TIME_MILS;
-
+				format = SumkDate.DATE_TIME_MILS;
 			}
 			if (format != null) {
 				try {

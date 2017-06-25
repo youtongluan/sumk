@@ -18,36 +18,36 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
+import org.yx.db.kit.NumUtil;
+import org.yx.util.StringUtils;
 
 public class ColumnMeta implements Comparable<ColumnMeta> {
 
-	private Field field;
-	private ColumnType meta;
-	private byte columnOrder = 64;
-	private String dbColumn;
+	public final Field field;
 
-	byte getColumnOrder() {
-		return columnOrder;
-	}
+	public final ColumnType meta;
+	final byte columnOrder;
 
-	void setColumnOrder(byte columnOrder) {
-		this.columnOrder = columnOrder;
-	}
+	public final String dbColumn;
+//	public final UpdateType updateType;
 
-	public String getDbColumn() {
-		return dbColumn;
-	}
+	public final boolean isNumber;
 
-	void setDbColumn(String dbColumn) {
-		this.dbColumn = dbColumn;
-	}
-
-	public ColumnMeta(Field field, ColumnType meta) {
+	ColumnMeta(Field field, Column c) {
 		super();
 		this.field = field;
-		this.meta = meta;
-		this.dbColumn = this.field.getName().toLowerCase();
+		this.meta = c == null ? ColumnType.NORMAL : c.columnType();
+		if (c == null) {
+			this.columnOrder = 64;
+//			this.updateType = UpdateType.CUSTOM;
+		} else {
+			this.columnOrder = 1;
+//			this.updateType = c.updateType();
+		}
+		this.dbColumn = (c == null || StringUtils.isEmpty(c.value())) ? field.getName().toLowerCase() : c.value();
+		this.isNumber = Number.class.isAssignableFrom(field.getType());
 	}
 
 	public boolean isDBID() {
@@ -86,11 +86,10 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 			map.put(field.getName(), value);
 			return;
 		}
+		if (this.isNumber && Number.class.isInstance(value)) {
+			value = NumUtil.toType((Number) value, this.field.getType(), false);
+		}
 		field.set(owner, value);
-	}
-
-	public Field getField() {
-		return field;
 	}
 
 	public String getFieldName() {
@@ -99,10 +98,10 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 
 	@Override
 	public int compareTo(ColumnMeta o) {
-		if (this.columnOrder == o.getColumnOrder()) {
-			return this.getDbColumn().compareTo(o.getDbColumn());
+		if (this.columnOrder == o.columnOrder) {
+			return this.dbColumn.compareTo(o.dbColumn);
 		}
-		return this.columnOrder > o.getColumnOrder() ? 1 : -1;
+		return this.columnOrder > o.columnOrder ? 1 : -1;
 	}
 
 	@Override

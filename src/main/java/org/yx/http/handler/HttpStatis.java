@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.bean.Bean;
 import org.yx.common.ActStatis;
 import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
@@ -35,10 +36,7 @@ import org.yx.http.SumkServlet;
 import org.yx.util.StringUtils;
 import org.yx.util.secury.MD5Utils;
 
-/**
- * 
- * @author Administrator
- */
+@Bean
 @SumkServlet(value = { "/sumk_statis" }, loadOnStartup = -1)
 public class HttpStatis extends HttpServlet {
 

@@ -25,11 +25,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.db.annotation.Column;
-import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.Table;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
 
 public class PojoMetaHolder {
 
@@ -74,14 +72,7 @@ public class PojoMetaHolder {
 		for (Field f : set) {
 			Column c = f.getAnnotation(Column.class);
 			f.setAccessible(true);
-			if (c == null) {
-				list.add(new ColumnMeta(f, ColumnType.NORMAL));
-				continue;
-			}
-			ColumnMeta cm = new ColumnMeta(f, c.columnType());
-			cm.setColumnOrder(c.columnOrder());
-			cm.setDbColumn(StringUtils.isEmpty(c.value()) ? f.getName().toLowerCase() : c.value());
-			list.add(cm);
+			list.add(new ColumnMeta(f, c));
 		}
 		if (list.isEmpty()) {
 			Log.get("pojo").debug("{}'s column is empty", pojoClz.getName());

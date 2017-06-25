@@ -27,17 +27,17 @@ abstract class InnerDelete {
 	}
 
 	protected MapedSql toMapedSql(StringBuilder sb, MapedSql ms) throws InstantiationException, IllegalAccessException {
-		PojoMeta pojoMeta = delete.getPojoMeta();
+		PojoMeta pojoMeta = delete.parsePojoMeta(true);
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
 		for (Map<String, Object> oneWhere : delete.in) {
 			delete.checkMap(oneWhere, pojoMeta);
 			ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
-			for (ColumnMeta fm : delete.getPojoMeta().fieldMetas) {
+			for (ColumnMeta fm : pojoMeta.fieldMetas) {
 				Object value = fm.value(oneWhere);
 				if (value == null) {
 					continue;
 				}
-				andItem.item().append(fm.getDbColumn()).append("=?");
+				andItem.item().append(fm.dbColumn).append("=?");
 				ms.addParam(value);
 			}
 			orItem.item().append(andItem.toCharSequence());
@@ -45,7 +45,7 @@ abstract class InnerDelete {
 
 		sb.append(orItem.toCharSequence(true));
 		ms.sql = sb.toString();
-		ms.event = new DeleteEvent(delete.getPojoMeta().getTableName(), delete.in);
+		ms.event = new DeleteEvent(pojoMeta.getTableName(), delete.in);
 		return ms;
 	}
 }
@@ -58,7 +58,7 @@ class HardDelete extends InnerDelete implements SqlBuilder {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("DELETE FROM ").append(delete.getPojoMeta().getTableName());
+		sb.append("DELETE FROM ").append(delete.parsePojoMeta(true).getTableName());
 		return this.toMapedSql(sb, new MapedSql());
 	}
 
@@ -72,7 +72,7 @@ class SoftDelete extends InnerDelete implements SqlBuilder {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		StringBuilder sb = new StringBuilder();
-		PojoMeta pojoMeta = delete.getPojoMeta();
+		PojoMeta pojoMeta = delete.parsePojoMeta(true);
 		SoftDeleteMeta sm = pojoMeta.softDelete;
 		sb.append("UPDATE ").append(pojoMeta.getTableName()).append(" SET ").append(sm.columnName).append(" =? ");
 		MapedSql ms = new MapedSql();

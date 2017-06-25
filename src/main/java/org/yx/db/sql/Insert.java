@@ -25,7 +25,7 @@ import org.yx.db.event.InsertEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.util.SeqUtil;
 
-public class Insert extends AbstractSqlBuilder<Integer> {
+public final class Insert extends AbstractSqlBuilder<Integer> {
 
 	private List<Object> src = new ArrayList<>();
 
@@ -66,7 +66,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 	 */
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		this.checkIn();
-		this.pojoMeta = this.getPojoMeta();
+		this.pojoMeta = this.parsePojoMeta(true);
 		return this.in.size() == 1 ? singleInsert() : batchInsert();
 	}
 
@@ -83,7 +83,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		Map<String, Object> map = new HashMap<>();
 
 		for (ColumnMeta fm : fms) {
-			String name = fm.getDbColumn();
+			String name = fm.dbColumn;
 			Object value = fm.value(pojoMap);
 			if (value == null) {
 
@@ -129,7 +129,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
 		int recodeSize = in.size();
 		for (ColumnMeta fm : fms) {
-			String name = fm.getDbColumn();
+			String name = fm.dbColumn;
 			columns.item().append(name);
 			placeholder.item().append('?');
 		}
@@ -184,7 +184,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		if (ids.length != 1) {
 			return false;
 		}
-		Class<?> f = ids[0].getField().getType();
+		Class<?> f = ids[0].field.getType();
 		return Long.class == f;
 	}
 

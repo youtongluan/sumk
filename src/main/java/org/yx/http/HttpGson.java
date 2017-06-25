@@ -15,19 +15,82 @@
  */
 package org.yx.http;
 
+import java.util.Date;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.yx.common.DateTimeTypeAdapter;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
+import org.yx.util.StringUtils;
+import org.yx.util.date.SumkDate;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.LongSerializationPolicy;
 
 public final class HttpGson {
-	public static Gson gson;
+	private static Gson gson;
+	private static Gson pc;
 	static {
 		try {
 			gson = GsonUtil.gsonBuilder("http").create();
+			pc = pcGsonBuilder().create();
 		} catch (Exception e) {
 			Log.printStack(e);
 			System.exit(-1);
 		}
+	}
+
+	private static GsonBuilder pcGsonBuilder() {
+		String module = "http.pc";
+
+		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
+		String format = AppInfo.get(module + ".json.date.format", SumkDate.DATE_TIME_MILS);
+		if (StringUtils.isNotEmpty(format)) {
+			da.setDateFormat(format);
+		}
+		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
+		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", true)) {
+			gb.disableHtmlEscaping();
+		}
+		if (AppInfo.getBoolean(module + ".json.shownull", false)) {
+			gb.serializeNulls();
+		}
+		if (AppInfo.getBoolean(module + ".json.disableInnerClassSerialization", false)) {
+			gb.disableInnerClassSerialization();
+		}
+		if (AppInfo.getBoolean(module + ".json.generateNonExecutableJson", false)) {
+			gb.generateNonExecutableJson();
+		}
+		if (AppInfo.getBoolean(module + ".json.serializeSpecialFloatingPointValues", false)) {
+			gb.serializeSpecialFloatingPointValues();
+		}
+
+		if (AppInfo.getBoolean(module + ".json.longSerialize2String", true)) {
+			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
+		}
+
+		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
+			gb.setPrettyPrinting();
+		}
+		return gb;
+	}
+
+	/**
+	 * 如果是PC端，就返回pc专用的gson，否则返回普通json
+	 * 
+	 * @return
+	 */
+	public static Gson gson() {
+		return gson(HttpHeadersHolder.getHttpRequest());
+	}
+
+	public static Gson gson(HttpServletRequest req) {
+		if (HttpHeader.CLIENT_PC.equals(HttpHeadersHolder.clientType())) {
+			return pc;
+		}
+		return gson;
 	}
 }

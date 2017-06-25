@@ -19,7 +19,7 @@ import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtils;
 
-public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
+public final class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 
 	public Delete(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
@@ -59,7 +59,7 @@ public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 		if (CollectionUtils.isEmpty(this.in)) {
 			SumkException.throwException(64342245, "can not delete all records");
 		}
-		this.pojoMeta = this.getPojoMeta();
+		this.pojoMeta = this.parsePojoMeta(true);
 		SoftDeleteMeta sm = this.pojoMeta.softDelete;
 		if (sm == null) {
 			return new HardDelete(this).toMapedSql();

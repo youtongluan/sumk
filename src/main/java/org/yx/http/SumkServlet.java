@@ -25,14 +25,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SumkServlet {
-
 	/**
-	 * The URL patterns of the servlet
+	 * servlet的名字
 	 */
-	String[] value() default {};
+	String name() default "";
 
 	/**
-	 * The load-on-startup order of the servlet
+	 * 访问路径
+	 */
+	String[] value();
+
+	/**
+	 * 当是一个负数时或者没有指定时，容器在该servlet被使用时才加载。<BR>
+	 * 当值为0或者大于0时，表示容器在应用启动时就加载这个servlet； 正数的值越小，启动该servlet的优先级越高。
 	 */
 	int loadOnStartup() default -1;
 

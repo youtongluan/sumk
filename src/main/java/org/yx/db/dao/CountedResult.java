@@ -13,33 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.annotation;
+package org.yx.db.dao;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+/**
+ * 用来存放结果集以及总记录数
+ */
+public class CountedResult<T> {
+	private T result;
+	private long count;
 
-@Target({ ElementType.FIELD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface Column {
+	public CountedResult(T result, long count) {
+		this.result = result;
+		this.count = count;
+	}
+
 	/**
-	 * 数据库字段的名字，不填的话，就是属性名(小写)
+	 * 当前页的结果集
 	 * 
 	 * @return
 	 */
-	String value() default "";
-
-	ColumnType columnType() default ColumnType.NORMAL;
+	public T getResult() {
+		return result;
+	}
 
 	/**
-	 * 如果为值为NONE，就不能被orm更新
+	 * 符合条件的总记录数
 	 * 
 	 * @return
 	 */
-//	UpdateType updateType() default UpdateType.CUSTOM;
+	public long getCount() {
+		return count;
+	}
 
-	byte columnOrder() default 1;
 }

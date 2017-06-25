@@ -18,6 +18,9 @@ package org.yx.http;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * 这个类要在sumk-http中调用，不能在自定义的servlet中调用
+ */
 public final class HttpHeadersHolder {
 
 	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
@@ -35,11 +38,10 @@ public final class HttpHeadersHolder {
 	}
 
 	public static String sessionId() {
-		return getValueFromHeaderOrCookie(HttpHeader.SESSIONID);
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.SESSIONID);
 	}
 
-	static String getValueFromHeaderOrCookie(String name) {
-		HttpServletRequest req = _req.get();
+	private static String fromHeaderOrCookie(HttpServletRequest req, String name) {
 		if (req == null) {
 			return null;
 		}
@@ -62,6 +64,17 @@ public final class HttpHeadersHolder {
 		return null;
 	}
 
+	static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
+		if (req == null) {
+			return null;
+		}
+		String type = fromHeaderOrCookie(req, name);
+		if (type != null) {
+			return type;
+		}
+		return req.getParameter(name);
+	}
+
 	public static String getType() {
 		return HttpUtil.getType(_req.get());
 	}
@@ -71,7 +84,11 @@ public final class HttpHeadersHolder {
 	}
 
 	public static String getToken() {
-		return getValueFromHeaderOrCookie(HttpHeader.TOKEN);
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.TOKEN);
+	}
+
+	public static String clientType() {
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.CLIENT);
 	}
 
 }

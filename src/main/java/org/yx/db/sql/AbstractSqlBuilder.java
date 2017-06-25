@@ -45,7 +45,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	 */
 	protected boolean failIfPropertyNotMapped;
 
-	protected void checkMap(Map<String, Object> map, PojoMeta pm) {
+	protected void checkMap(Map<String, ?> map, PojoMeta pm) {
 		if (!this.failIfPropertyNotMapped) {
 			return;
 		}
@@ -104,12 +104,20 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		}
 	}
 
-	public PojoMeta getPojoMeta() {
+	private PojoMeta parsePojoMeta() {
 		if (this.tableClass != null) {
 			return PojoMetaHolder.getPojoMeta(tableClass);
 		}
 
 		return pojoMeta;
+	}
+
+	public PojoMeta parsePojoMeta(boolean failIfNull) {
+		PojoMeta pm = this.parsePojoMeta();
+		if (pm == null && failIfNull) {
+			SumkException.throwException(7325435, "please call tableClass(XX.class) first");
+		}
+		return pm;
 	}
 
 	public AbstractSqlBuilder(SumkDbVisitor<T> visitor) {

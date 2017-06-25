@@ -13,25 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util;
+package org.yx.db.kit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.yx.conf.AppInfo;
 
-public class CollectionUtils {
+public class SqlUtil {
+
 	/**
-	 * 获取的map，key、value都做了trim()处理。 跟Properties的区别是properties的文件要ascii结构，
-	 * 而这个方法的文件，是UTF-8结构。如果全是英文，也可以用ASCII格式. 操作之后会关闭输入流
+	 * [sqlName] sql
+	 * 
+	 * -- 这是注释
 	 * 
 	 * @param in
 	 * @return
@@ -49,56 +48,36 @@ public class CollectionUtils {
 		BufferedReader reader = BufferedReader.class.isInstance(in) ? (BufferedReader) in : new BufferedReader(in);
 		Map<String, String> map = new HashMap<>();
 		try {
+			StringBuilder value = new StringBuilder();
 			String line = null;
+			String name = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
-				if (line.startsWith("#")) {
+				if (line.isEmpty() || line.startsWith("--") || line.startsWith("\\\\") || line.startsWith("//")) {
 					continue;
 				}
-				String[] vs = line.split("=", 2);
-				if (vs.length != 2) {
+
+				if (line.startsWith("[") && line.endsWith("]")) {
+					if (name != null && value.length() > 0) {
+						map.put(name, value.toString());
+					}
+					name = line.substring(1, line.length() - 1).trim();
+					value.setLength(0);
 					continue;
 				}
-				map.put(vs[0].trim(), vs[1].trim());
+
+				if (value.length() > 0) {
+					value.append(' ');
+				}
+				value.append(line);
+			}
+			if (name != null && value.length() > 0) {
+				map.put(name, value.toString());
 			}
 		} finally {
 			reader.close();
 		}
 		return map;
 
-	}
-
-	public static List<String> loadList(InputStream in) throws IOException {
-		if (in == null) {
-			return null;
-		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
-		List<String> list = new ArrayList<>();
-		try {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (line.startsWith("#")) {
-					continue;
-				}
-				list.add(line);
-			}
-			return list;
-		} finally {
-			reader.close();
-		}
-
-	}
-
-	public static boolean isEmpty(Map<?, ?> map) {
-		return map == null || map.isEmpty();
-	}
-
-	public static boolean isEmpty(Collection<?> colletion) {
-		return colletion == null || colletion.isEmpty();
-	}
-
-	public static boolean isNotEmpty(Collection<?> colletion) {
-		return colletion != null && colletion.size() > 0;
 	}
 }

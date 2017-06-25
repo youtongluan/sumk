@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.annotation;
+package org.yx.http;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,25 +21,25 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.FIELD })
+import javax.servlet.DispatcherType;
+
+@Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Column {
+public @interface SumkFilter {
+	String name() default "";
+
 	/**
-	 * 数据库字段的名字，不填的话，就是属性名(小写)
+	 * 要拦截的路径
+	 */
+	String[] value();
+
+	DispatcherType[] dispatcherType() default {};
+
+	/**
+	 * true表示往后面添加
 	 * 
 	 * @return
 	 */
-	String value() default "";
-
-	ColumnType columnType() default ColumnType.NORMAL;
-
-	/**
-	 * 如果为值为NONE，就不能被orm更新
-	 * 
-	 * @return
-	 */
-//	UpdateType updateType() default UpdateType.CUSTOM;
-
-	byte columnOrder() default 1;
+	boolean isMatchAfter() default true;
 }
