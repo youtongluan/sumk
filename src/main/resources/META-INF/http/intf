@@ -1,7 +1,7 @@
+ReqUserHandler
 ReqHeaderHandler
 ReqTypeChecker
 ReqBodyHandler
-ReqUserHandler
 Base64DecodeHandler
 AesDecodeHandler
 ReqToStringHandler

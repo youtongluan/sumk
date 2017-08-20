@@ -29,14 +29,15 @@ public class Paged implements Pagable {
 	}
 
 	@Override
-	public void setPageSize(int size) {
+	public Paged setPageSize(int size) {
 		this.pageSize = size;
-
+		return this;
 	}
 
 	@Override
-	public void setPageIndex(int index) {
+	public Paged setPageIndex(int index) {
 		this.pageIndex = index;
+		return this;
 	}
 
 	@Override

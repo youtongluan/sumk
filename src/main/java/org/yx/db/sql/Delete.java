@@ -17,7 +17,7 @@ package org.yx.db.sql;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 public final class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 
@@ -56,7 +56,7 @@ public final class Delete extends AbstractSqlBuilder<Integer> implements Executa
 	}
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
-		if (CollectionUtils.isEmpty(this.in)) {
+		if (CollectionUtil.isEmpty(this.in)) {
 			SumkException.throwException(64342245, "can not delete all records");
 		}
 		this.pojoMeta = this.parsePojoMeta(true);

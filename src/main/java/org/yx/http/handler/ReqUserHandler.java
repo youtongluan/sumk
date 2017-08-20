@@ -15,6 +15,7 @@
  */
 package org.yx.http.handler;
 
+import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.ErrorCode;
@@ -23,7 +24,7 @@ import org.yx.http.HttpSessionHolder;
 import org.yx.http.Web;
 import org.yx.http.filter.UserSession;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class ReqUserHandler implements HttpHandler {
 
@@ -41,7 +42,7 @@ public class ReqUserHandler implements HttpHandler {
 		if (key == null) {
 			if (HttpSessionHolder.isSingleLogin()) {
 				String userId = HttpHeadersHolder.getToken();
-				if (StringUtils.isNotEmpty(userId)) {
+				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId)) {
 						int code = AppInfo.getInt("http.session.single.code", ErrorCode.LOGIN_AGAIN);
@@ -56,6 +57,7 @@ public class ReqUserHandler implements HttpHandler {
 		}
 		ctx.setKey(key);
 		session.flushSession();
+		ThreadContext.get().setContextSn(session.getUserId());
 		return false;
 	}
 

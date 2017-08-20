@@ -46,5 +46,9 @@ public class Loader {
 		return loader().getResources(name);
 	}
 
+	public static URL getResource(String name) {
+		return loader().getResource(name);
+	}
+
 	public static final String JAVA_PRE = "java.";
 }

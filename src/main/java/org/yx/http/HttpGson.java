@@ -23,7 +23,7 @@ import org.yx.common.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.util.date.SumkDate;
 
 import com.google.gson.Gson;
@@ -48,7 +48,7 @@ public final class HttpGson {
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
 		String format = AppInfo.get(module + ".json.date.format", SumkDate.DATE_TIME_MILS);
-		if (StringUtils.isNotEmpty(format)) {
+		if (StringUtil.isNotEmpty(format)) {
 			da.setDateFormat(format);
 		}
 		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
@@ -78,11 +78,6 @@ public final class HttpGson {
 		return gb;
 	}
 
-	/**
-	 * 如果是PC端，就返回pc专用的gson，否则返回普通json
-	 * 
-	 * @return
-	 */
 	public static Gson gson() {
 		return gson(HttpHeadersHolder.getHttpRequest());
 	}

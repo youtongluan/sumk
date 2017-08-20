@@ -27,7 +27,7 @@ import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.validate.Param;
 import org.yx.validate.ParamInfo;
 
@@ -73,7 +73,7 @@ public class HttpInfoWatcher implements Plugin {
 				ParamInfo pi = http.paramInfos == null ? null : http.paramInfos[i];
 				if (pi != null) {
 					Param p = pi.getParam();
-					if (StringUtils.isNotEmpty(p.cnName())) {
+					if (StringUtil.isNotEmpty(p.cnName())) {
 						param.put("cnName", p.cnName());
 					}
 					param.put("required", p.required());

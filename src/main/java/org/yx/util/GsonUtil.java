@@ -37,7 +37,7 @@ public final class GsonUtil {
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
 		String format = AppInfo.get(module + ".json.date.format");
-		if (StringUtils.isNotEmpty(format)) {
+		if (StringUtil.isNotEmpty(format)) {
 			da.setDateFormat(format);
 		}
 

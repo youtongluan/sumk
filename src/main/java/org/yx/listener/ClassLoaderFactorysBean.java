@@ -29,8 +29,8 @@ import org.yx.bean.watcher.BeanWatcher;
 import org.yx.common.Ordered;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.CollectionUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public abstract class ClassLoaderFactorysBean<T extends Ordered> implements FactorysBean<T>, BeanWatcher<T> {
 
@@ -46,27 +46,17 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 
 	protected Comparator<Ordered> comparator;
 
-	/**
-	 * 
-	 * @param userListenerPackage
-	 *            外部自定义的包路径
-	 * @param sumkListenerPath
-	 *            内部listener文件的相对路径（相对于ClassLoader)
-	 * @param sumkListenerPackage_pre
-	 *            部listener的前缀。如这个值是org.yx，那么org.yx.
-	 *            BeanFactory只要写成BeanFactory就可以了
-	 */
 	public ClassLoaderFactorysBean(String userPackage, String sumkPath, String sumkPackage_pre) {
 		this.userPackage = userPackage;
 		this.sumkPath = sumkPath == null ? "" : sumkPath.replace('.', '/');
-		if (StringUtils.isNotEmpty(sumkPackage_pre)) {
+		if (StringUtil.isNotEmpty(sumkPackage_pre)) {
 			this.sumkPackage_pre = sumkPackage_pre.endsWith(".") ? sumkPackage_pre : sumkPackage_pre + ".";
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	protected void createSumkObject() throws Exception {
-		if (StringUtils.isEmpty(sumkPath)) {
+		if (StringUtil.isEmpty(sumkPath)) {
 			return;
 		}
 		InputStream in = Loader.getResourceAsStream("META-INF/" + sumkPath);
@@ -74,9 +64,9 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 			Log.get("sumk.SYS").error(sumkPath + " file cannot found");
 			return;
 		}
-		List<String> sumks = CollectionUtils.loadList(in);
+		List<String> sumks = CollectionUtil.loadList(in);
 		for (String listener : sumks) {
-			if (StringUtils.isNotEmpty(sumkPackage_pre)) {
+			if (StringUtil.isNotEmpty(sumkPackage_pre)) {
 				listener = AppInfo.get("sumk.class.load." + listener, sumkPackage_pre + listener);
 			}
 			Class<?> clz = this.getClass().getClassLoader().loadClass(listener);

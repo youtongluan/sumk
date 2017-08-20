@@ -40,13 +40,6 @@ public class StartContext {
 		return map.get(clz.getName());
 	}
 
-	/**
-	 * 获取key的值，如果不存在，就设入t。并将t返回
-	 * 
-	 * @param key
-	 * @param t
-	 * @return
-	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getOrCreate(String key, T t) {
 		if (map.containsKey(key)) {

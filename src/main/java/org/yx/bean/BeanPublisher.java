@@ -39,17 +39,12 @@ import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 public final class BeanPublisher {
 
 	private static ListenerGroup<BeanEvent> group = new ListenerGroupImpl<>();
 
-	/**
-	 * 发布扫描包的事件，包括添加到IOC，SOA接口或HTTP接口中
-	 * 
-	 * @param packageNames
-	 */
 	public static synchronized void publishBeans(List<String> packageNames) {
 		if (packageNames == null || packageNames.isEmpty()) {
 			Log.get("sumk.SYS").info("sumk.ioc in app.properties cannot be empty");
@@ -97,7 +92,7 @@ public final class BeanPublisher {
 			}
 			Set<String> userBeans = new HashSet<>();
 			while (urls.hasMoreElements()) {
-				List<String> list = CollectionUtils.loadList(urls.nextElement().openStream());
+				List<String> list = CollectionUtil.loadList(urls.nextElement().openStream());
 				if (list == null || list.isEmpty()) {
 					continue;
 				}
@@ -236,12 +231,6 @@ public final class BeanPublisher {
 		return new HashSet<>(target);
 	}
 
-	/**
-	 * @param f
-	 * @param clz
-	 * @param bean
-	 * @return
-	 */
 	private static List<?> getListField(Field f, Class<?> clz, Object bean) {
 		if (clz == Object.class) {
 			SumkException.throwException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
@@ -269,21 +258,10 @@ public final class BeanPublisher {
 		return target.toArray((Object[]) Array.newInstance(filedType, target.size()));
 	}
 
-	/**
-	 * 发布事件
-	 * 
-	 * @param event
-	 */
 	public static void publish(BeanEvent event) {
 		group.listen(event);
 	}
 
-	/**
-	 * 添加监听器
-	 * 
-	 * @param listener
-	 * @return
-	 */
 	public static synchronized boolean addListener(Listener<BeanEvent> listener) {
 		group.addListener(listener);
 		return true;
@@ -297,11 +275,6 @@ public final class BeanPublisher {
 		return true;
 	}
 
-	/**
-	 * 移除监听器.如果监听器不存在，就返回null
-	 * 
-	 * @return
-	 */
 	public static synchronized void removeListener(Listener<BeanEvent> listener) {
 		group.removeListener(listener);
 	}

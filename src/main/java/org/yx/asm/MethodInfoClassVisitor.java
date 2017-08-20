@@ -32,11 +32,6 @@ class MethodInfoClassVisitor extends ClassVisitor {
 	public String[] descriptor;
 	private final Method m;
 
-	/**
-	 * 
-	 * @arg m
-	 * @arg argNames 用于将参数名称传回去
-	 */
 	public MethodInfoClassVisitor(Method m) {
 		super(Vars.ASM_VER);
 		this.m = m;

@@ -16,9 +16,9 @@
 package org.yx.http.filter;
 
 /**
- * 用户session<BR>
+ * 用户session,要有无构造参数的构造函数
  */
-public abstract class SessionObject {
+public class SessionObject {
 	protected String userId;
 	protected long loginTime;
 

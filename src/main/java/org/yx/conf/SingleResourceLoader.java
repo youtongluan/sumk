@@ -13,23 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.conf;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
-import org.yx.conf.SingleResourceFactory;
-import org.yx.log.Log;
+public interface SingleResourceLoader {
 
-public class RedisPropertiesFactory implements SingleResourceFactory {
+	InputStream openInput(String dbName) throws Exception;
 
-	@Override
-	public InputStream openInput(String fileName) throws Exception {
-		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(fileName);
-		if (in != null) {
-			return in;
-		}
-		Log.get("sumk.redis").info("can not found redis property file:{}", fileName);
-		return null;
-	}
-
+	boolean startListen(Consumer<MultiResourceLoader> consumer);
 }

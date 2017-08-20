@@ -19,7 +19,7 @@ import java.util.Date;
 
 import org.yx.util.date.SumkDate;
 
-public class DateUtils {
+public class DateUtil {
 
 	public static String toString(Date d, String fromat) {
 		return SumkDate.toString(d, fromat);

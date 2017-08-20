@@ -20,21 +20,20 @@ import java.util.List;
 
 import org.yx.db.RawDB;
 import org.yx.util.Assert;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 /**
  * 直接调用select.count()就可以了，一般不需要显式使用这个类
  * 
  * @see select
  */
-public class Count implements Executable {
+public class Count {
 	protected final SelectBuilder select;
 
 	public Count(SelectBuilder select) {
 		this.select = select;
 	}
 
-	@Override
 	public int execute() {
 		List<Object> paramters = new ArrayList<>(8);
 		select.pojoMeta = select.parsePojoMeta(true);
@@ -42,7 +41,7 @@ public class Count implements Executable {
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT count(*) FROM ").append(select.pojoMeta.getTableName());
 		CharSequence where = select.buildWhere(paramters);
-		if (StringUtils.isNotEmpty(where)) {
+		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);
 		}
 		return RawDB.count(sql.toString(), paramters);

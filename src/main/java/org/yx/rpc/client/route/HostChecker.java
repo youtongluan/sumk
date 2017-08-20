@@ -46,12 +46,6 @@ public class HostChecker {
 		return downUrls.containsKey(url);
 	}
 
-	/**
-	 * 将列表中不可用的url过滤掉
-	 * 
-	 * @param urls
-	 * @return
-	 */
 	public List<Host> available(List<Host> urls) {
 		List<Host> us = new ArrayList<Host>(urls);
 		List<Host> avas = new ArrayList<Host>(us.size());

@@ -22,9 +22,9 @@ import java.util.Map;
 
 import org.yx.db.annotation.CacheType;
 import org.yx.db.sql.PojoMeta;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 /**
  * 返回值是List<Pojo>
@@ -37,12 +37,12 @@ public class PojoResultHandler implements ResultHandler {
 	@Override
 	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons)
 			throws InstantiationException, IllegalAccessException {
-		if (CollectionUtils.isEmpty(jsons)) {
+		if (CollectionUtil.isEmpty(jsons)) {
 			return null;
 		}
 		List<Object> list = new ArrayList<>();
 		for (String json : jsons) {
-			if (StringUtils.isEmpty(json)) {
+			if (StringUtil.isEmpty(json)) {
 				continue;
 			}
 

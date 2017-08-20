@@ -93,11 +93,11 @@ public class DB {
 	}
 
 	public static Select select() {
-		return new Select(Visitors.queryVisitor);
+		return new Select(Visitors.queryVisitorForORM);
 	}
 
 	public static Select select(Object pojo) {
-		return new Select(Visitors.queryVisitor).addEqual(pojo);
+		return select().addEqual(pojo);
 	}
 
 	/**

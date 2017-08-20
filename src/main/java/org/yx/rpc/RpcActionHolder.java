@@ -25,13 +25,6 @@ public class RpcActionHolder {
 
 	private static Map<String, RpcActionNode> actMap = new ConcurrentHashMap<String, RpcActionNode>();
 
-	/**
-	 * 根据方法的全名，获取参数列表
-	 * 
-	 * @param method
-	 *            classFullName.method
-	 * @return null表示方法不存在,或者参数为空
-	 */
 	public static Class<?> getArgType(String method) {
 		String m = getArgClassName(method);
 		return pojoMap.get(m);
@@ -42,12 +35,6 @@ public class RpcActionHolder {
 		return method.substring(0, k) + "_" + method.substring(k + 1);
 	}
 
-	/**
-	 * 根据soaName获取MethodInfo
-	 * 
-	 * @param method
-	 * @return
-	 */
 	public static RpcActionNode getActionNode(String soaName) {
 		return actMap.get(soaName);
 	}

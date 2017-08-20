@@ -33,7 +33,7 @@ import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpHolder;
 import org.yx.http.SumkServlet;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.util.secury.MD5Utils;
 
 @Bean
@@ -62,7 +62,7 @@ public class HttpStatis extends HttpServlet {
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(MD5Utils.encrypt(sign.getBytes())) || StringUtils.isEmpty(mode)) {
+			if (sign == null || !md5.equals(MD5Utils.encrypt(sign.getBytes())) || StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

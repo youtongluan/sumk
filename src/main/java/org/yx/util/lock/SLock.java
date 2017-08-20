@@ -27,7 +27,7 @@ import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 /**
  * 分布式锁<BR>
@@ -43,7 +43,7 @@ public final class SLock {
 			for (int i = 0; i < REDIS_LEN; i++) {
 				nodeKey[i] = "lock_" + i;
 			}
-			String script = StringUtils.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
+			String script = StringUtil.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
 			Set<Redis> set = new HashSet<>();
 			for (String key : nodeKey) {
 				Redis redis = RedisPool.get(key);

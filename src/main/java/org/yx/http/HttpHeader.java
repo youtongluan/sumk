@@ -18,25 +18,13 @@ package org.yx.http;
 import org.yx.conf.AppInfo;
 
 public interface HttpHeader {
-	/**
-	 * 用户的sessionId<br>
-	 * sid
-	 */
+
 	String SESSIONID = AppInfo.get("http.header.sid", "sid");
-	/**
-	 * 客户端用来传userid或者其它唯一识别用户的标识<br>
-	 * stoken
-	 */
+
 	String TOKEN = AppInfo.get("http.header.stoken", "stoken");
 
-	/**
-	 * http请求的类型，要类型一致才能访问
-	 */
 	String TYPE = AppInfo.get("http.header.stype", "stype");
 
-	/**
-	 * http请求的类型，要类型一致才能访问
-	 */
 	String CLIENT = AppInfo.get("http.header.sclient", "sclient");
 
 	String CLIENT_PC = AppInfo.get("http.header.sclient.pc", "PC");

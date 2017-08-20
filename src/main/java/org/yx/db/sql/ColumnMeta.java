@@ -20,8 +20,10 @@ import java.util.Map;
 
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
+import org.yx.db.annotation.UpdateType;
 import org.yx.db.kit.NumUtil;
-import org.yx.util.StringUtils;
+import org.yx.db.kit.TimeUtil;
+import org.yx.util.StringUtil;
 
 public class ColumnMeta implements Comparable<ColumnMeta> {
 
@@ -31,9 +33,11 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 	final byte columnOrder;
 
 	public final String dbColumn;
-//	public final UpdateType updateType;
+	public final UpdateType updateType;
 
 	public final boolean isNumber;
+
+	public final boolean isDate;
 
 	ColumnMeta(Field field, Column c) {
 		super();
@@ -41,13 +45,14 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 		this.meta = c == null ? ColumnType.NORMAL : c.columnType();
 		if (c == null) {
 			this.columnOrder = 64;
-//			this.updateType = UpdateType.CUSTOM;
+			this.updateType = UpdateType.CUSTOM;
 		} else {
 			this.columnOrder = 1;
-//			this.updateType = c.updateType();
+			this.updateType = c.updateType();
 		}
-		this.dbColumn = (c == null || StringUtils.isEmpty(c.value())) ? field.getName().toLowerCase() : c.value();
+		this.dbColumn = (c == null || StringUtil.isEmpty(c.value())) ? field.getName().toLowerCase() : c.value();
 		this.isNumber = Number.class.isAssignableFrom(field.getType());
+		this.isDate = TimeUtil.isGenericDate(field.getType());
 	}
 
 	public boolean isDBID() {
@@ -86,8 +91,14 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 			map.put(field.getName(), value);
 			return;
 		}
+		if (value == null) {
+			field.set(owner, null);
+			return;
+		}
 		if (this.isNumber && Number.class.isInstance(value)) {
 			value = NumUtil.toType((Number) value, this.field.getType(), false);
+		} else if (this.isDate) {
+			value = TimeUtil.toType(value, this.field.getType(), false);
 		}
 		field.set(owner, value);
 	}

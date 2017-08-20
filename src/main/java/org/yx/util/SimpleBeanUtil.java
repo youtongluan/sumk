@@ -84,7 +84,7 @@ public class SimpleBeanUtil {
 	}
 
 	private static Method getMethod(Method[] ms, String key) {
-		String methodName = "set" + StringUtils.capitalize(key);
+		String methodName = "set" + StringUtil.capitalize(key);
 		for (Method m : ms) {
 			if (m.getName().equals(methodName) && m.getParameterCount() == 1) {
 				return m;

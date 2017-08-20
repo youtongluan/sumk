@@ -24,11 +24,11 @@ import java.util.Set;
 
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
-import org.yx.conf.SingleResourceFactory;
+import org.yx.conf.SingleResourceLoader;
 import org.yx.log.Log;
 import org.yx.util.Assert;
-import org.yx.util.CollectionUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -56,14 +56,14 @@ public class RedisLoader {
 	}
 
 	private static InputStream loadConfig() throws Exception {
-		String resourceFactory = AppInfo.get("sumk.redis.conf.factory", "redis.RedisPropertiesFactory");
+		String resourceFactory = AppInfo.get("sumk.redis.conf.loader", "redis.RedisPropertiesLoader");
 		if (resourceFactory == null || resourceFactory.isEmpty()) {
 			return null;
 		}
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
-		Assert.isTrue(SingleResourceFactory.class.isAssignableFrom(factoryClz),
-				resourceFactory + " should extend from SingleResourceFactory");
-		SingleResourceFactory factory = (SingleResourceFactory) factoryClz.newInstance();
+		Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
+				resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
+		SingleResourceLoader factory = (SingleResourceLoader) factoryClz.newInstance();
 		return factory.openInput(REDIS_FILE);
 	}
 
@@ -72,26 +72,26 @@ public class RedisLoader {
 		if (in == null) {
 			return;
 		}
-		Map<String, String> p = CollectionUtils.loadMap(in);
+		Map<String, String> p = CollectionUtil.loadMap(in);
 		Log.get("sumk.redis").debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {
-			if (StringUtils.isEmpty(kk)) {
+			if (StringUtil.isEmpty(kk)) {
 				continue;
 			}
 			String v = p.get(kk);
 			if (kk.startsWith(SLAVE_PRE)) {
-				createReadRedis(kk.substring(SLAVE_PRE.length()), v.split(","));
+				createReadRedis(kk.substring(SLAVE_PRE.length()), v.replace('，', ',').split(","));
 				continue;
 			}
 			Redis redis = create(v);
-			String[] moduleKeys = kk.split(",");
+			String[] moduleKeys = kk.replace('，', ',').split(",");
 			for (String key : moduleKeys) {
 				key = key.toLowerCase();
-				if (StringUtils.isEmpty(key)) {
+				if (StringUtil.isEmpty(key)) {
 					continue;
 				}
-				if (StringUtils.isEmpty(v)) {
+				if (StringUtil.isEmpty(v)) {
 					continue;
 				}
 				if (RedisConstants.DEFAULT.equals(key)) {
@@ -104,13 +104,13 @@ public class RedisLoader {
 	}
 
 	private static void createReadRedis(String host, String[] redisParams) throws Exception {
-		if (StringUtils.isEmpty(host) || redisParams.length == 0 || !host.contains(":")) {
+		if (StringUtil.isEmpty(host) || redisParams.length == 0 || !host.contains(":")) {
 			return;
 		}
 		List<RedisParamter> list = new ArrayList<>();
 		for (String param : redisParams) {
 			param = param.trim();
-			if (StringUtils.isEmpty(param)) {
+			if (StringUtil.isEmpty(param)) {
 				continue;
 			}
 			list.add(createParam(param));
@@ -132,16 +132,16 @@ public class RedisLoader {
 		} else {
 			param = RedisParamter.create(ip);
 		}
-		if (params.length > 1 && !StringUtils.isEmpty(params[1])) {
+		if (params.length > 1 && !StringUtil.isEmpty(params[1])) {
 			param.setDb(Integer.parseInt(params[1]));
 		}
-		if (params.length > 2 && !StringUtils.isEmpty(params[2])) {
+		if (params.length > 2 && !StringUtil.isEmpty(params[2])) {
 			param.setPassword(params[2]);
 		}
-		if (params.length > 3 && !StringUtils.isEmpty(params[3])) {
+		if (params.length > 3 && !StringUtil.isEmpty(params[3])) {
 			param.setTimeout(Integer.parseInt(params[3]));
 		}
-		if (params.length > 4 && !StringUtils.isEmpty(params[4])) {
+		if (params.length > 4 && !StringUtil.isEmpty(params[4])) {
 			param.setTryCount(Integer.parseInt(params[4]));
 		}
 		return param;

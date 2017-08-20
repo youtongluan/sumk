@@ -31,11 +31,6 @@ import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
-/**
- * 负责创建SqlSession，但不负责SqlSession的事务等操作。<BR>
- * reload用于重新加载。<BR>
- * 在无法确认是只读的情况下，就使用写库
- */
 public class ConnectionFactory {
 
 	private static Map<String, ConnectionFactory> factoryMap = new ConcurrentHashMap<>();

@@ -46,16 +46,6 @@ public final class Lock implements Key {
 		return id;
 	}
 
-	/**
-	 * 
-	 * @param name
-	 *            锁的名称
-	 * @param maxLockTime
-	 *            最大的锁住时间，单位秒
-	 * @param intervalTime
-	 *            两次重试之间的间隔时间，单位ms
-	 * @return
-	 */
 	public static Lock create(String name, int maxLockTime, int intervalTime) {
 		return new Lock(name, UUIDSeed.seq(), maxLockTime, intervalTime);
 	}
@@ -64,14 +54,6 @@ public final class Lock implements Key {
 		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 300));
 	}
 
-	/**
-	 * 
-	 * @param name
-	 *            锁的名称
-	 * @param maxLockTime
-	 *            最大的锁住时间，单位秒
-	 * @return
-	 */
 	public static Lock create(String name, int maxLockTime) {
 		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 10));
 	}

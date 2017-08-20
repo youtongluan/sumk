@@ -18,5 +18,5 @@ package org.yx.common;
 @FunctionalInterface
 public interface Deamon {
 
-	void run() throws Exception;
+	boolean run() throws Exception;
 }

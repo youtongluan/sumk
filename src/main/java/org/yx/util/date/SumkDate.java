@@ -56,7 +56,9 @@ public class SumkDate {
 	private final int minute;
 	private final int second;
 	private final int milSecond;
-	private final static int MIL_TO_NANO = 1000000;
+	private final static int MIL_TO_NANO = 1000_000;
+	private static final char DATE_SPLIT = '-';
+	private static final char TIME_SPLIT = ':';
 
 	public SumkDate(Date d) {
 		Calendar cal = Calendar.getInstance();
@@ -142,19 +144,8 @@ public class SumkDate {
 	 * yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String toDateString() {
-		StringBuilder sb = new StringBuilder();
-		final char date_split = '-';
-		if (year < 1000 && year > -1) {
-			String yearString = String.valueOf(year);
-			for (int i = 0; i < 4 - yearString.length(); i++) {
-				sb.append('0');
-			}
-		}
-		sb.append(year).append(date_split);
-		if (month < 10) {
-			sb.append('0');
-		}
-		sb.append(month).append(date_split);
+		StringBuilder sb = new StringBuilder(this.toMonthString());
+		sb.append(DATE_SPLIT);
 
 		if (day < 10) {
 			sb.append('0');
@@ -164,20 +155,38 @@ public class SumkDate {
 	}
 
 	/**
+	 * yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 */
+	public String toMonthString() {
+		StringBuilder sb = new StringBuilder();
+		if (year < 1000 && year > -1) {
+			String yearString = String.valueOf(year);
+			for (int i = 0; i < 4 - yearString.length(); i++) {
+				sb.append('0');
+			}
+		}
+		sb.append(year).append(DATE_SPLIT);
+		if (month < 10) {
+			sb.append('0');
+		}
+		sb.append(month);
+		return sb.toString();
+	}
+
+	/**
 	 * HH:mm:ss 格式
 	 */
 	public String toTimeString() {
 		StringBuilder sb = new StringBuilder();
-		final char time_split = ':';
 		if (hour < 10) {
 			sb.append('0');
 		}
-		sb.append(hour).append(time_split);
+		sb.append(hour).append(TIME_SPLIT);
 
 		if (minute < 10) {
 			sb.append('0');
 		}
-		sb.append(minute).append(time_split);
+		sb.append(minute).append(TIME_SPLIT);
 
 		if (second < 10) {
 			sb.append('0');

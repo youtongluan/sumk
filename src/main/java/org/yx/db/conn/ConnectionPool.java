@@ -143,12 +143,6 @@ public final class ConnectionPool implements AutoCloseable {
 		return conn;
 	}
 
-	/**
-	 * 返回默认类型的session
-	 * 
-	 * @return
-	 * @throws SQLException
-	 */
 	public Connection getDefaultconnection() {
 		return this.connectionByUser(this.dbType);
 	}

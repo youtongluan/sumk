@@ -34,9 +34,9 @@ import org.I0Itec.zkclient.ZkClient;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.Host;
 import org.yx.rpc.ZKConst;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHolder;
 
 public class ZkRouteParser {
@@ -127,9 +127,10 @@ public class ZkRouteParser {
 		SumkThreadPool.runDeamon(() -> {
 			RouteEvent event = queue.take();
 			if (event == null) {
-				return;
+				return true;
 			}
 			Routes.handle(event);
+			return true;
 		}, "rpc-client-route");
 	}
 
@@ -143,9 +144,9 @@ public class ZkRouteParser {
 		if (path.contains("/")) {
 			path = path.substring(path.lastIndexOf("/") + 1);
 		}
-		Map<String, String> map = CollectionUtils.loadMap(new StringReader(json));
+		Map<String, String> map = CollectionUtil.loadMap(new StringReader(json));
 		String methods = map.get(ZKConst.METHODS);
-		if (StringUtils.isEmpty(methods)) {
+		if (StringUtil.isEmpty(methods)) {
 			return null;
 		}
 		ZkData data = new ZkData();

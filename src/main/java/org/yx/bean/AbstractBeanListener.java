@@ -22,7 +22,7 @@ import org.yx.common.StartConstants;
 import org.yx.listener.Listener;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 
@@ -30,10 +30,10 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 	protected boolean valid = false;
 
 	public AbstractBeanListener(String packs) {
-		if (StringUtils.isEmpty(packs)) {
+		if (StringUtil.isEmpty(packs)) {
 			return;
 		}
-		String[] ps = packs.split(",");
+		String[] ps = packs.replace('，', ',').split(",");
 		for (String p : ps) {
 			addPackage(p);
 		}

@@ -40,7 +40,7 @@ import org.yx.http.SumkServlet;
 import org.yx.http.filter.HttpLoginWrapper;
 import org.yx.http.filter.LoginServlet;
 import org.yx.log.Log;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 /**
  * 如果使用tomcat等外部容器启动sumk，请在web.xml中添加：<BR>
@@ -97,7 +97,7 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	private void addFilters(ServletContext context) {
 		List<Filter> filters = IOC.getBeans(Filter.class);
-		if (org.yx.util.CollectionUtils.isEmpty(filters)) {
+		if (org.yx.util.CollectionUtil.isEmpty(filters)) {
 			return;
 		}
 		for (Filter bean : filters) {
@@ -127,7 +127,7 @@ public class SumkLoaderListener implements ServletContextListener {
 	private void addListeners(ServletContext context) {
 		try {
 			InputStream in = Loader.getResourceAsStream("META-INF/http.listeners");
-			addListener(context, CollectionUtils.loadList(in));
+			addListener(context, CollectionUtil.loadList(in));
 		} catch (Exception e) {
 			Log.printStack(e);
 			return;
@@ -143,7 +143,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			}
 			@SuppressWarnings("unchecked")
 			List<EventListener> listeners = (List<EventListener>) IOC.getBeans(clz);
-			if (org.yx.util.CollectionUtils.isEmpty(listeners)) {
+			if (org.yx.util.CollectionUtil.isEmpty(listeners)) {
 				continue;
 			}
 			listeners.forEach(lis -> {

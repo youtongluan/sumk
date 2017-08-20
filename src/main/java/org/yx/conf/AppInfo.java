@@ -15,23 +15,26 @@
  */
 package org.yx.conf;
 
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observer;
 
 import org.yx.bean.Loader;
 import org.yx.log.Log;
 import org.yx.rpc.LocalhostUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public final class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
-	static List<Observer> observers = new ArrayList<>(4);
-	private static Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+	static final List<Observer> observers = new ArrayList<>(4);
+	private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	private static SystemConfig info;
 	static {
@@ -134,7 +137,7 @@ public final class AppInfo {
 	public static Charset systemCharset() {
 
 		String charsetName = info == null ? null : info.get("sumk.charset");
-		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
+		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
 			return DEFAULT_CHARSET;
 		}
 		if (!Charset.isSupported(charsetName)) {
@@ -159,6 +162,39 @@ public final class AppInfo {
 		}
 		value = value.toLowerCase();
 		return "1".equals(value) || "true".equals(value);
+	}
+
+	public static Map<String, String> subMap(String prefix) {
+		int len = prefix.length();
+		Map<String, String> map = new HashMap<>();
+		for (String name : info.keys()) {
+			if (name.startsWith(prefix)) {
+				map.put(name.substring(len), info.get(name));
+			}
+		}
+		return map;
+	}
+
+	private static class AppPropertiesInfo extends PropertiesInfo {
+
+		AppPropertiesInfo() {
+			super("app.properties");
+		}
+
+		@Override
+		public void deal(InputStream in) throws Exception {
+			super.deal(in);
+
+			AppInfo.observers.forEach(ob -> {
+				ob.update(null, null);
+			});
+		}
+
+		@Override
+		public void initAppInfo() {
+			this.start();
+		}
+
 	}
 
 }

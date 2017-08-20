@@ -15,8 +15,6 @@
  */
 package org.yx.asm;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
@@ -26,11 +24,11 @@ import org.objectweb.asm.ClassWriter;
 import org.yx.bean.Box;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 
 public class ProxyClassFactory {
 
 	public static Class<?> proxyIfNeed(Class<?> clz) throws Exception {
+
 		if ("no".equals(AppInfo.get("sumk.aop.proxy", "config"))) {
 			return clz;
 		}
@@ -58,21 +56,6 @@ public class ProxyClassFactory {
 		String newClzName = AsmUtils.proxyCalssName(clz);
 		ProxyClassVistor cv = new ProxyClassVistor(cw, newClzName, clz, aopMethods);
 		cr.accept(cv, Vars.ASM_VER);
-
-		byte[] code = cw.toByteArray();
-		String clzOutPath = AppInfo.get("sumk.aop.debug.output");
-		if (clzOutPath != null && clzOutPath.length() > 0) {
-			try {
-				File f = new File(clzOutPath, newClzName + ".class");
-				FileOutputStream fos = new FileOutputStream(f);
-				fos.write(code);
-				fos.close();
-			} catch (Exception e) {
-				if (Log.isTraceEnable("proxy")) {
-					Log.printStack(e);
-				}
-			}
-		}
-		return AsmUtils.loadClass(newClzName, code);
+		return AsmUtils.loadClass(newClzName, cw.toByteArray());
 	}
 }

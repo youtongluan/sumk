@@ -13,18 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db;
+package org.yx.util;
 
-import org.apache.ibatis.session.SqlSession;
+import java.io.File;
+import java.util.List;
 
-public abstract class SqlSessionHolder {
+public class FileUtil {
+	/**
+	 * 列出改目录下的所有子文件（不包含目录）
+	 * 
+	 * @param filelist
+	 * @param parent
+	 */
+	public static void listAllSubFiles(List<File> filelist, File parent) {
+		File[] files = parent.listFiles();
+		if (files != null) {
+			for (File f : files) {
+				if (f.isDirectory()) {
+					listAllSubFiles(filelist, f);
+				} else {
+					filelist.add(f);
+				}
+			}
 
-	public static SqlSession writeSession(String module) {
-		return org.yx.sumk.batis.SqlSessionHolder.session();
+		}
 	}
-
-	public static SqlSession readSession(String module) {
-		return org.yx.sumk.batis.SqlSessionHolder.session();
-	}
-
 }

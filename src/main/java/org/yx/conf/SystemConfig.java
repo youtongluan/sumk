@@ -15,6 +15,8 @@
  */
 package org.yx.conf;
 
+import java.util.Collection;
+
 /**
  * 实现类要有定期刷新或监听变更的功能
  */
@@ -22,6 +24,8 @@ public interface SystemConfig {
 	String get(String key);
 
 	String get(String key, String defaultValue);
+
+	Collection<String> keys();
 
 	void initAppInfo();
 }

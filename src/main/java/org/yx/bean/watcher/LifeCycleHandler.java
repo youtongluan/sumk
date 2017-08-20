@@ -23,8 +23,8 @@ import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
-import org.yx.util.CollectionUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public class LifeCycleHandler {
 
@@ -36,9 +36,9 @@ public class LifeCycleHandler {
 			if (in == null) {
 				return;
 			}
-			List<String> list = CollectionUtils.loadList(in);
+			List<String> list = CollectionUtil.loadList(in);
 			for (String key : list) {
-				if (StringUtils.isEmpty(key)) {
+				if (StringUtil.isEmpty(key)) {
 					continue;
 				}
 				Class<?> clz = Loader.loadClass(key);

@@ -19,15 +19,9 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
 import org.yx.http.Web;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.util.secury.MD5Utils;
 
-/**
- * sign签名校验
- * 
- * @author 游夏
- *
- */
 public class ReqSignValidateHandler implements HttpHandler {
 
 	@Override
@@ -40,7 +34,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		String sign = ctx.getSign();
-		if (StringUtils.isEmpty(sign)) {
+		if (StringUtil.isEmpty(sign)) {
 			HttpException.throwException(this.getClass(), "签名不能为空");
 		}
 		byte[] bs;
@@ -51,7 +45,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		}
 		if (salt == null) {
 			String saltStr = AppInfo.get("sumk.sign.salt");
-			if (StringUtils.isEmpty(saltStr)) {
+			if (StringUtil.isEmpty(saltStr)) {
 				salt = new byte[0];
 			} else {
 				salt = saltStr.getBytes();

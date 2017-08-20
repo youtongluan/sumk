@@ -15,15 +15,17 @@
  */
 package org.yx.db.dao;
 
+import java.util.List;
+
 /**
  * 用来存放结果集以及总记录数
  */
 public class CountedResult<T> {
-	private T result;
-	private long count;
+	private List<T> list;
+	private int count;
 
-	public CountedResult(T result, long count) {
-		this.result = result;
+	public CountedResult(List<T> list, int count) {
+		this.list = list;
 		this.count = count;
 	}
 
@@ -32,8 +34,8 @@ public class CountedResult<T> {
 	 * 
 	 * @return
 	 */
-	public T getResult() {
-		return result;
+	public List<T> getResult() {
+		return list;
 	}
 
 	/**
@@ -41,7 +43,7 @@ public class CountedResult<T> {
 	 * 
 	 * @return
 	 */
-	public long getCount() {
+	public int getCount() {
 		return count;
 	}
 

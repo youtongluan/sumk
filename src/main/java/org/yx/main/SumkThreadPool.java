@@ -28,6 +28,18 @@ public class SumkThreadPool {
 
 	public static final ScheduledThreadPoolExecutor scheduledExecutor;
 	private static List<Thread> deamonThreads = new ArrayList<>();
+	static {
+		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 2),
+				new ThreadFactory() {
+					@Override
+					public Thread newThread(Runnable r) {
+						Thread t = new Thread(r);
+						t.setDaemon(true);
+						return t;
+					}
+
+				});
+	}
 
 	public static synchronized void runDeamon(Deamon runnable, String threadName) {
 		if (SumkServer.isDestoryed()) {
@@ -39,9 +51,15 @@ public class SumkThreadPool {
 					if (SumkServer.isDestoryed()) {
 						break;
 					}
-					runnable.run();
+					if (!runnable.run()) {
+						break;
+					}
 				} catch (InterruptedException e1) {
-
+					try {
+						runnable.run();
+					} catch (Exception e) {
+						Log.printStack(e);
+					}
 				} catch (Exception e) {
 					Log.printStack(e);
 				}
@@ -52,19 +70,6 @@ public class SumkThreadPool {
 		t.setDaemon(true);
 		t.start();
 		deamonThreads.add(t);
-	}
-
-	static {
-		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 1),
-				new ThreadFactory() {
-					@Override
-					public Thread newThread(Runnable r) {
-						Thread t = new Thread(r);
-						t.setDaemon(true);
-						return t;
-					}
-
-				});
 	}
 
 	public static void shutdown() {

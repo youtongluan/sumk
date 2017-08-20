@@ -18,7 +18,7 @@ package org.yx.db.sql;
 public interface Executable {
 	/**
 	 * 
-	 * @return 受影响的记录数，或者count、sum等返回的结果
+	 * @return insert、update、delete的受影响的记录数
 	 */
 	int execute();
 

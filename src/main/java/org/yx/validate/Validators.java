@@ -12,15 +12,6 @@ public class Validators implements Plugin {
 
 	private static Validator[] validators;
 
-	/**
-	 * 非空验证
-	 * 
-	 * @param argName
-	 * @param arg
-	 * 
-	 * @author youxia
-	 * @throws InvalidParamException
-	 */
 	public static void check(ParamInfo info, Object arg) throws InvalidParamException {
 		if (info == null || info.param == null || validators == null || validators.length == 0) {
 			return;

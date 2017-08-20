@@ -28,7 +28,7 @@ import org.yx.util.Assert;
 
 public class ResultSetUtils {
 	public static List<Map<String, Object>> toMapList(ResultSet rs) throws java.sql.SQLException {
-		List<Map<String, Object>> list = new ArrayList<>(5);
+		List<Map<String, Object>> list = new ArrayList<>(10);
 		if (rs == null) {
 			return list;
 		}
@@ -56,10 +56,6 @@ public class ResultSetUtils {
 		while (rs.next()) {
 			rowData = new HashMap<>(columnCount * 2);
 			for (int i = 1; i <= columnCount; i++) {
-				if (pm == null) {
-					rowData.put(md.getColumnName(i).toLowerCase(), rs.getObject(i));
-					continue;
-				}
 				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
 				Assert.notNull(cm, md.getColumnName(i) + " has no mapper");
 				rowData.put(cm.getFieldName(), rs.getObject(i));
@@ -70,9 +66,8 @@ public class ResultSetUtils {
 		return list;
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static List toList(ResultSet rs) throws java.sql.SQLException {
-		List list = new ArrayList<>(10);
+	public static List<Object> toList(ResultSet rs) throws java.sql.SQLException {
+		List<Object> list = new ArrayList<>(10);
 		if (rs == null) {
 			return list;
 		}

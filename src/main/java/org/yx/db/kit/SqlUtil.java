@@ -27,15 +27,6 @@ import org.yx.conf.AppInfo;
 
 public class SqlUtil {
 
-	/**
-	 * [sqlName] sql
-	 * 
-	 * -- 这是注释
-	 * 
-	 * @param in
-	 * @return
-	 * @throws IOException
-	 */
 	public static Map<String, String> loadMap(InputStream in) throws IOException {
 		if (in == null) {
 			return null;

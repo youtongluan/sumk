@@ -20,14 +20,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
+import java.util.function.Consumer;
 
-/**
- * 从本地文件读取数据库的资源配置
- * 
- * @author 游夏
- *
- */
-public class LocalDBResourceFactory implements SingleResourceFactory {
+public class LocalDBResourceLoader implements SingleResourceLoader {
 
 	private InputStream fileInClassPath(String uri) throws URISyntaxException, FileNotFoundException {
 		return this.getClass().getClassLoader().getResourceAsStream(uri);
@@ -43,6 +38,11 @@ public class LocalDBResourceFactory implements SingleResourceFactory {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()));
 		}
 		return new FileInputStream(new File(uri));
+	}
+
+	@Override
+	public boolean startListen(Consumer<MultiResourceLoader> consumer) {
+		return false;
 	}
 
 }

@@ -18,12 +18,6 @@ package org.yx.db.event;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 查询事件。无论是in还是result，都排除了已经从redis中获取的部分
- * 
- * @author 游夏
- *
- */
 public class QueryEvent extends DBEvent {
 	public QueryEvent(String table) {
 		super(table);

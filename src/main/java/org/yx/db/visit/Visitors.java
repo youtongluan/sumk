@@ -21,23 +21,32 @@ import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
 import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.conn.EventLane;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.SelectBuilder;
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
-public class Visitors {
+public final class Visitors {
+	private static Logger log = Log.get("sumk.sql");
 
-	public static final SumkDbVisitor<Integer> modifyVisitor = builder -> {
-		MapedSql maped = builder.toMapedSql();
-		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
-			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
+	private static String getSql(PreparedStatement statement) {
+		String sql = statement.toString();
+		int index = sql.indexOf(": ");
+		if (index < 10) {
+			return sql;
 		}
-		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
+		return sql.substring(index + 2);
+	}
+
+	private static PreparedStatement createStatement(Connection conn, MapedSql maped) throws Exception {
+
+		if (Log.isON(log)) {
+			log.trace(String.valueOf(maped));
+		}
 		PreparedStatement statement = conn.prepareStatement(maped.getSql());
 		List<Object> params = maped.getParamters();
 		if (params != null && params.size() > 0) {
@@ -45,51 +54,49 @@ public class Visitors {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
-		Log.get("sumk.SQL").debug(" <== {}", statement);
+		if (log.isDebugEnabled()) {
+			StringBuilder sb = new StringBuilder();
+			log.debug(sb.append("<== ").append(getSql(statement)).toString());
+		}
+		return statement;
+	}
+
+	public static final SumkDbVisitor<Integer> modifyVisitor = builder -> {
+		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
+		MapedSql maped = builder.toMapedSql();
+		PreparedStatement statement = createStatement(conn, maped);
 		int ret = statement.executeUpdate();
 		statement.close();
 		EventLane.pubuish(conn, maped.getEvent());
 		return ret;
 	};
 
+	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitorForORM = builder -> {
+		MapedSql maped = builder.toMapedSql();
+		Connection conn = ConnectionPool.get().connection(DBType.ANY);
+		PreparedStatement statement = createStatement(conn, maped);
+		ResultSet ret = statement.executeQuery();
+		PojoMeta pm = ((SelectBuilder) builder).parsePojoMeta(true);
+		;
+		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
+		statement.close();
+		return list;
+	};
+
 	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitor = builder -> {
 		MapedSql maped = builder.toMapedSql();
-		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
-			Log.get("sumk.SQL.visitor").trace(String.valueOf(maped));
-		}
 		Connection conn = ConnectionPool.get().connection(DBType.ANY);
-		PreparedStatement statement = conn.prepareStatement(maped.getSql());
-		List<Object> params = maped.getParamters();
-		if (params != null && params.size() > 0) {
-			for (int i = 0; i < params.size(); i++) {
-				statement.setObject(i + 1, params.get(i));
-			}
-		}
-		Log.get("sumk.SQL").debug(" ==> {}", statement);
+		PreparedStatement statement = createStatement(conn, maped);
 		ResultSet ret = statement.executeQuery();
-		PojoMeta pm = null;
-		if (SelectBuilder.class.isInstance(builder)) {
-			pm = ((SelectBuilder) builder).parsePojoMeta(true);
-		}
-		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
+		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret);
 		statement.close();
 		return list;
 	};
 
 	public static final SumkDbVisitor<List<?>> singleListQueryVisitor = builder -> {
 		MapedSql maped = builder.toMapedSql();
-		if (ConsoleLog.isEnable(ConsoleLog.ON)) {
-			Log.get("sumk.SQL.single.visitor").trace(String.valueOf(maped));
-		}
 		Connection conn = ConnectionPool.get().connection(DBType.ANY);
-		PreparedStatement statement = conn.prepareStatement(maped.getSql());
-		List<Object> params = maped.getParamters();
-		if (params != null && params.size() > 0) {
-			for (int i = 0; i < params.size(); i++) {
-				statement.setObject(i + 1, params.get(i));
-			}
-		}
-		Log.get("sumk.SQL.single").debug(" ==> {}", statement);
+		PreparedStatement statement = createStatement(conn, maped);
 		ResultSet ret = statement.executeQuery();
 		List<?> list = ResultSetUtils.toList(ret);
 		statement.close();

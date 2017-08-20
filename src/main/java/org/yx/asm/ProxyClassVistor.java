@@ -43,13 +43,6 @@ public class ProxyClassVistor extends ClassVisitor {
 	private Map<String, Method> aopMethods;
 	private String clzName;
 
-	/**
-	 * 
-	 * @param cv
-	 * @param clz
-	 * @param aopMethods
-	 *            要进行aop解析的方法，不能重名
-	 */
 	public ProxyClassVistor(final ClassVisitor cv, String newClzName, Class<?> clz, Map<String, Method> aopMethods) {
 		super(Vars.ASM_VER, cv);
 		this.orginClz = clz;

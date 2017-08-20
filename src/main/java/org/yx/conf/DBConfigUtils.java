@@ -29,21 +29,14 @@ import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
-/**
- * 需要[]来分段<BR>
- * 以#注释
- * 
- * @author 游夏
- *
- */
 public final class DBConfigUtils {
 
 	public static InputStream openConfig(String db) throws Exception {
-		String resourceFactory = AppInfo.get("sumk.db.conf.factory." + db, LocalDBResourceFactory.class.getName());
+		String resourceFactory = AppInfo.get("sumk.db.conf.loader." + db, LocalDBResourceLoader.class.getName());
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
-		Assert.isTrue(SingleResourceFactory.class.isAssignableFrom(factoryClz),
-				resourceFactory + " should extend from SingleResourceFactory");
-		SingleResourceFactory factory = (SingleResourceFactory) factoryClz.newInstance();
+		Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
+				resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
+		SingleResourceLoader factory = (SingleResourceLoader) factoryClz.newInstance();
 		return factory.openInput(db);
 	}
 

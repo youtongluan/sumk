@@ -15,6 +15,8 @@
  */
 package org.yx.http;
 
+import org.yx.conf.AppInfo;
+
 /**
  * 1000-2000之间的错误码，为系统所保留。 应用系统的错误码，要避开这个区间
  */
@@ -41,12 +43,12 @@ public interface ErrorCode {
 	/**
 	 * 参数验证错误
 	 */
-	int VALIDATE_ERROR = 1010;
+	int VALIDATE_ERROR = AppInfo.getInt("http.errorcode.validate", 1010);
 
 	/**
 	 * type类型错误
 	 */
-	int TYPE_ERROR = 1020;
+	int TYPE_ERROR = AppInfo.getInt("http.errorcode.type", 1020);
 
 	/**
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用

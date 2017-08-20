@@ -17,7 +17,10 @@ package org.yx.http.handler;
 
 import java.lang.reflect.Method;
 
+import org.yx.annotation.ErrorHandler;
+import org.yx.asm.ArgPojo;
 import org.yx.common.CalleeNode;
+import org.yx.http.HttpSettings;
 import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.validate.Param;
@@ -28,12 +31,8 @@ public final class HttpNode extends CalleeNode {
 	public final Upload upload;
 	private final String[] types;
 
-	/**
-	 * 判断是否接受该类型的访问
-	 * 
-	 * @param type
-	 * @return
-	 */
+	public final ErrorHandler errorHandler;
+
 	public boolean acceptType(String type) {
 		if (type == null) {
 			type = "";
@@ -49,11 +48,16 @@ public final class HttpNode extends CalleeNode {
 		return false;
 	}
 
-	public HttpNode(Object obj, Method m, Class<?> argClz, String[] argNames, Class<?>[] argTypes, Param[] params,
-			Web action, Upload upload) {
-		super(obj, m, argClz, argNames, argTypes, params);
-		this.action = action;
-		this.upload = upload;
+	public HttpNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
+			Class<?>[] argTypes, Param[] params, Method m) {
+		super(obj, proxyMethod, argClz, argNames, argTypes, params);
+		this.action = m.getAnnotation(Web.class);
+		if (HttpSettings.isUploadEnable()) {
+			this.upload = m.getAnnotation(Upload.class);
+		} else {
+			this.upload = null;
+		}
+		this.errorHandler = m.getAnnotation(ErrorHandler.class);
 
 		String[] _types = action != null ? action.type() : upload.type();
 		this.types = _types.length == 0 || (_types.length == 1 && _types[0].isEmpty()) ? null : _types;

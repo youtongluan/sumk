@@ -13,36 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.redis;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
-class AppPropertiesInfo extends PropertiesInfo {
+import org.yx.conf.MultiResourceLoader;
+import org.yx.conf.SingleResourceLoader;
+import org.yx.log.Log;
 
-	AppPropertiesInfo() {
-		super("app.properties");
-	}
+public class RedisPropertiesLoader implements SingleResourceLoader {
 
 	@Override
-	public void deal(InputStream in) throws Exception {
-		super.deal(in);
-
-		AppInfo.observers.forEach(ob -> {
-			ob.update(null, null);
-		});
-	}
-
-	public String get(String key, String defaultValue) {
-		String value = pro.get(key);
-		if (value != null && value.length() > 0) {
-			return value;
+	public InputStream openInput(String fileName) throws Exception {
+		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(fileName);
+		if (in != null) {
+			return in;
 		}
-		return defaultValue;
+		Log.get("sumk.redis").info("can not found redis property file:{}", fileName);
+		return null;
 	}
 
 	@Override
-	public void initAppInfo() {
-		this.start();
+	public boolean startListen(Consumer<MultiResourceLoader> consumer) {
+		return false;
 	}
 
 }

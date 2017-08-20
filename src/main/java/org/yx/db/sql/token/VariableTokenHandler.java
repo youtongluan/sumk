@@ -25,7 +25,7 @@ import java.util.Map;
  * @author 游夏
  *
  */
-public class VariableTokenHandler implements TokenHandler {
+public class VariableTokenHandler implements MapedSqlTokenParser.TokenHandler {
 	private Map<String, Object> variables;
 
 	public VariableTokenHandler(Map<String, Object> map) {

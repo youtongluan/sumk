@@ -19,12 +19,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.Web;
 
-/**
- * 用来写入内容主题，是最后一个handler
- * 
- * @author 游夏
- *
- */
 public class RespHeaderHandler implements HttpHandler {
 
 	@Override

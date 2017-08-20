@@ -22,7 +22,7 @@ import java.io.InputStreamReader;
 
 import org.yx.conf.AppInfo;
 
-public class StringUtils {
+public class StringUtil {
 
 	public static String uncapitalize(String str) {
 		int strLen;

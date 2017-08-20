@@ -26,7 +26,7 @@ import org.yx.http.HttpHeadersHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class LocalUserSession implements UserSession {
 
@@ -38,7 +38,7 @@ public class LocalUserSession implements UserSession {
 	@Override
 	public void putKey(String sessionId, byte[] key, String userId) {
 		keyMap.put(sessionId, key);
-		if (StringUtils.isEmpty(userId)) {
+		if (StringUtil.isEmpty(userId)) {
 			return;
 		}
 		String oldSession = userSessionMap.put(userId, sessionId);
@@ -121,10 +121,19 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public boolean isLogin(String userId) {
-		if (StringUtils.isEmpty(userId)) {
+		if (StringUtil.isEmpty(userId)) {
 			return false;
 		}
 		return this.userSessionMap.containsKey(userId);
+	}
+
+	@Override
+	public String getUserId() {
+		SessionObject obj = this.getUserObject(SessionObject.class);
+		if (obj == null) {
+			return null;
+		}
+		return obj.getUserId();
 	}
 
 }

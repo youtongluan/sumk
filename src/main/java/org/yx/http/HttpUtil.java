@@ -29,7 +29,7 @@ import org.yx.exception.HttpException;
 import org.yx.http.handler.ReqBodyHandler;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public final class HttpUtil {
 	static final int MAXLENGTH = 1024 * 1024 * 100;
@@ -41,10 +41,10 @@ public final class HttpUtil {
 
 	public static Charset charset(HttpServletRequest req) {
 		String charsetName = AppInfo.get("http.charset");
-		if (StringUtils.isEmpty(charsetName)) {
+		if (StringUtil.isEmpty(charsetName)) {
 			charsetName = req.getCharacterEncoding();
 		}
-		if (StringUtils.isEmpty(charsetName) || charsetName.equalsIgnoreCase(HttpSettings.DEFAULT_CHARSET.name())) {
+		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(HttpSettings.DEFAULT_CHARSET.name())) {
 			return HttpSettings.DEFAULT_CHARSET;
 		}
 

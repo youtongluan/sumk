@@ -39,7 +39,7 @@ public @interface Column {
 	 * 
 	 * @return
 	 */
-//	UpdateType updateType() default UpdateType.CUSTOM;
+	UpdateType updateType() default UpdateType.CUSTOM;
 
 	byte columnOrder() default 1;
 }

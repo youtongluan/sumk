@@ -18,7 +18,7 @@ package org.yx.rpc.client.route;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 /**
  * zk中保存的节点信息
@@ -46,7 +46,7 @@ public class ZkData {
 	}
 
 	void setWeight(String w) {
-		if (StringUtils.isEmpty(w)) {
+		if (StringUtil.isEmpty(w)) {
 			return;
 		}
 		this.weight = Integer.parseInt(w);

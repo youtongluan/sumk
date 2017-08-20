@@ -17,12 +17,14 @@ package org.yx.db.sql;
 
 import java.util.Map;
 
-import org.yx.db.sql.token.GenericTokenParser;
+import org.yx.db.sql.token.MapedSqlTokenParser;
+import org.yx.db.sql.token.ReplaceTokenHandler;
+import org.yx.db.sql.token.StringTokenParser;
 import org.yx.db.sql.token.VariableTokenHandler;
 
 public class MapedSqlBuilder implements SqlBuilder {
-	private String _sql;
-	private Map<String, Object> map;
+	private final String _sql;
+	private final Map<String, Object> map;
 
 	/**
 	 * 
@@ -37,8 +39,11 @@ public class MapedSqlBuilder implements SqlBuilder {
 
 	@Override
 	public MapedSql toMapedSql() throws Exception {
-		GenericTokenParser parser = new GenericTokenParser("#{", "}", new VariableTokenHandler(map));
-		return parser.parse(_sql);
+		String sql = _sql;
+		if (sql.contains("${")) {
+			sql = new StringTokenParser("${", "}", new ReplaceTokenHandler(map)).parse(sql);
+		}
+		return new MapedSqlTokenParser("#{", "}", new VariableTokenHandler(map)).parse(sql);
 	}
 
 }

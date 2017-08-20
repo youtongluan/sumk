@@ -26,7 +26,7 @@ import org.yx.db.event.UpdateEvent;
 import org.yx.db.kit.NumUtil;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 public final class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
@@ -156,7 +156,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
 		this.checkMap(this.updateTo, this.pojoMeta);
-		if (CollectionUtils.isEmpty(this.in)) {
+		if (CollectionUtil.isEmpty(this.in)) {
 			return this.toMapedSqlWithoutWhere();
 		}
 		return this.toMapedSqlWithWhere();

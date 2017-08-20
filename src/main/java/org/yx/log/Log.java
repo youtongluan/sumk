@@ -21,18 +21,12 @@ import org.yx.conf.AppInfo;
 
 public abstract class Log {
 	static {
-		AppInfo.addObserver((a, b) -> {
-			try {
-				String logType = AppInfo.get("sumk.logtype", LogType.console.name());
-				setLogType(LogType.valueOf(logType));
-				int temp = AppInfo.getInt("sumk.loglevel.console", -1);
-				if (temp > -1 && temp < Byte.MAX_VALUE) {
-					ConsoleLog.setDefaultLevel((byte) temp);
-				}
-			} catch (Exception e) {
-				Log.get("sumk.appInfo").info(e.getMessage(), e);
-			}
-		});
+		try {
+			String logType = AppInfo.get("sumk.log.type", LogType.console.name());
+			setLogType(LogType.valueOf(logType.trim().toLowerCase()));
+		} catch (Exception e) {
+			ConsoleLog.get("sumk.log").error(e.getMessage(), e);
+		}
 	}
 
 	private static LogType logType;
@@ -54,14 +48,14 @@ public abstract class Log {
 	}
 
 	public static Logger get(String module) {
-		if (logType == null || logType == LogType.console) {
-			return ConsoleLog.get(module);
-		}
 		if (module == null || (module = module.trim()).isEmpty()) {
 			module = "sumk";
 		}
 		if (!module.startsWith("sumk")) {
 			module = "sumk." + module;
+		}
+		if (logType == null || logType == LogType.console) {
+			return ConsoleLog.getLogger(module);
 		}
 		return LoggerFactory.getLogger(module);
 	}
@@ -72,5 +66,9 @@ public abstract class Log {
 
 	public static void printStack(String module, Throwable e) {
 		get(module).error(e.getMessage(), e);
+	}
+
+	public static boolean isON(Logger log) {
+		return SumkLogger.class.isInstance(log) && SumkLogger.class.cast(log).isON();
 	}
 }

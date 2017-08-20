@@ -25,9 +25,6 @@ import org.yx.util.WeightedRoute;
 
 class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
 
-	/**
-	 * @param servers
-	 */
 	public WeightedDataSourceRoute(Collection<WeightedDS> servers) {
 		super(servers.toArray(new WeightedDS[servers.size()]));
 	}
@@ -40,11 +37,6 @@ class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
 		return list;
 	}
 
-	/**
-	 * 根据权重获取连接
-	 * 
-	 * @return
-	 */
 	public DataSource datasource() {
 		WeightedDS sm = this.getServer();
 		if (sm == null) {

@@ -15,18 +15,21 @@
  */
 package org.yx.http.handler;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.yx.annotation.ExceptionStrategy;
+import org.yx.asm.ArgPojo;
 import org.yx.bean.IOC;
 import org.yx.common.BizExcutor;
+import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpGson;
 import org.yx.http.Web;
 import org.yx.http.filter.HttpBizFilter;
+import org.yx.log.Log;
 import org.yx.validate.ParamInfo;
 
 public class InvokeHandler implements HttpHandler {
@@ -44,28 +47,37 @@ public class InvokeHandler implements HttpHandler {
 		if (!String.class.isInstance(ctx.getData())) {
 			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
 		}
-		Object ret = info.accept(http -> {
-			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
-				return exec(http.method, http.obj, null, null, ctx);
-			}
-			Object[] params = new Object[http.argTypes.length];
-			Object argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
-			for (int i = 0, k = 0; i < params.length; i++) {
-
-				if (argObj == null) {
-					params[i] = null;
-					continue;
+		Object ret = null;
+		if (info.errorHandler != null) {
+			try {
+				ret = exec(info, ctx);
+			} catch (Exception e) {
+				if (BizException.class.isInstance(e)
+						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
+					throw e;
 				}
-				Field f = http.fields[k++];
-				params[i] = f.get(argObj);
+				Log.printStack(e);
+				BizException.throwException(info.errorHandler.code(), info.errorHandler.message());
 			}
-			return exec(http.method, http.obj, params, info.paramInfos, ctx);
-		});
+		} else {
+			ret = exec(info, ctx);
+		}
 		if (STOP == ret) {
 			return true;
 		}
 		ctx.setResult(ret);
 		return false;
+	}
+
+	private static Object exec(HttpNode info, WebContext ctx) throws Throwable {
+		return info.accept(http -> {
+			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
+				return exec(http.method, http.obj, null, null, ctx);
+			}
+			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
+			Object[] params = argObj.params();
+			return exec(http.method, http.obj, params, info.paramInfos, ctx);
+		});
 	}
 
 	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos, WebContext ctx)

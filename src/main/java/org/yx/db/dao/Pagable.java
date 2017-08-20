@@ -27,14 +27,14 @@ public interface Pagable {
 	 * 
 	 * @param size
 	 */
-	void setPageSize(int size);
+	Pagable setPageSize(int size);
 
 	/**
 	 * 当前页码，其实为1
 	 * 
 	 * @param index
 	 */
-	void setPageIndex(int index);
+	Pagable setPageIndex(int index);
 
 	/**
 	 * 

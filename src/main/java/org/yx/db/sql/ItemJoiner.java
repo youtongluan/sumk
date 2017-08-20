@@ -45,11 +45,6 @@ public class ItemJoiner {
 		this(delimiter, null, null);
 	}
 
-	/**
-	 * 表示开启一个选项。如果已经有选项了，会添加分隔符
-	 * 
-	 * @return
-	 */
 	public ItemJoiner item() {
 		if (sb.length() > 0) {
 			sb.append(this.delimiter);
@@ -95,13 +90,6 @@ public class ItemJoiner {
 		return String.valueOf(this.toCharSequence());
 	}
 
-	/**
-	 * 添加一个非空的字符序列
-	 * 
-	 * @param item
-	 *            如果item为空，就不添加
-	 * @return
-	 */
 	public ItemJoiner addNotEmptyItem(CharSequence item) {
 		if (item == null || item.length() == 0) {
 			return this;

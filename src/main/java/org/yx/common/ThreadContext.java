@@ -15,24 +15,19 @@
  */
 package org.yx.common;
 
-import org.yx.util.UUIDSeed;
-
 public class ThreadContext {
 	public static enum ActionType {
 		HTTP, RPC
 	}
 
-	private ActionType type;
+	private final ActionType type;
 
-	private String act;
+	private final String act;
 
 	private String rootSn;
 
 	private String contextSn;
 
-	/**
-	 * 附带的信息，有可能为null
-	 */
 	public Object info;
 
 	private ThreadContext(ActionType type, String act) {
@@ -53,18 +48,23 @@ public class ThreadContext {
 		return this.contextSn;
 	}
 
-	private static ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
+	public void setContextSn(String contextSn) {
+		this.contextSn = contextSn;
+	}
+
+	public static final ThreadContext NULL_CONTEXT = new ThreadContext(null, null);
+
+	private static final ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
 
 		@Override
 		protected ThreadContext initialValue() {
-			return new ThreadContext(null, null);
+			return NULL_CONTEXT;
 		}
 
 	};
 
 	public static ThreadContext httpContext(String act) {
 		ThreadContext c = new ThreadContext(ActionType.HTTP, act);
-		c.contextSn = ActionType.HTTP + "_" + UUIDSeed.seq();
 		holder.set(c);
 		return c;
 	}

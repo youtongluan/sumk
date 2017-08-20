@@ -22,7 +22,7 @@ import java.sql.Savepoint;
 import javax.sql.DataSource;
 
 import org.yx.conf.AppInfo;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class SlaveConnectionWrapper extends ConnectionWrapper {
 
@@ -39,7 +39,7 @@ public class SlaveConnectionWrapper extends ConnectionWrapper {
 
 	@Override
 	public void commit() throws SQLException {
-		if (StringUtils.isEmpty(AppInfo.get("sumk.db"))) {
+		if (StringUtil.isEmpty(AppInfo.get("sumk.db"))) {
 			throw new SQLException("readonly,cannot commit");
 		}
 	}

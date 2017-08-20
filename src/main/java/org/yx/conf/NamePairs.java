@@ -8,13 +8,9 @@ import org.slf4j.Logger;
 import org.yx.log.Log;
 
 public class NamePairs {
-	/**
-	 * 用于分隔行的符号(char方式)
-	 */
+
 	public static final char SPLIT_CHAR = 0x3;
-	/**
-	 * 用于分隔行的符号(String方式）
-	 */
+
 	public static final String SPLIT = new String(new char[] { SPLIT_CHAR });
 
 	private static final Logger LOG = Log.get("sumk.conf");
@@ -55,20 +51,10 @@ public class NamePairs {
 		return data;
 	}
 
-	/**
-	 * 获取所有的值
-	 * 
-	 * @return
-	 */
 	public Map<String, String> values() {
 		return Collections.unmodifiableMap(this.map);
 	}
 
-	/**
-	 * 构造一个不能被更改的对象
-	 * 
-	 * @return
-	 */
 	public NamePairs unmodify() {
 		return new NamePairs(Collections.unmodifiableMap(this.map), this.data);
 	}

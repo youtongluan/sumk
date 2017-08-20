@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
 import org.yx.common.MethodDesc;
@@ -56,7 +57,9 @@ class SoaFactory {
 			Soa act = m.getAnnotation(Soa.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
 			if (RpcActionHolder.getActionNode(soaName) != null) {
-				Log.get("sumk.rpc").error(soaName + " already existed");
+				RpcActionNode node = RpcActionHolder.getActionNode(soaName);
+				Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
+						node.method.getDeclaringClass().getName(), node.method.getName(), classFullName, m.getName());
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
@@ -66,9 +69,9 @@ class SoaFactory {
 				continue;
 			}
 			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-			Class<?> argClz = AsmUtils.CreateArgPojo(classFullName, mInfo);
-			RpcActionHolder.putActNode(soaName, new RpcActionNode(obj, proxyedMethod, argClz, mInfo.getArgNames(),
-					m.getParameterTypes(), ParamFactory.create(m), act));
+			RpcActionHolder.putActNode(soaName,
+					new RpcActionNode(obj, proxyedMethod, ArgPojos.create(classFullName, mInfo), mInfo.getArgNames(),
+							m.getParameterTypes(), ParamFactory.create(m), act));
 		}
 
 	}

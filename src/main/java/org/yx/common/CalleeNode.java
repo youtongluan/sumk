@@ -19,6 +19,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
+import org.yx.asm.ArgPojo;
 import org.yx.validate.Param;
 import org.yx.validate.ParamInfo;
 
@@ -37,13 +38,14 @@ public abstract class CalleeNode {
 
 	public final Object obj;
 
-	public final Class<?> argClz;
+	public final Class<? extends ArgPojo> argClz;
 
 	public final Field[] fields;
 
-	public CalleeNode(Object obj, Method m, Class<?> argClz, String[] argNames, Class<?>[] argTypes, Param[] params) {
+	public CalleeNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
+			Class<?>[] argTypes, Param[] params) {
 		this.obj = obj;
-		this.method = m;
+		this.method = proxyMethod;
 		this.argClz = argClz;
 		this.argNames = argNames;
 		this.argTypes = argTypes;

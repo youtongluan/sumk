@@ -13,18 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.sql.token;
+package org.yx.annotation;
 
-import java.util.List;
+public enum ExceptionStrategy {
 
-public interface TokenHandler {
-	/**
-	 * 
-	 * @param content
-	 *            分隔符内的文本，一般就是key
-	 * @param paramters
-	 *            对象的参数
-	 * @return 如果解析不了，就返回null
-	 */
-	String handleToken(String content, List<Object> paramters);
+	IF_NO_BIZEXCEPTION,
+
+	FORCE;
+
 }

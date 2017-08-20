@@ -33,27 +33,20 @@ import org.yx.common.Ordered;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class BeanPool {
 
 	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 
 	public static String getBeanName(Class<?> clz) {
-		String name = StringUtils.uncapitalize(clz.getSimpleName());
+		String name = StringUtil.uncapitalize(clz.getSimpleName());
 		if (name.endsWith("Impl")) {
 			name = name.substring(0, name.length() - 4);
 		}
 		return name;
 	}
 
-	/**
-	 * 获取所有用户定义的类以及方法，用户定义指定是非java.开头的类或接口。<BR>
-	 * 用于IOC使用
-	 * 
-	 * @param clazz
-	 * @return
-	 */
 	static Set<String> getBeanNames(Class<?> clazz) {
 		Assert.notNull(clazz, "Class must not be null");
 		Set<Class<?>> interfaces = new HashSet<>();
@@ -87,11 +80,6 @@ public class BeanPool {
 		return w.getTargetClass();
 	}
 
-	/**
-	 * 获取pool中所有的bean.key是bean
-	 * 
-	 * @return
-	 */
 	Map<Object, BeanWrapper> allBeans() {
 		Map<Object, BeanWrapper> beans = new HashMap<>();
 		Collection<Object> vs = map.values();
@@ -116,15 +104,6 @@ public class BeanPool {
 		return beans;
 	}
 
-	/**
-	 * 将类的实例添加的IOC中。这里会做aop等操作
-	 * 
-	 * @param name
-	 *            null的话，将根据clz的名字自动生成
-	 * @param clz
-	 * @return 添加到IOC中的实例
-	 * @throws Exception
-	 */
 	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
 		Assert.notNull(clz);
 		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? getBeanNames(clz)
@@ -171,14 +150,6 @@ public class BeanPool {
 
 	}
 
-	/**
-	 * name和clz都有可能为null，但不能同时为null
-	 * 
-	 * @param name
-	 * @param clz
-	 * @return 返回最符合条件的bean。不存在最符合条件的bean，就抛出异常
-	 * @exception TooManyBeanException
-	 */
 	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> clz) {
 		if (name == null || name.length() == 0) {
@@ -226,13 +197,6 @@ public class BeanPool {
 
 	}
 
-	/**
-	 * 如果不存在，返回空的list，如果实现了Ordered接口，将会自动排序
-	 * 
-	 * @param name
-	 * @param clz
-	 * @return 返回所有符合条件的bean，如果不存在就返回null，不会抛异常
-	 */
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getBeans(String name, Class<T> clz) {
 		List<T> list = new ArrayList<>(4);

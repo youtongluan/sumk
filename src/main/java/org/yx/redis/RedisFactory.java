@@ -38,13 +38,6 @@ public class RedisFactory {
 		return get(null, p);
 	}
 
-	/**
-	 * 默认连接0库
-	 * 
-	 * @param host
-	 * @param port
-	 * @return
-	 */
 	public static Redis get(String ip, int port) {
 		RedisParamter p = RedisParamter.create(ip, port);
 		return get(null, p);
@@ -56,13 +49,6 @@ public class RedisFactory {
 		return get(null, p);
 	}
 
-	/**
-	 * @param config
-	 *            连接池配置. null的话就会采用默认设置
-	 * @param p
-	 *            自定义的连接参数.
-	 * @return
-	 */
 	public static Redis get(JedisPoolConfig config, RedisParamter p) {
 		Assert.notNull(p, "redis paramter cannot be null");
 		if (p.getTryCount() < 1 || p.getTryCount() > 100) {

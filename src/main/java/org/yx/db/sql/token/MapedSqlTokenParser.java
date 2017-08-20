@@ -20,13 +20,13 @@ import java.util.List;
 
 import org.yx.db.sql.MapedSql;
 
-public class GenericTokenParser {
+public class MapedSqlTokenParser {
 
 	private final String openToken;
 	private final String closeToken;
 	private final TokenHandler handler;
 
-	public GenericTokenParser(String openToken, String closeToken, TokenHandler handler) {
+	public MapedSqlTokenParser(String openToken, String closeToken, TokenHandler handler) {
 		this.openToken = openToken;
 		this.closeToken = closeToken;
 		this.handler = handler;
@@ -67,4 +67,8 @@ public class GenericTokenParser {
 		return new MapedSql(builder.toString(), paramters);
 	}
 
+	public static interface TokenHandler {
+
+		String handleToken(String content, List<Object> paramters);
+	}
 }

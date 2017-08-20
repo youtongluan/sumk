@@ -18,8 +18,8 @@ package org.yx.common;
 import java.io.IOException;
 import java.util.Date;
 
-import org.yx.util.DateUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.DateUtil;
+import org.yx.util.StringUtil;
 import org.yx.util.date.SumkDate;
 
 import com.google.gson.TypeAdapter;
@@ -32,7 +32,7 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 	private String dateFormat;
 
 	public void setDateFormat(String format) {
-		if (StringUtils.isEmpty(format)) {
+		if (StringUtil.isEmpty(format)) {
 			this.dateFormat = null;
 		}
 		this.dateFormat = format;
@@ -63,7 +63,7 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 			}
 			if (format != null) {
 				try {
-					return DateUtils.parse(json, format);
+					return DateUtil.parse(json, format);
 				} catch (Exception e) {
 				}
 			}
@@ -88,7 +88,7 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 			out.value(value.getTime());
 			return;
 		}
-		out.value(DateUtils.toString(value, this.dateFormat));
+		out.value(DateUtil.toString(value, this.dateFormat));
 	}
 
 }

@@ -22,13 +22,6 @@ public class InsertEvent extends ModifyEvent {
 
 	private List<Map<String, Object>> pojos;
 
-	/**
-	 * 
-	 * @param table
-	 * @param pojo
-	 * @param idMap
-	 *            主键列表，包含所有的主键，即使它是null
-	 */
 	public InsertEvent(String table, List<Map<String, Object>> pojos) {
 		super(table);
 		this.pojos = pojos;

@@ -17,13 +17,14 @@ package org.yx.asm;
 
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +34,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.yx.common.MethodDesc;
+import org.yx.conf.AppInfo;
+import org.yx.log.Log;
 
 public final class AsmUtils {
 
@@ -40,7 +43,18 @@ public final class AsmUtils {
 			"hashCode" };
 
 	private static Map<String, Class<?>> clzMap;
-	private static Map<Class<?>, Method> loaderDefinds = new HashMap<>();
+	private static Method defineClass;
+
+	static {
+		try {
+			defineClass = getMethod(ClassLoader.class, "defineClass",
+					new Class<?>[] { String.class, byte[].class, int.class, int.class });
+			defineClass.setAccessible(true);
+		} catch (Exception e) {
+			Log.printStack(e);
+			System.exit(-1);
+		}
+	}
 
 	public static String proxyCalssName(Class<?> clz) {
 		String name = clz.getName();
@@ -61,11 +75,6 @@ public final class AsmUtils {
 		return loader().getResourceAsStream(internalName);
 	}
 
-	/**
-	 * 
-	 * @param method
-	 * @return true表示该方法被过滤掉
-	 */
 	public static boolean isFilted(String method) {
 		for (String m : blanks) {
 			if (m.equals(method)) {
@@ -75,13 +84,6 @@ public final class AsmUtils {
 		return false;
 	}
 
-	/**
-	 * 判断types和clazzes列表是否相等
-	 * 
-	 * @param types
-	 * @param clazzes
-	 * @return
-	 */
 	public static boolean sameType(Type[] types, Class<?>[] clazzes) {
 
 		if (types.length != clazzes.length) {
@@ -96,16 +98,7 @@ public final class AsmUtils {
 		return true;
 	}
 
-	/**
-	 * 生成参数的对象，如果参数个数为空，就返回null
-	 * 
-	 * @param clzName
-	 * @param methodName
-	 * @param p
-	 * @return
-	 * @throws Exception
-	 */
-	public static Class<?> CreateArgPojo(String clzName, MethodDesc p) throws Exception {
+	public static Class<?> createArgPojo(String clzName, MethodDesc p) throws Exception {
 		String fullName = clzName + "_" + p.getMethod().getName();
 		if (p.getArgNames() == null || p.getArgNames().length == 0) {
 			return null;
@@ -159,6 +152,21 @@ public final class AsmUtils {
 	}
 
 	public static Class<?> loadClass(String fullName, byte[] b) throws Exception {
+
+		String clzOutPath = AppInfo.get("sumk.aop.debug.output");
+		if (clzOutPath != null && clzOutPath.length() > 0) {
+			try {
+				File f = new File(clzOutPath, fullName + ".class");
+				FileOutputStream fos = new FileOutputStream(f);
+				fos.write(b);
+				fos.close();
+			} catch (Exception e) {
+				if (Log.isTraceEnable("proxy")) {
+					Log.printStack(e);
+				}
+			}
+		}
+
 		if (clzMap == null) {
 			clzMap = new ConcurrentHashMap<>();
 		}
@@ -171,14 +179,6 @@ public final class AsmUtils {
 			if (clz != null) {
 				return clz;
 			}
-			Class<?> loaderClz = loader().getClass();
-			Method defineClass = loaderDefinds.get(loaderClz);
-			if (defineClass == null) {
-				defineClass = getMethod(loaderClz, "defineClass",
-						new Class<?>[] { String.class, byte[].class, int.class, int.class });
-				defineClass.setAccessible(true);
-				loaderDefinds.put(loaderClz, defineClass);
-			}
 			clz = (Class<?>) defineClass.invoke(loader(), fullName, b, 0, b.length);
 			if (clz == null) {
 				throw new Exception("cannot load class " + fullName);
@@ -190,13 +190,6 @@ public final class AsmUtils {
 
 	public static final int BADMODIFIERS = Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PRIVATE;
 
-	/**
-	 * true表示不是正常的public方法。<br>
-	 * 抽象，静态，final都不算是正常的public
-	 * 
-	 * @param modifiers
-	 * @return
-	 */
 	public static boolean notPublicOnly(int modifiers) {
 		return (modifiers & Modifier.PUBLIC) == 0 || (modifiers & BADMODIFIERS) != 0;
 	}
@@ -256,15 +249,6 @@ public final class AsmUtils {
 		return locals;
 	}
 
-	/**
-	 * 获取方法所对应的代理类方法
-	 * 
-	 * @param method
-	 *            真实类的方法
-	 * @param proxyedClass
-	 *            代理它的类，如果该类没有被代理，那么就是自己本身
-	 * @return
-	 */
 	public static Method proxyMethod(Method method, Class<?> proxyedClass) {
 		Class<?> clz = method.getDeclaringClass();
 		if (clz == proxyedClass) {

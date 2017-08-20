@@ -99,13 +99,6 @@ public class DBConfig {
 		}
 	}
 
-	/**
-	 * 
-	 * @param name
-	 * @return 返回读和写连个路由。如果一个数据源是可读写的，那么它同时存在两个路由中，但对象实体只有一个
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
-	 */
 	public DataSourceWraper createDS(String name) throws Exception {
 		Assert.isTrue(this.valid(), "url,username,password,type should not be null");
 		Assert.isTrue(type.matches("^(wr|read|write)$"), "db type should be one of(wr,read,write)");

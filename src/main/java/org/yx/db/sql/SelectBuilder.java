@@ -22,8 +22,8 @@ import java.util.StringJoiner;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.CollectionUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>> {
 
@@ -38,9 +38,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	List<String> selectColumns;
 
-	/**
-	 * 0：大于 1：大于等于 2：小于 3：小于等于
-	 */
 	protected Map<String, Object>[] _compare;
 
 	List<Order> orderby;
@@ -54,12 +51,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected boolean allowEmptyWhere;
 
-	/**
-	 * sql不包含"where"
-	 * 
-	 * @return
-	 * @throws Exception
-	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
 		List<Object> paramters = new ArrayList<>(10);
@@ -67,14 +58,14 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
-		if (StringUtils.isEmpty(where) && !this.allowEmptyWhere) {
+		if (StringUtil.isEmpty(where) && !this.allowEmptyWhere) {
 			SumkException.throwException(63254325, "empty where");
 		}
-		if (StringUtils.isNotEmpty(where)) {
+		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);
 		}
 		CharSequence order = buildOrder();
-		if (StringUtils.isNotEmpty(order)) {
+		if (StringUtil.isNotEmpty(order)) {
 			sql.append(" ORDER BY ").append(order);
 		}
 		if (this.offset >= 0 && this.limit > 0) {
@@ -84,7 +75,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	protected CharSequence buildOrder() {
-		if (CollectionUtils.isEmpty(this.orderby)) {
+		if (CollectionUtil.isEmpty(this.orderby)) {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder();
@@ -108,13 +99,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return sj.toString();
 	}
 
-	/**
-	 * 将参数解析成sql，eq和in条件的时候，会判断是否都是使用redis主键<BR>
-	 * 使用全局变量，但不能改变全局变量的值
-	 * 
-	 * @param 用于存储PreparedStatement中的参数列表
-	 * @return 不包含“WHERE”
-	 */
 	protected CharSequence buildWhere(List<Object> paramters) {
 		ItemJoiner joiner = new ItemJoiner(" AND ", "", "");
 		joiner.addNotEmptyItem(buildValid(paramters)).addNotEmptyItem(buildIn(paramters))
@@ -165,16 +149,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return joiner.toCharSequence();
 	}
 
-	/**
-	 * 用AND方式解析src中的key-value，如果存在不能被匹配的key，就抛出异常<BR>
-	 * 返回的sql，没有用()包围起来，如果需要的话，要自己完成这一步。
-	 * 
-	 * @param src
-	 * @param 比较符号：=、>、>=等
-	 * @return 如果src为空，就返回null
-	 */
 	private CharSequence parseMap(Map<String, Object> src, String compare, List<Object> paramters) {
-		if (CollectionUtils.isEmpty(src)) {
+		if (CollectionUtil.isEmpty(src)) {
 			return null;
 		}
 
@@ -198,7 +174,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	private CharSequence parseEqual(Map<String, Object> src, List<Object> paramters) {
-		if (CollectionUtils.isEmpty(src)) {
+		if (CollectionUtil.isEmpty(src)) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create();
@@ -226,18 +202,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	protected static class Order {
-		/**
-		 * java中的字段名
-		 */
+
 		String name;
-		/**
-		 * true表示降序
-		 */
+
 		boolean desc;
 
-		/**
-		 * order by的语句
-		 */
 		public String toString(PojoMeta pm) {
 			ColumnMeta cm = pm.getByFieldName(name);
 			String dbName = cm == null ? name : cm.dbColumn;

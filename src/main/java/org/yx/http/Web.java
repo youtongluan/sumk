@@ -57,5 +57,4 @@ public @interface Web {
 	String custom() default "";
 
 	String[] type() default { "" };
-
 }

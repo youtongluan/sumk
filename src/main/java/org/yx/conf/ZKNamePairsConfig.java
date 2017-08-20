@@ -17,9 +17,6 @@ package org.yx.conf;
 
 import org.I0Itec.zkclient.IZkDataListener;
 
-/**
- * 用于操作zk中的appinfo对应的变量信息
- */
 public abstract class ZKNamePairsConfig implements SystemConfig {
 
 	private NamePairs zkInfo = new NamePairs(null);

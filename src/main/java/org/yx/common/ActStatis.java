@@ -22,16 +22,6 @@ public class ActStatis {
 
 	private Map<String, Statis> actStatis = new ConcurrentHashMap<>();
 
-	/**
-	 * 对一次访问的统计
-	 * 
-	 * @param name
-	 *            接口名
-	 * @param time
-	 *            接口消耗的时间
-	 * @param success
-	 *            接口访问是否成功
-	 */
 	public void visit(String name, long time, boolean success) {
 		Statis statis = actStatis.get(name);
 		if (statis == null) {

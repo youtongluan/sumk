@@ -17,7 +17,9 @@ package org.yx.asm;
 
 import org.objectweb.asm.Opcodes;
 
-public interface Vars {
-	int JVM_VERSION = Opcodes.V1_8;
-	int ASM_VER = Opcodes.ASM5;
+public class Vars {
+
+	public static final int JVM_VERSION = Opcodes.V1_8;
+
+	public static final int ASM_VER = Opcodes.ASM5;
 }

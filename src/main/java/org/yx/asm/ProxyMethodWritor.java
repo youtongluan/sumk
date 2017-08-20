@@ -15,35 +15,28 @@
  */
 package org.yx.asm;
 
-import static org.objectweb.asm.Opcodes.AASTORE;
 import static org.objectweb.asm.Opcodes.ACONST_NULL;
 import static org.objectweb.asm.Opcodes.ALOAD;
-import static org.objectweb.asm.Opcodes.ANEWARRAY;
 import static org.objectweb.asm.Opcodes.ARETURN;
 import static org.objectweb.asm.Opcodes.ASTORE;
 import static org.objectweb.asm.Opcodes.ATHROW;
-import static org.objectweb.asm.Opcodes.BIPUSH;
-import static org.objectweb.asm.Opcodes.DLOAD;
 import static org.objectweb.asm.Opcodes.DRETURN;
-import static org.objectweb.asm.Opcodes.DSTORE;
 import static org.objectweb.asm.Opcodes.DUP;
-import static org.objectweb.asm.Opcodes.FLOAD;
 import static org.objectweb.asm.Opcodes.FRETURN;
-import static org.objectweb.asm.Opcodes.FSTORE;
 import static org.objectweb.asm.Opcodes.GOTO;
-import static org.objectweb.asm.Opcodes.ICONST_0;
-import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.INVOKEVIRTUAL;
 import static org.objectweb.asm.Opcodes.IRETURN;
-import static org.objectweb.asm.Opcodes.ISTORE;
-import static org.objectweb.asm.Opcodes.LLOAD;
 import static org.objectweb.asm.Opcodes.LRETURN;
-import static org.objectweb.asm.Opcodes.LSTORE;
 import static org.objectweb.asm.Opcodes.NEW;
 import static org.objectweb.asm.Opcodes.RETURN;
 import static org.objectweb.asm.Opcodes.SIPUSH;
+import static org.yx.asm.WriterHelper.SINGLE;
+import static org.yx.asm.WriterHelper.WIDTH;
+import static org.yx.asm.WriterHelper.buildParamArray;
+import static org.yx.asm.WriterHelper.loadFromLocalVariable;
+import static org.yx.asm.WriterHelper.storeToLocalVariable;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -58,9 +51,6 @@ import org.yx.bean.AopMetaHolder;
 import org.yx.conf.AppInfo;
 
 public class ProxyMethodWritor {
-	private static final int SINGLE = AppInfo.getInt("sumk.aop.single", 1);
-	private static final int WIDTH = AppInfo.getInt("sumk.aop.width", 2);
-	static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 31024));
 
 	private static void jReturn(MethodVisitor mv, Class<?> c) {
 		if (c == Integer.TYPE || c == Boolean.TYPE || c == Byte.TYPE || c == Character.TYPE || c == Short.TYPE) {
@@ -76,107 +66,12 @@ public class ProxyMethodWritor {
 		}
 	}
 
-	private static int storeToLocalVariable(MethodVisitor mv, Class<?> c, int frameIndex) {
-		if (c == Integer.TYPE || c == Boolean.TYPE || c == Byte.TYPE || c == Character.TYPE || c == Short.TYPE) {
-			mv.visitVarInsn(ISTORE, frameIndex);
-			return SINGLE;
-		}
-		if (c == Float.TYPE) {
-			mv.visitVarInsn(FSTORE, frameIndex);
-			return SINGLE;
-		}
-		if (c == Double.TYPE) {
-			mv.visitVarInsn(DSTORE, frameIndex);
-			return WIDTH;
-		}
-		if (c == Long.TYPE) {
-			mv.visitVarInsn(LSTORE, frameIndex);
-			return WIDTH;
-		}
-
-		mv.visitVarInsn(ASTORE, frameIndex);
-		return SINGLE;
-
-	}
-
-	private static int loadFromLocalVariable(MethodVisitor mv, Class<?> c, int frameIndex, boolean autoBox) {
-
-		if (c == Integer.TYPE) {
-			mv.visitVarInsn(ILOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-			}
-			return SINGLE;
-		}
-		if (c == Boolean.TYPE) {
-			mv.visitVarInsn(ILOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
-			}
-			return SINGLE;
-		}
-		if (c == Byte.TYPE) {
-			mv.visitVarInsn(ILOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Byte", "valueOf", "()B", false);
-			}
-			return SINGLE;
-		}
-		if (c == Character.TYPE) {
-			mv.visitVarInsn(ILOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Character", "valueOf", "()C", false);
-			}
-			return SINGLE;
-		}
-		if (c == Short.TYPE) {
-			mv.visitVarInsn(ILOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKEVIRTUAL, "java/lang/Short", "valueOf", "()S", false);
-			}
-			return SINGLE;
-		}
-		if (c == Float.TYPE) {
-			mv.visitVarInsn(FLOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
-			}
-			return SINGLE;
-		}
-		if (c == Double.TYPE) {
-			mv.visitVarInsn(DLOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
-			}
-			return WIDTH;
-		}
-		if (c == Long.TYPE) {
-			mv.visitVarInsn(LLOAD, frameIndex);
-			if (autoBox) {
-				mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
-			}
-			return WIDTH;
-		}
-
-		mv.visitVarInsn(ALOAD, frameIndex);
-		return SINGLE;
-
-	}
-
 	private static int argLength(Class<?>[] params) {
 		int size = 0;
 		for (Class<?> param : params) {
 			size += (param == Double.TYPE || param == Long.TYPE) ? WIDTH : SINGLE;
 		}
 		return size;
-	}
-
-	private static void visitInt(MethodVisitor mv, int num) {
-		if (num > 5) {
-			mv.visitIntInsn(BIPUSH, num);
-		} else {
-			mv.visitInsn(ICONST_0 + num);
-		}
 	}
 
 	private static class ProxyBuilder {
@@ -188,36 +83,20 @@ public class ProxyMethodWritor {
 
 		private final int aopExcutorIndex;
 
+		static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 32024));
+
 		private void jReturn() {
 			ProxyMethodWritor.jReturn(mv, returnType);
 		}
 
 		private int storeReuturnToLocalVariable(int frameIndex) {
-			return ProxyMethodWritor.storeToLocalVariable(mv, returnType, frameIndex);
+			return storeToLocalVariable(mv, returnType, frameIndex);
 		}
 
 		private void loadArgs() {
 			int frameIndex = 1;
 			for (Class<?> argType : params) {
 				frameIndex += loadFromLocalVariable(mv, argType, frameIndex, false);
-			}
-		}
-
-		private void buildParamArray() {
-			final int len = params == null ? 0 : params.length;
-			visitInt(mv, len);
-
-			mv.visitTypeInsn(ANEWARRAY, "java/lang/Object");
-			if (len == 0) {
-				return;
-			}
-			int frameIndex = 1;
-			for (int i = 0; i < len; i++) {
-				mv.visitInsn(DUP);
-				Class<?> argType = params[i];
-				visitInt(mv, i);
-				frameIndex += loadFromLocalVariable(mv, argType, frameIndex, true);
-				mv.visitInsn(AASTORE);
 			}
 		}
 
@@ -254,7 +133,7 @@ public class ProxyMethodWritor {
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex);
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			this.buildParamArray();
+			buildParamArray(mv, params);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "before", "([Ljava/lang/Object;)V", false);
 			this.callSuperMethod();
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
@@ -330,7 +209,7 @@ public class ProxyMethodWritor {
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex);
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			this.buildParamArray();
+			buildParamArray(mv, params);
 			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "before", "([Ljava/lang/Object;)V", false);
 			this.callSuperMethod();
 			int returnWidth = this.storeReuturnToLocalVariable(this.aopExcutorIndex + 1);

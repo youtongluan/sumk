@@ -34,7 +34,7 @@ import org.yx.listener.Listener;
 import org.yx.log.Log;
 import org.yx.log.LogType;
 import org.yx.rpc.client.Rpc;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class SumkServer {
 	private static volatile boolean started;
@@ -130,7 +130,7 @@ public class SumkServer {
 	private static List<String> allPackage(List<String> ps) {
 		List<String> list = new ArrayList<String>();
 		for (String p : ps) {
-			if (StringUtils.isEmpty(p)) {
+			if (StringUtil.isEmpty(p)) {
 				continue;
 			}
 			p = p.replace('，', ',');

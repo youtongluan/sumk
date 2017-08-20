@@ -29,7 +29,7 @@ import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.http.HttpUtil;
 import org.yx.log.Log;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 import org.yx.util.secury.Base64Util;
 
@@ -55,16 +55,16 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			}
 			byte[] key = createEncryptKey(req);
 			String userToken = obj.getUserId();
-			if (StringUtils.isNotEmpty(userToken)) {
+			if (StringUtil.isNotEmpty(userToken)) {
 				String type = this.getType();
-				if (StringUtils.isNotEmpty(type)) {
+				if (StringUtil.isNotEmpty(type)) {
 					type = new String(Base64Util.encode(type.toUpperCase().getBytes()));
 					userToken = type + "_" + userToken;
 				}
 			}
 			session.putKey(sid, key, userToken);
 			resp.setHeader(HttpHeader.SESSIONID, sid);
-			if (StringUtils.isNotEmpty(userToken)) {
+			if (StringUtil.isNotEmpty(userToken)) {
 				resp.setHeader(HttpHeader.TOKEN, userToken);
 			}
 			outputKey(resp, key);
@@ -79,13 +79,13 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 				cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
 
 				resp.addHeader("Set-Cookie", cookie.toString());
-				if (StringUtils.isNotEmpty(userToken)) {
+				if (StringUtil.isNotEmpty(userToken)) {
 					cookie.setLength(0);
 					cookie.append(HttpHeader.TOKEN).append('=').append(userToken).append(attr);
 					resp.addHeader("Set-Cookie", cookie.toString());
 				}
 				String type = this.getType();
-				if (StringUtils.isNotEmpty(type)) {
+				if (StringUtil.isNotEmpty(type)) {
 					cookie.setLength(0);
 					cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
 					resp.addHeader("Set-Cookie", cookie.toString());

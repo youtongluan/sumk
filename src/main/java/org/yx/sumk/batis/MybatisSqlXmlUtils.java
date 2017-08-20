@@ -20,7 +20,7 @@ import java.util.Map;
 
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
-import org.yx.conf.MultiResourceFactory;
+import org.yx.conf.MultiResourceLoader;
 import org.yx.util.Assert;
 
 /**
@@ -33,11 +33,11 @@ import org.yx.util.Assert;
 public final class MybatisSqlXmlUtils {
 
 	public static Map<String, InputStream> openInputs(String db) throws Exception {
-		String resourceFactory = AppInfo.get("sumk.db.batis.factory." + db, LocalSqlXmlFactory.class.getName());
+		String resourceFactory = AppInfo.get("sumk.db.batis.loader." + db, LocalSqlXmlLoader.class.getName());
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
-		Assert.isTrue(MultiResourceFactory.class.isAssignableFrom(factoryClz),
-				resourceFactory + " should extend from MultiResourceFactory");
-		MultiResourceFactory factory = (MultiResourceFactory) factoryClz.newInstance();
+		Assert.isTrue(MultiResourceLoader.class.isAssignableFrom(factoryClz),
+				resourceFactory + " should extend from MultiResourceLoader");
+		MultiResourceLoader factory = (MultiResourceLoader) factoryClz.newInstance();
 		return factory.openInputs(db);
 	}
 

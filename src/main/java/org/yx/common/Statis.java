@@ -36,11 +36,6 @@ public class Statis {
 		this.failedTime = new AtomicLong(0);
 	}
 
-	/**
-	 * 增加一次访问
-	 * 
-	 * @param t
-	 */
 	public void successVisit(long t) {
 		this.count.incrementAndGet();
 		this.time.addAndGet(t);

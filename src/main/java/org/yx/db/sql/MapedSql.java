@@ -60,11 +60,6 @@ public class MapedSql {
 		this.paramters.addAll(ps);
 	}
 
-	/**
-	 * 这个值有可能为null，这是为了性能考虑
-	 * 
-	 * @return
-	 */
 	public DBEvent getEvent() {
 		return event;
 	}

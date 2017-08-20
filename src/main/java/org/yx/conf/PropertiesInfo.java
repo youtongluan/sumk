@@ -17,12 +17,13 @@ package org.yx.conf;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.log.Log;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 
@@ -34,10 +35,10 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 		FileMonitor.inst.addHandle(this);
 	}
 
-	Map<String, String> pro = new HashMap<>();
+	protected Map<String, String> map = new HashMap<>();
 
 	public String get(String key) {
-		return pro.get(key);
+		return map.get(key);
 	}
 
 	@Override
@@ -55,7 +56,7 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 		if (in == null) {
 			return;
 		}
-		pro = Collections.unmodifiableMap(CollectionUtils.loadMap(in));
+		map = Collections.unmodifiableMap(CollectionUtil.loadMap(in));
 	}
 
 	public void start() {
@@ -63,4 +64,17 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 		FileMonitor.inst.start();
 	}
 
+	@Override
+	public Collection<String> keys() {
+		return map.keySet();
+	}
+
+	@Override
+	public String get(String key, String defaultValue) {
+		String value = map.get(key);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		return defaultValue;
+	}
 }

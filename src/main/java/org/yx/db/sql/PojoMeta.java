@@ -33,7 +33,7 @@ import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.redis.Counter;
 import org.yx.redis.RedisPool;
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 
 public class PojoMeta {
 	private final static char KEY_SPLIT = ',';
@@ -163,9 +163,8 @@ public class PojoMeta {
 
 		String _pre = table.preInCache();
 
-		this.pre = StringUtils.isEmpty(_pre) ? "{" + this.pojoClz.getSimpleName() + "}" : _pre;
-		this.tableName = StringUtils.isEmpty(table.value()) ? this.pojoClz.getSimpleName().toLowerCase()
-				: table.value();
+		this.pre = StringUtil.isEmpty(_pre) ? "{" + this.pojoClz.getSimpleName() + "}" : _pre;
+		this.tableName = StringUtil.isEmpty(table.value()) ? this.pojoClz.getSimpleName().toLowerCase() : table.value();
 	}
 
 	public String getTableName() {

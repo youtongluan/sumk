@@ -25,9 +25,7 @@ import org.yx.redis.RecordReq;
 import org.yx.redis.RedisPool;
 
 public class Exchange {
-	/**
-	 * 移除掉已经从数据库中获取的条件
-	 */
+
 	private List<Map<String, Object>> leftIn;
 
 	private List<String> data;

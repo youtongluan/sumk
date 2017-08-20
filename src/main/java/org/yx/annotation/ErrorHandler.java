@@ -13,24 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.annotation;
 
-import java.io.InputStream;
-import java.util.Map;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * 根据一定的规则，获取批量的输入流
- * 
- * @author 游夏
- *
- */
-public interface MultiResourceFactory {
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Inherited
+public @interface ErrorHandler {
 
-	/**
-	 * 
-	 * @param dbName
-	 * @return key一般是资源名，比如文件路径
-	 * @throws Exception
-	 */
-	Map<String, InputStream> openInputs(String dbName) throws Exception;
+	int code();
+
+	String message();
+
+	ExceptionStrategy strategy() default ExceptionStrategy.IF_NO_BIZEXCEPTION;
+
 }

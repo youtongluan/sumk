@@ -49,12 +49,6 @@ public class Routes {
 		}
 	}
 
-	/**
-	 * 初始化数据。会用新数据代替旧的
-	 * 
-	 * @param route
-	 * @param data
-	 */
 	private static void _refresh(Map<Host, ZkData> data, Map<String, RpcRoute> route) {
 		Routes r = new Routes(data, route);
 		Routes.ROUTE = r;
@@ -101,13 +95,6 @@ public class Routes {
 		_refresh(datas, routes);
 	}
 
-	/**
-	 * 返回方法和路由的键值对，如果方法为空，返回空map。
-	 * 
-	 * @param url
-	 * @param data
-	 * @return
-	 */
 	private static Map<String, ServerMachine> createServerMachine(Host url, ZkData data) {
 		Map<String, ServerMachine> servers = new HashMap<>();
 		int weight = data.weight > 0 ? data.weight : 100;

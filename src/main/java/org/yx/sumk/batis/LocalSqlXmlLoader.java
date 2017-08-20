@@ -17,7 +17,6 @@ package org.yx.sumk.batis;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -25,15 +24,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
+import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
-import org.yx.conf.MultiResourceFactory;
+import org.yx.conf.MultiResourceLoader;
 import org.yx.log.Log;
 
-public class LocalSqlXmlFactory implements MultiResourceFactory {
+public class LocalSqlXmlLoader implements MultiResourceLoader {
 
-	private File fileInClassPath(String uri) throws URISyntaxException, FileNotFoundException {
-		URL url = this.getClass().getClassLoader().getResource(uri);
+	private File fileInClassPath(String uri) throws URISyntaxException {
+		URL url = Loader.getResource(uri);
 		return new File(url.toURI());
 	}
 
@@ -73,6 +74,11 @@ public class LocalSqlXmlFactory implements MultiResourceFactory {
 			}
 
 		}
+	}
+
+	@Override
+	public boolean startListen(Consumer<MultiResourceLoader> consumer) {
+		return false;
 	}
 
 }

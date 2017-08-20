@@ -15,7 +15,7 @@
  */
 package org.yx.exception;
 
-import org.yx.util.StringUtils;
+import org.yx.util.StringUtil;
 import org.yx.validate.ParamInfo;
 
 /**
@@ -48,7 +48,7 @@ public class InvalidParamException extends Exception {
 	public String getMessage() {
 		String ret = super.getMessage();
 		if (ret.contains("#")) {
-			return info != null && info.getParam() != null && StringUtils.isNotEmpty(info.getParam().cnName())
+			return info != null && info.getParam() != null && StringUtil.isNotEmpty(info.getParam().cnName())
 					? ret.replace("#", info.getParam().cnName()) : ret.replace("#", "参数");
 		}
 		return ret;

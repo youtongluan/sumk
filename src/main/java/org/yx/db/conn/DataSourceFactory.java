@@ -28,16 +28,7 @@ import org.yx.db.DBType;
 import org.yx.util.Assert;
 
 public class DataSourceFactory {
-	/**
-	 * 创建数据库连接池，包含了读写的操作
-	 * 
-	 * @param db
-	 *            数据库的名称
-	 * @return 返回读和写2个key。如果数据源是可读写的，那么它会同时出现在读写2个池子里，但是读写是共用的
-	 * @throws IOException
-	 * @throws IllegalAccessException
-	 * @throws InvocationTargetException
-	 */
+
 	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
 		Map<String, Map<String, String>> hmap = parse(db);
 		List<WeightedDS> readDSList = new ArrayList<>(4);

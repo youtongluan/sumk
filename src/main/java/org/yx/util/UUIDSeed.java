@@ -44,14 +44,6 @@ public final class UUIDSeed {
 		return r;
 	}
 
-	/**
-	 * 
-	 * @param source
-	 * @param from
-	 *            包含当前索引
-	 * @param number
-	 * @param bytes
-	 */
 	static void fill(char[] source, final int from, long number, int bytes) {
 		if (number == Long.MIN_VALUE) {
 			number = Long.MAX_VALUE;

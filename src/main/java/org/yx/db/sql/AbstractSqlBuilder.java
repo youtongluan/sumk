@@ -23,7 +23,7 @@ import java.util.Set;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.Assert;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	static {
@@ -40,9 +40,6 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	protected List<Map<String, Object>> in;
 
-	/**
-	 * 检查map中的key是不是都是有效的字段.默认为true
-	 */
 	protected boolean failIfPropertyNotMapped;
 
 	protected void checkMap(Map<String, ?> map, PojoMeta pm) {
@@ -61,16 +58,9 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	}
 
 	protected void checkIn() {
-		Assert.isTrue(CollectionUtils.isNotEmpty(this.in), "no conditions");
+		Assert.isTrue(CollectionUtil.isNotEmpty(this.in), "no conditions");
 	}
 
-	/**
-	 * 添加参数，会自动判断类型，设置pojoMeta<BR>
-	 * src如果是pojo对象，是否将值为null的字段加入到in中，由withnull属性决定
-	 * 
-	 * @param src
-	 *            Map或pojo类型
-	 */
 	protected void _addIn(Object src) {
 		this._addIn(src, withnull);
 	}

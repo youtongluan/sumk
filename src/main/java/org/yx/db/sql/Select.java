@@ -29,7 +29,7 @@ import org.yx.db.visit.ResultHandler;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.Assert;
-import org.yx.util.CollectionUtils;
+import org.yx.util.CollectionUtil;
 import org.yx.util.SBuilder;
 
 /**
@@ -77,7 +77,7 @@ public final class Select extends SelectBuilder {
 
 	@SuppressWarnings("unchecked")
 	private Select setCompare(int index, Map<String, Object> map) {
-		if (CollectionUtils.isEmpty(map)) {
+		if (CollectionUtil.isEmpty(map)) {
 			return this;
 		}
 		if (_compare == null) {
@@ -380,8 +380,8 @@ public final class Select extends SelectBuilder {
 				}
 			}
 
-			if (this.in != exchange.getLeftIn() && CollectionUtils.isNotEmpty(this.in)
-					&& CollectionUtils.isEmpty(exchange.getLeftIn())) {
+			if (this.in != exchange.getLeftIn() && CollectionUtil.isNotEmpty(this.in)
+					&& CollectionUtil.isEmpty(exchange.getLeftIn())) {
 				return list;
 			}
 			this.in = exchange.getLeftIn();

@@ -42,4 +42,9 @@ public interface UserSession {
 	void removeSession();
 
 	boolean isLogin(String userId);
+
+	/**
+	 * 如果不存在，就返回null
+	 */
+	String getUserId();
 }

@@ -22,8 +22,8 @@ import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.CollectionUtils;
-import org.yx.util.StringUtils;
+import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public class IntfImplement {
 
@@ -34,16 +34,16 @@ public class IntfImplement {
 				Log.get("sumk.SYS").error("sumk-intf file cannot found");
 				return;
 			}
-			Map<String, String> map = CollectionUtils.loadMap(in);
+			Map<String, String> map = CollectionUtil.loadMap(in);
 			for (String key : map.keySet()) {
-				if (StringUtils.isEmpty(key)) {
+				if (StringUtil.isEmpty(key)) {
 					continue;
 				}
 				String impl = AppInfo.get("sumk.intf." + key);
-				if (StringUtils.isEmpty(impl)) {
+				if (StringUtil.isEmpty(impl)) {
 					impl = map.get(key);
 				}
-				if (StringUtils.isEmpty(impl)) {
+				if (StringUtil.isEmpty(impl)) {
 					continue;
 				}
 				Class<?> intfClz = Loader.loadClass(key);
