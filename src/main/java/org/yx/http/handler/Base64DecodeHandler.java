@@ -37,11 +37,9 @@ public class Base64DecodeHandler implements HttpHandler {
 		if (ctx.getHttpNode().argClz == null) {
 			return false;
 		}
-		byte[] bs;
-		if (String.class.isInstance(ctx.getData())) {
-			bs = ((String) ctx.getData()).getBytes(ctx.getCharset());
-		} else {
-			bs = (byte[]) ctx.getData();
+		byte[] bs = ctx.getDataInByteArray();
+		if (bs == null) {
+			return false;
 		}
 		byte[] data = Base64Util.decode(bs);
 		ctx.setData(data);

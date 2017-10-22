@@ -21,7 +21,7 @@ package org.yx.exception;
  * @author 游夏
  *
  */
-public class SumkException extends CodeBaseException {
+public class SumkException extends CodeException {
 
 	private static final long serialVersionUID = 3453246435546L;
 

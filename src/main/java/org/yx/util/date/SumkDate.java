@@ -20,6 +20,8 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -48,6 +50,10 @@ public class SumkDate {
 	 * HH:mm:ss.SSS
 	 */
 	public final static String TIME_MILS = "HH:mm:ss.SSS";
+
+	public static final DateTimeFormatter CHN_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+			.append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ').append(DateTimeFormatter.ISO_LOCAL_TIME)
+			.toFormatter();
 
 	private final int year;
 	private final int month;
@@ -282,6 +288,8 @@ public class SumkDate {
 			return new Date(DateTimeFormater.inst.parse(dateString).getTimeInMillis());
 		case DATE_TIME_MILS:
 			return new Date(FullDateTimeFormater.inst.parse(dateString).getTimeInMillis());
+		case DATE:
+			return new Date(DateFormater.inst.parse(dateString).getTimeInMillis());
 		default:
 			return new SimpleDateFormat(format).parse(dateString);
 		}

@@ -13,27 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.rpc.client;
 
-public class BizException extends CodeException {
+import org.yx.exception.CodeException;
+import org.yx.exception.SoaException;
+import org.yx.rpc.RpcCode;
 
-	private static final long serialVersionUID = 453453454L;
+public class ErrorRpcFuture extends AbstractRpcFuture {
 
-	public BizException(int code, String msg) {
-		super(msg);
-		this.code = code;
+	private final CodeException exception;
+
+	public ErrorRpcFuture(Throwable e) {
+		this.exception = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
+				: new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
 	}
 
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
-	}
-
-	public static void throwException(int code, String msg) throws BizException {
-		throw new BizException(code, msg);
-	}
-
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
+	public RpcResult rpcResult(long timeout) {
+		return new RpcResult(null, this.exception);
 	}
 
 }

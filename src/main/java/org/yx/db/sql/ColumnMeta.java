@@ -18,6 +18,7 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import org.yx.conf.Const;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.UpdateType;
@@ -39,16 +40,20 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 
 	public final boolean isDate;
 
+	public final String comment;
+
 	ColumnMeta(Field field, Column c) {
 		super();
 		this.field = field;
 		this.meta = c == null ? ColumnType.NORMAL : c.columnType();
 		if (c == null) {
-			this.columnOrder = 64;
+			this.columnOrder = Const.DEFAULT_ORDER;
 			this.updateType = UpdateType.CUSTOM;
+			this.comment = null;
 		} else {
-			this.columnOrder = 1;
+			this.columnOrder = c.columnOrder();
 			this.updateType = c.updateType();
+			this.comment = c.comment();
 		}
 		this.dbColumn = (c == null || StringUtil.isEmpty(c.value())) ? field.getName().toLowerCase() : c.value();
 		this.isNumber = Number.class.isAssignableFrom(field.getType());
@@ -67,14 +72,6 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 		return meta.accept(type);
 	}
 
-	/**
-	 * 
-	 * @param owner
-	 *            pojo类或者Map<String,Object>
-	 * @return
-	 * @throws IllegalArgumentException
-	 * @throws IllegalAccessException
-	 */
 	public Object value(Object owner) throws IllegalArgumentException, IllegalAccessException {
 		if (Map.class.isInstance(owner)) {
 			@SuppressWarnings("unchecked")
@@ -110,7 +107,7 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 	@Override
 	public int compareTo(ColumnMeta o) {
 		if (this.columnOrder == o.columnOrder) {
-			return this.dbColumn.compareTo(o.dbColumn);
+			return this.meta.order - o.meta.order;
 		}
 		return this.columnOrder > o.columnOrder ? 1 : -1;
 	}

@@ -124,8 +124,8 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 
 	private MapedSql batchInsert() throws InstantiationException, IllegalAccessException {
 		MapedSql ms = new MapedSql();
-		ItemJoiner columns = ItemJoiner.create(",");
-		ItemJoiner placeholder = ItemJoiner.create(",");
+		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
+		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
 		int recodeSize = in.size();
 		for (ColumnMeta fm : fms) {

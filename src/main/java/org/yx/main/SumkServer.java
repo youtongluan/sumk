@@ -32,7 +32,6 @@ import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.listener.Listener;
 import org.yx.log.Log;
-import org.yx.log.LogType;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtil;
 
@@ -50,7 +49,7 @@ public class SumkServer {
 	}
 
 	public static void main(String[] args) {
-		start(args);
+		start(Arrays.asList(args));
 	}
 
 	public static void start() {
@@ -110,19 +109,12 @@ public class SumkServer {
 
 	private static void handleArgs(Collection<String> args) {
 		args.forEach(arg -> {
-			switch (arg) {
-			case "slf4j":
-				Log.setLogType(LogType.slf4j);
-				break;
-			default:
-				if (arg.contains("=")) {
-					String[] kv = arg.split("=", 2);
-					StartContext.inst.put(kv[0], kv[1]);
-					break;
-				}
-				StartContext.inst.put(arg, Boolean.TRUE);
-				break;
+			if (arg.contains("=")) {
+				String[] kv = arg.split("=", 2);
+				StartContext.inst.put(kv[0], kv[1]);
+				return;
 			}
+			StartContext.inst.put(arg, Boolean.TRUE);
 		});
 
 	}

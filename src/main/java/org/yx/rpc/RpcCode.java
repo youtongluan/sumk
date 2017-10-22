@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.rpc;
 
-public class BizException extends CodeException {
+public interface RpcCode {
 
-	private static final long serialVersionUID = 453453454L;
+	int UNKNOW = 300;
 
-	public BizException(int code, String msg) {
-		super(msg);
-		this.code = code;
-	}
+	int NO_ROUTE = 400;
 
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
-	}
+	int NO_NODE_AVAILABLE = 410;
 
-	public static void throwException(int code, String msg) throws BizException {
-		throw new BizException(code, msg);
-	}
+	int TIMEOUT = 420;
 
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
-	}
+	int SERVER_HANDLE_ERROR = 540;
+
+	int SERVER_UNKNOW = 500;
 
 }

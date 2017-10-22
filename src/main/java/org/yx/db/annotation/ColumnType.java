@@ -22,19 +22,19 @@ package org.yx.db.annotation;
  *
  */
 public enum ColumnType {
-	NORMAL(0),
+	NORMAL(0, 100),
 	/**
 	 * 数据库主键。不允许为null。在更新的时候，如果没有显式设置where条件，主键字段将不会被更新。<BR>
 	 */
-	ID_DB(1),
+	ID_DB(1, 1),
 	/**
 	 * redis 主键，不允许为null
 	 */
-	ID_CACHE(2),
+	ID_CACHE(2, 2),
 	/**
 	 * 既是数据库主键，也是redis主键。不允许为null，不会被更新
 	 */
-	ID_BOTH(3);
+	ID_BOTH(3, 1);
 
 	public boolean accept(ColumnType b) {
 		if (b == null) {
@@ -43,10 +43,12 @@ public enum ColumnType {
 		return this == b || (this.value & b.value) != 0;
 	}
 
-	private int value;
+	private final int value;
+	public final int order;
 
-	private ColumnType(int b) {
-		this.value = (byte) b;
+	private ColumnType(int v, int order) {
+		this.value = v;
+		this.order = order;
 	}
 
 }

@@ -19,9 +19,7 @@ import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 
 public class Response {
-	/**
-	 * request的ID
-	 */
+
 	private String sn;
 	private String json;
 	private SoaException exception;
@@ -61,7 +59,7 @@ public class Response {
 		this.sn = sn;
 	}
 
-	RuntimeException getException() {
+	public SoaException getException() {
 		return exception;
 	}
 

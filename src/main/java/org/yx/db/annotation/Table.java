@@ -55,4 +55,6 @@ public @interface Table {
 	 * @return
 	 */
 	CacheType cacheType() default CacheType.SINGLE;
+
+	String comment() default "";
 }

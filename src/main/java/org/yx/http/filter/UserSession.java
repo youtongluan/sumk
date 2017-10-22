@@ -19,7 +19,7 @@ public interface UserSession {
 
 	byte[] getKey(String sid);
 
-	void putKey(String sid, byte[] key, String userId);
+	void putKey(String sid, byte[] key, String userId, String type);
 
 	/**
 	 * 获取存储到session中的用户信息
@@ -41,7 +41,7 @@ public interface UserSession {
 
 	void removeSession();
 
-	boolean isLogin(String userId);
+	boolean isLogin(String userId, String type);
 
 	/**
 	 * 如果不存在，就返回null

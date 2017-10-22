@@ -21,6 +21,7 @@ import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcCode;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
@@ -55,7 +56,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			resp.setJson(GsonUtil.toJson(ret));
 		} catch (Throwable e) {
 			resp.setJson(null);
-			resp.setException(new SoaException(1001, e.getMessage(), e));
+			resp.setException(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {
 			ThreadContext.remove();
 		}

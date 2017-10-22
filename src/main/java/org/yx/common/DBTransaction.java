@@ -38,7 +38,7 @@ public class DBTransaction {
 	}
 
 	public void begin() {
-		Log.get(DBTransaction.class).trace("begin with embed:{}", embed);
+		Log.get("sumk.db").trace("begin with embed:{}", embed);
 
 		dbCtx = embed ? ConnectionPool.createIfAbsent(dbName, dbType) : ConnectionPool.create(dbName, dbType);
 	}

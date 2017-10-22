@@ -43,7 +43,7 @@ public class Loader {
 	}
 
 	public static Enumeration<URL> getResources(String name) throws IOException {
-		return loader().getResources(name);
+		return loader().getResources(name.trim());
 	}
 
 	public static URL getResource(String name) {

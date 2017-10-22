@@ -55,14 +55,7 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			}
 			byte[] key = createEncryptKey(req);
 			String userToken = obj.getUserId();
-			if (StringUtil.isNotEmpty(userToken)) {
-				String type = this.getType();
-				if (StringUtil.isNotEmpty(type)) {
-					type = new String(Base64Util.encode(type.toUpperCase().getBytes()));
-					userToken = type + "_" + userToken;
-				}
-			}
-			session.putKey(sid, key, userToken);
+			session.putKey(sid, key, userToken, this.getType());
 			resp.setHeader(HttpHeader.SESSIONID, sid);
 			if (StringUtil.isNotEmpty(userToken)) {
 				resp.setHeader(HttpHeader.TOKEN, userToken);

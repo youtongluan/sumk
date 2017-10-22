@@ -101,8 +101,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected CharSequence buildWhere(List<Object> paramters) {
 		ItemJoiner joiner = new ItemJoiner(" AND ", "", "");
-		joiner.addNotEmptyItem(buildValid(paramters)).addNotEmptyItem(buildIn(paramters))
-				.addNotEmptyItem(buildCompare(paramters));
+		joiner.appendNotEmptyItem(buildValid(paramters)).appendNotEmptyItem(buildIn(paramters))
+				.appendNotEmptyItem(buildCompare(paramters));
 		return joiner.toCharSequence();
 	}
 
@@ -121,7 +121,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (this._compare == null) {
 			return null;
 		}
-		ItemJoiner joiner = ItemJoiner.create();
+		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
 		for (int i = 0; i < COMPARES.length && i < this._compare.length; i++) {
 			Map<String, Object> map = this._compare[i];
 			CharSequence sub = this.parseMap(map, COMPARES[i], paramters);
@@ -137,7 +137,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (this.in == null || this.in.isEmpty()) {
 			return null;
 		}
-		ItemJoiner joiner = ItemJoiner.create(" OR ");
+		ItemJoiner joiner = ItemJoiner.create(" OR ", " ( ", " ) ");
 		List<Map<String, Object>> list = this.in;
 		for (Map<String, Object> map : list) {
 			CharSequence sub = this.parseEqual(map, paramters);
@@ -154,7 +154,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			return null;
 		}
 
-		ItemJoiner joiner = ItemJoiner.create();
+		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
 		src.forEach((filedName, v) -> {
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (v == null) {
@@ -177,7 +177,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (CollectionUtil.isEmpty(src)) {
 			return null;
 		}
-		ItemJoiner joiner = ItemJoiner.create();
+		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
 		src.forEach((filedName, v) -> {
 
 			if (v == null && !this.withnull) {

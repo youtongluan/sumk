@@ -19,33 +19,26 @@ import org.apache.mina.core.future.WriteFuture;
 import org.yx.exception.ConnectionException;
 import org.yx.exception.SoaException;
 import org.yx.rpc.Host;
+import org.yx.rpc.RpcCode;
 import org.yx.rpc.client.route.Routes;
 import org.yx.rpc.client.route.RpcRoute;
 
 class ReqSender {
 
-	/**
-	 * 同步发送
-	 * 
-	 * @param req
-	 * @param timeout
-	 * @return
-	 * @throws Exception
-	 */
-	public static ReqResp send(Req req, long timeout) throws Exception {
+	public static ReqResp send(Req req, long timeout) throws InterruptedException {
 		RespFuture future = sendAsync(req, timeout / 2);
 		return future.getResponse(timeout);
 	}
 
-	public static RespFuture sendAsync(Req req, long writeTimeout) throws Exception {
-		String method = req.getApi();
-		RpcRoute route = Routes.getRoute(method);
+	public static RespFuture sendAsync(Req req, long writeTimeout) throws InterruptedException {
+		String api = req.getApi();
+		RpcRoute route = Routes.getRoute(api);
 		if (route == null) {
-			SoaException.throwException(2353454, "can not find route for " + method, null);
+			throw new SoaException(RpcCode.NO_ROUTE, "can not find route for " + api, null);
 		}
 		Host url = route.getUrl();
 		if (url == null) {
-			SoaException.throwException(345234, "route for " + method + " are all disabled", null);
+			throw new SoaException(RpcCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled", null);
 		}
 		ReqSession session = ReqSessionHolder.getSession(url);
 		RespFuture future = RequestLocker.register(req);

@@ -29,8 +29,20 @@ public class HttpSettings {
 		return AppInfo.getBoolean("http.header.usecookie", true);
 	}
 
-	public static int httpSessionTimeout() {
-		return AppInfo.getInt("http.session.timeout", 3600);
+	public static int httpSessionTimeout(String type) {
+		int timeout = AppInfo.getInt("http.session.timeout", 3600);
+		if (type == null || type.isEmpty()) {
+			return timeout;
+		}
+		return AppInfo.getInt("http.session.timeout." + type, timeout);
+	}
+
+	public static int singleSessionTimeout(String type) {
+		int timeout = AppInfo.getInt("http.session.single.timeout", 3600 * 24);
+		if (type == null || type.isEmpty()) {
+			return timeout;
+		}
+		return AppInfo.getInt("http.session.single.timeout." + type, timeout);
 	}
 
 	/**

@@ -19,6 +19,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Date;
 
+import org.yx.common.DateAdapters;
 import org.yx.common.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.db.dao.Pojo;
@@ -65,6 +66,7 @@ public final class GsonUtil {
 		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
 			gb.setPrettyPrinting();
 		}
+		DateAdapters.register(gb, module);
 		return gb;
 	}
 

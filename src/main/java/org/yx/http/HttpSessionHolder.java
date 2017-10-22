@@ -83,8 +83,12 @@ public class HttpSessionHolder {
 		loadUserSession().updateSession(sessionObj);
 	}
 
-	public static boolean isSingleLogin() {
-		return AppInfo.getBoolean("http.session.single", false);
+	public static boolean isSingleLogin(String type) {
+		boolean single = AppInfo.getBoolean("http.session.single", false);
+		if (type == null || type.isEmpty()) {
+			return single;
+		}
+		return AppInfo.getBoolean("http.session.single." + type, single);
 	}
 
 	private static synchronized void initSession() {

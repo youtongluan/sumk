@@ -23,6 +23,7 @@ import org.apache.mina.core.session.IoSession;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
+import org.yx.rpc.RpcCode;
 import org.yx.util.GsonUtil;
 
 public class ServerHandler extends IoHandlerAdapter {
@@ -78,7 +79,7 @@ public class ServerHandler extends IoHandlerAdapter {
 			}
 		} catch (Exception e) {
 			Response resp = new Response();
-			resp.setException(new SoaException(45345, "server handler error", e));
+			resp.setException(new SoaException(RpcCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(GsonUtil.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
 				Log.printStack(e);

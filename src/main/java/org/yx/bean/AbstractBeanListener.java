@@ -51,7 +51,7 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 		if (!ps.contains(p2)) {
 			ps.add(p2);
 			this.packages = ps;
-			Log.get(this.getClass()).trace("add package {}", p);
+			Log.get("sumk.bean").trace("add package {}", p);
 			return true;
 		}
 		return false;

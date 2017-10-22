@@ -15,7 +15,7 @@
  */
 package org.yx.http.filter;
 
-import org.yx.conf.AppInfo;
+import org.yx.http.HttpHeadersHolder;
 import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.redis.Redis;
@@ -29,7 +29,14 @@ public class RemoteUserSession implements UserSession {
 
 	private static final String SESSION_OBJECT = "OBJ";
 
-	private static final String SINGLE_SESSION_PRE = "SINGLE_SES_";
+	private String singleKey(String userId, String type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append("SINGLE_SES_").append(userId);
+		if (type != null && type.length() > 0) {
+			sb.append('_').append(type);
+		}
+		return sb.toString();
+	}
 
 	private String bigKey() {
 		return bigKey(org.yx.http.HttpHeadersHolder.sessionId());
@@ -47,20 +54,20 @@ public class RemoteUserSession implements UserSession {
 	}
 
 	@Override
-	public void putKey(String sessionId, byte[] key, String userId) {
+	public void putKey(String sessionId, byte[] key, String userId, String type) {
 		String bigkey = bigKey(sessionId);
 		redis.hset(bigkey, AES_KEY, key);
-		redis.expire(bigkey, HttpSettings.httpSessionTimeout());
-		if ((!HttpSessionHolder.isSingleLogin()) || StringUtil.isEmpty(userId)) {
+		redis.expire(bigkey, HttpSettings.httpSessionTimeout(type));
+		if ((!HttpSessionHolder.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
 			return;
 		}
 
-		String userSessionKey = SINGLE_SESSION_PRE + userId;
+		String userSessionKey = singleKey(userId, type);
 		String oldSessionId = redis.get(userSessionKey);
 		if (StringUtil.isNotEmpty(oldSessionId)) {
 			redis.del(bigKey(oldSessionId));
 		}
-		redis.setex(userSessionKey, AppInfo.getInt("http.session.single.timeout", 3600 * 24), sessionId);
+		redis.setex(userSessionKey, HttpSettings.singleSessionTimeout(type), sessionId);
 	}
 
 	@Override
@@ -92,7 +99,7 @@ public class RemoteUserSession implements UserSession {
 		if (bigKey == null) {
 			return;
 		}
-		redis.expire(bigKey, HttpSettings.httpSessionTimeout());
+		redis.expire(bigKey, HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()));
 	}
 
 	@Override
@@ -100,7 +107,7 @@ public class RemoteUserSession implements UserSession {
 		String bigKey = this.bigKey(sid);
 		String json = GsonUtil.toJson(sessionObj);
 		redis.hset(bigKey, SESSION_OBJECT, json);
-		redis.expire(bigKey, HttpSettings.httpSessionTimeout());
+		redis.expire(bigKey, HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()));
 	}
 
 	@Override
@@ -122,11 +129,11 @@ public class RemoteUserSession implements UserSession {
 	}
 
 	@Override
-	public boolean isLogin(String userId) {
+	public boolean isLogin(String userId, String type) {
 		if (StringUtil.isEmpty(userId)) {
 			return false;
 		}
-		return redis.exists(SINGLE_SESSION_PRE + userId) == Boolean.TRUE;
+		return redis.exists(this.singleKey(userId, type)) == Boolean.TRUE;
 	}
 
 	@Override

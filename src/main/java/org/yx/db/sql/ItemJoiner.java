@@ -17,14 +17,6 @@ package org.yx.db.sql;
 
 public class ItemJoiner {
 
-	static ItemJoiner create() {
-		return create(" AND ");
-	}
-
-	static ItemJoiner create(CharSequence delimiter) {
-		return new ItemJoiner(delimiter, " ( ", " ) ");
-	}
-
 	public static ItemJoiner create(CharSequence delimiter, CharSequence pre, CharSequence suf) {
 		return new ItemJoiner(delimiter, pre, suf);
 	}
@@ -90,7 +82,7 @@ public class ItemJoiner {
 		return String.valueOf(this.toCharSequence());
 	}
 
-	public ItemJoiner addNotEmptyItem(CharSequence item) {
+	public ItemJoiner appendNotEmptyItem(CharSequence item) {
 		if (item == null || item.length() == 0) {
 			return this;
 		}

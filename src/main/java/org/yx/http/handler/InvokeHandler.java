@@ -28,7 +28,7 @@ import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpGson;
 import org.yx.http.Web;
-import org.yx.http.filter.HttpBizFilter;
+import org.yx.http.filter.WebFilter;
 import org.yx.log.Log;
 import org.yx.validate.ParamInfo;
 
@@ -44,7 +44,7 @@ public class InvokeHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
 		HttpNode info = ctx.getHttpNode();
-		if (!String.class.isInstance(ctx.getData())) {
+		if (ctx.getData() != null && !String.class.isInstance(ctx.getData())) {
 			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
 		}
 		Object ret = null;
@@ -74,6 +74,12 @@ public class InvokeHandler implements HttpHandler {
 			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
 				return exec(http.method, http.obj, null, null, ctx);
 			}
+			if (ctx.getData() == null) {
+				if (http.argNames != null && http.argNames.length > 0) {
+					HttpException.throwException(InvokeHandler.class, "there is no data");
+					return exec(http.method, http.obj, new Object[0], info.paramInfos, ctx);
+				}
+			}
 			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
 			Object[] params = argObj.params();
 			return exec(http.method, http.obj, params, info.paramInfos, ctx);
@@ -82,27 +88,27 @@ public class InvokeHandler implements HttpHandler {
 
 	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos, WebContext ctx)
 			throws Throwable {
-		List<HttpBizFilter> list = IOC.getBeans(HttpBizFilter.class);
+		List<WebFilter> list = IOC.getBeans(WebFilter.class);
 		if (list == null || list.isEmpty()) {
 			return BizExcutor.exec(m, obj, params, paramInfos);
 		}
 		HttpServletRequest req = ctx.getHttpRequest();
 		try {
-			for (HttpBizFilter f : list) {
-				if (!f.beforeInvoke(req, ctx.getHttpResponse(), ctx.getCharset())) {
+			for (WebFilter f : list) {
+				if (!f.beforeInvoke(req, ctx.getHttpResponse(), params)) {
 					return STOP;
 				}
 			}
 			Object ret = BizExcutor.exec(m, obj, params, paramInfos);
-			for (HttpBizFilter f : list) {
-				if (!f.afterInvoke(req, ctx.getHttpResponse(), ctx.getCharset(), ret)) {
+			for (WebFilter f : list) {
+				if (!f.afterInvoke(req, ctx.getHttpResponse(), params, ret)) {
 					return STOP;
 				}
 			}
 			return ret;
 		} catch (Exception e) {
-			for (HttpBizFilter f : list) {
-				Exception e2 = f.error(req, e);
+			for (WebFilter f : list) {
+				Exception e2 = f.error(req, params, e);
 				if (e2 != null) {
 					e = e2;
 				}

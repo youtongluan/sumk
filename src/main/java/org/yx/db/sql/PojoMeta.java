@@ -37,7 +37,7 @@ import org.yx.util.StringUtil;
 
 public class PojoMeta {
 	private final static char KEY_SPLIT = ',';
-	private final Table table;
+	final Table table;
 
 	final ColumnMeta[] fieldMetas;
 	/**
@@ -122,8 +122,8 @@ public class PojoMeta {
 		this.table = table;
 		this.fieldMetas = fieldMetas;
 		this.pojoClz = pojoClz;
-		List<ColumnMeta> rids = new ArrayList<ColumnMeta>();
-		List<ColumnMeta> pids = new ArrayList<ColumnMeta>();
+		List<ColumnMeta> rids = new ArrayList<>(4);
+		List<ColumnMeta> pids = new ArrayList<>(4);
 		for (ColumnMeta m : this.fieldMetas) {
 			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
 			filedNameMap.put(m.getFieldName().toLowerCase(), m);

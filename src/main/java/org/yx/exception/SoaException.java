@@ -18,7 +18,10 @@ package org.yx.exception;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-public class SoaException extends CodeBaseException {
+/**
+ * 这个异常是框架使用，开发者只需去捕获这个异常，不要去抛出这个异常
+ */
+public class SoaException extends CodeException {
 
 	private static final long serialVersionUID = 453453343454L;
 
@@ -33,26 +36,11 @@ public class SoaException extends CodeBaseException {
 		return exceptionClz;
 	}
 
-	/**
-	 * 如果是bizException，就会使用bizException的code，msg
-	 * 
-	 * @param code
-	 * @param msg
-	 * @param e
-	 */
 	public SoaException(int code, String msg, Throwable e) {
 		super(BizException.class.isInstance(e) ? e.getMessage() : msg);
 		this.code = BizException.class.isInstance(e) ? ((BizException) e).getCode() : code;
 		this.detailError = getException(e);
 		this.exceptionClz = e == null ? "" : e.getClass().getName();
-	}
-
-	public static void throwException(int code, String msg, Throwable exception) {
-		throw new SoaException(code, msg, exception);
-	}
-
-	public static void throwException(Throwable exception) {
-		throw new SoaException(-1, exception.getMessage(), exception);
 	}
 
 	private static String getException(Throwable e) {

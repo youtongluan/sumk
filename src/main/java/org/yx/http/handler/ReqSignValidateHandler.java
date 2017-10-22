@@ -37,11 +37,9 @@ public class ReqSignValidateHandler implements HttpHandler {
 		if (StringUtil.isEmpty(sign)) {
 			HttpException.throwException(this.getClass(), "签名不能为空");
 		}
-		byte[] bs;
-		if (String.class.isInstance(ctx.getData())) {
-			bs = ((String) ctx.getData()).getBytes(ctx.getCharset());
-		} else {
-			bs = (byte[]) ctx.getData();
+		byte[] bs = ctx.getDataInByteArray();
+		if (bs == null) {
+			return false;
 		}
 		if (salt == null) {
 			String saltStr = AppInfo.get("sumk.sign.salt");

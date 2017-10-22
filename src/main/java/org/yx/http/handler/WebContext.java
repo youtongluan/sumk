@@ -67,6 +67,13 @@ public class WebContext {
 		return data;
 	}
 
+	public byte[] getDataInByteArray() {
+		if (String.class.isInstance(data)) {
+			return ((String) data).getBytes(getCharset());
+		}
+		return (byte[]) data;
+	}
+
 	public Map<String, String> getHeaders() {
 		return headers;
 	}

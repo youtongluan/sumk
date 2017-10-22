@@ -47,10 +47,14 @@ public class DB {
 	 * 要执行execute方法才能生效
 	 * 
 	 * @param pojo
+	 *            pojo对象或pojo所对应的class对象
 	 * @return
 	 */
 	public static Insert insert(Object pojo) {
-		return new Insert(Visitors.modifyVisitor).insert(pojo);
+		if (Class.class.isInstance(pojo)) {
+			return insert().tableClass((Class<?>) pojo);
+		}
+		return insert().insert(pojo);
 	}
 
 	/**
@@ -74,7 +78,10 @@ public class DB {
 	 * @return
 	 */
 	public static Update update(Object pojo) {
-		return new Update(Visitors.modifyVisitor).updateTo(pojo);
+		if (Class.class.isInstance(pojo)) {
+			return update().tableClass((Class<?>) pojo);
+		}
+		return update().updateTo(pojo);
 	}
 
 	public static Delete delete() {
@@ -89,7 +96,10 @@ public class DB {
 	 * @return
 	 */
 	public static Delete delete(Object pojo) {
-		return new Delete(Visitors.modifyVisitor).delete(pojo);
+		if (Class.class.isInstance(pojo)) {
+			return delete().tableClass((Class<?>) pojo);
+		}
+		return delete().delete(pojo);
 	}
 
 	public static Select select() {
@@ -97,23 +107,16 @@ public class DB {
 	}
 
 	public static Select select(Object pojo) {
+		if (Class.class.isInstance(pojo)) {
+			return select().tableClass((Class<?>) pojo);
+		}
 		return select().addEqual(pojo);
 	}
 
-	/**
-	 * 手工提交当前事务。RawDB、NamedDB和mybatis的事务，也可以用这个方法进行提交
-	 * 
-	 * @throws SQLException
-	 */
 	public static void commit() throws SQLException {
 		ConnectionPool.get().commit();
 	}
 
-	/**
-	 * 手工回滚当前事务。RawDB、NamedDB和mybatis的事务，也可以用这个方法进行回滚
-	 * 
-	 * @throws SQLException
-	 */
 	public static void rollback() throws SQLException {
 		ConnectionPool.get().rollback();
 	}

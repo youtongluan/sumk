@@ -19,8 +19,10 @@ import org.yx.common.CalleeNode;
 import org.yx.common.ThreadContext;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcCode;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
@@ -57,8 +59,9 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.setMs(System.currentTimeMillis() - start);
 		} catch (Throwable e) {
 			resp.setJson(null);
-			resp.setException(new SoaException(1001, e.getMessage(), e));
+			resp.setException(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 			resp.setMs(System.currentTimeMillis() - start);
+			Log.get("sumk.rpc").debug(req.getApi() + "," + e.getMessage(), e);
 		} finally {
 			ThreadContext.remove();
 		}

@@ -36,7 +36,10 @@ public class AesDecodeHandler implements HttpHandler {
 		if (ctx.getHttpNode().argClz == null) {
 			return false;
 		}
-		byte[] bs = (byte[]) ctx.getData();
+		byte[] bs = ctx.getDataInByteArray();
+		if (bs == null) {
+			return false;
+		}
 		byte[] key = ctx.getKey();
 		byte[] data = EncryUtil.decrypt(bs, key);
 		ctx.setData(data);

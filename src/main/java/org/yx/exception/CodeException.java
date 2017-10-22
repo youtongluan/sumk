@@ -15,28 +15,26 @@
  */
 package org.yx.exception;
 
-public abstract class CodeBaseException extends RuntimeException {
+public class CodeException extends RuntimeException {
 
-	private static final long serialVersionUID = 5037279306320394281L;
-	/**
-	 * 等于0的话，就相当于没有code。有的异常code有实际意义，有的异常，code仅仅是为了查询方便
-	 */
+	private static final long serialVersionUID = 1L;
+
 	protected int code;
 
 	public int getCode() {
 		return code;
 	}
 
-	public CodeBaseException(String msg) {
+	public CodeException(String msg) {
 		super(msg);
 	}
 
-	public CodeBaseException(int code, String msg) {
+	public CodeException(int code, String msg) {
 		super(msg);
 		this.code = code;
 	}
 
-	public CodeBaseException(int code, String msg, Throwable exception) {
+	public CodeException(int code, String msg, Throwable exception) {
 		super(msg, exception);
 		this.code = code;
 	}

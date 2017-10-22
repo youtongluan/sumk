@@ -56,7 +56,7 @@ public final class Visitors {
 		}
 		if (log.isDebugEnabled()) {
 			StringBuilder sb = new StringBuilder();
-			log.debug(sb.append("<== ").append(getSql(statement)).toString());
+			log.debug(sb.append("<=> ").append(getSql(statement)).toString());
 		}
 		return statement;
 	}

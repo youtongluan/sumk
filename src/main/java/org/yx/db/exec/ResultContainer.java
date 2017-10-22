@@ -17,6 +17,7 @@ package org.yx.db.exec;
 
 public class ResultContainer {
 	Object result;
+
 	private Object param;
 	private String db;
 

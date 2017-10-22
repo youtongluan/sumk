@@ -20,7 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class UUIDSeed {
-	private final static char[] LETTERS = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".toCharArray();
+	private final static char[] LETTERS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
 	private final static int LEN = LETTERS.length;
 	private static Random[] RANDOMS;
 	private static final int RANDOM_LENGTH = 5;

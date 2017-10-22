@@ -40,11 +40,12 @@ public class ReqUserHandler implements HttpHandler {
 		byte[] key = session.getKey(sessionID);
 
 		if (key == null) {
-			if (HttpSessionHolder.isSingleLogin()) {
+			String type = HttpHeadersHolder.getType();
+			if (HttpSessionHolder.isSingleLogin(type)) {
 				String userId = HttpHeadersHolder.getToken();
 				if (StringUtil.isNotEmpty(userId)) {
 
-					if (session.isLogin(userId)) {
+					if (session.isLogin(userId, type)) {
 						int code = AppInfo.getInt("http.session.single.code", ErrorCode.LOGIN_AGAIN);
 						String msg = AppInfo.get("http.session.single.msg", "您已在其他地方登录！");
 						Log.get("sumk.http").info("session:{}, login by other", sessionID);

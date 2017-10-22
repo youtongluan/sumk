@@ -13,27 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.conf;
 
-public class BizException extends CodeException {
-
-	private static final long serialVersionUID = 453453454L;
-
-	public BizException(int code, String msg) {
-		super(msg);
-		this.code = code;
-	}
-
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
-	}
-
-	public static void throwException(int code, String msg) throws BizException {
-		throw new BizException(code, msg);
-	}
-
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
-	}
-
+public final class Const {
+	public static final int DEFAULT_ORDER = 100;
 }

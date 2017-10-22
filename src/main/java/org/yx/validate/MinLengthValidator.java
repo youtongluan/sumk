@@ -3,12 +3,6 @@ package org.yx.validate;
 import org.yx.bean.Bean;
 import org.yx.exception.InvalidParamException;
 
-/**
- * 用于做长度验证
- * 
- * @author youxia
- * 
- */
 @Bean
 public class MinLengthValidator implements Validator {
 

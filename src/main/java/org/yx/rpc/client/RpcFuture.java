@@ -15,22 +15,27 @@
  */
 package org.yx.rpc.client;
 
+import org.yx.exception.BizException;
+import org.yx.exception.CodeException;
 import org.yx.exception.SoaException;
 
-public class RpcFuture {
-	private RespFuture target;
+public interface RpcFuture {
 
-	RpcFuture(RespFuture target) {
-		super();
-		this.target = target;
-	}
+	String get() throws CodeException;
 
-	public String get(long timeout) throws SoaException {
-		ReqResp reqResp = target.getResponse(timeout);
-		return reqResp.getResp().getJson();
-	}
+	<T> T get(Class<T> clz) throws CodeException;
 
-	public String get() throws SoaException {
-		return get(1000L * 3600 * 24);
-	}
+	String get(long timeout) throws CodeException;
+
+	<T> T get(Class<T> clz, long timeout) throws CodeException;
+
+	String opt();
+
+	<T> T opt(Class<T> clz);
+
+	String opt(long timeout);
+
+	<T> T opt(Class<T> clz, long timeout);
+
+	RpcResult rpcResult(long timeout);
 }

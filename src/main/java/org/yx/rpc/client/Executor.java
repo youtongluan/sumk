@@ -23,18 +23,19 @@ import org.yx.exception.ConnectionException;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.rpc.RpcCode;
 import org.yx.rpc.RpcUtils;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.ZkRouteParser;
 
-class Executor {
+public class Executor {
 
 	private static Map<String, Long> TimeoutMap = new ConcurrentHashMap<>();
 	private static long DEFAULT_TIMEOUT;
 
-	private volatile static boolean strated;
+	private static volatile boolean strated;
 
-	static synchronized void init() {
+	public static synchronized void init() {
 		if (strated) {
 			return;
 		}
@@ -49,25 +50,26 @@ class Executor {
 		}
 	}
 
-	static String call(Req req) {
+	public static String call(Req req) {
 		ReqResp reqResp;
 		try {
 
 			reqResp = ReqSender.send(req, TimeoutMap.getOrDefault(RpcUtils.getAppId(req.getApi()), DEFAULT_TIMEOUT));
-		} catch (SoaException ex) {
-			throw ex;
 		} catch (Throwable e) {
+			if (SoaException.class.isInstance(e)) {
+				throw SoaException.class.cast(e);
+			}
 			if (ConnectionException.class.isInstance(e)) {
 				HostChecker.get().addDownUrl(ConnectionException.class.cast(e).getHost());
 			}
 			Log.printStack(e);
-			throw new SoaException(1022, e.getMessage(), e);
+			throw new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
 		}
 		reqResp.getResp().checkException();
 		return reqResp.getResp().getJson();
 	}
 
-	static RpcFuture callAsync(Req req, long writeTimeout) {
+	public static RpcFuture callAsync(Req req, long writeTimeout) {
 		RespFuture reqResp;
 		try {
 			reqResp = ReqSender.sendAsync(req, writeTimeout);
@@ -75,13 +77,12 @@ class Executor {
 			if (ConnectionException.class.isInstance(e)) {
 				HostChecker.get().addDownUrl(ConnectionException.class.cast(e).getHost());
 			}
-			Log.printStack(e);
-			throw new SoaException(1022, e.getMessage(), e);
+			return new ErrorRpcFuture(e);
 		}
-		return new RpcFuture(reqResp);
+		return new RpcFutureImpl(reqResp);
 	}
 
-	static RpcFuture callAsync(Req req) {
-		return callAsync(req, AppInfo.getInt("soa.write.timeout", 20000));
+	public static RpcFuture callAsync(Req req) {
+		return callAsync(req, AppInfo.getInt("soa.write.async.timeout", -1));
 	}
 }

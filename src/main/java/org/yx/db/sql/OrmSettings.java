@@ -23,9 +23,7 @@ class OrmSettings {
 	static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
 	static boolean FROM_CACHE;
 	static boolean TO_CACHE;
-	/**
-	 * 默认情况下，DB操作是根据数据库中的主键，还是redis中的主键。
-	 */
+
 	static ColumnType modifyByColumnType = ColumnType.ID_DB;
 
 	static void register() {

@@ -17,7 +17,7 @@ package org.yx.exception;
 
 import org.yx.rpc.Host;
 
-public class ConnectionException extends CodeBaseException {
+public class ConnectionException extends CodeException {
 
 	private static final long serialVersionUID = -6041686677407485992L;
 

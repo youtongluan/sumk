@@ -50,6 +50,9 @@ public class SoftDeleteParserImpl implements SoftDeleteParser {
 		if (sd == null) {
 			return null;
 		}
+		if (sd.columnType() == Boolean.class) {
+			return new SoftDeleteMeta(sd.value(), Boolean.TRUE, Boolean.FALSE, sd.columnType());
+		}
 		return new SoftDeleteMeta(sd.value(), parseValue(sd.columnType(), sd.validValue()),
 				parseValue(sd.columnType(), sd.inValidValue()), sd.columnType());
 	}

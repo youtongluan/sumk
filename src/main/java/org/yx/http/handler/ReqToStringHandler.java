@@ -27,7 +27,6 @@ public class ReqToStringHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		if (ctx.getData() == null) {
-			ctx.setData("");
 			return false;
 		}
 		if (!byte[].class.isInstance(ctx.getData())) {

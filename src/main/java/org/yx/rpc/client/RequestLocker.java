@@ -22,6 +22,7 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
+import org.yx.rpc.RpcCode;
 import org.yx.rpc.server.Response;
 
 public class RequestLocker {
@@ -45,8 +46,10 @@ public class RequestLocker {
 }
 
 class RespFuture {
+
 	Response resp;
-	private final Req req;
+
+	final Req req;
 	private final Thread thread;
 
 	RespFuture(Req req) {
@@ -66,7 +69,7 @@ class RespFuture {
 		}
 		if (resp == null) {
 			String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
-			SoaException.throwException(142234, msg, new TimeoutException(msg));
+			throw new SoaException(RpcCode.TIMEOUT, msg, new TimeoutException(msg));
 		}
 		return new ReqResp(req, resp);
 	}

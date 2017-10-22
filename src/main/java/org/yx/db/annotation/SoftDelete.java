@@ -37,23 +37,22 @@ public @interface SoftDelete {
 	String value();
 
 	/**
-	 * 只能是String、Int、Byte、Short、Long
+	 * 只能是String、Int、Byte、Short、Long、Boolean
 	 * 
-	 * @return
 	 */
 	Class<?> columnType() default String.class;
 
 	/**
-	 * 如果是数字类型，会被转化成数字类型
+	 * 如果是数字类型，会被转化成数字类型<BR>
+	 * 如果是Boolean类型，这个属性没有意义
 	 * 
-	 * @return
 	 */
 	String validValue() default "1";
 
 	/**
-	 * 如果是数字类型，会被转化成数字类型
+	 * 如果是数字类型，会被转化成数字类型<BR>
+	 * 如果是Boolean类型，这个属性没有意义
 	 * 
-	 * @return
 	 */
 	String inValidValue() default "0";
 }

@@ -62,10 +62,6 @@ public final class Seq {
 		return System.currentTimeMillis() - FROMMILS;
 	}
 
-	private static long fullTime(long time) {
-		return time + FROMMILS;
-	}
-
 	int sub(String name) {
 		if (counter != null) {
 			try {
@@ -96,6 +92,10 @@ public final class Seq {
 
 	public long next() {
 		return next(null);
+	}
+
+	private static long fullTime(long time) {
+		return time + FROMMILS;
 	}
 
 	public static long getDate(long seq) {

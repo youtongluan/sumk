@@ -24,6 +24,10 @@ import org.yx.conf.AppInfo;
 
 public class StringUtil {
 
+	public static String[] splitByComma(String text) {
+		return text.replace('，', ',').split(",");
+	}
+
 	public static String uncapitalize(String str) {
 		int strLen;
 		if (str == null || (strLen = str.length()) == 0) {

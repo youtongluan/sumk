@@ -13,27 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.util.date;
 
-public class BizException extends CodeException {
+import java.util.Calendar;
 
-	private static final long serialVersionUID = 453453454L;
+/**
+ * yyyy-MM-dd HH:mm:ss
+ */
+public class DateFormater implements SumkDateFormater {
 
-	public BizException(int code, String msg) {
-		super(msg);
-		this.code = code;
-	}
+	public static SumkDateFormater inst = new DateFormater();
 
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
-	}
-
-	public static void throwException(int code, String msg) throws BizException {
-		throw new BizException(code, msg);
-	}
-
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
+	@Override
+	public Calendar parse(String text) {
+		int year = Integer.parseInt(text.substring(0, 4));
+		int month = Integer.parseInt(text.substring(5, 7)) - 1;
+		int day = Integer.parseInt(text.substring(8, 10));
+		Calendar cal = Calendar.getInstance();
+		cal.set(year, month, day, 0, 0, 0);
+		cal.set(Calendar.MILLISECOND, 0);
+		return cal;
 	}
 
 }

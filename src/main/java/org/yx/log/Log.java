@@ -40,20 +40,26 @@ public abstract class Log {
 	}
 
 	public static Logger get(Class<?> clz) {
-		return get(clz.getSimpleName());
+		String name = clz.getName();
+		if (name.startsWith("org.yx.")) {
+			name = "sumk" + name.substring(6);
+		}
+		return get(name);
 	}
 
 	public static Logger get(Class<?> clz, Object id) {
-		return get(clz.getSimpleName() + "." + String.valueOf(id));
+		String name = clz.getName();
+		if (name.startsWith("org.yx.")) {
+			name = "sumk" + name.substring(6);
+		}
+		return get(name + "." + String.valueOf(id));
 	}
 
 	public static Logger get(String module) {
 		if (module == null || (module = module.trim()).isEmpty()) {
 			module = "sumk";
 		}
-		if (!module.startsWith("sumk")) {
-			module = "sumk." + module;
-		}
+
 		if (logType == null || logType == LogType.console) {
 			return ConsoleLog.getLogger(module);
 		}
@@ -71,4 +77,5 @@ public abstract class Log {
 	public static boolean isON(Logger log) {
 		return SumkLogger.class.isInstance(log) && SumkLogger.class.cast(log).isON();
 	}
+
 }

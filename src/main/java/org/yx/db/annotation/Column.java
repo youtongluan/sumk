@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.yx.conf.Const;
+
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -41,5 +43,7 @@ public @interface Column {
 	 */
 	UpdateType updateType() default UpdateType.CUSTOM;
 
-	byte columnOrder() default 1;
+	byte columnOrder() default Const.DEFAULT_ORDER;
+
+	String comment() default "";
 }

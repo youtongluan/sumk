@@ -18,7 +18,7 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -31,11 +31,16 @@ import org.yx.log.Log;
 
 public class PojoMetaHolder {
 
-	private static Map<Class<?>, PojoMeta> pojoMetas = new ConcurrentHashMap<>();
-	private static Map<String, PojoMeta> tableMetas = new ConcurrentHashMap<>();
+	private static final Map<Class<?>, PojoMeta> pojoMetas = new ConcurrentHashMap<>();
+	private static final Map<String, PojoMeta> tableMetas = new ConcurrentHashMap<>();
 
 	public static PojoMeta getTableMeta(String table) {
 		return tableMetas.get(table);
+	}
+
+	public static PojoMeta[] allPojoMeta() {
+		Collection<PojoMeta> pms = pojoMetas.values();
+		return pms.toArray(new PojoMeta[0]);
 	}
 
 	public static PojoMeta getPojoMeta(Class<?> clz) {
@@ -58,7 +63,8 @@ public class PojoMetaHolder {
 		if (table == null) {
 			return;
 		}
-		Map<String, Field> map = new HashMap<>();
+
+		Map<String, Field> map = new LinkedHashMap<>();
 		Class<?> clz = pojoClz;
 		while (clz != Object.class) {
 			Field[] fields = clz.getDeclaredFields();

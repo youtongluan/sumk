@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.http.filter;
 
-public class BizException extends CodeException {
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-	private static final long serialVersionUID = 453453454L;
+import org.yx.common.Ordered;
 
-	public BizException(int code, String msg) {
-		super(msg);
-		this.code = code;
-	}
+public interface WebFilter extends Ordered {
 
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
-	}
+	public boolean beforeInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params);
 
-	public static void throwException(int code, String msg) throws BizException {
-		throw new BizException(code, msg);
-	}
+	public boolean afterInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params, Object result);
 
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
-	}
-
+	public Exception error(HttpServletRequest req, Object[] params, Exception e);
 }

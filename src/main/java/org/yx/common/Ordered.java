@@ -15,6 +15,8 @@
  */
 package org.yx.common;
 
+import org.yx.conf.Const;
+
 public interface Ordered extends Comparable<Ordered> {
 	/**
 	 * 升序，值越大，优先级越低。一般不采用负数
@@ -22,7 +24,7 @@ public interface Ordered extends Comparable<Ordered> {
 	 * @return
 	 */
 	default int order() {
-		return 100;
+		return Const.DEFAULT_ORDER;
 	}
 
 	@Override

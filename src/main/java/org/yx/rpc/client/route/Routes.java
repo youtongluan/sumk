@@ -35,15 +35,15 @@ public class Routes {
 
 	private static volatile Routes ROUTE = new Routes(Collections.emptyMap(), Collections.emptyMap());
 
-	public static RpcRoute getRoute(String method) {
+	public static RpcRoute getRoute(String api) {
 		Map<String, RpcRoute> routes = ROUTE.routes;
 
-		for (;; method = method.substring(0, method.lastIndexOf("."))) {
-			RpcRoute r = routes.get(method);
+		for (;; api = api.substring(0, api.lastIndexOf("."))) {
+			RpcRoute r = routes.get(api);
 			if (r != null) {
 				return r;
 			}
-			if (!method.contains(".")) {
+			if (!api.contains(".")) {
 				return null;
 			}
 		}

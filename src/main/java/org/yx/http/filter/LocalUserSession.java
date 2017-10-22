@@ -15,14 +15,15 @@
  */
 package org.yx.http.filter;
 
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.common.TimedObject;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpHeadersHolder;
+import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
@@ -30,18 +31,27 @@ import org.yx.util.StringUtil;
 
 public class LocalUserSession implements UserSession {
 
-	private Map<String, TimedObject> map = new ConcurrentHashMap<>();
-	private Map<String, byte[]> keyMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, TimedObject> map = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, byte[]> keyMap = new ConcurrentHashMap<>();
 
-	private Map<String, String> userSessionMap = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, String> userSessionMap = new ConcurrentHashMap<>();
+
+	private String singleKey(String userId, String type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(userId);
+		if (type != null && type.length() > 0) {
+			sb.append('_').append(type);
+		}
+		return sb.toString();
+	}
 
 	@Override
-	public void putKey(String sessionId, byte[] key, String userId) {
+	public void putKey(String sessionId, byte[] key, String userId, String type) {
 		keyMap.put(sessionId, key);
-		if (StringUtil.isEmpty(userId)) {
+		if ((!HttpSessionHolder.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
 			return;
 		}
-		String oldSession = userSessionMap.put(userId, sessionId);
+		String oldSession = userSessionMap.put(singleKey(userId, type), sessionId);
 		if (oldSession != null) {
 			keyMap.remove(oldSession);
 			map.remove(oldSession);
@@ -49,7 +59,7 @@ public class LocalUserSession implements UserSession {
 	}
 
 	public LocalUserSession() {
-		Log.get("session").info("use local user session");
+		Log.get("sumk.http").info("use local user session");
 		long seconds = AppInfo.getInt("http.localsession.period", 60);
 		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
 			Set<String> set = map.keySet();
@@ -83,7 +93,8 @@ public class LocalUserSession implements UserSession {
 		if (to == null) {
 			return;
 		}
-		to.setEvictTime(System.currentTimeMillis() + HttpSettings.httpSessionTimeout() * 1000);
+		to.setEvictTime(
+				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()) * 1000);
 
 	}
 
@@ -91,7 +102,8 @@ public class LocalUserSession implements UserSession {
 	public void setSession(String sessionId, SessionObject sessionObj) {
 		TimedObject to = new TimedObject();
 		to.setTarget(sessionObj);
-		to.setEvictTime(System.currentTimeMillis() + HttpSettings.httpSessionTimeout() * 1000);
+		to.setEvictTime(
+				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()) * 1000);
 		map.put(sessionId, to);
 	}
 
@@ -120,11 +132,11 @@ public class LocalUserSession implements UserSession {
 	}
 
 	@Override
-	public boolean isLogin(String userId) {
+	public boolean isLogin(String userId, String type) {
 		if (StringUtil.isEmpty(userId)) {
 			return false;
 		}
-		return this.userSessionMap.containsKey(userId);
+		return this.userSessionMap.containsKey(singleKey(userId, type));
 	}
 
 	@Override
