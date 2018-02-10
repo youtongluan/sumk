@@ -6,12 +6,13 @@
 [点此查看http应用的搭建](https://github.com/youtongluan/sumk-http-demo)，也可以查看访问[https://www.oschina.net/p/sumk](https://www.oschina.net/p/sumk)查看更多细节<BR>
 
 ### 引入sumk.jar
+```
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk</artifactId>
     <version>1.8.0</version>
 </dependency>
-
+```
 
 ### 现有主要模块
 * **sumk-core**：这个模块类似于spring-core，它的核心是IOC。除此之外，它还有许多彩蛋等待你去挖掘<br>
