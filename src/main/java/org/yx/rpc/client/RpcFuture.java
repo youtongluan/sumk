@@ -15,27 +15,28 @@
  */
 package org.yx.rpc.client;
 
-import org.yx.exception.BizException;
 import org.yx.exception.CodeException;
-import org.yx.exception.SoaException;
 
 public interface RpcFuture {
 
-	String get() throws CodeException;
+	/**
+	 * 等待返回，直到超时
+	 * 
+	 * @return 如果没有异常，就返回信息，如果发生了异常，就抛出异常
+	 */
+	String getOrException() throws CodeException;
 
-	<T> T get(Class<T> clz) throws CodeException;
+	<T> T getOrException(Class<T> clz) throws CodeException;
 
-	String get(long timeout) throws CodeException;
-
-	<T> T get(Class<T> clz, long timeout) throws CodeException;
-
+	/**
+	 * @return 等待返回，直到超时
+	 * 
+	 */
 	String opt();
 
 	<T> T opt(Class<T> clz);
 
-	String opt(long timeout);
+	RpcResult awaitForRpcResult();
 
-	<T> T opt(Class<T> clz, long timeout);
-
-	RpcResult rpcResult(long timeout);
+	RpcResult rpcResult();
 }

@@ -30,16 +30,14 @@ public @interface SumkFilter {
 	String name() default "";
 
 	/**
-	 * 要拦截的路径
+	 * @return 要拦截的路径
 	 */
 	String[] value();
 
 	DispatcherType[] dispatcherType() default {};
 
 	/**
-	 * true表示往后面添加
-	 * 
-	 * @return
+	 * @return true表示往后面添加
 	 */
 	boolean isMatchAfter() default true;
 }

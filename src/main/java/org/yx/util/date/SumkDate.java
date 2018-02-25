@@ -15,7 +15,6 @@
  */
 package org.yx.util.date;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -25,31 +24,17 @@ import java.time.format.DateTimeFormatterBuilder;
 import java.util.Calendar;
 import java.util.Date;
 
-/**
- * 本对象没有进行内存压缩，不适合存储于内存中，一般应用于中间计算
- */
 public class SumkDate {
-	/**
-	 * yyyy-MM-dd HH:mm:ss
-	 */
-	public final static String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
-	/**
-	 * yyyy-MM-dd HH:mm:ss.SSS
-	 */
-	public final static String DATE_TIME_MILS = "yyyy-MM-dd HH:mm:ss.SSS";
-	/**
-	 * yyyy-MM-dd
-	 */
-	public final static String DATE = "yyyy-MM-dd";
-	/**
-	 * HH:mm:ss
-	 */
-	public final static String TIME = "HH:mm:ss";
 
-	/**
-	 * HH:mm:ss.SSS
-	 */
-	public final static String TIME_MILS = "HH:mm:ss.SSS";
+	public static final String DATE_TIME = "yyyy-MM-dd HH:mm:ss";
+
+	public static final String DATE_TIME_MILS = "yyyy-MM-dd HH:mm:ss.SSS";
+
+	public static final String DATE = "yyyy-MM-dd";
+
+	public static final String TIME = "HH:mm:ss";
+
+	public static final String TIME_MILS = "HH:mm:ss.SSS";
 
 	public static final DateTimeFormatter CHN_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
 			.append(DateTimeFormatter.ISO_LOCAL_DATE).appendLiteral(' ').append(DateTimeFormatter.ISO_LOCAL_TIME)
@@ -62,7 +47,7 @@ public class SumkDate {
 	private final int minute;
 	private final int second;
 	private final int milSecond;
-	private final static int MIL_TO_NANO = 1000_000;
+	private static final int MIL_TO_NANO = 1000_000;
 	private static final char DATE_SPLIT = '-';
 	private static final char TIME_SPLIT = ':';
 
@@ -80,55 +65,51 @@ public class SumkDate {
 	}
 
 	/**
-	 * 按公元纪年。公元前的年份可能会有问题，因为该年份不会小于0
+	 * @return 按公元纪年。公元前的年份可能会有问题，因为该年份不会小于0
 	 * 
-	 * @return
 	 */
 	public int getYear() {
 		return year;
 	}
 
 	/**
-	 * 月份，1-12
-	 * 
-	 * @return
+	 * @return 月份，1-12
 	 */
 	public int getMonth() {
 		return month;
 	}
 
 	/**
-	 * 日期中的天，1-31
+	 * @return 日期中的天，1-31
 	 * 
-	 * @return
 	 */
 	public int getDay() {
 		return day;
 	}
 
 	/**
-	 * 24小时制，0-23
+	 * @return 24小时制，0-23
 	 */
 	public int getHour() {
 		return hour;
 	}
 
 	/**
-	 * 分钟，0-59
+	 * @return 分钟，0-59
 	 */
 	public int getMinute() {
 		return minute;
 	}
 
 	/**
-	 * 秒，0-59
+	 * @return 秒，0-59
 	 */
 	public int getSecond() {
 		return second;
 	}
 
 	/**
-	 * 毫秒，0-999
+	 * @return 毫秒，0-999
 	 */
 	public int getMilSecond() {
 		return milSecond;
@@ -147,7 +128,7 @@ public class SumkDate {
 	}
 
 	/**
-	 * yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @return yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String toDateString() {
 		StringBuilder sb = new StringBuilder(this.toMonthString());
@@ -161,7 +142,7 @@ public class SumkDate {
 	}
 
 	/**
-	 * yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @return yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String toMonthString() {
 		StringBuilder sb = new StringBuilder();
@@ -180,7 +161,7 @@ public class SumkDate {
 	}
 
 	/**
-	 * HH:mm:ss 格式
+	 * @return HH:mm:ss 格式
 	 */
 	public String toTimeString() {
 		StringBuilder sb = new StringBuilder();
@@ -202,8 +183,8 @@ public class SumkDate {
 	}
 
 	/**
-	 * yyyy-MM-dd HH:mm:ss 格式<BR>
-	 * 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @return yyyy-MM-dd HH:mm:ss 格式<BR>
+	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String toDateTimeString() {
 		StringBuilder sb = new StringBuilder();
@@ -211,7 +192,7 @@ public class SumkDate {
 	}
 
 	/**
-	 * HH:mm:ss.SSS 格式
+	 * @return HH:mm:ss.SSS 格式
 	 */
 	public String toFullTimeString() {
 		StringBuilder sb = new StringBuilder();
@@ -225,7 +206,8 @@ public class SumkDate {
 	}
 
 	/**
-	 * yyyy-MM-dd HH:mm:ss.SSS 格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @return yyyy-MM-dd HH:mm:ss.SSS 格式
+	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	@Override
 	public String toString() {
@@ -233,7 +215,8 @@ public class SumkDate {
 	}
 
 	/**
-	 * yyyy-MM-dd HH:mm:ss.SSS 格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @return yyyy-MM-dd HH:mm:ss.SSS 格式
+	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String toFullDateTimeString() {
 		StringBuilder sb = new StringBuilder();
@@ -245,7 +228,8 @@ public class SumkDate {
 	 * 
 	 * @param d
 	 *            不能为null
-	 * @param fromat
+	 * @param format
+	 *            格式
 	 * @return 如果日期为null，就返回null
 	 */
 	public static String toString(Date d, String format) {
@@ -270,15 +254,6 @@ public class SumkDate {
 		return new SimpleDateFormat(format).format(d);
 	}
 
-	/**
-	 * 将字符串转化为日期
-	 * 
-	 * @param dateString
-	 * @param fromat
-	 *            不能为null
-	 * @return 如果dateString为空，就返回null
-	 * @throws ParseException
-	 */
 	public static Date parse(String dateString, String format) throws Exception {
 		if (dateString == null || dateString.isEmpty()) {
 			return null;

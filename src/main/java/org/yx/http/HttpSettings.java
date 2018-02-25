@@ -45,11 +45,6 @@ public class HttpSettings {
 		return AppInfo.getInt("http.session.single.timeout." + type, timeout);
 	}
 
-	/**
-	 * false表示<code>@upload</code>注解不启用
-	 * 
-	 * @return
-	 */
 	public static boolean isUploadEnable() {
 		return AppInfo.getBoolean("http.upload.enable", true);
 	}

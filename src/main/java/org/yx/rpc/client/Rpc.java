@@ -19,23 +19,35 @@ import java.util.Map;
 
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
-import org.yx.exception.BizException;
-import org.yx.exception.SoaException;
-import org.yx.util.GsonUtil;
+import org.yx.exception.SumkException;
+import org.yx.log.Log;
+import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.UUIDSeed;
 
-/**
- * 同步调用如果出错会抛出异常<BR>
- * 异步调用无论是否成功，都会返回future。如果失败的话，异常包含在future中。<BR>
- * 通信异常是SoaException；如果是业务类异常，则是BizException
- */
 public final class Rpc {
-
-	public static void init() {
-		Executor.init();
+	private Rpc() {
 	}
 
-	private static Req createReq(String method) {
+	public static int DEFAULT_TIMEOUT;
+
+	private static volatile boolean strated;
+
+	public static synchronized void init() {
+		if (strated) {
+			return;
+		}
+		try {
+			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
+			String zkUrl = AppInfo.getZKUrl();
+			Log.get("sumk.rpc").info("zkUrl:{}", zkUrl);
+			ZkRouteParser.get(zkUrl).readRouteAndListen();
+			strated = true;
+		} catch (Exception e) {
+			throw SumkException.create(e);
+		}
+	}
+
+	static Req createReq(String method) {
 		Req req = new Req();
 		req.setStart(System.currentTimeMillis());
 		String sn = UUIDSeed.random();
@@ -46,124 +58,75 @@ public final class Rpc {
 		return req;
 	}
 
+	public static Sender make(String method) {
+		return new Sender(method);
+	}
+
 	/**
 	 * 根据参数顺序调用rpc方法<BR>
 	 * 参数对象是原始的参数对象，不需要进行gson转化
 	 * 
 	 * @param method
+	 *            注册的接口名称，如a.b.c
 	 * @param args
-	 *            支持泛型，比如List<Integer>,List<String>之类的。但不提倡使用泛型
-	 * @return
-	 * @throws SoaException
-	 * @throws BizException
+	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
+	 * @return json格式的服务器响应结果
+	 * @throws org.yx.exception.SoaException
+	 *             rpc异常
+	 * @throws org.yx.exception.BizException
+	 *             业务异常
 	 */
 	public static String call(String method, Object... args) {
-		Req req = createReq(method);
-		String[] params = new String[args.length];
-		for (int i = 0; i < args.length; i++) {
-			params[i] = GsonUtil.toJson(args[i]);
-		}
-		req.setParamArray(params);
-		return Executor.call(req);
+		return new Sender(method).paramInArray(args).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
 	}
 
 	/**
 	 * 
 	 * @param method
+	 *            注册的接口名称，如a.b.c
 	 * @param json
 	 *            用json序列化的参数对象
-	 * @return
-	 * @throws SoaException
-	 * @throws BizException
+	 * @return json格式的服务器响应结果
+	 * @throws org.yx.exception.SoaException
+	 *             rpc异常
+	 * @throws org.yx.exception.BizException
+	 *             业务异常
 	 */
 	public static String callInJson(String method, String json) {
-		Req req = createReq(method);
-		req.setJsonedParam(json);
-		return Executor.call(req);
+		return new Sender(method).paramInJson(json).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
 	}
 
-	/**
-	 * 
-	 * @param method
-	 * @param map
-	 * @return
-	 * @throws SoaException
-	 * @throws BizException
-	 */
 	public static String callInMap(String method, Map<String, ?> map) {
-		return callInJson(method, GsonUtil.toJson(map));
+		return new Sender(method).callInMap(map).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
 	}
 
 	/**
 	 * 根据参数顺序<b>异步</b>调用rpc方法
 	 * 
 	 * @param method
+	 *            注册的接口名称，如a.b.c
 	 * @param args
-	 *            支持泛型，比如List<Integer>,List<String>之类的。但不提倡使用泛型
-	 * @return
+	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
+	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callAsync(String method, Object... args) {
-		Req req = createReq(method);
-		String[] params = new String[args.length];
-		for (int i = 0; i < args.length; i++) {
-			params[i] = GsonUtil.toJson(args[i]);
-		}
-		req.setParamArray(params);
-		return Executor.callAsync(req);
+		return new Sender(method).paramInArray(args).send();
 	}
 
 	/**
 	 * 
 	 * @param method
+	 *            注册的接口名称，如a.b.c
 	 * @param json
 	 *            用json序列化的参数对象
-	 * @return
+	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callInJsonAsync(String method, String json) {
-		Req req = createReq(method);
-		req.setJsonedParam(json);
-		return Executor.callAsync(req);
+		return new Sender(method).paramInJson(json).send();
 	}
 
 	public static RpcFuture callInMapAsync(String method, Map<String, ?> map) {
-		return callInJsonAsync(method, GsonUtil.toJson(map));
-	}
-
-	/**
-	 * 根据参数顺序异步调用rpc方法，并等待请求发送到服务器端。
-	 */
-	public static RpcFuture callAsync(String method, Object[] args, long writeTimeout) {
-		Req req = createReq(method);
-		String[] params = new String[args.length];
-		for (int i = 0; i < args.length; i++) {
-			params[i] = GsonUtil.toJson(args[i]);
-		}
-		req.setParamArray(params);
-		return Executor.callAsync(req, writeTimeout);
-	}
-
-	/**
-	 * 
-	 * @param method
-	 * @param json
-	 *            用json序列化的参数对象
-	 * @return
-	 */
-	public static RpcFuture callInJsonAsync(String method, String json, long writeTimeout) {
-		Req req = createReq(method);
-		req.setJsonedParam(json);
-		return Executor.callAsync(req, writeTimeout);
-	}
-
-	/**
-	 * 
-	 * @param method
-	 * @param map
-	 * @param writeTimeout
-	 * @return
-	 */
-	public static RpcFuture callInMapAsync(String method, Map<String, ?> map, long writeTimeout) {
-		return callInJsonAsync(method, GsonUtil.toJson(map), writeTimeout);
+		return new Sender(method).callInMap(map).send();
 	}
 
 }

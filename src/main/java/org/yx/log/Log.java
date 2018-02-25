@@ -56,8 +56,8 @@ public abstract class Log {
 	}
 
 	public static Logger get(String module) {
-		if (module == null || (module = module.trim()).isEmpty()) {
-			module = "sumk";
+		if (module == null || module.isEmpty()) {
+			module = "root";
 		}
 
 		if (logType == null || logType == LogType.console) {
@@ -66,6 +66,12 @@ public abstract class Log {
 		return LoggerFactory.getLogger(module);
 	}
 
+	/**
+	 * 这个方法是框架专用，开发人员不要调用
+	 * 
+	 * @param e
+	 *            异常
+	 */
 	public static void printStack(Throwable e) {
 		get("sumk.error").error(e.getMessage(), e);
 	}

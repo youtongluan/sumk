@@ -23,10 +23,12 @@ import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.yx.exception.ConnectionException;
+import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.rpc.Host;
+import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ReqSession {
@@ -35,57 +37,56 @@ public class ReqSession {
 
 	private NioSocketConnector connector;
 	private Host addr;
-	private Lock lock = new ReentrantLock();
+	private final Lock lock = new ReentrantLock();
 
-	private static final int CONNECT_TIMEOUT = 5000;
+	private static final int CONNECT_TIMEOUT = AppInfo.getInt("soa.connect.timeout", 5000);
 
-	private void ensureSession() {
+	private boolean ensureSession() {
 		if (session != null && !session.isClosing()) {
-			return;
+			return true;
 		}
-		boolean locked = false;
 		try {
-			locked = lock.tryLock(CONNECT_TIMEOUT + 10, TimeUnit.MILLISECONDS);
-		} catch (InterruptedException e1) {
-			e1.printStackTrace();
-		}
-		if (locked) {
-			try {
-				connect();
-			} finally {
-				lock.unlock();
+			if (lock.tryLock(CONNECT_TIMEOUT + 2000, TimeUnit.MILLISECONDS)) {
+				try {
+					if (session != null && !session.isClosing()) {
+						return true;
+					}
+					connect();
+				} finally {
+					lock.unlock();
+				}
 			}
+		} catch (Exception e1) {
+			Log.printStack(e1);
 		}
 
 		if (session == null || session.isClosing()) {
-			throw new ConnectionException(6454345, "error in create channel", addr);
+			return false;
 		}
+		return true;
 	}
 
-	private void connect() {
+	private void connect() throws InterruptedException {
 		if (connector == null || connector.isDisposing() || connector.isDisposed()) {
 			Log.get("sumk.rpc").debug("create connector for {}", addr);
 			connector = new NioSocketConnector(1);
 			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
 			connector.setHandler(new ClientHandler());
 			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+			connector.getFilterChain().addLast("exec", new ExecutorFilter(SoaExcutors.CLINET));
 		}
 
 		if (session == null || session.isClosing()) {
 			Log.get("sumk.rpc").debug("create session for {}", addr);
 			ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
 
-			cf.awaitUninterruptibly(CONNECT_TIMEOUT + 1);
-			try {
-				IoSession se = cf.getSession();
-				if (se != null) {
-					this.session = se;
-					return;
-				}
-				cf.cancel();
-			} catch (Exception e) {
-				throw new ConnectionException(7311234, "error in create channel.cause by " + e.getMessage(), addr);
+			cf.await(CONNECT_TIMEOUT + 1);
+			IoSession se = cf.getSession();
+			if (se != null) {
+				this.session = se;
+				return;
 			}
+			cf.cancel();
 
 		}
 	}
@@ -95,11 +96,16 @@ public class ReqSession {
 	}
 
 	public WriteFuture write(Req req) {
-		this.ensureSession();
+		if (!this.ensureSession()) {
+			return null;
+		}
 		return this.session.write(req);
 	}
 
 	public void close() {
-		this.session.close(true);
+		IoSession s = this.session;
+		if (s != null && s.isConnected()) {
+			this.session.close(true);
+		}
 	}
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2018 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation;
+package org.yx.common;
 
-public enum ExceptionStrategy {
+public interface CodedMessage {
+	int code();
 
-	IF_NO_BIZEXCEPTION,
-
-	FORCE;
-
+	String message();
 }

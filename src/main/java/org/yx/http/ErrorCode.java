@@ -41,6 +41,11 @@ public interface ErrorCode {
 	int LOGIN_AGAIN = 1004;
 
 	/**
+	 * 熔断
+	 */
+	int FUSING = 1005;
+
+	/**
 	 * 参数验证错误
 	 */
 	int VALIDATE_ERROR = AppInfo.getInt("http.errorcode.validate", 1010);

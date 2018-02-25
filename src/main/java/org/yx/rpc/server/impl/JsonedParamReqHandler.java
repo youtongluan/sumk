@@ -53,14 +53,14 @@ public class JsonedParamReqHandler implements RequestHandler {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");
 			}
 			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(), req));
-			resp.setJson(GsonUtil.toJson(ret));
+			resp.json(GsonUtil.toJson(ret));
 		} catch (Throwable e) {
-			resp.setJson(null);
-			resp.setException(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
+			resp.json(null);
+			resp.exception(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {
 			ThreadContext.remove();
 		}
-		resp.setMs(System.currentTimeMillis() - start);
+		resp.serviceInvokeMilTime(System.currentTimeMillis() - start);
 		return resp;
 	}
 

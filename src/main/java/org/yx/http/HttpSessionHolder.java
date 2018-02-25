@@ -37,11 +37,6 @@ public class HttpSessionHolder {
 		return session;
 	}
 
-	/**
-	 * 如果userSession初始化不成功，会抛出异常
-	 * 
-	 * @return
-	 */
 	public static UserSession loadUserSession() {
 		if (session == null) {
 			initSession();
@@ -53,18 +48,10 @@ public class HttpSessionHolder {
 		return session;
 	}
 
-	/**
-	 * 获取session中的用户信息
-	 * 
-	 * @return
-	 */
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
 		return loadUserSession().getUserObject(clz);
 	}
 
-	/**
-	 * 移除session中的用户信息
-	 */
 	public static void remove() {
 		userSession();
 		if (session == null) {
@@ -74,11 +61,6 @@ public class HttpSessionHolder {
 		session.removeSession();
 	}
 
-	/**
-	 * 用新的对象更新session中的用户信息
-	 * 
-	 * @param sessionObj
-	 */
 	public static void updateUserObject(SessionObject sessionObj) {
 		loadUserSession().updateSession(sessionObj);
 	}

@@ -22,11 +22,6 @@ public class RouteEvent {
 	private ZkData zkData;
 	private Host url;
 
-	/**
-	 * 本节点肯定有数据
-	 * 
-	 * @return
-	 */
 	public Host getUrl() {
 		return url;
 	}
@@ -35,11 +30,6 @@ public class RouteEvent {
 		return type;
 	}
 
-	/**
-	 * 删除时，这个节点的数据为空
-	 * 
-	 * @return
-	 */
 	public ZkData getZkData() {
 		return zkData;
 	}

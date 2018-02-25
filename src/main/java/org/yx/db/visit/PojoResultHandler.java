@@ -26,9 +26,6 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
-/**
- * 返回值是List<Pojo>
- */
 public class PojoResultHandler implements ResultHandler {
 
 	public static PojoResultHandler handler = new PojoResultHandler();

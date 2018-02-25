@@ -15,7 +15,6 @@
  */
 package org.yx.rpc.server;
 
-import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 
 public class Response {
@@ -26,27 +25,27 @@ public class Response {
 
 	private Long ms;
 
-	public String getSn() {
+	public String sn() {
 		return sn;
 	}
 
-	public String getJson() {
+	public String json() {
 		return json;
 	}
 
-	public Long getMs() {
+	public Long serviceInvokeMilTime() {
 		return ms;
 	}
 
-	public void setSn(String sn) {
+	public void sn(String sn) {
 		this.sn = sn;
 	}
 
-	public void setJson(String json) {
+	public void json(String json) {
 		this.json = json;
 	}
 
-	public void setMs(Long ms) {
+	public void serviceInvokeMilTime(Long ms) {
 		this.ms = ms;
 	}
 
@@ -59,22 +58,16 @@ public class Response {
 		this.sn = sn;
 	}
 
-	public SoaException getException() {
+	public SoaException exception() {
 		return exception;
 	}
 
-	public void setException(SoaException exception) {
+	public void exception(SoaException exception) {
 		this.exception = exception;
 	}
 
-	public void checkException() {
-		if (this.exception == null) {
-			return;
-		}
-		if (BizException.class.getName().equals(exception.getExceptionClz())) {
-			BizException.throwException(this.exception.getCode(), this.getException().getMessage(), this.exception);
-		}
-		throw exception;
+	public boolean isSuccess() {
+		return this.exception == null;
 	}
 
 }

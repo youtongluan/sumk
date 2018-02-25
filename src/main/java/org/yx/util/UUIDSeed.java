@@ -80,12 +80,6 @@ public final class UUIDSeed {
 	private final static int DOUBLE_LEN = LEN * LEN;
 	private static AtomicInteger current = new AtomicInteger(6538);
 
-	/**
-	 * 获取seq类型sn的时间
-	 * 
-	 * @param sn
-	 * @return
-	 */
 	public static long getSeqTime(String sn) {
 		return toLong(sn.substring(0, 8));
 	}
@@ -96,11 +90,6 @@ public final class UUIDSeed {
 		return toLong(d);
 	}
 
-	/**
-	 * 获取按时间排序的UUID
-	 * 
-	 * @return
-	 */
 	public static String seq() {
 		char[] ret = new char[20];
 		fill(ret, 0, System.currentTimeMillis(), 8);
@@ -119,11 +108,6 @@ public final class UUIDSeed {
 		return new String(ret);
 	}
 
-	/**
-	 * 返回20位的字符UUID。 类似于UUID，无法做到绝对的不重复，但是重复的概率非常低
-	 * 
-	 * @return
-	 */
 	public static String random() {
 		char[] ret = new char[20];
 		fill(ret, 0, ThreadLocalRandom.current().nextInt(DOUBLE_LEN), 2);
@@ -156,14 +140,6 @@ public final class UUIDSeed {
 		return new String(cs);
 	}
 
-	/**
-	 * 
-	 * @param number
-	 *            要转化的数字
-	 * @param bytes
-	 *            要转化的位数，不足的话，在前面补0
-	 * @return
-	 */
 	public static String parse(long number, int bytes) {
 		if (number == Long.MIN_VALUE) {
 			number = Long.MAX_VALUE;

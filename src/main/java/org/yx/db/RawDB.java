@@ -34,7 +34,8 @@ public class RawDB {
 	 * @param sql
 	 *            以?为占位符的原生sql。
 	 * @param params
-	 * @return
+	 *            参数
+	 * @return sql执行结果
 	 */
 	public static int execute(String sql, Object... params) {
 		try {
@@ -48,7 +49,8 @@ public class RawDB {
 	 * @param sql
 	 *            以?为占位符的原生sql
 	 * @param params
-	 * @return
+	 *            参数
+	 * @return 结果集
 	 */
 	public static List<Map<String, Object>> list(String sql, Object... params) {
 		try {
@@ -65,7 +67,8 @@ public class RawDB {
 	 * @param sql
 	 *            以?为占位符的原生sql
 	 * @param params
-	 * @return
+	 *            参数
+	 * @return 结果集
 	 */
 	public static List<?> singleColumnList(String sql, Object... params) {
 		try {
@@ -79,7 +82,8 @@ public class RawDB {
 	 * @param sql
 	 *            以?为占位符的原生sql
 	 * @param params
-	 * @return
+	 *            参数
+	 * @return 记录数
 	 */
 	public static int count(String sql, Object... params) {
 		try {

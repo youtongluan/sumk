@@ -21,11 +21,6 @@ public interface UserSession {
 
 	void putKey(String sid, byte[] key, String userId, String type);
 
-	/**
-	 * 获取存储到session中的用户信息
-	 * 
-	 * @return
-	 */
 	<T extends SessionObject> T getUserObject(Class<T> clz);
 
 	void flushSession();
@@ -36,6 +31,7 @@ public interface UserSession {
 	 * 更新session中的用户信息
 	 * 
 	 * @param sessionObj
+	 *            目标用户信息
 	 */
 	void updateSession(SessionObject sessionObj);
 
@@ -44,7 +40,7 @@ public interface UserSession {
 	boolean isLogin(String userId, String type);
 
 	/**
-	 * 如果不存在，就返回null
+	 * @return 如果不存在，就返回null
 	 */
 	String getUserId();
 }

@@ -34,7 +34,7 @@ public class DBDemo {
 
 	@Web
 	@Soa
-	@Box( dbType = DBType.WRITE)
+	@Box(dbType = DBType.WRITE)
 	public int add(List<DemoUser> users) {
 		long successId = this.insert(0, true);
 		int count = 0;
@@ -47,14 +47,15 @@ public class DBDemo {
 		} catch (Exception e) {
 			Log.printStack(e);
 		}
-		DemoUser obj=DB.select().tableClass(DemoUser.class).byPrimaryId(successId).queryOne();
+		DemoUser obj = DB.select().tableClass(DemoUser.class).byPrimaryId(successId).queryOne();
 		Assert.assertEquals(Long.valueOf(successId), obj.getId());
 		Assert.assertNull(DB.select().tableClass(DemoUser.class).byPrimaryId(failId).queryOne());
 		return count;
 	}
 
 	@Web
-	@Box(dbType = DBType.WRITE)//实际开发中，一般不需要dbType = DBType.WRITE。只有在插入后要立即查询的情况下，才需要加入这行
+	@Box(dbType = DBType.WRITE) // 实际开发中，一般不需要dbType =
+								// DBType.WRITE。只有在插入后要立即查询的情况下，才需要加入这行
 	public List<DemoUser> addAndGet(List<DemoUser> users) {
 		for (DemoUser user : users) {
 			DB.insert(user).execute();

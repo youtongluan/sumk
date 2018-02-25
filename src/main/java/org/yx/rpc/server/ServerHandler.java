@@ -79,7 +79,7 @@ public class ServerHandler extends IoHandlerAdapter {
 			}
 		} catch (Exception e) {
 			Response resp = new Response();
-			resp.setException(new SoaException(RpcCode.SERVER_UNKNOW, "server handler error", e));
+			resp.exception(new SoaException(RpcCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(GsonUtil.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
 				Log.printStack(e);

@@ -54,9 +54,9 @@ public class MultikeyDao {
 		obj.setName(name);
 		return obj;
 	}
-	
+
 	@Box
-	public void incrAge(Multikey obj,int age){
+	public void incrAge(Multikey obj, int age) {
 		DB.update(obj).incrNum("age", age).execute();
 	}
 

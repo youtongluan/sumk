@@ -23,10 +23,6 @@ public class ConnectionException extends CodeException {
 
 	private Host host;
 
-	/**
-	 * @param code
-	 * @param msg
-	 */
 	public ConnectionException(int code, String msg, Host addr) {
 		super(code, addr + "->" + msg);
 		this.host = addr;

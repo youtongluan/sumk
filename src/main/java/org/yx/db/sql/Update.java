@@ -40,7 +40,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	/**
 	 * @param update
 	 *            如果为false，则数据库主键不会被更新。默认为true。
-	 * @return
+	 * @return 当前对象
 	 */
 	public Update updateDBID(boolean update) {
 		this._updateDBID = update;
@@ -48,7 +48,10 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	}
 
 	/**
-	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * 
+	 * @param fail
+	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * @return 当前对象
 	 */
 	public Update failIfPropertyNotMapped(boolean fail) {
 		this.failIfPropertyNotMapped = fail;
@@ -57,14 +60,17 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 
 	/**
 	 * 设置where条件，如果没有设置该条件。就用pojo的数据库主键或者redis主键
-	 * <LI>调用本方法后，byDBID和byCacheID方法将被忽略<BR>
-	 * <LI>本方法可以被多次调用，多次调用之间是OR关系。
-	 * <LI><B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B>
+	 * <UL>
+	 * <LI>调用本方法后，byDBID和byCacheID方法将被忽略</LI>
+	 * <LI>本方法可以被多次调用，多次调用之间是OR关系</LI>
+	 * <LI><B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B></LI>
+	 * </UL>
 	 * 
 	 * @param pojo
-	 *            bean类型或Map<String, Object>.如果是pojo对象，其中的null字段会被忽略掉
-	 * @return
+	 *            bean类型或Map.如果是pojo对象，其中的null字段会被忽略掉
+	 * @return 当前对象
 	 */
+
 	public Update addWhere(Object pojo) {
 		this._addIn(pojo, false);
 		return this;
@@ -80,9 +86,9 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	}
 
 	/**
-	 * 设置为true的话，整条记录全部更新，包括null字段。默认为false
-	 * 
-	 * @return
+	 * @param fullUpdate
+	 *            设置为true的话，整条记录全部更新，包括null字段。默认为false
+	 * @return 当前对象
 	 */
 	public Update fullUpdate(boolean fullUpdate) {
 		this.withnull = fullUpdate;
@@ -99,7 +105,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	/**
 	 * 默认是根据数据库主键更新
 	 * 
-	 * @return
+	 * @return 当前对象
 	 */
 	public Update byDBID() {
 		this._byType = ColumnType.ID_DB;
@@ -109,7 +115,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	/**
 	 * 根据缓存id更新数据。默认是根据数据库主键更新
 	 * 
-	 * @return
+	 * @return 当前对象
 	 */
 	public Update byCacheID() {
 		this._byType = ColumnType.ID_CACHE;
@@ -118,14 +124,16 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 
 	/**
 	 * 记录被更新后的最终状态。
-	 * <LI>有可能是部分字段，有可能是全部字段
-	 * <LI>有可能只是单条记录变成这样，有可能是多条记录变成这样
+	 * <UL>
+	 * <LI>有可能是部分字段，有可能是全部字段</LI>
+	 * <LI>有可能只是单条记录变成这样，有可能是多条记录变成这样</LI>
+	 * </UL>
 	 * 
 	 * @param pojo
 	 *            Pojo或Map类型.如果是Map类型，要设置tableClass。
 	 *            <B>如果本表使用了缓存，并且没有where条件，本参数必须包含所有redis主键</B>
 	 *            <B>如果本字段包含在自增长里面，那它将会被排除掉</B>
-	 * @return
+	 * @return 当前对象
 	 */
 	@SuppressWarnings("unchecked")
 	public Update updateTo(Object pojo) {
@@ -162,9 +170,6 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 		return this.toMapedSqlWithWhere();
 	}
 
-	/**
-	 * where条件不为空的时候
-	 */
 	private MapedSql toMapedSqlWithWhere() throws Exception {
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
@@ -289,7 +294,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	 *            需要增长或减少的字段的名字,不能是redis主键
 	 * @param v
 	 *            如果是减少，直接用负数就行了
-	 * @return
+	 * @return 当前对象
 	 */
 	public Update incrNum(String fieldName, Number v) {
 		if (v == null) {

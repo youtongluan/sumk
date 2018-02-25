@@ -27,10 +27,10 @@ public class DateUtil {
 
 	/**
 	 * 用yyyy-MM-dd HH:mm:ss进行序列化<BR>
-	 * 如果date为null，就返回null
 	 * 
 	 * @param d
-	 * @return
+	 *            日期对象
+	 * @return 如果date为null，就返回null
 	 */
 	public static String toDateTimeString(Date d) {
 		return toString(d, SumkDate.DATE_TIME);
@@ -43,7 +43,12 @@ public class DateUtil {
 	/**
 	 * 用yyyy-MM-dd HH:mm:ss进行反序列化<br>
 	 * 如果分钟、小时等属性等参数溢出，会自动进行调整，不会出错<BR>
-	 * 如果date为null，就返回null
+	 * 
+	 * @param d
+	 *            日期对象
+	 * @return 如果date为null，就返回null
+	 * @throws java.lang.Exception
+	 *             如果有异常发生
 	 */
 	public static Date parseDateTime(String d) throws Exception {
 		return SumkDate.parse(d, SumkDate.DATE_TIME);

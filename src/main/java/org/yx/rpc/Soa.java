@@ -24,12 +24,6 @@ import java.lang.annotation.Target;
 
 import org.yx.bean.Bean;
 
-/**
- * 声明在方法上，表示该方法是个接口。如果接口名没有显示指定。接口名就是方法名。
- * 
- * @author youxia
- * 
- */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
@@ -37,9 +31,7 @@ import org.yx.bean.Bean;
 @Bean
 public @interface Soa {
 	/**
-	 * 服务名称，如果为空，就根据方法名获取
-	 * 
-	 * @return
+	 * @return 服务名称，如果为空，就根据方法名获取
 	 */
 	String value() default "";
 

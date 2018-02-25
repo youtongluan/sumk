@@ -28,6 +28,14 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface ErrorHandler {
 
+	public enum ExceptionStrategy {
+
+		IF_NO_BIZEXCEPTION,
+
+		FORCE;
+
+	}
+
 	int code();
 
 	String message();

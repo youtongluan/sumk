@@ -13,20 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.rpc;
 
-public enum Transaction {
-	/**
-	 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
-	 */
-	NORMAL,
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-	/**
-	 * 内嵌事务，相当于spring的NESTED
-	 */
-	EMBED,
-	/**
-	 * 没有事务
-	 */
-	NONE;
+public class SoaExcutors {
+	public static final ExecutorService SERVER = Executors.newCachedThreadPool();
+	public static final ExecutorService CLINET = SERVER;
 }

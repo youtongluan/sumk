@@ -40,12 +40,6 @@ public final class Assert {
 
 	}
 
-	/**
-	 * 如果表达式不是true，就会抛出SumkException
-	 * 
-	 * @param b
-	 * @param msg
-	 */
 	public static void isTrue(boolean b, String msg) {
 		if (b) {
 			return;

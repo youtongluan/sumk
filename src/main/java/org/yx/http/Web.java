@@ -24,23 +24,15 @@ import java.lang.annotation.Target;
 
 import org.yx.bean.Bean;
 
-/**
- * 声明在方法上，表示该方法可以被http调用。 如果对象的某个方法被Web注解，那么那个对象相当于被Bean注解
- * 
- * 
- * @author youxia
- * 
- */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
 @Bean
 public @interface Web {
+
 	/**
-	 * 服务名称，如果为空，就根据方法名获取
-	 * 
-	 * @return
+	 * @return 服务名称，如果为空，就根据方法名获取
 	 */
 	String value() default "";
 
@@ -57,4 +49,5 @@ public @interface Web {
 	String custom() default "";
 
 	String[] type() default { "" };
+
 }

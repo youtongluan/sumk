@@ -15,38 +15,26 @@
  */
 package org.yx.rpc.client;
 
-import org.yx.exception.CodeException;
-import org.yx.exception.SoaException;
-import org.yx.log.Log;
-import org.yx.rpc.RpcCode;
-import org.yx.rpc.server.Response;
-
 public class RpcFutureImpl extends AbstractRpcFuture {
-	private RespFuture target;
+	private RpcLocker locker;
 
-	private volatile RpcResult result;
+	private RpcResult result;
 
-	public RpcFutureImpl(RespFuture target) {
-		this.target = target;
+	public RpcFutureImpl(RpcLocker target) {
+		this.locker = target;
 	}
 
-	public RpcResult rpcResult(long timeout) {
+	@Override
+	public RpcResult awaitForRpcResult() {
 		if (this.result != null) {
 			return this.result;
 		}
-		synchronized (this) {
-			if (this.result == null) {
-				try {
-					Response r = target.getResponse(timeout).getResp();
-					this.result = new RpcResult(r.getJson(), r.getException());
-				} catch (Exception e) {
-					CodeException ex = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
-							: new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
-					this.result = new RpcResult(null, ex);
-					Log.get("sumk.rpc.async").debug(e.getMessage(), e);
-				}
-			}
-		}
+		this.result = locker.awaitForResponse();
+		return this.result;
+	}
+
+	@Override
+	public RpcResult rpcResult() {
 		return this.result;
 	}
 }

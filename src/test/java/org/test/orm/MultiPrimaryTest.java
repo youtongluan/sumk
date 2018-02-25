@@ -16,7 +16,7 @@ public class MultiPrimaryTest {
 	@Before
 	public void before() {
 		ConsoleLog.setDefaultLevel(ConsoleLog.DEBUG);
-		SumkServer.start("nosoa","nohttp");
+		SumkServer.start("nosoa", "nohttp");
 		dao = IOC.get(MultikeyDao.class);
 	}
 

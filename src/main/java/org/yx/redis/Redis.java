@@ -44,9 +44,7 @@ public class Redis {
 	}
 
 	/**
-	 * redis的主机地址，如果存在多个，就用逗号分隔
-	 * 
-	 * @return
+	 * @return redis的主机地址，如果存在多个，就用逗号分隔
 	 */
 	public String getHost() {
 		return host;
@@ -64,12 +62,6 @@ public class Redis {
 		return tryCount;
 	}
 
-	/**
-	 * 获取原生的jedis对象，用于执行一些特别的操作，或者批量操作
-	 * 
-	 * @param callback
-	 * @return
-	 */
 	public <T> T exec(RedisCallBack<T> callback) {
 		return new RedisTemplate(this).execute(callback);
 	}

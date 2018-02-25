@@ -20,7 +20,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.annotation.ExceptionStrategy;
+import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.IOC;
 import org.yx.common.BizExcutor;
@@ -81,8 +81,8 @@ public class InvokeHandler implements HttpHandler {
 				}
 			}
 			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
-			Object[] params = argObj.params();
-			return exec(http.method, http.obj, params, info.paramInfos, ctx);
+
+			return exec(http.method, http.obj, argObj == null ? null : argObj.params(), info.paramInfos, ctx);
 		});
 	}
 

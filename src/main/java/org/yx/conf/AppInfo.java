@@ -84,28 +84,27 @@ public final class AppInfo {
 	}
 
 	/**
-	 * 当前应用的id
 	 * 
-	 * @return
+	 * @return 当前应用的id
 	 */
 	public static String appId() {
 		return info.get("sumk.appId", "app");
 	}
 
 	/**
-	 * 大系统的id
 	 * 
-	 * @return
+	 * @return 大系统的id
 	 */
 	public static String groupId() {
 		return info.get("sumk.groupId", "sumk");
 	}
 
 	/**
-	 * key不存在的话，返回null
+	 * 
 	 * 
 	 * @param name
-	 * @return
+	 *            name
+	 * @return name不存在的话，返回null
 	 */
 	public static String get(String name) {
 		return info.get(name);
@@ -115,13 +114,6 @@ public final class AppInfo {
 		return info.get(name, defaultValue);
 	}
 
-	/**
-	 * 这个方法不会抛出异常
-	 * 
-	 * @param name
-	 * @param defaultValue
-	 * @return
-	 */
 	public static int getInt(String name, int defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {
@@ -147,14 +139,6 @@ public final class AppInfo {
 		return Charset.forName(charsetName);
 	}
 
-	/**
-	 * name不存在或空字节的时候，返回defaultValue<br>
-	 * 否则，值为1或true的时候（大小写不敏感），返回true
-	 * 
-	 * @param name
-	 * @param defaultValue
-	 * @return
-	 */
 	public static boolean getBoolean(String name, boolean defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {

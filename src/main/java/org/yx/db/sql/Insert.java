@@ -41,7 +41,7 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 	 * @param pojo
 	 *            要插入的对象，该对象不会被DB包修改。如果是Map类型，要设置tableClass<BR>
 	 *            但如果对象中主键为null。而且表只有一个主键，并且是Long类型的话，会自动生成一个id，并且赋值到pojo中<br>
-	 * @return
+	 * @return 当前对象
 	 */
 	public Insert insert(Object pojo) {
 		this.src.add(pojo);
@@ -54,16 +54,6 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 		return this;
 	}
 
-	/**
-	 * 生成插入的sql，如果没有配置ORM注解，就返回null. 如果该表示软删除，就自动插入标志字段的有效值
-	 * 
-	 * @param pojo
-	 * @param withnull
-	 *            为true的话，那些是null的字段，也会展示在sql中
-	 * @return
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
-	 */
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		this.checkIn();
 		this.pojoMeta = this.parsePojoMeta(true);

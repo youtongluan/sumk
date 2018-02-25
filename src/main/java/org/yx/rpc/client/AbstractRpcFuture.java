@@ -15,55 +15,40 @@
  */
 package org.yx.rpc.client;
 
-import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
 import org.yx.util.GsonUtil;
 
 public abstract class AbstractRpcFuture implements RpcFuture {
 
-	private static final String FUTURE_TIMEOUT = "soa.future.timeout";
-
-	private static final int DEFAULT_TIMEOUT = 1000 * 30;
-
-	public <T> T get(Class<T> clz, long timeout) throws CodeException {
-		String json = this.get(timeout);
+	@Override
+	public <T> T getOrException(Class<T> clz) throws CodeException {
+		String json = this.getOrException();
 		if (json == null) {
 			return null;
 		}
 		return GsonUtil.fromJson(json, clz);
 	}
 
-	public String get() throws CodeException {
-		return get(AppInfo.getInt(FUTURE_TIMEOUT, DEFAULT_TIMEOUT));
+	@Override
+	public String getOrException() throws CodeException {
+		RpcResult resp = this.awaitForRpcResult();
+		resp.throwIfException();
+		return resp.json();
 	}
 
-	public String opt() {
-		return opt(AppInfo.getInt(FUTURE_TIMEOUT, DEFAULT_TIMEOUT));
-	}
-
-	public <T> T get(Class<T> clz) throws CodeException {
-		return get(clz, AppInfo.getInt(FUTURE_TIMEOUT, DEFAULT_TIMEOUT));
-	}
-
-	public <T> T opt(Class<T> clz) {
-		return opt(clz, AppInfo.getInt(FUTURE_TIMEOUT, DEFAULT_TIMEOUT));
-	}
-
-	public <T> T opt(Class<T> clz, long timeout) {
-		String json = this.opt(timeout);
+	@Override
+	public <T> T opt(Class<T> clz) throws CodeException {
+		String json = this.opt();
 		if (json == null) {
 			return null;
 		}
 		return GsonUtil.fromJson(json, clz);
 	}
 
-	public String opt(long timeout) {
-		RpcResult resp = rpcResult(timeout);
-		return resp.optJsonResult();
+	@Override
+	public String opt() throws CodeException {
+		RpcResult resp = this.awaitForRpcResult();
+		return resp.json();
 	}
 
-	public String get(long timeout) throws CodeException {
-		RpcResult resp = rpcResult(timeout);
-		return resp.getJsonResult();
-	}
 }

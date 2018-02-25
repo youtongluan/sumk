@@ -36,7 +36,8 @@ public class NamedDB {
 	 * @param sql
 	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
 	 * @param map
-	 * @return
+	 *            参数
+	 * @return sql执行结果
 	 */
 	public static int execute(String sql, Map<String, Object> map) {
 		try {
@@ -51,7 +52,8 @@ public class NamedDB {
 	 * @param sql
 	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
 	 * @param map
-	 * @return
+	 *            参数
+	 * @return 结果集
 	 */
 	public static List<Map<String, Object>> list(String sql, Map<String, Object> map) {
 		try {
@@ -66,7 +68,8 @@ public class NamedDB {
 	 * @param sql
 	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
 	 * @param map
-	 * @return
+	 *            参数
+	 * @return 结果集
 	 */
 	public static List<?> singleColumnList(String sql, Map<String, Object> map) {
 		try {
@@ -80,7 +83,8 @@ public class NamedDB {
 	 * @param sql
 	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
 	 * @param map
-	 * @return
+	 *            参数
+	 * @return 记录数
 	 */
 	public static int count(String sql, Map<String, Object> map) {
 		try {

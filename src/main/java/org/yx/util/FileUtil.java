@@ -23,7 +23,9 @@ public class FileUtil {
 	 * 列出改目录下的所有子文件（不包含目录）
 	 * 
 	 * @param filelist
+	 *            目标对象
 	 * @param parent
+	 *            目录
 	 */
 	public static void listAllSubFiles(List<File> filelist, File parent) {
 		File[] files = parent.listFiles();

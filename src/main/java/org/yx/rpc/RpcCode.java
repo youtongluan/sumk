@@ -19,11 +19,15 @@ public interface RpcCode {
 
 	int UNKNOW = 300;
 
+	int WAIT_TWICE = 310;
+
 	int NO_ROUTE = 400;
 
 	int NO_NODE_AVAILABLE = 410;
 
 	int TIMEOUT = 420;
+
+	int SEND_FAILED = 430;
 
 	int SERVER_HANDLE_ERROR = 540;
 

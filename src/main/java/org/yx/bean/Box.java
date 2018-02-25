@@ -27,13 +27,25 @@ import org.yx.db.DBType;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Box {
+	public enum Transaction {
+		/**
+		 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
+		 */
+		NORMAL,
+
+		/**
+		 * 内嵌事务，相当于spring的NESTED
+		 */
+		EMBED,
+		/**
+		 * 没有事务
+		 */
+		NONE;
+	}
 
 	String dbName() default "sumk";
 
 	DBType dbType() default DBType.ANY;
 
-	/**
-	 * 事务传递特性，相当于spring的Propagation
-	 */
 	Transaction transaction() default Transaction.NORMAL;
 }

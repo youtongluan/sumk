@@ -25,9 +25,6 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
-/**
- * 返回值是List<Map<String,Object>>
- */
 public class MapResultHandler implements ResultHandler {
 
 	public static MapResultHandler handler = new MapResultHandler();

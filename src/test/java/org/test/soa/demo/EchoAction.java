@@ -11,7 +11,7 @@ public class EchoAction {
 
 	@Soa
 	public List<String> echo(String echo, List<String> names) {
-		
+
 		List<String> list = new ArrayList<String>();
 		for (String name : names) {
 			list.add(echo + " " + name);

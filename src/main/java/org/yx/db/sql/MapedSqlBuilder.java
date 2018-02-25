@@ -26,12 +26,6 @@ public class MapedSqlBuilder implements SqlBuilder {
 	private final String _sql;
 	private final Map<String, Object> map;
 
-	/**
-	 * 
-	 * @param sql
-	 * @param bean
-	 *            pojo或者map
-	 */
 	public MapedSqlBuilder(String sql, Map<String, Object> map) {
 		this._sql = sql;
 		this.map = map;

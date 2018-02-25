@@ -45,8 +45,10 @@ public class Encrypt {
 		}
 		return ret;
 	}
+
 	/**
 	 * 对提交数据的明文进行签名
+	 * 
 	 * @param data
 	 * @return
 	 * @throws Exception

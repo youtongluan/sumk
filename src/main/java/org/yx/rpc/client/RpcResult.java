@@ -15,50 +15,69 @@
  */
 package org.yx.rpc.client;
 
+import org.yx.exception.BizException;
 import org.yx.exception.CodeException;
+import org.yx.exception.SoaException;
+import org.yx.rpc.RpcCode;
 import org.yx.util.GsonUtil;
 
-public class RpcResult {
+public final class RpcResult {
+	static RpcResult timeout(Req req) {
+		long timeout = System.currentTimeMillis() - req.getStart();
+		String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
+		SoaException exception = new SoaException(RpcCode.TIMEOUT, "服务器繁忙，请稍候", msg);
+		return new RpcResult(null, exception, req == null ? null : req.getSn());
+	}
+
+	static RpcResult sendFailed(Req req, Throwable e) {
+		return new RpcResult(null, parseException(e), req == null ? null : req.getSn());
+	}
 
 	private final String json;
 	private final CodeException exception;
+	private String sn;
 
-	RpcResult(String json, CodeException exception) {
-		super();
-		this.json = exception != null ? null : json;
-		this.exception = exception;
-	}
-
-	/**
-	 * 获取返回值，如果有异常，会抛出异常
-	 * 
-	 * @return
-	 * @throws CodeException
-	 */
-	public String getJsonResult() throws CodeException {
-		this.checkException();
-		return json;
-	}
-
-	public <T> T getResult(Class<T> clz) throws CodeException {
-		this.checkException();
-		if (this.json == null) {
+	static CodeException parseException(Throwable e) {
+		if (e == null) {
 			return null;
 		}
-		return GsonUtil.fromJson(json, clz);
+		if (!CodeException.class.isInstance(e)) {
+			return new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
+		}
+		if (SoaException.class == e.getClass()) {
+			SoaException ex = (SoaException) e;
+			if (BizException.class.getName().equals(ex.getExceptionClz())) {
+				return new BizException(ex.getCode(), ex.getMessage());
+			}
+		}
+		return (CodeException) e;
+	}
+
+	RpcResult(String json, CodeException exception) {
+		this.json = exception != null ? null : json;
+		this.exception = parseException(exception);
+	}
+
+	RpcResult(String json, CodeException exception, String sn) {
+		this(json, exception);
+		this.sn = sn;
 	}
 
 	public CodeException exception() {
 		return exception;
 	}
 
-	private void checkException() {
+	public void throwIfException() throws CodeException {
 		if (this.exception != null) {
-			throw this.exception;
+			throw exception;
 		}
 	}
 
-	public String optJsonResult() {
+	public String sn() {
+		return this.sn;
+	}
+
+	public String json() {
 		return json;
 	}
 
@@ -67,6 +86,37 @@ public class RpcResult {
 			return null;
 		}
 		return GsonUtil.fromJson(json, clz);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((exception == null) ? 0 : exception.hashCode());
+		result = prime * result + ((json == null) ? 0 : json.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		RpcResult other = (RpcResult) obj;
+		if (exception == null) {
+			if (other.exception != null)
+				return false;
+		} else if (!exception.equals(other.exception))
+			return false;
+		if (json == null) {
+			if (other.json != null)
+				return false;
+		} else if (!json.equals(other.json))
+			return false;
+		return true;
 	}
 
 }

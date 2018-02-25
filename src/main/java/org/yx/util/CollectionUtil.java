@@ -29,14 +29,7 @@ import java.util.Map;
 import org.yx.conf.AppInfo;
 
 public class CollectionUtil {
-	/**
-	 * 获取的map，key、value都做了trim()处理。 跟Properties的区别是properties的文件要ascii结构，
-	 * 而这个方法的文件，是UTF-8结构。如果全是英文，也可以用ASCII格式. 操作之后会关闭输入流
-	 * 
-	 * @param in
-	 * @return
-	 * @throws IOException
-	 */
+
 	public static Map<String, String> loadMap(InputStream in) throws IOException {
 		if (in == null) {
 			return null;
@@ -45,17 +38,6 @@ public class CollectionUtil {
 		return loadMap(reader);
 	}
 
-	/**
-	 * 将一个文本转化为map
-	 * 
-	 * @param text
-	 * @param bigFilter
-	 *            entry之间的分隔符，不能为null
-	 * @param smallFilter
-	 *            key和value间的分隔符，不能为null
-	 * @param defaultKey如果某个entry里面，没有smallFilter，就将defaultKey作为默认的key。如果这个参数为null，没有smallFilter的entry将被忽略掉
-	 * @return
-	 */
 	public static Map<String, String> loadMapWithDefaultKey(String text, String bigFilter, String smallFilter,
 			String defaultKey) {
 		Map<String, String> map = new HashMap<>();

@@ -21,15 +21,23 @@ import org.yx.rpc.RpcCode;
 
 public class ErrorRpcFuture extends AbstractRpcFuture {
 
-	private final CodeException exception;
+	private final RpcResult rpcResult;
 
-	public ErrorRpcFuture(Throwable e) {
-		this.exception = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
+	final RpcLocker locker;
+
+	public ErrorRpcFuture(Throwable e, RpcLocker locker) {
+		CodeException exception = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
 				: new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
+		this.rpcResult = new RpcResult(null, exception);
+		this.locker = locker;
 	}
 
-	public RpcResult rpcResult(long timeout) {
-		return new RpcResult(null, this.exception);
+	public RpcResult awaitForRpcResult() {
+		return this.rpcResult;
 	}
 
+	@Override
+	public RpcResult rpcResult() {
+		return this.rpcResult;
+	}
 }

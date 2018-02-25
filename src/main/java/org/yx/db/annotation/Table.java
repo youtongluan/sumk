@@ -26,33 +26,27 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Table {
 	/**
-	 * 表名。为空时，就是小写的类名
+	 * @return 表名。为空时，就是小写的类名
 	 */
 	String value() default "";
 
 	/**
-	 * 在缓存中保留的时间,单位秒。0表示使用全局设置，小于0表示不过期
-	 * 
-	 * @return
+	 * @return 在缓存中保留的时间,单位秒。0表示使用全局设置，小于0表示不过期
 	 */
 	int duration() default 0;
 
 	/**
-	 * 为空使用类名，一般使用默认就好
-	 * 
-	 * @return
+	 * @return 为空使用类名，一般使用默认就好
 	 */
 	String preInCache() default "";
 
 	/**
-	 * 访问多少次之后刷新缓存，0表示使用全局默认，小于0表示不刷新
+	 * @return 访问多少次之后刷新缓存，0表示使用全局默认，小于0表示不刷新
 	 */
 	int maxBeats() default 0;
 
 	/**
-	 * 主键缓存都是SINGLE，外键缓存一般用LIST
-	 * 
-	 * @return
+	 * @return 主键缓存都是SINGLE，外键缓存一般用LIST
 	 */
 	CacheType cacheType() default CacheType.SINGLE;
 

@@ -101,9 +101,6 @@ public class Loggers {
 		return level(name);
 	}
 
-	/**
-	 * 重置日志级别,根节点为root
-	 */
 	public synchronized void resetLevel(Map<String, LogLevel> newLevels) {
 		LogLevel defaultLevel = newLevels.remove(ROOT);
 		if (defaultLevel != null) {

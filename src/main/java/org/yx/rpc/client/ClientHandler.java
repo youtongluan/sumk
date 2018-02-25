@@ -57,7 +57,7 @@ public class ClientHandler implements IoHandler {
 		}
 		if (Response.class.isInstance(message)) {
 			Response resp = (Response) message;
-			RequestLocker.unLockAndSetResult(resp);
+			LockHolder.unLockAndSetResult(resp);
 			return;
 		}
 		SumkException.throwException(458223, message.getClass().getName() + " has not deserialized");

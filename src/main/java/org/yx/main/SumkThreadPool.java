@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yx.common.Deamon;
 import org.yx.conf.AppInfo;
@@ -31,10 +32,16 @@ public class SumkThreadPool {
 	static {
 		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 2),
 				new ThreadFactory() {
+					private final AtomicInteger threadNumber = new AtomicInteger(1);
+
 					@Override
 					public Thread newThread(Runnable r) {
 						Thread t = new Thread(r);
+						t.setName("sumk-thread-" + threadNumber.getAndIncrement());
 						t.setDaemon(true);
+						if (t.getPriority() != Thread.NORM_PRIORITY) {
+							t.setPriority(Thread.NORM_PRIORITY);
+						}
 						return t;
 					}
 

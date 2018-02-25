@@ -27,13 +27,6 @@ public class HttpHolder {
 
 	static Map<String, HttpNode> actMap = new ConcurrentHashMap<String, HttpNode>();
 
-	/**
-	 * 根据方法的全名，获取参数列表
-	 * 
-	 * @param method
-	 *            classFullName.method
-	 * @return null表示方法不存在,或者参数为空
-	 */
 	public static Class<?> getArgType(String method) {
 		String m = getArgClassName(method);
 		return pojoMap.get(m);
@@ -44,12 +37,6 @@ public class HttpHolder {
 		return method.substring(0, k) + "_" + method.substring(k + 1);
 	}
 
-	/**
-	 * 根据soaName获取MethodInfo
-	 * 
-	 * @param method
-	 * @return
-	 */
 	public static HttpNode getHttpInfo(String name) {
 		return actMap.get(name);
 	}
@@ -62,11 +49,6 @@ public class HttpHolder {
 		return actMap.keySet();
 	}
 
-	/**
-	 * 获取所有的http接口
-	 * 
-	 * @return
-	 */
 	public static String[] acts() {
 		return actMap.keySet().toArray(new String[0]);
 	}

@@ -29,11 +29,6 @@ import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
-/**
- * 分布式锁<BR>
- * <B>本功能依赖于redis，必须在拥有redis 2.6或以上版本的环境下使用，而且要在拥有良好网络的内网使用</B>
- * 
- */
 public final class SLock {
 	private static final int REDIS_LEN = 16;
 	private static final String[] nodeKey = new String[REDIS_LEN];
@@ -139,8 +134,10 @@ public final class SLock {
 	 * 尝试加锁，如果锁定失败，就返回null
 	 * 
 	 * @param lock
+	 *            锁对象
 	 * @param maxWaitTime
-	 * @return
+	 *            获取锁的最大时间，单位ms
+	 * @return 锁
 	 */
 	public static Key tryLock(Lock lock, long maxWaitTime) {
 		if (getLock(lock) != null) {

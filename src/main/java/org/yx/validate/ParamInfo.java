@@ -29,11 +29,6 @@ public class ParamInfo {
 		this.type = type;
 	}
 
-	/**
-	 * 参数字段的名字
-	 * 
-	 * @return
-	 */
 	public String getParamName() {
 		return paramName;
 	}

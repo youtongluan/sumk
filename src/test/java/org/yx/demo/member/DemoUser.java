@@ -93,6 +93,4 @@ public class DemoUser {
 		return true;
 	}
 
-	
-
 }

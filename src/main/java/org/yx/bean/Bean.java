@@ -26,9 +26,7 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Bean {
 	/**
-	 * 自定义bean的名称。慎用此方法
-	 * 
-	 * @return
+	 * @return 自定义bean的名称。慎用此方法
 	 */
 	String value() default "";
 

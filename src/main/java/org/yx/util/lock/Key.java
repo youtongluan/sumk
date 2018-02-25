@@ -23,9 +23,7 @@ package org.yx.util.lock;
  */
 public interface Key extends AutoCloseable {
 	/**
-	 * 钥匙的Id，肯定不为空
-	 * 
-	 * @return
+	 * @return 钥匙的Id，肯定不为空
 	 */
 	String getId();
 

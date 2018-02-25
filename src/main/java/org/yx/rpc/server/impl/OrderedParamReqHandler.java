@@ -54,15 +54,14 @@ public class OrderedParamReqHandler implements RequestHandler {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");
 			}
 			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(), req));
-			resp.setJson(GsonUtil.toJson(ret));
-			resp.setException(null);
-			resp.setMs(System.currentTimeMillis() - start);
+			resp.json(GsonUtil.toJson(ret));
+			resp.exception(null);
 		} catch (Throwable e) {
-			resp.setJson(null);
-			resp.setException(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
-			resp.setMs(System.currentTimeMillis() - start);
+			resp.json(null);
+			resp.exception(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 			Log.get("sumk.rpc").debug(req.getApi() + "," + e.getMessage(), e);
 		} finally {
+			resp.serviceInvokeMilTime(System.currentTimeMillis() - start);
 			ThreadContext.remove();
 		}
 		return resp;

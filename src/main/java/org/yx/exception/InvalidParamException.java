@@ -31,13 +31,6 @@ public class InvalidParamException extends Exception {
 	private Object param;
 	private ParamInfo info;
 
-	/**
-	 * 
-	 * @param message
-	 *            用#做占位符，它会被cnName所替代
-	 * @param info
-	 * @param arg
-	 */
 	public InvalidParamException(String message, ParamInfo info, Object arg) {
 		super(message);
 		this.param = arg;

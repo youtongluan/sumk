@@ -22,9 +22,6 @@ import org.yx.util.WeightedRoute;
 
 public class RpcRoute extends WeightedRoute<ServerMachine> {
 
-	/**
-	 * @param servers
-	 */
 	public RpcRoute(Collection<ServerMachine> servers) {
 		super(servers.toArray(new ServerMachine[servers.size()]));
 	}
@@ -34,9 +31,6 @@ public class RpcRoute extends WeightedRoute<ServerMachine> {
 		return HostChecker.get().isDowned(server.url);
 	}
 
-	/**
-	 * @return
-	 */
 	public Host getUrl() {
 		ServerMachine server = this.getServer();
 		return server == null ? null : server.url;

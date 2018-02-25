@@ -44,12 +44,12 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 
 			Charset charset = HttpUtil.charset(req);
 			if (obj == null) {
-				Log.get("loginAction").info(user + ":login Object must not be null");
+				Log.get("sumk.loginAction").info(user + ":login Object must not be null");
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
-				Log.get("loginAction").debug(user + ":" + obj.getErrorMsg());
+				Log.get("sumk.loginAction").debug(user + ":" + obj.getErrorMsg());
 				HttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
@@ -110,11 +110,6 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 
 	private UserSession session;
 
-	/**
-	 * 存放在sid中的sessionId
-	 * 
-	 * @return
-	 */
 	protected String createSessionId() {
 		return UUIDSeed.random();
 	}
@@ -133,10 +128,8 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 	 *            http头部sid的信息
 	 * @param user
 	 *            对应于http parameter的username
-	 * @param password
-	 *            对应于http parameter的password
-	 * @param validCode
-	 *            验证码,对应于http parameter的code
+	 * @param req
+	 *            用户请求的HttpServletRequest对象
 	 * @return 登陆信息，无论成功与否，返回值不能是null
 	 */
 	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);

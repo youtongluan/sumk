@@ -82,12 +82,6 @@ public class RecordReq {
 		return RedisPool.get(m.getTableName()).mget(keys);
 	}
 
-	/**
-	 * 批量获取id对应的值.值的顺序和ids的顺序一致 注意：这个方法仅适用于不需要分库的表
-	 * 
-	 * @param ids
-	 * @return
-	 */
 	public static List<String> getMultiValue(PojoMeta m, String[] ids) {
 		if (ids == null || ids.length == 0) {
 			return new ArrayList<String>();

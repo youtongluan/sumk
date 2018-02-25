@@ -30,9 +30,6 @@ public final class Delete extends AbstractSqlBuilder<Integer> implements Executa
 		return this.accept(visitor);
 	}
 
-	/**
-	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
-	 */
 	public Delete failIfPropertyNotMapped(boolean fail) {
 		this.failIfPropertyNotMapped = fail;
 		return this;
@@ -43,7 +40,8 @@ public final class Delete extends AbstractSqlBuilder<Integer> implements Executa
 	 * 多次执行delete，相互之间是or条件
 	 * 
 	 * @param pojo
-	 * @return
+	 *            map或pojo
+	 * @return 当前对象
 	 */
 	public Delete delete(Object pojo) {
 		this._addIn(pojo);

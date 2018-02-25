@@ -64,12 +64,6 @@ public class SimpleBeanUtil {
 		m.invoke(bean, v);
 	}
 
-	/**
-	 * 设置对象属性， setXX方法不能重名，并且参数只有一个。 如果setXX方法不存在，就忽略map中的该值
-	 * 
-	 * @param bean
-	 * @param map
-	 */
 	public static void copyProperties(Object bean, Map<String, String> map) throws Exception {
 		Set<String> set = map.keySet();
 		Method[] ms = bean.getClass().getMethods();

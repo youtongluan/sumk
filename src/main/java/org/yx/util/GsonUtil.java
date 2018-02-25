@@ -121,7 +121,8 @@ public final class GsonUtil {
 	 * 不能用于集合、数组
 	 * 
 	 * @param source
-	 * @return
+	 *            源
+	 * @return 结果
 	 */
 	public static Object copyObject(Object source) {
 		if (source == null) {

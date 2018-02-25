@@ -22,88 +22,88 @@ import org.yx.util.GsonUtil;
 public class RpcTest {
 
 	@Before
-	public void before(){
+	public void before() {
 		Rpc.init();
 	}
-	
-	private String pre(){
-		return AppInfo.groupId()+"."+AppInfo.appId();
+
+	private String pre() {
+		return AppInfo.groupId() + "." + AppInfo.appId();
 	}
-	
+
 	@Test
 	public void test() {
-		List<String> names=Arrays.asList("游夏","游侠");
-		String echo="how are you";
-		//ret是json格式
-		String ret=Rpc.call(pre()+".echo", echo,names);
-		System.out.println("result:"+ret);
+		List<String> names = Arrays.asList("游夏", "游侠");
+		String echo = "how are you";
+		// ret是json格式
+		String ret = Rpc.call(pre() + ".echo", echo, names);
+		System.out.println("result:" + ret);
 		Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
-		for(int i=0;i<5;i++){
-			Map<String,Object> map=new HashMap<>();
+		for (int i = 0; i < 5; i++) {
+			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo);
 			map.put("names", names);
-			ret=Rpc.callInJson(pre()+".echo", GsonUtil.toJson(map));
+			ret = Rpc.callInJson(pre() + ".echo", GsonUtil.toJson(map));
 			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
-			ret=Rpc.call(pre()+".echo", echo,names);
+			ret = Rpc.call(pre() + ".echo", echo, names);
 			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
-			System.out.println("test:"+ret);
+			System.out.println("test:" + ret);
 		}
 	}
-	
-	
-	Random r=new Random();
-	
-	private List<DemoUser> create(){
-		List<DemoUser> list=new ArrayList<DemoUser>();
-		for(int i=0;i<10;i++){
-			DemoUser obj=new DemoUser();
+
+	Random r = new Random();
+
+	private List<DemoUser> create() {
+		List<DemoUser> list = new ArrayList<DemoUser>();
+		for (int i = 0; i < 10; i++) {
+			DemoUser obj = new DemoUser();
 			obj.setAge(r.nextInt(100));
-			obj.setName("名字"+r.nextInt());
+			obj.setName("名字" + r.nextInt());
 			obj.setId(r.nextLong());
 			list.add(obj);
 		}
 		return list;
 	}
-	
+
 	@Test
 	public void db_insert() throws IOException {
-		for(int j=0;j<5;j++){
-			List<DemoUser> list=create();
+		for (int j = 0; j < 5; j++) {
+			List<DemoUser> list = create();
 			String ret;
-			Map<String,Object> map=new HashMap<>();
+			Map<String, Object> map = new HashMap<>();
 			map.put("users", list);
-			ret=Rpc.callInJson(pre()+".add", GsonUtil.toJson(map));
-			System.out.println("返回的信息："+ret);
-			Assert.assertEquals(list.size()+"", ret);
-			
-			
-			list=create();
-			ret=Rpc.call(pre()+".add", list);
-			System.out.println("返回的信息："+ret);
-			Assert.assertEquals(list.size()+"", ret);
+			ret = Rpc.callInJson(pre() + ".add", GsonUtil.toJson(map));
+			System.out.println("返回的信息：" + ret);
+			Assert.assertEquals(list.size() + "", ret);
+
+			list = create();
+			ret = Rpc.call(pre() + ".add", list);
+			System.out.println("返回的信息：" + ret);
+			Assert.assertEquals(list.size() + "", ret);
 		}
 	}
-	
+
 	@Test
 	public void async() {
-		System.out.println("now:"+System.currentTimeMillis());
-		List<String> names=Arrays.asList("游夏","游侠");
-		String echo="how are you,";
-		//ret是json格式
-		List<RpcFuture> retList=new ArrayList<>();
-		List<RpcFuture> retList2=new ArrayList<>();
-		for(int i=0;i<5;i++){
-			Map<String,Object> map=new HashMap<>();
-			map.put("echo", echo+i);
+		System.out.println("now:" + System.currentTimeMillis());
+		List<String> names = Arrays.asList("游夏", "游侠");
+		String echo = "how are you,";
+		// ret是json格式
+		List<RpcFuture> retList = new ArrayList<>();
+		List<RpcFuture> retList2 = new ArrayList<>();
+		for (int i = 0; i < 5; i++) {
+			Map<String, Object> map = new HashMap<>();
+			map.put("echo", echo + i);
 			map.put("names", names);
-			retList.add(Rpc.callInJsonAsync(pre()+".echo", GsonUtil.toJson(map)));
-			retList2.add(Rpc.callAsync(pre()+".echo", echo+i,names));
+			retList.add(Rpc.callInJsonAsync(pre() + ".echo", GsonUtil.toJson(map)));
+			retList2.add(Rpc.callAsync(pre() + ".echo", echo + i, names));
 		}
-		
-		for(int i=0;i<5;i++){
-			System.out.println(i+" 异步");
-			Assert.assertEquals(new EchoAction().echo(echo+i, names), GsonUtil.fromJson(retList.get(i).get(2000), List.class));
-			Assert.assertEquals(new EchoAction().echo(echo+i, names), GsonUtil.fromJson(retList2.get(i).get(), List.class));
+
+		for (int i = 0; i < 5; i++) {
+			System.out.println(i + " 异步");
+			Assert.assertEquals(new EchoAction().echo(echo + i, names),
+					GsonUtil.fromJson(retList.get(i).opt(), List.class));
+			Assert.assertEquals(new EchoAction().echo(echo + i, names),
+					GsonUtil.fromJson(retList2.get(i).opt(), List.class));
 		}
 	}
 

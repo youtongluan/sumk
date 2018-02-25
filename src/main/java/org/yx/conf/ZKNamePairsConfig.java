@@ -46,14 +46,8 @@ public abstract class ZKNamePairsConfig implements SystemConfig {
 		return ZKConfigHandler.readAndListen(getZkUrl(), getDataPath(), listener);
 	}
 
-	/**
-	 * 配置数据在zk上的节点名称
-	 */
 	protected abstract String getDataPath();
 
-	/**
-	 * zk的地址
-	 */
 	protected abstract String getZkUrl();
 
 	@Override

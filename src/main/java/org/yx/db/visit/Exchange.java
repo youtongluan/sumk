@@ -32,19 +32,10 @@ public class Exchange {
 
 	private List<Map<String, Object>> canToRedis;
 
-	/**
-	 * @param leftIn
-	 *            它的引用有可能发生变化，但它的内容是不会变的
-	 */
 	public Exchange(List<Map<String, Object>> leftIn) {
 		this.leftIn = leftIn;
 	}
 
-	/**
-	 * 如果没有从redis中查到任何数据，leftIn==in
-	 * 
-	 * @return
-	 */
 	public List<Map<String, Object>> getLeftIn() {
 		return leftIn;
 	}
@@ -57,10 +48,6 @@ public class Exchange {
 		return canToRedis;
 	}
 
-	/**
-	 * @param pm
-	 * @throws Exception
-	 */
 	public void findFromCache(PojoMeta pm) {
 		List<Map<String, Object>> origin = this.leftIn;
 		if (origin == null || origin.isEmpty() || RedisPool.defaultRedis() == null) {

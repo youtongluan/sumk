@@ -15,6 +15,8 @@
  */
 package org.yx.exception;
 
+import org.yx.common.CodedMessage;
+
 public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;
@@ -34,6 +36,15 @@ public class BizException extends CodeException {
 
 	public static void throwException(int code, String msg, Throwable exception) throws BizException {
 		throw new BizException(code, msg, exception);
+	}
+
+	/**
+	 * 
+	 * @param message
+	 *            不能为null
+	 */
+	public static void throwException(CodedMessage message) throws BizException {
+		throw new BizException(message.code(), message.message());
 	}
 
 }

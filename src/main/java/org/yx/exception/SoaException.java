@@ -18,6 +18,7 @@ package org.yx.exception;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+
 /**
  * 这个异常是框架使用，开发者只需去捕获这个异常，不要去抛出这个异常
  */
@@ -41,6 +42,13 @@ public class SoaException extends CodeException {
 		this.code = BizException.class.isInstance(e) ? ((BizException) e).getCode() : code;
 		this.detailError = getException(e);
 		this.exceptionClz = e == null ? "" : e.getClass().getName();
+	}
+
+	public SoaException(int code, String msg, String detail) {
+		super(msg);
+		this.code = code;
+		this.detailError = detail;
+		this.exceptionClz = "";
 	}
 
 	private static String getException(Throwable e) {

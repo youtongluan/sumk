@@ -53,12 +53,6 @@ public class ZkRouteParser {
 
 	private BlockingQueue<RouteEvent> queue = new LinkedBlockingQueue<>();
 
-	/**
-	 * 根据zk的数据，初始化Routes
-	 * 
-	 * @param zkUrl
-	 * @throws IOException
-	 */
 	public void readRouteAndListen() throws IOException {
 		Map<Host, ZkData> datas = new HashMap<>();
 		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);

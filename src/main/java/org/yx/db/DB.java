@@ -36,7 +36,7 @@ public class DB {
 	 * 进行插入，如果主键是单主键，并且主键是Long类型。 可以不用显示设置主键，系统会自动生成主键<BR>
 	 * 要执行execute方法才能生效
 	 * 
-	 * @return
+	 * @return Insert对象
 	 */
 	public static Insert insert() {
 		return new Insert(Visitors.modifyVisitor);
@@ -47,8 +47,8 @@ public class DB {
 	 * 要执行execute方法才能生效
 	 * 
 	 * @param pojo
-	 *            pojo对象或pojo所对应的class对象
-	 * @return
+	 *            pojo、map或pojo所对应的class对象
+	 * @return Insert对象
 	 */
 	public static Insert insert(Object pojo) {
 		if (Class.class.isInstance(pojo)) {
@@ -62,7 +62,7 @@ public class DB {
 	 * 要执行execute方法才能生效<BR>
 	 * 如果显式指定where条件，每个条件里都必须包含所有的redis主键字段
 	 * 
-	 * @return
+	 * @return Update对象
 	 */
 	public static Update update() {
 		return new Update(Visitors.modifyVisitor);
@@ -75,7 +75,7 @@ public class DB {
 	 * 
 	 * @param pojo
 	 *            修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
-	 * @return
+	 * @return Update对象
 	 */
 	public static Update update(Object pojo) {
 		if (Class.class.isInstance(pojo)) {
@@ -93,7 +93,8 @@ public class DB {
 	 * 要执行execute方法才能生效
 	 * 
 	 * @param pojo
-	 * @return
+	 *            pojo、map或pojo所对应的class对象
+	 * @return Delete对象
 	 */
 	public static Delete delete(Object pojo) {
 		if (Class.class.isInstance(pojo)) {

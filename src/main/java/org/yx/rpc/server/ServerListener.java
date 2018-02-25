@@ -18,7 +18,6 @@ package org.yx.rpc.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.concurrent.Executors;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
@@ -31,6 +30,7 @@ import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ServerListener implements Runnable {
@@ -74,7 +74,7 @@ public class ServerListener implements Runnable {
 
 			if (useExcutor) {
 
-				chain.addLast("exec", new ExecutorFilter(Executors.newCachedThreadPool()));
+				chain.addLast("exec", new ExecutorFilter(SoaExcutors.SERVER));
 			}
 
 			acceptor.setHandler(handler);

@@ -21,7 +21,7 @@ public interface Ordered extends Comparable<Ordered> {
 	/**
 	 * 升序，值越大，优先级越低。一般不采用负数
 	 * 
-	 * @return
+	 * @return 索引值
 	 */
 	default int order() {
 		return Const.DEFAULT_ORDER;

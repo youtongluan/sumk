@@ -28,18 +28,14 @@ import org.yx.conf.Const;
 @Documented
 public @interface Column {
 	/**
-	 * 数据库字段的名字，不填的话，就是属性名(小写)
-	 * 
-	 * @return
+	 * @return 数据库字段的名字，不填的话，就是属性名(小写)
 	 */
 	String value() default "";
 
 	ColumnType columnType() default ColumnType.NORMAL;
 
 	/**
-	 * 如果为值为NONE，就不能被orm更新
-	 * 
-	 * @return
+	 * @return 如果为值为NONE，就不能被orm更新
 	 */
 	UpdateType updateType() default UpdateType.CUSTOM;
 

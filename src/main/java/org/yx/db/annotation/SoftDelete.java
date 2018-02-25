@@ -32,26 +32,25 @@ import java.lang.annotation.Target;
 @Documented
 public @interface SoftDelete {
 	/**
-	 * 数据库中字段的名字
+	 * @return 数据库中字段的名字
 	 */
 	String value();
 
 	/**
-	 * 只能是String、Int、Byte、Short、Long、Boolean
-	 * 
+	 * @return 只能是String、Int、Byte、Short、Long、Boolean
 	 */
 	Class<?> columnType() default String.class;
 
 	/**
-	 * 如果是数字类型，会被转化成数字类型<BR>
-	 * 如果是Boolean类型，这个属性没有意义
+	 * @return 如果是数字类型，会被转化成数字类型<BR>
+	 *         如果是Boolean类型，这个属性没有意义
 	 * 
 	 */
 	String validValue() default "1";
 
 	/**
-	 * 如果是数字类型，会被转化成数字类型<BR>
-	 * 如果是Boolean类型，这个属性没有意义
+	 * @return 如果是数字类型，会被转化成数字类型<BR>
+	 *         如果是Boolean类型，这个属性没有意义
 	 * 
 	 */
 	String inValidValue() default "0";

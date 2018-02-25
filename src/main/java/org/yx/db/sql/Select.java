@@ -17,6 +17,7 @@ package org.yx.db.sql;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,9 @@ public final class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * @param fail
+	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * @return 当前对象
 	 */
 	public Select failIfPropertyNotMapped(boolean fail) {
 		this.failIfPropertyNotMapped = fail;
@@ -53,7 +56,8 @@ public final class Select extends SelectBuilder {
 	 * 允许不设置where条件
 	 * 
 	 * @param empty
-	 * @return
+	 *            true表示允许where条件为空
+	 * @return 当前对象
 	 */
 	public Select allowEmptyWhere(boolean empty) {
 		this.allowEmptyWhere = empty;
@@ -63,13 +67,6 @@ public final class Select extends SelectBuilder {
 	private static final int MAX_CACHE_LIMIT = 5000;
 	private ResultHandler resultHandler;
 
-	/**
-	 * 默认返回的是List<Pojo>，如果想将pojo改为Map<String,Object>。就用
-	 * <code>MapResultHandler.handler</code>做参数
-	 * 
-	 * @param resultHandler
-	 * @return
-	 */
 	public Select resultHandler(ResultHandler resultHandler) {
 		this.resultHandler = resultHandler;
 		return this;
@@ -104,27 +101,21 @@ public final class Select extends SelectBuilder {
 
 	/**
 	 * 设置大于,一个key只能设置一次，后设置的会覆盖前面设置的。<BR>
+	 * 
+	 * @param key
+	 *            java字段的名称
+	 * @param value
+	 *            值
+	 * @return 当前对象
 	 */
 	public Select bigThan(String key, Object value) {
 		return setCompare(0, key, value);
 	}
 
-	/**
-	 * 大于等于
-	 * 
-	 * @param big
-	 * @return
-	 */
 	public Select bigOrEqual(String key, Object value) {
 		return setCompare(1, key, value);
 	}
 
-	/**
-	 * 小于
-	 * 
-	 * @param big
-	 * @return
-	 */
 	public Select lessThan(String key, Object value) {
 		return setCompare(2, key, value);
 	}
@@ -133,9 +124,6 @@ public final class Select extends SelectBuilder {
 		return setCompare(3, key, value);
 	}
 
-	/**
-	 * 设置大于
-	 */
 	public Select bigThan(Map<String, Object> map) {
 		return setCompare(0, map);
 	}
@@ -143,16 +131,14 @@ public final class Select extends SelectBuilder {
 	/**
 	 * 大于等于
 	 * 
-	 * @param big
-	 * @return
+	 * @param map
+	 *            对map中所有的kv做大于等于操作
+	 * @return 当前对象
 	 */
 	public Select bigOrEqual(Map<String, Object> map) {
 		return setCompare(1, map);
 	}
 
-	/**
-	 * 小于
-	 */
 	public Select lessThan(Map<String, Object> map) {
 		return setCompare(2, map);
 	}
@@ -161,17 +147,19 @@ public final class Select extends SelectBuilder {
 	 * 小于或等于
 	 * 
 	 * @param map
-	 * @return
+	 *            对map中所有的kv做小于等于操作
+	 * @return 当前对象
 	 */
 	public Select lessOrEqual(Map<String, Object> map) {
 		return setCompare(3, map);
 	}
 
 	/**
-	 * 升序排列。asc和desc的调用顺序决定了在sql中出现的顺序
+	 * 升序排列。asc和desc的调用顺序决定了在sql中出现的顺序。 此方法可以调用多次
 	 * 
-	 * @param order
-	 * @return
+	 * @param field
+	 *            升序字段
+	 * @return 当前对象
 	 */
 	public Select orderByAsc(String field) {
 		return this.addOrderBy(field, false);
@@ -192,7 +180,8 @@ public final class Select extends SelectBuilder {
 	 * 增加降序排列
 	 * 
 	 * @param field
-	 * @return
+	 *            降序字段
+	 * @return 当前对象
 	 */
 	public Select orderByDesc(String field) {
 		return this.addOrderBy(field, true);
@@ -202,7 +191,8 @@ public final class Select extends SelectBuilder {
 	 * 设置查询的便宜量，从0开始。
 	 * 
 	 * @param offset
-	 * @return
+	 *            from的位置
+	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
 		this.offset = offset;
@@ -210,10 +200,10 @@ public final class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 设置返回的最大条数。
 	 * 
 	 * @param limit
-	 * @return
+	 *            返回的最大条数。
+	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
 		this.limit = limit;
@@ -221,10 +211,10 @@ public final class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 设置查询放回的列，列名是java中的字段名。如果不设，将返回所有的字段
 	 * 
 	 * @param columns
-	 * @return
+	 *            设置查询放回的列，列名是java中的字段名。如果不设，将返回所有的字段
+	 * @return 当前对象
 	 */
 	public Select selectColumns(String... columns) {
 		if (columns == null || columns.length == 0) {
@@ -240,7 +230,7 @@ public final class Select extends SelectBuilder {
 	 * 
 	 * @param fromCache
 	 *            默认为true。sumk.sql.fromCache=false可以将全局参数设为false
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select fromCache(boolean fromCache) {
 		this.fromCache = fromCache;
@@ -252,7 +242,7 @@ public final class Select extends SelectBuilder {
 	 * 
 	 * @param toCache
 	 *            默认为true。sumk.sql.toCache=false可以将全局参数设为false
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select toCache(boolean toCache) {
 		this.toCache = toCache;
@@ -264,7 +254,7 @@ public final class Select extends SelectBuilder {
 	 * 
 	 * @param v
 	 *            默认为false
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select parseNULL(boolean v) {
 		this.withnull = v;
@@ -276,7 +266,7 @@ public final class Select extends SelectBuilder {
 	 * 
 	 * @param src
 	 *            map或pojo类型。
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select addEqual(Object src) {
 		this._addIn(src);
@@ -290,7 +280,7 @@ public final class Select extends SelectBuilder {
 	 *            字段名
 	 * @param value
 	 *            要查询的条件的值
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select addEqual(String field, Object value) {
 		this._addIn(SBuilder.map(field, value).toMap());
@@ -298,9 +288,22 @@ public final class Select extends SelectBuilder {
 	}
 
 	/**
+	 * 传入多个条件
+	 * 
+	 * @param ins
+	 *            集合各元素之间是or关系，map中各个kv是and关系
+	 * @return 当前对象
+	 */
+	public Select addEquals(Collection<Map<String, Object>> ins) {
+		this.in.addAll(ins);
+		return this;
+	}
+
+	/**
 	 * 通过数据库主键列表查询主键，本方法只支持单主键类型。多主键请用addEqual()或addEquals()方法
 	 * 
 	 * @param ids
+	 *            id列表
 	 * @return 注意：调用本方法之前，要确保调用过tableClass()方法
 	 */
 	public Select byPrimaryId(Object... ids) {
@@ -309,10 +312,13 @@ public final class Select extends SelectBuilder {
 
 	/**
 	 * 通过redis主键列表查询主键，是addEquals()的快捷方式，本方法只支持单主键类型。多主键请用addEqual()或addEquals()
-	 * 方法
+	 * 方法<BR>
+	 * <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids
-	 * @return 注意：调用本方法之前，要确保调用过tableClass()方法
+	 *            id列表
+	 * @return 当前对象
+	 * 
 	 */
 	public Select byRedisId(Object... ids) {
 		return byId(false, ids);
@@ -335,17 +341,6 @@ public final class Select extends SelectBuilder {
 		return this;
 	}
 
-	/**
-	 * 传入多个条件
-	 * 
-	 * @param in
-	 * @return
-	 */
-	public Select addEquals(List<Map<String, Object>> ins) {
-		this.in.addAll(ins);
-		return this;
-	}
-
 	public Select tableClass(Class<?> tableClass) {
 		this.tableClass = tableClass;
 		return this;
@@ -355,12 +350,6 @@ public final class Select extends SelectBuilder {
 		return this.resultHandler == null ? PojoResultHandler.handler : this.resultHandler;
 	}
 
-	/**
-	 * 查询列表
-	 * 
-	 * @return 默认返回的是pojo列表，如果想返回其它类型，比如List<Map<String,Object>>，参见typeHandler()
-	 * @throws SumkException
-	 */
 	public <T> List<T> queryList() {
 		try {
 			ResultHandler handler = this.resultHandler();
@@ -409,12 +398,6 @@ public final class Select extends SelectBuilder {
 		}
 	}
 
-	/**
-	 * 如果没有满足条件的记录，就返回null。否则返回list的第一个值
-	 * 
-	 * @return
-	 * @throws SumkException
-	 */
 	public <T> T queryOne() {
 		List<T> list = this.queryList();
 		if (list == null || list.isEmpty()) {
@@ -427,7 +410,7 @@ public final class Select extends SelectBuilder {
 	 * 根据select的条件，查询符合条件的记录数。其中offset、limit、order by属性被过滤掉<BR>
 	 * 这个方法可以在select执行前调用，也可以在select执行后调用
 	 * 
-	 * @return
+	 * @return 符合条件的数据库记录数
 	 */
 	public int count() {
 		return new Count(this).execute();

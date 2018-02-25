@@ -30,18 +30,14 @@ public class CountedResult<T> {
 	}
 
 	/**
-	 * 当前页的结果集
-	 * 
-	 * @return
+	 * @return 当前页的结果集
 	 */
 	public List<T> getResult() {
 		return list;
 	}
 
 	/**
-	 * 符合条件的总记录数
-	 * 
-	 * @return
+	 * @return 符合条件的总记录数
 	 */
 	public int getCount() {
 		return count;

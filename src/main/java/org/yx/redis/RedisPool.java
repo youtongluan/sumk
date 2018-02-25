@@ -44,12 +44,6 @@ public class RedisPool {
 		}
 	}
 
-	/**
-	 * 获取已经存在的redis，获取不到就返回默认的，如果连默认的都没有，就返回null
-	 * 
-	 * @param alias
-	 * @return
-	 */
 	public static Redis get(String alias) {
 		if (alias == null) {
 			return _defaultRedis;
@@ -67,11 +61,6 @@ public class RedisPool {
 		return map.get(alias);
 	}
 
-	/**
-	 * 默认的redis
-	 * 
-	 * @return
-	 */
 	public static Redis defaultRedis() {
 		return _defaultRedis;
 	}

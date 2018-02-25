@@ -13,19 +13,17 @@ public class RawDao {
 	@Box
 	public void test() {
 		System.out.println(RawDB.list("select * from demouser where name=?", "登陆"));
-		Assert.assertEquals(RawDB.list("select * from demouser where name=?", "登陆"), 
+		Assert.assertEquals(RawDB.list("select * from demouser where name=?", "登陆"),
 				NamedDB.list("select * from demouser where name=#{name}", SBuilder.map("name", "登陆").toMap()));
-		
+
 		System.out.println(RawDB.count("select count(1) from demouser where name=?", "登陆"));
-		Assert.assertEquals(RawDB.count("select count(1) from demouser where name=?", "登陆"), 
+		Assert.assertEquals(RawDB.count("select count(1) from demouser where name=?", "登陆"),
 				NamedDB.count("select count(1) from demouser where name=#{name}", SBuilder.map("name", "登陆").toMap()));
-		
+
 		System.out.println(RawDB.singleColumnList("select id from demouser where name=?", "登陆"));
-		Assert.assertEquals(RawDB.singleColumnList("select id from demouser where name=?", "登陆"), 
-				NamedDB.singleColumnList("select id from demouser where name=#{name}", SBuilder.map("name", "登陆").toMap()));
-		
-		
-	
+		Assert.assertEquals(RawDB.singleColumnList("select id from demouser where name=?", "登陆"), NamedDB
+				.singleColumnList("select id from demouser where name=#{name}", SBuilder.map("name", "登陆").toMap()));
+
 	}
 
 }

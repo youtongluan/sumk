@@ -16,6 +16,9 @@
 package org.yx.http;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -26,6 +29,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.handler.HttpNode;
 import org.yx.log.Log;
+import org.yx.util.StringUtil;
 
 /**
  * 
@@ -34,11 +38,23 @@ import org.yx.log.Log;
 public abstract class AbstractHttpServer extends HttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
+	private static Set<String> FUSING = Collections.emptySet();
 
 	private static boolean PATH_CHECK;
 	static {
 		AppInfo.addObserver((a, b) -> {
 			AbstractHttpServer.PATH_CHECK = AppInfo.getBoolean("http.path.check", false);
+			String fusing = AppInfo.get("http.fusing", null);
+			if (fusing == null) {
+				FUSING = Collections.emptySet();
+			} else {
+				Set<String> set = new HashSet<>();
+				String[] fs = StringUtil.splitByComma(fusing);
+				for (String f : fs) {
+					set.add(f.trim());
+				}
+				FUSING = set;
+			}
 		});
 	}
 
@@ -60,7 +76,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 
 			final String act = req.getParameter("act");
 			String path = req.getPathInfo();
-			Log.get(this.getClass()).trace("{}?act={}", path, act);
+			Log.get("sumk.http").trace("{}?act={}", path, act);
 			if (PATH_CHECK) {
 				if (path.endsWith("/")) {
 					path = path.substring(0, path.length() - 1);
@@ -74,18 +90,24 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				path = path.substring(index + 1);
 			}
 			if (act == null) {
-				Log.get(this.getClass()).error("act is empty");
+				Log.get("sumk.http").error("act is empty");
 				HttpUtil.error(resp, -1002, "请求格式不正确", HttpUtil.charset(req));
+				return;
+			}
+			if (FUSING.contains(act)) {
+				Log.get("sumk.http").error("{} is in fusing", act);
+				HttpUtil.error(resp, ErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"),
+						HttpUtil.charset(req));
 				return;
 			}
 			HttpNode info = HttpHolder.getHttpInfo(act);
 			if (info == null) {
-				Log.get(this.getClass()).error(act + " donot found handler");
+				Log.get("sumk.http").error(act + " donot found handler");
 				HttpUtil.error(resp, -1003, "请求格式不正确", HttpUtil.charset(req));
 				return;
 			}
 			if (PATH_CHECK && !validPath(info.obj.getClass(), path)) {
-				Log.get(this.getClass()).error(act + " in error package");
+				Log.get("sumk.http").error(act + " in error package");
 				HttpUtil.error(resp, -1004, "请求的模块不正确", HttpUtil.charset(req));
 				return;
 			}

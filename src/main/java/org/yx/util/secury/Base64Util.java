@@ -29,18 +29,13 @@ public class Base64Util {
 	 * 解码，是否含有\r\n都能解码
 	 * 
 	 * @param src
-	 * @return
+	 *            数据源
+	 * @return 明文
 	 */
 	public static byte[] decode(byte[] src) {
 		return decoder.decode(src);
 	}
 
-	/**
-	 * 使用标准方式进行编码
-	 * 
-	 * @param src
-	 * @return
-	 */
 	public static byte[] encode(byte[] src) {
 		return encoder.encode(src);
 	}
