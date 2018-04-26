@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import org.yx.util.Assert;
  */
 public class SqlSessionFactory {
 
-	private static Configuration configuration;
+	private static Configuration configuration = new Configuration();
 	private static Map<String, SqlSessionFactory> factoryMap = new ConcurrentHashMap<>();
 
 	private String db;
@@ -98,7 +98,6 @@ public class SqlSessionFactory {
 	}
 
 	void init() throws Exception {
-		configuration = new Configuration();
 		Map<String, InputStream> sqls = MybatisSqlXmlUtils.openInputs(db);
 		Set<Map.Entry<String, InputStream>> entries = sqls.entrySet();
 		for (Map.Entry<String, InputStream> entry : entries) {

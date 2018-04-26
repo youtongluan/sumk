@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,6 @@ package org.yx.http.handler;
 import org.yx.http.Web;
 import org.yx.util.secury.EncryUtil;
 
-/**
- * base64解码
- * 
- * @author 游夏
- *
- */
 public class AesDecodeHandler implements HttpHandler {
 
 	@Override
@@ -33,16 +27,16 @@ public class AesDecodeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.getHttpNode().argClz == null) {
+		if (ctx.httpNode().argClz == null) {
 			return false;
 		}
 		byte[] bs = ctx.getDataInByteArray();
 		if (bs == null) {
 			return false;
 		}
-		byte[] key = ctx.getKey();
+		byte[] key = ctx.key();
 		byte[] data = EncryUtil.decrypt(bs, key);
-		ctx.setData(data);
+		ctx.data(data);
 		return false;
 	}
 

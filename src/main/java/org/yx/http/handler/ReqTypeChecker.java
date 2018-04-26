@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +29,8 @@ public class ReqTypeChecker implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		String type = HttpUtil.getType(ctx.getHttpRequest());
-		if (!ctx.getHttpNode().acceptType(type)) {
+		String type = HttpUtil.getType(ctx.httpRequest());
+		if (!ctx.httpNode().acceptType(type)) {
 			BizException.throwException(ErrorCode.TYPE_ERROR, "客户端类别错误");
 		}
 		return false;

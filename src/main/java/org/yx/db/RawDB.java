@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,21 @@ public class RawDB {
 	public static List<Map<String, Object>> list(String sql, Object... params) {
 		try {
 			return Visitors.queryVisitor.visit(new RawSqlBuilder(sql, params));
+		} catch (Exception e) {
+			throw SumkException.create(e);
+		}
+	}
+
+	/**
+	 * @param sql
+	 *            以?为占位符的原生sql
+	 * @param params
+	 *            参数
+	 * @return 结果集
+	 */
+	public static List<Object[]> listInOrder(String sql, Object... params) {
+		try {
+			return Visitors.arrayListQueryVisitor.visit(new RawSqlBuilder(sql, params));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}

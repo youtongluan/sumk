@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,12 @@
  */
 package org.yx.common;
 
+import org.yx.conf.AppInfo;
+
 public class ThreadContext {
+
+	private static final String TEST = "sumk.test";
+
 	public static enum ActionType {
 		HTTP, RPC
 	}
@@ -28,49 +33,65 @@ public class ThreadContext {
 
 	private String contextSn;
 
-	public Object info;
+	private boolean test;
 
-	private ThreadContext(ActionType type, String act) {
-		super();
-		this.type = type;
-		this.act = act;
+	public boolean isTest() {
+		return test;
 	}
 
-	public ActionType getType() {
+	public void setTest(boolean isTest) {
+		String t = AppInfo.get(TEST);
+		if (t != null && t.length() > 0) {
+			this.test = isTest;
+		}
+	}
+
+	public Object info;
+
+	private ThreadContext(ActionType type, String act, boolean isTest) {
+		this.type = type;
+		this.act = act;
+		this.setTest(isTest);
+	}
+
+	public ActionType type() {
 		return type;
 	}
 
-	public String getAct() {
+	public String act() {
 		return act;
 	}
 
-	public String getContextSn() {
+	public String contextSn() {
 		return this.contextSn;
 	}
 
-	public void setContextSn(String contextSn) {
+	public void contextSn(String contextSn) {
 		this.contextSn = contextSn;
 	}
-
-	public static final ThreadContext NULL_CONTEXT = new ThreadContext(null, null);
 
 	private static final ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
 
 		@Override
 		protected ThreadContext initialValue() {
-			return NULL_CONTEXT;
+
+			return new ThreadContext(null, null, false);
 		}
 
 	};
 
-	public static ThreadContext httpContext(String act) {
-		ThreadContext c = new ThreadContext(ActionType.HTTP, act);
+	public static ThreadContext httpContext(String act, String thisIsTest) {
+		boolean test = false;
+		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
+			test = true;
+		}
+		ThreadContext c = new ThreadContext(ActionType.HTTP, act, test);
 		holder.set(c);
 		return c;
 	}
 
-	public static ThreadContext rpcContext(String act, String rootSn, String contextSn) {
-		ThreadContext c = new ThreadContext(ActionType.RPC, act);
+	public static ThreadContext rpcContext(String act, String rootSn, String contextSn, boolean isTest) {
+		ThreadContext c = new ThreadContext(ActionType.RPC, act, isTest);
 		c.rootSn = rootSn;
 		c.contextSn = contextSn;
 		holder.set(c);
@@ -85,7 +106,7 @@ public class ThreadContext {
 		holder.remove();
 	}
 
-	public String getRootSn() {
+	public String rootSn() {
 		return rootSn;
 	}
 

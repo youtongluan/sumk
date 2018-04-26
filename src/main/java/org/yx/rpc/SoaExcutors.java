@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,11 @@
 package org.yx.rpc;
 
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+
+import org.yx.main.SumkThreadPool;
 
 public class SoaExcutors {
-	public static final ExecutorService SERVER = Executors.newCachedThreadPool();
-	public static final ExecutorService CLINET = SERVER;
+
+	public static final ExecutorService SERVER = SumkThreadPool.EXECUTOR;
+	public static final ExecutorService CLINET = SumkThreadPool.EXECUTOR;
 }

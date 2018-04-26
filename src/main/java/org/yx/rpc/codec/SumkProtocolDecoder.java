@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,23 +17,57 @@ package org.yx.rpc.codec;
 
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.yx.common.ClassScaner;
+import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.log.Log;
+import org.yx.rpc.codec.decoders.SumkMinaDecoder;
 
 public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 
 	private Charset charset = Profile.CHARSET_DEFAULT;
-	private MessageDeserializer msgDeserializer = new MessageDeserializer();
 
-	protected boolean doDecodeString(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
+	private SumkMinaDecoder[] decoders = new SumkMinaDecoder[0];
+
+	public SumkProtocolDecoder() {
+		try {
+			Collection<Class<? extends SumkMinaDecoder>> clzs = ClassScaner
+					.listSubClassesInSamePackage(SumkMinaDecoder.class);
+			List<SumkMinaDecoder> list = new ArrayList<>(clzs.size());
+			for (Class<? extends SumkMinaDecoder> clz : clzs) {
+				Log.get("sumk.rpc").trace("{} inited", clz.getName());
+				list.add(clz.newInstance());
+			}
+			this.decoders = list.toArray(new SumkMinaDecoder[list.size()]);
+		} catch (Exception e) {
+			Log.printStack("sumk.rpc", e);
+			if (AppInfo.getBoolean("rpc.exitOnError", true)) {
+				System.exit(-1);
+			}
+		}
+
+	}
+
+	private Object deserialize(int protocol, String message) throws ProtocolDecoderException {
+		for (SumkMinaDecoder decoder : this.decoders) {
+			if (decoder.accept(protocol)) {
+				return decoder.decode(protocol, message);
+			}
+		}
+		throw new ProtocolDecoderException("no sumk decoder:" + Integer.toHexString(protocol));
+	}
+
+	protected boolean innerDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
 			throws CharacterCodingException, ProtocolDecoderException {
-		int pos = in.position();
 		int protocol = in.getInt();
 		int prefixLength = 0, maxDataLength = 0;
 		if ((protocol & Protocols.ONE) != 0) {
@@ -46,38 +80,46 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 			prefixLength = 4;
 			maxDataLength = Protocols.MAX_LENGTH;
 		} else {
-			throw new ProtocolDecoderException("error transport protocol," + Integer.toHexString(protocol));
+			throw new ProtocolDecoderException("error byte length protocol," + Integer.toHexString(protocol));
 		}
 		if (in.prefixedDataAvailable(prefixLength, maxDataLength)) {
-			String msg = in.getPrefixedString(prefixLength, charset.newDecoder());
-			if (msg == null || msg.isEmpty()) {
+			if ((protocol & Protocols.FORMAT_JSON) != 0) {
+				String msg = in.getPrefixedString(prefixLength, charset.newDecoder());
+				if (msg == null || msg.isEmpty()) {
+					return true;
+				}
+				out.write(deserialize(protocol, msg));
 				return true;
 			}
-			out.write(msgDeserializer.deserialize(protocol, msg));
-			return true;
+
+			throw new ProtocolDecoderException("error format protocol," + Integer.toHexString(protocol));
 		}
-		in.position(pos);
 		return false;
 	}
 
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
 			throws ProtocolDecoderException, CharacterCodingException {
-		if (in.remaining() < 4) {
+		if (in.remaining() < 8) {
 			return false;
 		}
-		int protocol = in.getInt(in.position());
+		int pos = in.position();
+		int protocol = in.getInt(pos);
 		if ((protocol & 0xFF000000) != Protocols.MAGIC) {
 			int position = in.position();
 			Log.get("sumk.rpc").trace(in.getString(Profile.CHARSET_DEFAULT.newDecoder()));
 			in.position(position);
 			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));
 		}
-		if ((protocol & Protocols.FORMAT_JSON) != 0) {
-			return this.doDecodeString(session, in, out);
+		boolean ret = false;
+		try {
+			ret = this.innerDecode(session, in, out);
+		} finally {
+			if (!ret) {
+				in.position(pos);
+			}
 		}
-
-		throw new ProtocolDecoderException("error transport protocol," + Integer.toHexString(protocol));
+		return ret;
 	}
 
 }

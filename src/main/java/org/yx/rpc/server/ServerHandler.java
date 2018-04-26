@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,13 @@
  */
 package org.yx.rpc.server;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
@@ -40,7 +42,7 @@ public class ServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		Log.get("sumk.SYS").debug("create session:{}-{}", session.getServiceAddress(), session.getId());
+		Log.get("sumk.rpc.session").debug("create session:{}-{}", session.getServiceAddress(), session.getId());
 	}
 
 	@Override
@@ -55,15 +57,27 @@ public class ServerHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
 		if (session.getIdleCount(status) > 10000) {
-			Log.get("sumk.SYS").debug("session:{}, idle:{},will close", session.getId(), session.getIdleCount(status));
+			Log.get("sumk.rpc.session").debug("session:{}, idle:{},will close", session.getId(),
+					session.getIdleCount(status));
 			session.close(true);
 		}
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		Log.get("sumk.SYS").error("session:" + session.getId() + ",message:" + cause.getMessage(), cause);
-		session.close(true);
+		session.close(false);
+		if (cause == null) {
+			return;
+		}
+		if (cause.getClass() == IOException.class && AppInfo.getBoolean("rpc.session.print_simple_error", true)) {
+			String msg = cause.getMessage();
+			if (msg != null && (msg.contains("连接") || msg.contains("connection"))) {
+				Log.get("sumk.rpc.session").debug("session:{},message:{}", session.getId(), cause.getMessage());
+				return;
+			}
+		}
+		Log.get("sumk.rpc.session").error("session:" + session.getId() + ",message:" + cause.getMessage(), cause);
+
 	}
 
 	@Override

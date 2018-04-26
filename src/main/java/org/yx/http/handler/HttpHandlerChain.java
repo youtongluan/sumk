@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,11 +15,16 @@
  */
 package org.yx.http.handler;
 
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
 import org.yx.common.ActStatis;
+import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
@@ -28,8 +33,13 @@ import org.yx.http.HttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
 
+import com.google.gson.stream.JsonWriter;
+
 public class HttpHandlerChain implements HttpHandler {
 
+	private Logger LOG = Log.get("sumk.http.chain");
+	private Logger LOG_REQ = Log.get("sumk.http.req");
+	private Logger LOG_ERROR = Log.get("sumk.http.req.error");
 	private List<HttpHandler> handlers = new ArrayList<>();
 
 	public static HttpHandlerChain inst = new HttpHandlerChain();
@@ -63,14 +73,13 @@ public class HttpHandlerChain implements HttpHandler {
 		try {
 			for (int i = 0; i < this.handlers.size(); i++) {
 				HttpHandler h = this.handlers.get(i);
-				if (h.accept(ctx.getHttpNode().action)) {
-					if (Log.isTraceEnable("handle")) {
-						if (String.class.isInstance(ctx.getData())) {
-							String s = ((String) ctx.getData());
-							Log.get(this.getClass(), "handle").trace("{} with data:{}", h.getClass().getSimpleName(),
-									s);
+				if (h.accept(ctx.httpNode().action)) {
+					if (LOG.isTraceEnabled()) {
+						if (String.class.isInstance(ctx.data())) {
+							String s = ((String) ctx.data());
+							LOG.trace("{} with data:{}", h.getClass().getSimpleName(), s);
 						} else {
-							Log.get(this.getClass(), "handle").trace(h.getClass().getSimpleName());
+							LOG.trace(h.getClass().getSimpleName());
 						}
 					}
 					if (h.handle(ctx)) {
@@ -86,33 +95,67 @@ public class HttpHandlerChain implements HttpHandler {
 			}
 
 			if (HttpException.class.isInstance(temp)) {
-				Log.printStack(temp);
-				HttpUtil.error(ctx.getHttpResponse(), -1013243, "data format error", ctx.getCharset());
+				LOG_ERROR.error(temp.getMessage(), temp);
+				error(ctx, -1013243, "data format error");
 				return true;
 			}
 			if (InvalidParamException.class.isInstance(temp)) {
-				InvalidParamException e3 = InvalidParamException.class.cast(temp);
-				Log.get("sumk.http").info("InvalidParamException,message:{},paramName:{},arg:{}", e3.getMessage(),
-						e3.getInfo().getParamName(), e3.getParam());
-				HttpUtil.error(ctx.getHttpResponse(), ErrorCode.VALIDATE_ERROR, e3.getMessage(), ctx.getCharset());
+				LOG_ERROR.info(temp.getMessage(), temp);
+				error(ctx, ErrorCode.VALIDATE_ERROR, temp.getMessage());
 				return true;
 			}
-			while (temp != null) {
+			do {
 				if (BizException.class.isInstance(temp)) {
 					BizException be = (BizException) temp;
-					Log.get("sumk.http").info("bussiness exception,code:{},message:{}", be.getCode(), be.getMessage());
-					HttpUtil.error(ctx.getHttpResponse(), be.getCode(), be.getMessage(), ctx.getCharset());
+					LOG_ERROR.info(temp.toString());
+					error(ctx, be.getCode(), be.getMessage());
 					return true;
 				}
-				temp = temp.getCause();
-			}
-			Log.printStack(e);
-			HttpUtil.error(ctx.getHttpResponse(), -2343254, "请求出错", ctx.getCharset());
+			} while ((temp = temp.getCause()) != null);
+			LOG_ERROR.error(e.getMessage(), e);
+			error(ctx, -2343254, "请求出错");
 		} finally {
+			if (LOG_REQ.isDebugEnabled() && ctx.dataInString() != null) {
+				StringWriter stringWriter = new StringWriter();
+				JsonWriter writer = new JsonWriter(stringWriter);
+				writer.beginObject();
+				writer.name("req").value(ctx.dataInString());
+				String resp = ctx.respInString();
+				int maxLen = AppInfo.getInt("http.log.resp.length", 10000000);
+				if (resp != null && maxLen > 0) {
+					if (resp.length() > maxLen) {
+						resp = resp.substring(0, maxLen);
+					}
+					writer.name("resp").value(resp);
+				}
+				writer.endObject();
+				writer.flush();
+				writer.close();
+				LOG_REQ.debug(stringWriter.toString());
+			}
 			UploadFileHolder.remove();
-			actStatic.visit(ctx.getAct(), System.currentTimeMillis() - begin, success);
+			actStatic.visit(ctx.act(), System.currentTimeMillis() - begin, success);
 		}
 		return true;
+	}
+
+	private void error(WebContext ctx, int code, String message) throws UnsupportedEncodingException, IOException {
+		if (LOG_REQ.isInfoEnabled()) {
+			StringWriter stringWriter = new StringWriter();
+			JsonWriter writer = new JsonWriter(stringWriter);
+			writer.beginObject();
+			String data = ctx.dataInString();
+			if (data != null) {
+				writer.name("req").value(data);
+			}
+			writer.name("err_code").value(code);
+			writer.name("err_msg").value(message);
+			writer.endObject();
+			writer.flush();
+			writer.close();
+			LOG_REQ.info(stringWriter.toString());
+		}
+		HttpUtil.error(ctx.httpResponse(), code, message, ctx.charset());
 	}
 
 }

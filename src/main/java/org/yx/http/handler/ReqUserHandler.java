@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,9 +56,9 @@ public class ReqUserHandler implements HttpHandler {
 			Log.get("sumk.http").info("session:{}, has expired", sessionID);
 			BizException.throwException(ErrorCode.SESSION_ERROR, "请重新登陆");
 		}
-		ctx.setKey(key);
+		ctx.key(key);
 		session.flushSession();
-		ThreadContext.get().setContextSn(session.getUserId());
+		ThreadContext.get().contextSn(session.getUserId());
 		return false;
 	}
 

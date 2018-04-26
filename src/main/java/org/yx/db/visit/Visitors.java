@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,10 +28,35 @@ import org.yx.db.conn.EventLane;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.SelectBuilder;
+import org.yx.db.sql.SqlBuilder;
 import org.yx.log.Log;
 
 public final class Visitors {
 	private static Logger log = Log.get("sumk.sql");
+
+	private static interface Transform<T> {
+		T transFrom(ResultSet ret) throws Exception;
+	}
+
+	private static class QueryVisitor<T> implements SumkDbVisitor<T> {
+		private final Transform<T> transform;
+
+		private QueryVisitor(Transform<T> transform) {
+			this.transform = transform;
+		}
+
+		@Override
+		public T visit(SqlBuilder builder) throws Exception {
+			MapedSql maped = builder.toMapedSql();
+			Connection conn = ConnectionPool.get().connection(DBType.ANY);
+			PreparedStatement statement = createStatement(conn, maped);
+			ResultSet ret = statement.executeQuery();
+			T list = this.transform.transFrom(ret);
+			statement.close();
+			return list;
+		}
+
+	}
 
 	private static String getSql(PreparedStatement statement) {
 		String sql = statement.toString();
@@ -83,23 +108,11 @@ public final class Visitors {
 		return list;
 	};
 
-	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitor = builder -> {
-		MapedSql maped = builder.toMapedSql();
-		Connection conn = ConnectionPool.get().connection(DBType.ANY);
-		PreparedStatement statement = createStatement(conn, maped);
-		ResultSet ret = statement.executeQuery();
-		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret);
-		statement.close();
-		return list;
-	};
+	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitor = new QueryVisitor<>(
+			ResultSetUtils::toMapList);
 
-	public static final SumkDbVisitor<List<?>> singleListQueryVisitor = builder -> {
-		MapedSql maped = builder.toMapedSql();
-		Connection conn = ConnectionPool.get().connection(DBType.ANY);
-		PreparedStatement statement = createStatement(conn, maped);
-		ResultSet ret = statement.executeQuery();
-		List<?> list = ResultSetUtils.toList(ret);
-		statement.close();
-		return list;
-	};
+	public static final SumkDbVisitor<List<?>> singleListQueryVisitor = new QueryVisitor<>(ResultSetUtils::toList);
+
+	public static final SumkDbVisitor<List<Object[]>> arrayListQueryVisitor = new QueryVisitor<>(
+			ResultSetUtils::toObjectArrayList);
 }

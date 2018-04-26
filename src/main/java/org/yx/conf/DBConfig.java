@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,9 +45,7 @@ public class DBConfig {
 		properties.put("testOnReturn", "false");
 		properties.put("testWhileIdle", "true");
 		properties.put("removeAbandonedOnBorrow", "false");
-
 		properties.put("removeAbandonedOnMaintenance", "true");
-
 		properties.put("removeAbandonedTimeout", "30");
 		properties.put("logAbandoned", "true");
 		properties.put("timeBetweenEvictionRunsMillis", "30000");

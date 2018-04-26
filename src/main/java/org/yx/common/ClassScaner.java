@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@ package org.yx.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.net.JarURLConnection;
 import java.net.URL;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,8 +32,32 @@ import org.yx.log.Log;
 
 public class ClassScaner {
 
+	public static <T> Collection<Class<? extends T>> listSubClassesInSamePackage(Class<T> baseClz)
+			throws ClassNotFoundException {
+		return list(baseClz.getPackage().getName(), baseClz);
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> Collection<Class<? extends T>> list(String packageName, Class<T> baseClz)
+			throws ClassNotFoundException {
+		Collection<String> clzNames = new ClassScaner().parse(packageName);
+		if (clzNames == null || clzNames.isEmpty()) {
+			return Collections.emptyList();
+		}
+		Set<String> names = new HashSet<>(clzNames);
+		Set<Class<? extends T>> set = new HashSet<>();
+		for (String className : names) {
+			Class<?> clz = Class.forName(className);
+			if (baseClz.isAssignableFrom(clz) && (!clz.isInterface())
+					&& ((clz.getModifiers() & Modifier.ABSTRACT) == 0)) {
+				set.add((Class<? extends T>) clz);
+			}
+		}
+		return set;
+	}
+
 	public Collection<String> parse(final String... packageNames) {
-		Set<String> classNameList = new HashSet<String>(240);
+		Set<String> classNameList = new HashSet<>(240);
 		if (packageNames == null) {
 			return classNameList;
 		}

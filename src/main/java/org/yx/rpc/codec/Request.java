@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.codec;
 
+import org.yx.exception.SumkException;
 import org.yx.rpc.client.Req;
 
 public class Request extends Req {
@@ -23,10 +24,17 @@ public class Request extends Req {
 	 */
 	private long startInServer = System.currentTimeMillis();
 
-	int protocol;
+	private int protocol;
 
 	public int protocol() {
 		return this.protocol;
+	}
+
+	public void protocol(int protocol) {
+		if (this.protocol != 0) {
+			SumkException.throwException(34526546, "protocol has value already,value is " + this.protocol);
+		}
+		this.protocol = protocol;
 	}
 
 	public long getStartInServer() {

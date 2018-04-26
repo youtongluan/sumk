@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				HttpUtil.error(resp, -1004, "请求的模块不正确", HttpUtil.charset(req));
 				return;
 			}
-			ThreadContext.httpContext(act);
+			ThreadContext.httpContext(act, req.getParameter("thisIsTest"));
 			handle(act, info, req, resp);
 
 		} catch (Exception e) {

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,10 +49,13 @@ public final class Rpc {
 
 	static Req createReq(String method) {
 		Req req = new Req();
+		if (ThreadContext.get().isTest()) {
+			req.setTest(true);
+		}
 		req.setStart(System.currentTimeMillis());
 		String sn = UUIDSeed.random();
 		ThreadContext context = ThreadContext.get();
-		req.setFullSn(sn, context.getRootSn(), context.getContextSn());
+		req.setFullSn(sn, context.rootSn(), context.contextSn());
 		req.setApi(method);
 		req.setSrc(AppInfo.appId());
 		return req;

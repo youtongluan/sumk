@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,16 +32,16 @@ public class ReqBodyHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.getData() != null) {
+		if (ctx.data() != null) {
 			Log.get(ReqBodyHandler.class).debug("data is not null");
 			return false;
 		}
-		if (ctx.getHttpNode().argClz == null) {
+		if (ctx.httpNode().argClz == null) {
 			return false;
 		}
-		HttpServletRequest req = ctx.getHttpRequest();
+		HttpServletRequest req = ctx.httpRequest();
 		InputStream in = req.getInputStream();
-		ctx.setData(HttpUtil.extractData(in));
+		ctx.data(HttpUtil.extractData(in));
 		return false;
 	}
 

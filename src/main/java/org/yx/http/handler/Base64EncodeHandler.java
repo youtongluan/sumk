@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,6 @@ package org.yx.http.handler;
 import org.yx.http.Web;
 import org.yx.util.secury.Base64Util;
 
-/**
- * base64解码
- * 
- * @author 游夏
- *
- */
 public class Base64EncodeHandler implements HttpHandler {
 
 	@Override
@@ -33,9 +27,9 @@ public class Base64EncodeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		byte[] bs = (byte[]) ctx.getResult();
+		byte[] bs = (byte[]) ctx.result();
 		byte[] data = Base64Util.encode(bs);
-		ctx.setResult(data);
+		ctx.result(data);
 		return false;
 	}
 

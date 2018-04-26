@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ public class DBTransaction {
 	public void begin() {
 		Log.get("sumk.db").trace("begin with embed:{}", embed);
 
-		dbCtx = embed ? ConnectionPool.createIfAbsent(dbName, dbType) : ConnectionPool.create(dbName, dbType);
+		dbCtx = embed ? ConnectionPool.create(dbName, dbType) : ConnectionPool.createIfAbsent(dbName, dbType);
 	}
 
 	public void rollback(Throwable e) {

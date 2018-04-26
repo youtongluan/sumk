@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,22 @@ package org.yx.main;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yx.common.Deamon;
+import org.yx.common.ThreadPools;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
 public class SumkThreadPool {
 
 	public static final ScheduledThreadPoolExecutor scheduledExecutor;
+
+	public static final ExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
+
 	private static List<Thread> deamonThreads = new ArrayList<>();
 	static {
 		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 2),
@@ -37,7 +42,7 @@ public class SumkThreadPool {
 					@Override
 					public Thread newThread(Runnable r) {
 						Thread t = new Thread(r);
-						t.setName("sumk-thread-" + threadNumber.getAndIncrement());
+						t.setName("sumk-task-" + threadNumber.getAndIncrement());
 						t.setDaemon(true);
 						if (t.getPriority() != Thread.NORM_PRIORITY) {
 							t.setPriority(Thread.NORM_PRIORITY);
@@ -81,6 +86,7 @@ public class SumkThreadPool {
 
 	public static void shutdown() {
 		scheduledExecutor.shutdown();
+		EXECUTOR.shutdown();
 		deamonThreads.forEach(Thread::interrupt);
 		deamonThreads.clear();
 	}

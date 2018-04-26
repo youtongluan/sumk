@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,6 +58,14 @@ public class NamedDB {
 	public static List<Map<String, Object>> list(String sql, Map<String, Object> map) {
 		try {
 			return Visitors.queryVisitor.visit(new MapedSqlBuilder(sql, map));
+		} catch (Exception e) {
+			throw SumkException.create(e);
+		}
+	}
+
+	public static List<Object[]> listInOrder(String sql, Map<String, Object> map) {
+		try {
+			return Visitors.arrayListQueryVisitor.visit(new MapedSqlBuilder(sql, map));
 		} catch (Exception e) {
 			throw SumkException.create(e);
 		}

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,15 +26,15 @@ public class ReqToStringHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.getData() == null) {
+		if (ctx.data() == null) {
 			return false;
 		}
-		if (!byte[].class.isInstance(ctx.getData())) {
+		if (!byte[].class.isInstance(ctx.data())) {
 			return false;
 		}
-		byte[] bs = (byte[]) ctx.getData();
-		String data = new String(bs, ctx.getCharset());
-		ctx.setData(data);
+		byte[] bs = (byte[]) ctx.data();
+		String data = new String(bs, ctx.charset());
+		ctx.data(data);
 		return false;
 	}
 

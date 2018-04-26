@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public final class Seq {
 		return System.currentTimeMillis() - FROMMILS;
 	}
 
-	int sub(String name) {
+	int subNumber(String name) {
 		if (counter != null) {
 			try {
 				return counter.count(name);
@@ -86,7 +86,7 @@ public final class Seq {
 		long num = shortNowMills();
 		num &= 0x7FFFFFFFFFL;
 		num <<= 24;
-		int sub = sub(name) & 0xFFFFFF;
+		int sub = subNumber(name) & 0xFFFFFF;
 		return num | sub;
 	}
 

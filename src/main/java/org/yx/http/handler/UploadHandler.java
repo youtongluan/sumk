@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,13 +38,13 @@ public class UploadHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletRequest request = ctx.getHttpRequest();
-		Upload uploadInfo = ctx.getHttpNode().upload;
+		HttpServletRequest request = ctx.httpRequest();
+		Upload uploadInfo = ctx.httpNode().upload;
 
 		DiskFileItemFactory factory = new DiskFileItemFactory();
 		factory.setSizeThreshold(uploadInfo.maxSize());
 		ServletFileUpload upload = new ServletFileUpload(factory);
-		upload.setHeaderEncoding(ctx.getCharset().name());
+		upload.setHeaderEncoding(ctx.charset().name());
 		List<FileItem> list = (List<FileItem>) upload.parseRequest(request);
 		if (list == null || list.isEmpty()) {
 			HttpException.throwException(this.getClass(), "没有文件");
@@ -54,7 +54,7 @@ public class UploadHandler implements HttpHandler {
 			String name = fi.getName();
 			if (name == null) {
 				if ("data".equals(fi.getFieldName())) {
-					ctx.setData(HttpUtil.extractData(fi.get()));
+					ctx.data(HttpUtil.extractData(fi.get()));
 					continue;
 				}
 				continue;

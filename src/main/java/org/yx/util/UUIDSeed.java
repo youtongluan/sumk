@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,12 +44,9 @@ public final class UUIDSeed {
 		return r;
 	}
 
-	static void fill(char[] source, final int from, long number, int bytes) {
-		if (number == Long.MIN_VALUE) {
-			number = Long.MAX_VALUE;
-		}
+	static void fill(char[] source, final int from, int bytes, long number) {
 		if (number < 0) {
-			number = 0 - number;
+			number = Math.max(0 - number, 0);
 		}
 		int index = from + bytes - 1;
 		while (number > 0) {
@@ -67,11 +64,12 @@ public final class UUIDSeed {
 	}
 
 	public static long toLong(String s) {
+		s = s.toLowerCase();
 		String all = new String(LETTERS);
 		long ret = 0;
 		for (int i = s.length() - 1, k = 0; i >= 0; i--, k++) {
 			char c = s.charAt(i);
-			int v = all.indexOf(c + "");
+			int v = all.indexOf(String.valueOf(c));
 			ret += (v * Math.pow(LEN, k));
 		}
 		return ret;
@@ -91,28 +89,22 @@ public final class UUIDSeed {
 	}
 
 	public static String seq() {
-		char[] ret = new char[20];
-		fill(ret, 0, System.currentTimeMillis(), 8);
-		fill(ret, 8, System.nanoTime(), 4);
-		fill(ret, 12, ThreadLocalRandom.current().nextInt(DOUBLE_LEN), 2);
+		return new String(seqChars());
+	}
 
-		int addNum = getRandom().nextInt(LEN) + 1;
-		int next = current.addAndGet(addNum);
-		if (next > 1000000000) {
-			current = new AtomicInteger(next % (DOUBLE_LEN * DOUBLE_LEN) + DOUBLE_LEN);
-		}
-
-		fill(ret, 14, next, 4);
-		fill(ret, 18, addNum, 1);
-		fill(ret, 19, getRandom().nextInt(LEN), 1);
-		return new String(ret);
+	public static String seq18() {
+		return new String(seqChars(), 1, 18);
 	}
 
 	public static String random() {
+		return reOrder(seqChars());
+	}
+
+	static char[] seqChars() {
 		char[] ret = new char[20];
-		fill(ret, 0, ThreadLocalRandom.current().nextInt(DOUBLE_LEN), 2);
-		fill(ret, 2, System.currentTimeMillis(), 8);
-		fill(ret, 10, System.nanoTime(), 4);
+		fill(ret, 0, 8, System.currentTimeMillis());
+		fill(ret, 8, 4, System.nanoTime());
+		fill(ret, 12, 2, ThreadLocalRandom.current().nextInt(DOUBLE_LEN));
 
 		int addNum = getRandom().nextInt(LEN) + 1;
 		int next = current.addAndGet(addNum);
@@ -120,13 +112,18 @@ public final class UUIDSeed {
 			current = new AtomicInteger(next % (DOUBLE_LEN * DOUBLE_LEN) + DOUBLE_LEN);
 		}
 
-		fill(ret, 14, next, 4);
-		fill(ret, 18, addNum, 1);
-		fill(ret, 19, getRandom().nextInt(LEN), 1);
-		return reOrder(ret);
+		fill(ret, 14, 4, next);
+		fill(ret, 18, 1, addNum);
+		fill(ret, 19, 1, getRandom().nextInt(LEN));
+		return ret;
 	}
 
-	private static String reOrder(char[] cs) {
+	static String reOrder(char[] cs) {
+		char g1 = cs[12];
+		char g2 = cs[13];
+		System.arraycopy(cs, 0, cs, 2, 8);
+		cs[0] = g1;
+		cs[1] = g2;
 		char[] temp = new char[cs.length];
 		int len = cs.length / 2;
 		for (int k = 0; k < 2; k++) {
@@ -141,25 +138,9 @@ public final class UUIDSeed {
 	}
 
 	public static String parse(long number, int bytes) {
-		if (number == Long.MIN_VALUE) {
-			number = Long.MAX_VALUE;
-		}
-		if (number < 0) {
-			number = 0 - number;
-		}
-		String ret = "";
-		while (number > 0) {
-			int k = (int) (number % LEN);
-			ret = LETTERS[k] + ret;
-			number = number / LEN;
-		}
-		while (ret.length() < bytes) {
-			ret = "0" + ret;
-		}
-		if (ret.length() > bytes) {
-			return ret.substring(ret.length() - bytes, ret.length());
-		}
-		return ret;
+		char[] cs = new char[bytes];
+		fill(cs, 0, bytes, number);
+		return new String(cs);
 	}
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,8 @@ import org.yx.listener.Listener;
 public class ScanerFactorysBean extends ClassLoaderFactorysBean<Listener> {
 
 	public ScanerFactorysBean() {
-		super("org.yx.beanListener", "sumk-scaners", "");
+
+		super("org.y" + "x.beanListener", "sumk-scaners", "");
 	}
 
 	@Override

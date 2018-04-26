@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import javax.sql.DataSource;
+
+import org.yx.common.ThreadContext;
 
 public class ConnectionWrapper implements Connection {
 
@@ -96,6 +98,10 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public void commit() throws SQLException {
+		if (ThreadContext.get().isTest()) {
+			this.rollback();
+			return;
+		}
 		if (inner == null) {
 			throw new SQLException("connection is closed");
 		}
@@ -360,6 +366,7 @@ public class ConnectionWrapper implements Connection {
 		return inner.getNetworkTimeout();
 	}
 
+	@Override
 	public String toString() {
 		return String.valueOf(inner);
 	}

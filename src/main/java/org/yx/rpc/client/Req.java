@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@ package org.yx.rpc.client;
 
 import java.util.StringJoiner;
 
+import org.yx.rpc.ReqProtocol;
+
 public class Req {
+
+	public Req() {
+
+	}
 
 	private String n;
 
@@ -40,6 +46,8 @@ public class Req {
 	private String src;
 
 	private long s;
+
+	private int z;
 
 	private void parseSn() {
 		if (n == null) {
@@ -149,6 +157,14 @@ public class Req {
 	public void clearParams() {
 		this.j = null;
 		this.p = null;
+	}
+
+	public void setTest(boolean b) {
+		this.z = z & ReqProtocol.TEST;
+	}
+
+	public boolean isTest(boolean b) {
+		return (z & ReqProtocol.TEST) != 0;
 	}
 
 }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,9 +43,9 @@ public class InvokeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		HttpNode info = ctx.getHttpNode();
-		if (ctx.getData() != null && !String.class.isInstance(ctx.getData())) {
-			HttpException.throwException(this.getClass(), ctx.getData().getClass().getName() + " is not String");
+		HttpNode info = ctx.httpNode();
+		if (ctx.data() != null && !String.class.isInstance(ctx.data())) {
+			HttpException.throwException(this.getClass(), ctx.data().getClass().getName() + " is not String");
 		}
 		Object ret = null;
 		if (info.errorHandler != null) {
@@ -56,7 +56,7 @@ public class InvokeHandler implements HttpHandler {
 						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
 					throw e;
 				}
-				Log.printStack(e);
+				Log.get("sumk.http.invoke").debug(e.getMessage(), e);
 				BizException.throwException(info.errorHandler.code(), info.errorHandler.message());
 			}
 		} else {
@@ -65,7 +65,7 @@ public class InvokeHandler implements HttpHandler {
 		if (STOP == ret) {
 			return true;
 		}
-		ctx.setResult(ret);
+		ctx.result(ret);
 		return false;
 	}
 
@@ -74,13 +74,13 @@ public class InvokeHandler implements HttpHandler {
 			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
 				return exec(http.method, http.obj, null, null, ctx);
 			}
-			if (ctx.getData() == null) {
+			if (ctx.data() == null) {
 				if (http.argNames != null && http.argNames.length > 0) {
 					HttpException.throwException(InvokeHandler.class, "there is no data");
 					return exec(http.method, http.obj, new Object[0], info.paramInfos, ctx);
 				}
 			}
-			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.getData(), http.argClz);
+			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.data(), http.argClz);
 
 			return exec(http.method, http.obj, argObj == null ? null : argObj.params(), info.paramInfos, ctx);
 		});
@@ -92,16 +92,16 @@ public class InvokeHandler implements HttpHandler {
 		if (list == null || list.isEmpty()) {
 			return BizExcutor.exec(m, obj, params, paramInfos);
 		}
-		HttpServletRequest req = ctx.getHttpRequest();
+		HttpServletRequest req = ctx.httpRequest();
 		try {
 			for (WebFilter f : list) {
-				if (!f.beforeInvoke(req, ctx.getHttpResponse(), params)) {
+				if (!f.beforeInvoke(req, ctx.httpResponse(), params)) {
 					return STOP;
 				}
 			}
 			Object ret = BizExcutor.exec(m, obj, params, paramInfos);
 			for (WebFilter f : list) {
-				if (!f.afterInvoke(req, ctx.getHttpResponse(), params, ret)) {
+				if (!f.afterInvoke(req, ctx.httpResponse(), params, ret)) {
 					return STOP;
 				}
 			}

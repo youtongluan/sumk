@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.common.ThreadContext;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -43,6 +44,12 @@ public final class ConnectionPool implements AutoCloseable {
 	private Connection writeConn;
 
 	public static ConnectionPool create(String dbName, DBType dbType) {
+		if (ThreadContext.get().isTest()) {
+			if (connectionHolder.get().size() > 0) {
+				return null;
+			}
+			dbType = DBType.WRITE;
+		}
 		List<ConnectionPool> list = connectionHolder.get();
 		ConnectionPool context = new ConnectionPool(dbName, dbType);
 		list.add(0, context);
@@ -52,6 +59,7 @@ public final class ConnectionPool implements AutoCloseable {
 	public static ConnectionPool createIfAbsent(String dbName, DBType dbType) {
 		List<ConnectionPool> list = connectionHolder.get();
 		if (list.size() > 0) {
+
 			return null;
 		}
 		return create(dbName, dbType);
@@ -88,6 +96,9 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	public Connection connection(DBType type) {
+		if (ThreadContext.get().isTest()) {
+			return this.getWriteConnection();
+		}
 		switch (this.dbType) {
 		case WRITE:
 			return this.getWriteConnection();
@@ -107,6 +118,9 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	private Connection connectionByUser(DBType type) {
+		if (ThreadContext.get().isTest()) {
+			return this.getWriteConnection();
+		}
 		if (type == DBType.ANY) {
 			if (this.readConn != null) {
 				return this.readConn;

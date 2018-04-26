@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,21 +27,21 @@ public class RespToStringHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		Object obj = ctx.getResult();
+		Object obj = ctx.result();
 		if (obj == null) {
-			ctx.setResult(HttpGson.gson().toJson(obj));
+			ctx.result(HttpGson.gson().toJson(obj));
 			return false;
 		}
 		Class<?> clz = obj.getClass();
 		if (clz.isArray()) {
-			ctx.setResult(HttpGson.gson().toJson(obj));
+			ctx.result(HttpGson.gson().toJson(obj));
 			return false;
 		}
 		if (clz.isPrimitive() || clz.equals(String.class)) {
-			ctx.setResult(String.valueOf(obj));
+			ctx.result(String.valueOf(obj));
 			return false;
 		}
-		ctx.setResult(HttpGson.gson().toJson(obj));
+		ctx.result(HttpGson.gson().toJson(obj));
 		return false;
 	}
 

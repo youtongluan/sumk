@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.yx.http.start;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.servlet.ServletContextListener;
 
@@ -31,12 +30,13 @@ import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkLoaderListener;
+import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -51,19 +51,17 @@ public class JettyServer implements Plugin {
 		this.port = port;
 	}
 
+	@Override
 	public synchronized void start() {
 		if (started) {
 			return;
 		}
 		try {
-			QueuedThreadPool pool = new QueuedThreadPool(AppInfo.getInt("http.pool.maxThreads", 200),
-					AppInfo.getInt("http.pool.minThreads", 8), AppInfo.getInt("http.pool.idleTimeout", 60000),
-					new LinkedBlockingQueue<Runnable>(AppInfo.getInt("http.pool.queues", 1000)));
-			server = new Server(pool);
+			server = new Server(new ExecutorThreadPool(SumkThreadPool.EXECUTOR));
 			ServerConnector connector = new ServerConnector(server, null, null, null,
 					AppInfo.getInt("http.connector.acceptors", 0), AppInfo.getInt("http.connector.selectors", 5),
 					new HttpConnectionFactory());
-			Log.get("HttpServer").info("listen port：" + port);
+			Log.get("sumk.http").info("listen port：" + port);
 			String host = AppInfo.get("http.host");
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);

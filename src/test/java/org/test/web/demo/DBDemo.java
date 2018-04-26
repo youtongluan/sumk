@@ -5,18 +5,18 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.yx.bean.Box;
+import org.yx.bean.Box.Transaction;
 import org.yx.db.DB;
 import org.yx.db.DBType;
 import org.yx.demo.member.DemoUser;
 import org.yx.exception.BizException;
 import org.yx.http.Web;
-import org.yx.log.Log;
 import org.yx.rpc.Soa;
 import org.yx.util.SeqUtil;
 
 public class DBDemo {
 
-	@Box
+	@Box(transaction=Transaction.EMBED)
 	public long insert(long id, boolean success) {
 		if (id == 0) {
 			id = SeqUtil.next();
@@ -45,7 +45,6 @@ public class DBDemo {
 		try {
 			this.insert(failId, false);
 		} catch (Exception e) {
-			Log.printStack(e);
 		}
 		DemoUser obj = DB.select().tableClass(DemoUser.class).byPrimaryId(successId).queryOne();
 		Assert.assertEquals(Long.valueOf(successId), obj.getId());
@@ -60,7 +59,7 @@ public class DBDemo {
 		for (DemoUser user : users) {
 			DB.insert(user).execute();
 		}
-		List<DemoUser> list = new ArrayList<DemoUser>();
+		List<DemoUser> list = new ArrayList<>();
 		for (DemoUser user : users) {
 			DemoUser user2 = DB.select().tableClass(DemoUser.class).byPrimaryId(user.getId()).queryOne();
 			Assert.assertEquals(DB.select().tableClass(DemoUser.class).byPrimaryId(user.getId()).queryOne(), user2);

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@ public class ReqHeaderHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		HttpServletRequest req = ctx.getHttpRequest();
-		ctx.setCharset(HttpUtil.charset(req));
-		ctx.setSign(req.getParameter("sign"));
+		HttpServletRequest req = ctx.httpRequest();
+		ctx.charset(HttpUtil.charset(req));
+		ctx.sign(req.getParameter("sign"));
 		String data = req.getParameter("data");
 		if (data != null) {
-			ctx.setData(data);
+			ctx.data(data);
 		}
 		Enumeration<String> names = req.getHeaderNames();
 		Map<String, String> map = new HashMap<>();
@@ -46,7 +46,7 @@ public class ReqHeaderHandler implements HttpHandler {
 			String name = names.nextElement();
 			map.put(name, req.getHeader(name));
 		}
-		ctx.setHeaders(map);
+		ctx.headers(map);
 		return false;
 	}
 

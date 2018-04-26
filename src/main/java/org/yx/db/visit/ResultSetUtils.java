@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,6 +75,25 @@ public class ResultSetUtils {
 		Assert.isTrue(md.getColumnCount() == 1, "result data column is " + md.getColumnCount() + ", not 1");
 		while (rs.next()) {
 			list.add(rs.getObject(1));
+		}
+		rs.close();
+		return list;
+	}
+
+	public static List<Object[]> toObjectArrayList(ResultSet rs) throws java.sql.SQLException {
+		List<Object[]> list = new ArrayList<>(10);
+		if (rs == null) {
+			return list;
+		}
+		ResultSetMetaData md = rs.getMetaData();
+		final int len = md.getColumnCount();
+		Object[] data;
+		while (rs.next()) {
+			data = new Object[len];
+			for (int i = 0; i < len; i++) {
+				data[i] = rs.getObject(i + 1);
+			}
+			list.add(data);
 		}
 		rs.close();
 		return list;

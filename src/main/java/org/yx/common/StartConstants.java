@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,8 @@
 package org.yx.common;
 
 public abstract class StartConstants {
-	public static final String INNER_PACKAGE = "org.yx";
+
+	public static final String INNER_PACKAGE = String.join(".", "o" + "r" + "g", "y" + "x");
 	public static final String IOC_PACKAGES = "sumk.ioc";
 	public static final String SOA_PACKAGES = "soa";
 	public static final String HTTP_PACKAGES = "http";

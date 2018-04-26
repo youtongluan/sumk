@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		String sign = ctx.getSign();
+		String sign = ctx.sign();
 		if (StringUtil.isEmpty(sign)) {
 			HttpException.throwException(this.getClass(), "签名不能为空");
 		}

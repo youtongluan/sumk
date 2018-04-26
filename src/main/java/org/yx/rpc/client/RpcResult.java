@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,10 +23,13 @@ import org.yx.util.GsonUtil;
 
 public final class RpcResult {
 	static RpcResult timeout(Req req) {
+		if (req == null) {
+			return new RpcResult(null, new SoaException(RpcCode.TIMEOUT, "服务器繁忙，请稍候", "req is null"), null);
+		}
 		long timeout = System.currentTimeMillis() - req.getStart();
 		String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
 		SoaException exception = new SoaException(RpcCode.TIMEOUT, "服务器繁忙，请稍候", msg);
-		return new RpcResult(null, exception, req == null ? null : req.getSn());
+		return new RpcResult(null, exception, req.getSn());
 	}
 
 	static RpcResult sendFailed(Req req, Throwable e) {

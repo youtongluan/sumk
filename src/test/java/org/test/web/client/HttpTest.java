@@ -196,7 +196,7 @@ public class HttpTest {
 		Assert.assertEquals("hello 小明", ret);
 	}
 
-	@Test
+//	@Test
 	public void upload() throws IOException {
 		String charset = "UTF-8";
 		HttpClient client = HttpClientBuilder.create().build();

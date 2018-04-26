@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,25 +31,28 @@ public class WebContext {
 	private String sign;
 	private Map<String, String> headers;
 	private Object data;
-	private Integer respCode = null;
-	private Object result = null;
+
+	private Object result;
 	private byte[] key;
 	private String act;
+	private String str_data;
+	private String str_resp;
 
-	public Integer getRespCode() {
-		return respCode;
+	public String dataInString() {
+		return str_data;
 	}
 
-	public void setRespCode(Integer respCode) {
-		this.respCode = respCode;
+	public String respInString() {
+		return str_resp;
 	}
 
-	public Object getResult() {
+	public Object result() {
 		return result;
 	}
 
-	public void setResult(Object result) {
+	public void result(Object result) {
 		this.result = result;
+		this.str_resp = String.class.isInstance(result) ? (String) result : null;
 	}
 
 	public WebContext(String act, HttpNode node, HttpServletRequest req, HttpServletResponse resp) {
@@ -59,69 +62,70 @@ public class WebContext {
 		this.httpResponse = resp;
 	}
 
-	public Charset getCharset() {
+	public Charset charset() {
 		return charset;
 	}
 
-	public Object getData() {
+	public Object data() {
 		return data;
 	}
 
 	public byte[] getDataInByteArray() {
 		if (String.class.isInstance(data)) {
-			return ((String) data).getBytes(getCharset());
+			return ((String) data).getBytes(charset());
 		}
 		return (byte[]) data;
 	}
 
-	public Map<String, String> getHeaders() {
+	public Map<String, String> headers() {
 		return headers;
 	}
 
-	public HttpServletRequest getHttpRequest() {
+	public HttpServletRequest httpRequest() {
 		return httpRequest;
 	}
 
-	public HttpServletResponse getHttpResponse() {
+	public HttpServletResponse httpResponse() {
 		return httpResponse;
 	}
 
-	public HttpNode getHttpNode() {
+	public HttpNode httpNode() {
 		return node;
 	}
 
-	public String getSign() {
+	public String sign() {
 		return sign;
 	}
 
-	void setCharset(Charset charset) {
+	void charset(Charset charset) {
 		if (charset != null) {
 			this.charset = charset;
 		}
 
 	}
 
-	void setData(Object data) {
+	void data(Object data) {
 		this.data = data;
+		this.str_data = String.class.isInstance(data) ? (String) data : null;
 	}
 
-	void setHeaders(Map<String, String> headers) {
+	void headers(Map<String, String> headers) {
 		this.headers = headers;
 	}
 
-	void setSign(String sign) {
+	void sign(String sign) {
 		this.sign = sign;
 	}
 
-	public byte[] getKey() {
+	public byte[] key() {
 		return key;
 	}
 
-	void setKey(byte[] key) {
+	void key(byte[] key) {
 		this.key = key;
 	}
 
-	String getAct() {
+	public String act() {
 		return act;
 	}
 

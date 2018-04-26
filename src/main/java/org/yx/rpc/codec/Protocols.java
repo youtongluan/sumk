@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,4 +45,8 @@ public class Protocols {
 	public final static String LINE_SPLIT = "\n";
 
 	public final static int MAGIC = 0x8F000000;
+
+	public static void main(String[] args) {
+		System.out.println(Integer.toBinaryString(profile()));
+	}
 }

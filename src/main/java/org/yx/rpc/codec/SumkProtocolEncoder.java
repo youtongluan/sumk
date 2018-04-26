@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2016 - 2017 youtongluan.
+ * Copyright (C) 2016 - 2030 youtongluan.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,50 +17,64 @@ package org.yx.rpc.codec;
 
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderException;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.yx.common.ClassScaner;
+import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.log.Log;
-import org.yx.rpc.client.Req;
-import org.yx.rpc.server.Response;
-import org.yx.util.GsonUtil;
+import org.yx.rpc.codec.encoders.SumkMinaEncoder;
 
 public class SumkProtocolEncoder implements ProtocolEncoder {
 
-	private Charset charset = Profile.CHARSET_DEFAULT;
+	private static Charset charset = Profile.CHARSET_DEFAULT;
+	private SumkMinaEncoder[] encoders = new SumkMinaEncoder[0];
+
+	public SumkProtocolEncoder() {
+		try {
+			Collection<Class<? extends SumkMinaEncoder>> clzs = ClassScaner
+					.listSubClassesInSamePackage(SumkMinaEncoder.class);
+			List<SumkMinaEncoder> list = new ArrayList<>(clzs.size());
+			for (Class<? extends SumkMinaEncoder> clz : clzs) {
+				Log.get("sumk.rpc").trace("{} inited", clz.getName());
+				list.add(clz.newInstance());
+			}
+			this.encoders = list.toArray(new SumkMinaEncoder[list.size()]);
+		} catch (Exception e) {
+			Log.printStack("sumk.rpc", e);
+			if (AppInfo.getBoolean("rpc.exitOnError", true)) {
+				System.exit(-1);
+			}
+		}
+
+	}
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		if (message == null) {
 			return;
 		}
-		if (Req.class.isInstance(message)) {
-			this.encodeReq(session, (Req) message, out);
-		} else if (Response.class.isInstance(message)) {
-			this.encodeResponse(session, (Response) message, out);
-		} else if (String.class.isInstance(message)) {
-			this.encodeString(0, session, (String) message, out);
-		} else {
-			throw new ProtocolEncoderException(message.getClass().getName() + " not support in ProtocolEncoder");
+		if (String.class.isInstance(message)) {
+			encodeString(0, session, (String) message, out);
 		}
+		Class<?> clz = message.getClass();
+		for (SumkMinaEncoder encoder : this.encoders) {
+			if (encoder.accept(clz)) {
+				encoder.encode(session, message, out);
+				return;
+			}
+		}
+		throw new ProtocolEncoderException(message.getClass().getName() + " not support in ProtocolEncoder");
 	}
 
-	private void encodeResponse(IoSession session, Response message, ProtocolEncoderOutput out)
-			throws CharacterCodingException, ProtocolEncoderException {
-		this.encodeString(Protocols.RESPONSE_JSON, session, GsonUtil.toJson(message), out);
-	}
-
-	/**
-	 * 
-	 * @param buffer
-	 * @param prefixLength
-	 * @throws ProtocolEncoderException
-	 */
-	private void putProtocol(int code, IoBuffer buffer, int prefixLength) throws ProtocolEncoderException {
+	private static void putProtocol(int code, IoBuffer buffer, int prefixLength) throws ProtocolEncoderException {
 		switch (prefixLength) {
 		case 1:
 			buffer.putInt(Protocols.ONE | code | Protocols.MAGIC);
@@ -79,28 +93,7 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		}
 	}
 
-	private void encodeReq(IoSession session, Req req, ProtocolEncoderOutput out)
-			throws CharacterCodingException, ProtocolEncoderException {
-		String jsonedArg = req.getJsonedParam();
-		String[] params = req.getParamArray();
-		req.clearParams();
-
-		if (jsonedArg != null) {
-			Log.get("sumk.rpc").trace("args:{}", jsonedArg);
-			String json_req = GsonUtil.toJson(req) + Protocols.LINE_SPLIT + jsonedArg;
-			this.encodeString(Protocols.REQ_PARAM_JSON, session, json_req, out);
-			return;
-		}
-
-		StringBuilder json_req = new StringBuilder();
-		json_req.append(String.format("%02d", params.length)).append(GsonUtil.toJson(req));
-		for (String p : params) {
-			json_req.append(Protocols.LINE_SPLIT).append(p);
-		}
-		this.encodeString(Protocols.REQ_PARAM_ORDER, session, json_req, out);
-	}
-
-	private void encodeString(int code, IoSession session, CharSequence message, ProtocolEncoderOutput out)
+	public static void encodeString(int code, IoSession session, CharSequence message, ProtocolEncoderOutput out)
 			throws CharacterCodingException, ProtocolEncoderException {
 		code = code | Protocols.FORMAT_JSON;
 		int size = message.length();
