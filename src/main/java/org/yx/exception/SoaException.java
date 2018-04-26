@@ -21,15 +21,6 @@ import java.io.StringWriter;
 
 import org.yx.conf.AppInfo;
 
-/**
- * 这个异常是框架使用，开发者只需去捕获这个异常，不要去抛出这个异常。<BR>
- * 因为这个类要被json序列化，所以它的cause属性要为null，以减少json长度 本异常的使用环境：
- * <LI>在rpc发送或处理返回值的时候，如果发生异常，会被封装成这个异常。
- * <LI>服务器端如果处理出错或序列化等出错，会被封装成这个对象，保存在Response.exception中
- * <LI>如果exceptionClz是BizException的全名，那么code是BizException的全名，否则code为RpcCode中定义的code
- * <LI>RpcResult中的exception一般是SoaException，除非被调用方抛出了BizException
- * 
- */
 public class SoaException extends CodeException {
 
 	private static final long serialVersionUID = 453453343454L;
