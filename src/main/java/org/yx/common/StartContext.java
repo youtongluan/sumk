@@ -18,6 +18,8 @@ package org.yx.common;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yx.conf.AppInfo;
+
 public class StartContext {
 
 	public static StartContext inst = new StartContext();
@@ -56,6 +58,12 @@ public class StartContext {
 	public static void clear() {
 		inst.map = null;
 		inst = null;
+	}
+
+	public static void startFail() {
+		if (AppInfo.getBoolean("sumk.exitIfFail", true)) {
+			System.exit(-1);
+		}
 	}
 
 }

@@ -38,7 +38,7 @@ public class Loader {
 		return loader().getResourceAsStream(name);
 	}
 
-	private static ClassLoader loader() {
+	public static ClassLoader loader() {
 		return Loader.class.getClassLoader();
 	}
 

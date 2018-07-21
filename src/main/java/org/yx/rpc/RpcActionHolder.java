@@ -15,15 +15,21 @@
  */
 package org.yx.rpc;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.common.ActInfoUtil;
+import org.yx.main.SumkServer;
+
 public class RpcActionHolder {
 
-	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<String, Class<?>>();
+	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
 
-	private static Map<String, RpcActionNode> actMap = new ConcurrentHashMap<String, RpcActionNode>();
+	private static Map<String, RpcActionNode> actMap = new ConcurrentHashMap<>();
 
 	public static Class<?> getArgType(String method) {
 		String m = getArgClassName(method);
@@ -46,4 +52,22 @@ public class RpcActionHolder {
 	public static Set<String> soaSet() {
 		return actMap.keySet();
 	}
+
+	public static List<Map<String, Object>> infos() {
+		if (!SumkServer.isRpcEnable()) {
+			return Collections.emptyList();
+		}
+		List<Map<String, Object>> ret = new ArrayList<>(actMap.size());
+		actMap.forEach((name, rpc) -> {
+			Map<String, Object> map = ActInfoUtil.infoMap(name, rpc);
+			;
+			ret.add(map);
+			if (rpc.action != null) {
+				Soa soa = rpc.action;
+				map.put("description", soa.description());
+			}
+		});
+		return ret;
+	}
+
 }

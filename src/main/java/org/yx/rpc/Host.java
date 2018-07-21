@@ -17,7 +17,7 @@ package org.yx.rpc;
 
 import java.net.InetSocketAddress;
 
-public final class Host {
+public final class Host implements Comparable<Host> {
 	private final String ip;
 	private final int port;
 
@@ -28,8 +28,8 @@ public final class Host {
 	}
 
 	public static Host create(String addr) {
-		String[] hs = addr.split(":");
-		return new Host(hs[0], Integer.valueOf(hs[1]));
+		int index = addr.lastIndexOf(':');
+		return new Host(addr.substring(0, index), Integer.valueOf(addr.substring(index + 1)));
 	}
 
 	public static Host create(String ip, int port) {
@@ -79,6 +79,15 @@ public final class Host {
 	@Override
 	public String toString() {
 		return ip + ":" + port;
+	}
+
+	@Override
+	public int compareTo(Host h) {
+		int t = ip.compareTo(h.ip);
+		if (t != 0) {
+			return t;
+		}
+		return port - h.port;
 	}
 
 }

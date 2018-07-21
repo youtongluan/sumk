@@ -16,13 +16,14 @@
 package org.yx.common;
 
 import org.yx.conf.AppInfo;
+import org.yx.util.StringUtil;
 
 public class ThreadContext {
 
 	private static final String TEST = "sumk.test";
 
 	public static enum ActionType {
-		HTTP, RPC
+		HTTP, RPC, OTHER
 	}
 
 	private final ActionType type;
@@ -32,6 +33,8 @@ public class ThreadContext {
 	private String rootSn;
 
 	private String contextSn;
+
+	private String userId;
 
 	private boolean test;
 
@@ -66,16 +69,12 @@ public class ThreadContext {
 		return this.contextSn;
 	}
 
-	public void contextSn(String contextSn) {
-		this.contextSn = contextSn;
-	}
-
 	private static final ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
 
 		@Override
 		protected ThreadContext initialValue() {
 
-			return new ThreadContext(null, null, false);
+			return new ThreadContext(ActionType.OTHER, null, false);
 		}
 
 	};
@@ -108,6 +107,22 @@ public class ThreadContext {
 
 	public String rootSn() {
 		return rootSn;
+	}
+
+	public String userId() {
+		return userId;
+	}
+
+	public void userId(String userId) {
+		this.userId = userId;
+	}
+
+	public String userIdOrContextSN() {
+		String sn = userId;
+		if (StringUtil.isEmpty(sn)) {
+			sn = contextSn;
+		}
+		return sn;
 	}
 
 }

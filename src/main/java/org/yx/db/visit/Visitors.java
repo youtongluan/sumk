@@ -102,7 +102,6 @@ public final class Visitors {
 		PreparedStatement statement = createStatement(conn, maped);
 		ResultSet ret = statement.executeQuery();
 		PojoMeta pm = ((SelectBuilder) builder).parsePojoMeta(true);
-		;
 		List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
 		statement.close();
 		return list;

@@ -58,7 +58,7 @@ public class ReqUserHandler implements HttpHandler {
 		}
 		ctx.key(key);
 		session.flushSession();
-		ThreadContext.get().contextSn(session.getUserId());
+		ThreadContext.get().userId(session.getUserId());
 		return false;
 	}
 

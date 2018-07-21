@@ -16,11 +16,15 @@
 package org.yx.util;
 
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.List;
+
+import org.yx.bean.Loader;
+import org.yx.conf.AppInfo;
 
 public class FileUtil {
 	/**
-	 * 列出改目录下的所有子文件（不包含目录）
+	 * 列出该目录下的所有子文件（不包含目录）
 	 * 
 	 * @param filelist
 	 *            目标对象
@@ -39,5 +43,16 @@ public class FileUtil {
 			}
 
 		}
+	}
+
+	public static File file(String path) throws URISyntaxException {
+		if (path.startsWith(AppInfo.CLASSPATH_URL_PREFIX)) {
+			return new File(Loader.loader().getResource(path.substring(AppInfo.CLASSPATH_URL_PREFIX.length())).toURI());
+		}
+		if (path.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
+			return new File(
+					Loader.loader().getResource(path.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length())).toURI());
+		}
+		return new File(path);
 	}
 }

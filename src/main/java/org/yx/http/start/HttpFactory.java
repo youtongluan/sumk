@@ -23,7 +23,7 @@ import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
 import org.yx.common.MethodDesc;
-import org.yx.http.HttpHolder;
+import org.yx.http.HttpActionHolder;
 import org.yx.http.Web;
 import org.yx.http.handler.HttpNode;
 import org.yx.log.Log;
@@ -56,17 +56,17 @@ class HttpFactory {
 			Web act = m.getAnnotation(Web.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
 			Log.get("sumk.http").debug("http action-{}:{}", soaName, classFullName);
-			if (HttpHolder.getHttpInfo(soaName) != null) {
+			if (HttpActionHolder.getHttpInfo(soaName) != null) {
 				Log.get("sumk.http").error(soaName + " already existed");
 				continue;
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			if (m.getParameterTypes().length == 0) {
-				HttpHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, null, null, null, null, m));
+				HttpActionHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, null, null, null, null, m));
 				continue;
 			}
 			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-			HttpHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, ArgPojos.create(classFullName, mInfo),
+			HttpActionHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, ArgPojos.create(classFullName, mInfo),
 					mInfo.getArgNames(), m.getParameterTypes(), ParamFactory.create(m), m));
 		}
 

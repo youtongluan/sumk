@@ -66,7 +66,19 @@ public final class AppInfo {
 		ob.update(null, null);
 	}
 
-	public static String getZKUrl() {
+	public static String getServerZKUrl() {
+		String url = info.get("soa.zk.server");
+		if (url != null && url.length() > 0) {
+			return url;
+		}
+		return info.get("sumk.zkurl");
+	}
+
+	public static String getClinetZKUrl() {
+		String url = info.get("soa.zk.client");
+		if (url != null && url.length() > 0) {
+			return url;
+		}
 		return info.get("sumk.zkurl");
 	}
 

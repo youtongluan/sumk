@@ -100,7 +100,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 						HttpUtil.charset(req));
 				return;
 			}
-			HttpNode info = HttpHolder.getHttpInfo(act);
+			HttpNode info = HttpActionHolder.getHttpInfo(act);
 			if (info == null) {
 				Log.get("sumk.http").error(act + " donot found handler");
 				HttpUtil.error(resp, -1003, "请求格式不正确", HttpUtil.charset(req));

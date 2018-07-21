@@ -16,6 +16,8 @@
 package org.yx.rpc.server.start;
 
 import java.io.IOException;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import org.I0Itec.zkclient.IZkStateListener;
@@ -30,30 +32,51 @@ import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.client.route.IntfInfo;
+import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
-import org.yx.rpc.server.ServerListener;
 import org.yx.util.GsonUtil;
 import org.yx.util.ZkClientHolder;
 
-/**
- * 启动服务器端
- * 
- * @author 游夏
- *
- */
 public class SOAServer implements Plugin {
 
-	private boolean started = false;
+	private volatile boolean started = false;
 	private final int port;
-	private ServerListener server;
+	private MinaServer server;
 	private String zkUrl;
 	private String path;
+	private boolean enable = soaServerEnable();
+
+	private static boolean soaServerEnable() {
+		return AppInfo.getBoolean("soa.server.enable", true);
+	}
+
+	private final IZkStateListener stateListener = new IZkStateListener() {
+		@Override
+		public void handleStateChanged(KeeperState state) throws Exception {
+			Log.get("sumk.rpc.zk").debug("zk state changed:{}", state);
+		}
+
+		@Override
+		public void handleNewSession() throws Exception {
+			ZkClientHolder.getZkClient(zkUrl).createEphemeral(path, createZkRouteData());
+			Log.get("sumk.rpc.zk").debug("handleNewSession");
+		}
+
+		@Override
+		public void handleSessionEstablishmentError(Throwable error) throws Exception {
+			Log.get("sumk.rpc.zk").error("SessionEstablishmentError#" + error.getMessage(), error);
+		}
+
+	};
+	private final Runnable zkRegister = new ZKResiter();
+	private final Runnable zkUnRegister = new ZKUnResiter();
 
 	public SOAServer(int port) {
 		super();
 		this.port = port;
 	}
 
+	@Override
 	public synchronized void start() {
 		if (started) {
 			return;
@@ -63,33 +86,43 @@ public class SOAServer implements Plugin {
 
 			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
 					+ AppInfo.get("soa.zk.port", String.valueOf(port));
-			zkUrl = AppInfo.getZKUrl();
+			zkUrl = AppInfo.getServerZKUrl();
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);
 
 			startServer(ip, port);
-
-			client.delete(path);
-			IZkStateListener stateListener = new IZkStateListener() {
-
-				@Override
-				public void handleStateChanged(KeeperState state) throws Exception {
-					Log.get("sumk.rpc").info("zk state changed:{}", state);
-				}
+			if (this.enable) {
+				this.zkRegister.run();
+			} else {
+				this.zkUnRegister.run();
+			}
+			AppInfo.addObserver(new Observer() {
 
 				@Override
-				public void handleNewSession() throws Exception {
-					client.createEphemeral(path, createZkRouteData());
+				public void update(Observable o, Object arg) {
+					if (!SOAServer.this.started) {
+						Log.get("sumk.rpc.zk").debug("soa server unstarted");
+						return;
+					}
+					boolean serverEnable = soaServerEnable();
+					if (serverEnable == enable) {
+						return;
+					}
+					try {
+						if (serverEnable) {
+							SOAServer.this.zkRegister.run();
+							Log.get("sumk.rpc").info("soa server enabled");
+						} else {
+							SOAServer.this.zkUnRegister.run();
+							Log.get("sumk.rpc").info("soa server disabled!!!");
+						}
+						enable = serverEnable;
+					} catch (Exception e) {
+						Log.printStack(e);
+					}
 				}
 
-				@Override
-				public void handleSessionEstablishmentError(Throwable error) throws Exception {
-					Log.get("sumk.rpc").error("SessionEstablishmentError#" + error.getMessage(), error);
-				}
-
-			};
-			client.createEphemeral(path, createZkRouteData());
-			client.subscribeStateChanges(stateListener);
+			});
 			started = true;
 		} catch (Exception e) {
 			Log.printStack(e);
@@ -98,7 +131,7 @@ public class SOAServer implements Plugin {
 	}
 
 	private void startServer(String ip, int port) throws Exception {
-		server = new ServerListener(ip, port, IOC.get(ReqHandlerFactorysBean.class).create());
+		server = new MinaServer(ip, port, IOC.get(ReqHandlerFactorysBean.class).create());
 		server.run();
 	}
 
@@ -126,7 +159,6 @@ public class SOAServer implements Plugin {
 		sj.item().append(ZKConst.WEIGHT).append('=').append(AppInfo.getInt("soa.weight", 100));
 
 		String zkData = sj.toString();
-		Log.get("sumk.SOA").debug("server zk data:\n{}", zkData);
 		return zkData;
 	}
 
@@ -147,5 +179,30 @@ public class SOAServer implements Plugin {
 				Log.printStack("sumk.rpc", e);
 			}
 		}
+	}
+
+	public class ZKResiter implements Runnable {
+
+		@Override
+		public void run() {
+			zkUnRegister.run();
+			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			String zkData = createZkRouteData();
+			client.createEphemeral(path, zkData);
+			client.subscribeStateChanges(stateListener);
+			Log.get("sumk.rpc.zk").trace("server zk data:\n{}", zkData);
+		}
+
+	}
+
+	public class ZKUnResiter implements Runnable {
+
+		@Override
+		public void run() {
+			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			client.unsubscribeStateChanges(stateListener);
+			client.delete(path);
+		}
+
 	}
 }

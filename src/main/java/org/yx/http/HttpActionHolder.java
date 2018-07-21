@@ -15,17 +15,25 @@
  */
 package org.yx.http;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.common.ActInfoUtil;
 import org.yx.http.handler.HttpNode;
+import org.yx.main.SumkServer;
 
-public class HttpHolder {
+/**
+ * 仅供框架使用
+ */
+public class HttpActionHolder {
 
-	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<String, Class<?>>();
+	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
 
-	static Map<String, HttpNode> actMap = new ConcurrentHashMap<String, HttpNode>();
+	private static Map<String, HttpNode> actMap = new ConcurrentHashMap<>();
 
 	public static Class<?> getArgType(String method) {
 		String m = getArgClassName(method);
@@ -51,5 +59,26 @@ public class HttpHolder {
 
 	public static String[] acts() {
 		return actMap.keySet().toArray(new String[0]);
+	}
+
+	public static List<Map<String, Object>> infos() {
+		if (!SumkServer.isHttpEnable()) {
+			return Collections.emptyList();
+		}
+		List<Map<String, Object>> ret = new ArrayList<>(HttpActionHolder.actMap.size());
+		HttpActionHolder.actMap.forEach((name, http) -> {
+			Map<String, Object> map = ActInfoUtil.infoMap(name, http);
+			ret.add(map);
+			if (http.action != null) {
+				Web web = http.action;
+				map.put("requireLogin", web.requireLogin());
+				map.put("requestEncrypt", web.requestEncrypt());
+				map.put("responseEncrypt", web.responseEncrypt());
+				map.put("sign", web.sign());
+				map.put("description", web.description());
+			}
+			map.put("upload", http.upload != null);
+		});
+		return ret;
 	}
 }

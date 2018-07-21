@@ -25,6 +25,8 @@ public class Req {
 
 	}
 
+	private String u;
+
 	private String n;
 
 	private String sn;
@@ -167,4 +169,11 @@ public class Req {
 		return (z & ReqProtocol.TEST) != 0;
 	}
 
+	public String getUserId() {
+		return this.u;
+	}
+
+	public void setUserId(String userId) {
+		this.u = userId;
+	}
 }

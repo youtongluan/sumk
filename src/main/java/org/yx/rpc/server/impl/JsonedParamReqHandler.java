@@ -47,7 +47,6 @@ public class JsonedParamReqHandler implements RequestHandler {
 		Response resp = new Response(req.getSn());
 		try {
 			String method = req.getApi();
-			ThreadContext.rpcContext(method, req.getRootSn(), req.getSn(), ThreadContext.get().isTest());
 			RpcActionNode node = RpcActionHolder.getActionNode(method);
 			if (node == null) {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");

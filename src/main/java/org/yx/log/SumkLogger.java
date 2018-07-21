@@ -34,7 +34,7 @@ public abstract class SumkLogger extends MarkerIgnoringBase {
 	}
 
 	protected String buildMessage(String msg, Object... args) {
-		if (msg == null) {
+		if (msg == null || args == null) {
 			return msg;
 		}
 		String[] tmps = msg.split("\\{\\}", -1);

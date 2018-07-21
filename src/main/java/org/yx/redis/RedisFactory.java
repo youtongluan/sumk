@@ -15,22 +15,27 @@
  */
 package org.yx.redis;
 
+import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
-import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 
 public class RedisFactory {
 
-	private static final Map<String, Redis> map = new ConcurrentHashMap<String, Redis>();
+	private static final Map<String, Redis> map = new ConcurrentHashMap<>();
+	private static Constructor<?> constructor;
 
-	private static String toMapKey(String host, int port, int db) {
-		return host + "_" + port + "#" + db;
+	private static String toMapKey(RedisParamter p) {
+		StringBuilder sb = new StringBuilder();
+		return sb.append(p.hosts()).append('#').append(p.getDb()).append('#').append(p.getTimeout()).append('#')
+				.append(p.getTryCount()).toString();
 	}
 
 	public static Redis get(String ip) {
@@ -39,55 +44,55 @@ public class RedisFactory {
 	}
 
 	public static Redis get(String ip, int port) {
-		RedisParamter p = RedisParamter.create(ip, port);
+		RedisParamter p = RedisParamter.create(ip + ":" + port);
 		return get(null, p);
 	}
 
 	public static Redis get(String ip, int port, int timeout) {
-		RedisParamter p = RedisParamter.create(ip, port);
+		RedisParamter p = RedisParamter.create(ip + ":" + port);
 		p.setTimeout(timeout);
 		return get(null, p);
 	}
 
-	public static Redis get(JedisPoolConfig config, RedisParamter p) {
+	private static Constructor<?> getConstructor()
+			throws NoSuchMethodException, SecurityException, ClassNotFoundException {
+		String clzName = AppInfo.get("sumk.redis.impl", RedisImpl.class.getName());
+		Class<?> clz = Class.forName(clzName);
+		Constructor<?> c = clz.getConstructor(JedisPoolConfig.class, RedisParamter.class);
+		c.setAccessible(true);
+		return c;
+	}
+
+	public static Redis get(GenericObjectPoolConfig config, RedisParamter p) {
 		Assert.notNull(p, "redis paramter cannot be null");
 		if (p.getTryCount() < 1 || p.getTryCount() > 100) {
 			throw new SumkException(54354354, "tryCount必须介于0和100之间");
 		}
-		String key = toMapKey(p.getIp(), p.getPort(), p.getDb());
+		final String key = toMapKey(p);
 		Redis redis = map.get(key);
 		if (redis == null) {
 			synchronized (RedisFactory.class) {
 				if (map.containsKey(key)) {
 					return map.get(key);
 				}
-				JedisPool pool = create(config, p.getIp(), p.getPort(), p.getTimeout(), p.getPassword(), p.getDb());
-				redis = new Redis(pool, p);
-				map.put(key, redis);
+				try {
+					if (constructor == null) {
+						constructor = getConstructor();
+					}
+					redis = (Redis) constructor.newInstance(config, p);
+					map.put(key, redis);
+				} catch (Exception e) {
+					Log.printStack(Redis.LOG_NAME, e);
+					throw new SumkException(2345345, "create redis [" + key + "] failed!!");
+				}
+
 			}
 		}
 		return redis;
 	}
 
-	private static JedisPool create(JedisPoolConfig config, String host, int port, int timeout, String password,
-			int database) {
-		if (config == null) {
-			config = defaultPoolConfig();
-		}
-		Log.get(RedisFactory.class, "create").info("create redis pool,host={},port={},db={}", host, port, database);
-		return new JedisPool(config, host, port, timeout, password, database);
-
-	}
-
-	private static JedisPoolConfig defaultPoolConfig() {
-		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMinIdle(1);
-		config.setMaxIdle(20);
-		config.setMaxTotal(100);
-		config.setTestWhileIdle(true);
-		config.setTimeBetweenEvictionRunsMillis(5 * 60000);
-		config.setNumTestsPerEvictionRun(3);
-		return config;
+	public static String status() {
+		return map.keySet().toString();
 	}
 
 }

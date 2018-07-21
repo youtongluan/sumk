@@ -29,11 +29,17 @@ import org.yx.http.UploadHandlerFactorysBean;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
+import org.yx.util.StringUtil;
 
 @Bean
 public class HttpServer implements Plugin {
 
 	private Plugin server;
+
+	public static final String KEY_STORE_PATH = "http.ssl.keyStore";
+
+	private static final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
+	private static final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
 
 	@Override
 	public void start() {
@@ -53,7 +59,9 @@ public class HttpServer implements Plugin {
 			if (StartContext.inst.get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
 				return;
 			}
-			String hs = AppInfo.get("http.starter.class", "org.yx.http.start.JettyServer");
+			String httpServerClass = StringUtil.isEmpty(AppInfo.get(KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
+					: HTTPS_SERVER_CLASS;
+			String hs = AppInfo.get("http.starter.class", httpServerClass);
 			if (!hs.contains(".")) {
 				return;
 			}

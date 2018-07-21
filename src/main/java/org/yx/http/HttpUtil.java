@@ -100,4 +100,9 @@ public final class HttpUtil {
 		return extractData(bs);
 	}
 
+	public static void noCache(HttpServletResponse resp) {
+		resp.setHeader("cache-control", "no-store");
+		resp.setDateHeader("Expires", 0);
+	}
+
 }

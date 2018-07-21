@@ -15,45 +15,65 @@
  */
 package org.yx.redis;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.yx.rpc.Host;
+import org.yx.util.Assert;
+
 import redis.clients.jedis.Protocol;
 
 public class RedisParamter {
 	final static int DEFAULT_TRY_COUNT = 2;
-	final static int DEFAULT_Timeout = 3000;
+	final static int DEFAULT_TIMEOUT = 3000;
 
-	public static RedisParamter create(String ip) {
-		return new RedisParamter(ip);
+	public static RedisParamter create(String host) {
+		return new RedisParamter(host);
 	}
 
-	public static RedisParamter create(String ip, int port) {
-		RedisParamter p = new RedisParamter(ip);
-		p.setPort(port);
-		return p;
-	}
-
-	private int timeout = DEFAULT_Timeout;
+	private int timeout = DEFAULT_TIMEOUT;
 	private String password = null;
-	private String ip;
 	private int db = 0;
 	private int tryCount = DEFAULT_TRY_COUNT;
-	private int port = Protocol.DEFAULT_PORT;
+	private final List<Host> hosts;
+	private String masterName;
 
-	public RedisParamter(String ip) {
-		super();
-		this.ip = ip;
+	public RedisParamter(String host) {
+		Assert.notEmpty(host, "redis host cannot be empty");
+		host = host.replace('　', ' ').replace('，', ',').replace('：', ':').replaceAll("\\s", "");
+		int index = host.indexOf('-');
+		if (index > -1) {
+			this.masterName = host.substring(0, index);
+			host = host.substring(index + 1);
+		}
+		String h = host;
+		String[] hs = h.split(",");
+		List<Host> hosts = new ArrayList<>(hs.length);
+		for (String addr : hs) {
+			if (addr.isEmpty()) {
+				continue;
+			}
+			if (!host.contains(":")) {
+				hosts.add(Host.create(addr, Protocol.DEFAULT_PORT));
+				continue;
+			}
+			hosts.add(Host.create(addr));
+		}
+		if (hosts.size() == 1) {
+			this.hosts = Collections.singletonList(hosts.get(0));
+		} else {
+			hosts.sort(null);
+			this.hosts = Collections.unmodifiableList(hosts);
+		}
 	}
 
-	public String getIp() {
-		return ip;
+	public String masterName() {
+		return this.masterName;
 	}
 
-	public int getPort() {
-		return port;
-	}
-
-	public RedisParamter setPort(int port) {
-		this.port = port;
-		return this;
+	public List<Host> hosts() {
+		return hosts;
 	}
 
 	public int getTimeout() {
@@ -90,6 +110,12 @@ public class RedisParamter {
 	public RedisParamter setTryCount(int tryCount) {
 		this.tryCount = tryCount;
 		return this;
+	}
+
+	@Override
+	public String toString() {
+		return "RedisParamter [masterName=" + masterName + ", hosts=" + hosts + ", db=" + db + ", password=" + password
+				+ ", timeout=" + timeout + ", tryCount=" + tryCount + "]";
 	}
 
 }

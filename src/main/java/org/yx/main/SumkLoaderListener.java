@@ -58,24 +58,29 @@ public class SumkLoaderListener implements ServletContextListener {
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		Log.get("sumk.http").debug("contextInitialized");
-		SumkServer.start(new String[] { StartConstants.NOJETTY });
-		if (!SumkServer.isHttpEnable()) {
-			return;
-		}
-		ServletContext context = sce.getServletContext();
-		addFilters(context);
-		addServlets(context);
-
-		String path = AppInfo.get("http.login.path", "/login");
-		if (IOC.getBeans(LoginServlet.class).size() > 0) {
-			String loginPath = (String) path;
-			if (!loginPath.startsWith("/")) {
-				loginPath = "/" + loginPath;
+		try {
+			SumkServer.start(new String[] { StartConstants.NOJETTY });
+			if (!SumkServer.isHttpEnable()) {
+				return;
 			}
-			Log.get("sumk.http").info("login path:{}", context.getContextPath() + loginPath);
-			context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
+			ServletContext context = sce.getServletContext();
+			addFilters(context);
+			addServlets(context);
+
+			String path = AppInfo.get("http.login.path", "/login");
+			if (IOC.getBeans(LoginServlet.class).size() > 0) {
+				String loginPath = path;
+				if (!loginPath.startsWith("/")) {
+					loginPath = "/" + loginPath;
+				}
+				Log.get("sumk.http").info("login path:{}", context.getContextPath() + loginPath);
+				context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
+			}
+			addListeners(context);
+		} catch (Exception e) {
+			Log.get("sumk.http").error(e.getMessage(), e);
+			throw e;
 		}
-		addListeners(context);
 	}
 
 	private void addServlets(ServletContext context) {
@@ -90,8 +95,11 @@ public class SumkLoaderListener implements ServletContextListener {
 				name = bean.getClass().getSimpleName();
 			}
 			ServletRegistration.Dynamic dynamic = context.addServlet(name, bean);
+			dynamic.setAsyncSupported(sumk.asyncSupported());
 			dynamic.setLoadOnStartup(sumk.loadOnStartup());
 			dynamic.addMapping(sumk.value());
+			Log.get("sumk.http").trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
+					Arrays.toString(sumk.value()));
 		}
 	}
 
@@ -109,8 +117,9 @@ public class SumkLoaderListener implements ServletContextListener {
 			if (name.isEmpty()) {
 				name = bean.getClass().getSimpleName();
 			}
-			Log.get("sumk.http").trace("add web filter : {} - {}", name, sumk.getClass().getSimpleName());
+			Log.get("sumk.http").trace("add web filter : {} - {}", name, bean.getClass().getSimpleName());
 			FilterRegistration.Dynamic r = context.addFilter(name, bean);
+			r.setAsyncSupported(sumk.asyncSupported());
 			DispatcherType[] type = sumk.dispatcherType();
 			EnumSet<DispatcherType> types = null;
 			if (type.length > 0) {

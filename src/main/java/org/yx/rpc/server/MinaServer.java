@@ -33,7 +33,7 @@ import org.yx.log.Log;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 
-public class ServerListener implements Runnable {
+public class MinaServer implements Runnable {
 
 	private Logger logger = Log.get(this.getClass());
 	private int port;
@@ -51,14 +51,14 @@ public class ServerListener implements Runnable {
 		this.useExcutor = useExcutor;
 	}
 
-	public ServerListener(String host, int port, List<RequestHandler> handlers) {
+	public MinaServer(String host, int port, List<RequestHandler> handlers) {
 		super();
 		this.port = port;
 		this.host = host;
 		this.handler = new ServerHandler(handlers);
 	}
 
-	public ServerListener(int port, List<RequestHandler> handlers) {
+	public MinaServer(int port, List<RequestHandler> handlers) {
 		super();
 		this.port = port;
 		this.handler = new ServerHandler(handlers);

@@ -17,11 +17,10 @@ package org.yx.redis;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SingleResourceLoader;
@@ -30,27 +29,24 @@ import org.yx.util.Assert;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-import redis.clients.jedis.JedisPoolConfig;
-
 public class RedisLoader {
-	private static JedisPoolConfig defaultConfig = null;
+	private static GenericObjectPoolConfig defaultConfig = null;
 
-	public static JedisPoolConfig getDefaultConfig() {
+	public static GenericObjectPoolConfig getDefaultConfig() {
 		return defaultConfig;
 	}
 
-	public static void setDefaultConfig(JedisPoolConfig defaultConfig) {
+	public static void setDefaultConfig(GenericObjectPoolConfig defaultConfig) {
 		RedisLoader.defaultConfig = defaultConfig;
 	}
 
-	private static final String SLAVE_PRE = "slave.";
 	private static final String REDIS_FILE = "redis.properties";
 
 	public static void init() throws Exception {
 		try {
 			loadRedisByConfig();
 		} catch (Exception e) {
-			Log.get("sumk.redis").error("can not load redis config,normal is in {}", REDIS_FILE);
+			Log.get(Redis.LOG_NAME).error("can not load redis config,normal is in {}", REDIS_FILE);
 			throw e;
 		}
 	}
@@ -73,17 +69,13 @@ public class RedisLoader {
 			return;
 		}
 		Map<String, String> p = CollectionUtil.loadMap(in);
-		Log.get("sumk.redis").debug("config:{}", p);
+		Log.get(Redis.LOG_NAME).debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {
 			if (StringUtil.isEmpty(kk)) {
 				continue;
 			}
 			String v = p.get(kk);
-			if (kk.startsWith(SLAVE_PRE)) {
-				createReadRedis(kk.substring(SLAVE_PRE.length()), v.replace('，', ',').split(","));
-				continue;
-			}
 			Redis redis = create(v);
 			String[] moduleKeys = kk.replace('，', ',').split(",");
 			for (String key : moduleKeys) {
@@ -103,35 +95,9 @@ public class RedisLoader {
 		}
 	}
 
-	private static void createReadRedis(String host, String[] redisParams) throws Exception {
-		if (StringUtil.isEmpty(host) || redisParams.length == 0 || !host.contains(":")) {
-			return;
-		}
-		List<RedisParamter> list = new ArrayList<>();
-		for (String param : redisParams) {
-			param = param.trim();
-			if (StringUtil.isEmpty(param)) {
-				continue;
-			}
-			list.add(createParam(param));
-		}
-		if (list.isEmpty()) {
-			return;
-		}
-		RedisPool.attachRead(host, list.toArray(new RedisParamter[list.size()]));
-	}
-
 	private static RedisParamter createParam(String v) throws Exception {
 		String[] params = v.split("#");
-		String ip = params[0];
-		RedisParamter param;
-		if (ip.contains(":")) {
-			String[] addr = ip.split(":");
-			ip = addr[0];
-			param = RedisParamter.create(ip, Integer.parseInt(addr[1]));
-		} else {
-			param = RedisParamter.create(ip);
-		}
+		RedisParamter param = RedisParamter.create(params[0]);
 		if (params.length > 1 && !StringUtil.isEmpty(params[1])) {
 			param.setDb(Integer.parseInt(params[1]));
 		}

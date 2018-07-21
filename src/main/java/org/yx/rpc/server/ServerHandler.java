@@ -21,11 +21,13 @@ import java.util.List;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcCode;
+import org.yx.rpc.codec.Request;
 import org.yx.util.GsonUtil;
 
 public class ServerHandler extends IoHandlerAdapter {
@@ -84,6 +86,11 @@ public class ServerHandler extends IoHandlerAdapter {
 	public void messageReceived(IoSession session, Object message) throws Exception {
 
 		try {
+			if (Request.class.isInstance(message)) {
+				Request req = (Request) message;
+				ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(), ThreadContext.get().isTest())
+						.userId(req.getUserId());
+			}
 			for (RequestHandler h : handlers) {
 				if (h.accept(message)) {
 					Object ret = h.received(message);

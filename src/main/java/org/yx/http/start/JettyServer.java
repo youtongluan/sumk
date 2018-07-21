@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.servlet.ServletContextListener;
 
+import org.eclipse.jetty.server.ConnectionFactory;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
@@ -42,13 +43,29 @@ import org.yx.util.StringUtil;
 
 public class JettyServer implements Plugin {
 
-	private final int port;
-	private Server server;
+	protected final int port;
+	protected Server server;
 	private boolean started = false;
 
 	public JettyServer(int port) {
-		super();
 		this.port = port;
+	}
+
+	protected ConnectionFactory[] getConnectionFactorys() throws Exception {
+		return new ConnectionFactory[] { new HttpConnectionFactory() };
+	}
+
+	protected ServerConnector createConnector() throws Exception {
+
+		ServerConnector connector = new ServerConnector(server, null, null, null,
+				AppInfo.getInt("http.connector.acceptors", 0), AppInfo.getInt("http.connector.selectors", 5),
+				getConnectionFactorys());
+		connector.setReuseAddress(AppInfo.getBoolean("http.reuseAddr", false));
+		int backlog = AppInfo.getInt("http.backlog", 0);
+		if (backlog > 0) {
+			connector.setAcceptQueueSize(backlog);
+		}
+		return connector;
 	}
 
 	@Override
@@ -58,16 +75,13 @@ public class JettyServer implements Plugin {
 		}
 		try {
 			server = new Server(new ExecutorThreadPool(SumkThreadPool.EXECUTOR));
-			ServerConnector connector = new ServerConnector(server, null, null, null,
-					AppInfo.getInt("http.connector.acceptors", 0), AppInfo.getInt("http.connector.selectors", 5),
-					new HttpConnectionFactory());
+			ServerConnector connector = this.createConnector();
 			Log.get("sumk.http").info("listen port：" + port);
 			String host = AppInfo.get("http.host");
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);
 			}
 			connector.setPort(port);
-			connector.setReuseAddress(true);
 
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = createServletContextHandler();

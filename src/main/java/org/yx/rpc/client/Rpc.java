@@ -38,7 +38,7 @@ public final class Rpc {
 		}
 		try {
 			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
-			String zkUrl = AppInfo.getZKUrl();
+			String zkUrl = AppInfo.getClinetZKUrl();
 			Log.get("sumk.rpc").info("zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();
 			strated = true;
@@ -56,6 +56,7 @@ public final class Rpc {
 		String sn = UUIDSeed.random();
 		ThreadContext context = ThreadContext.get();
 		req.setFullSn(sn, context.rootSn(), context.contextSn());
+		req.setUserId(context.userId());
 		req.setApi(method);
 		req.setSrc(AppInfo.appId());
 		return req;

@@ -25,6 +25,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.rpc.Host;
@@ -35,11 +36,23 @@ public class ReqSession {
 
 	protected volatile IoSession session;
 
-	private NioSocketConnector connector;
+	private static NioSocketConnector connector;
 	private Host addr;
 	private final Lock lock = new ReentrantLock();
-
 	private static final int CONNECT_TIMEOUT = AppInfo.getInt("soa.connect.timeout", 5000);
+
+	static {
+		try {
+			connector = new NioSocketConnector();
+			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
+			connector.setHandler(new ClientHandler());
+			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+			connector.getFilterChain().addLast("exec", new ExecutorFilter(SoaExcutors.CLINET));
+		} catch (Exception e) {
+			Log.get("sumk.rpc").error(e.getMessage(), e);
+			StartContext.startFail();
+		}
+	}
 
 	private boolean ensureSession() {
 		if (session != null && !session.isClosing()) {
@@ -67,14 +80,6 @@ public class ReqSession {
 	}
 
 	private void connect() throws InterruptedException {
-		if (connector == null || connector.isDisposing() || connector.isDisposed()) {
-			Log.get("sumk.rpc").debug("create connector for {}", addr);
-			connector = new NioSocketConnector(1);
-			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
-			connector.setHandler(new ClientHandler());
-			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
-			connector.getFilterChain().addLast("exec", new ExecutorFilter(SoaExcutors.CLINET));
-		}
 
 		if (session == null || session.isClosing()) {
 			Log.get("sumk.rpc").debug("create session for {}", addr);

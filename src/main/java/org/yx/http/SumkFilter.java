@@ -40,4 +40,6 @@ public @interface SumkFilter {
 	 * @return true表示往后面添加
 	 */
 	boolean isMatchAfter() default true;
+
+	boolean asyncSupported() default true;
 }
