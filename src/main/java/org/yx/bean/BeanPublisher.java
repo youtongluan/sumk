@@ -47,7 +47,7 @@ public final class BeanPublisher {
 
 	public static synchronized void publishBeans(List<String> packageNames) {
 		if (packageNames == null || packageNames.isEmpty()) {
-			Log.get("sumk.SYS").info("sumk.ioc in app.properties cannot be empty");
+			Log.get("sumk.SYS").error("sumk.ioc in app.properties cannot be empty");
 			return;
 		}
 		if (!packageNames.contains(StartConstants.INNER_PACKAGE)) {

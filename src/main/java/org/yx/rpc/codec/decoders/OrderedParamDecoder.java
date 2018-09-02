@@ -32,9 +32,7 @@ public class OrderedParamDecoder implements SumkMinaDecoder {
 		String argLength = message.substring(0, 2);
 		message = message.substring(2);
 		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
-		if (msgs.length < 2) {
-			throw new ProtocolDecoderException("error ordered param req");
-		}
+
 		Request req = GsonUtil.fromJson(msgs[0], Request.class);
 		int len = Integer.parseInt(argLength);
 		if (len > 0) {

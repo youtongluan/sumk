@@ -23,7 +23,7 @@ import org.yx.conf.AppInfo;
 public class HttpSettings {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-	public static final int ERROR_HTTP_STATUS = 499;
+	public static final int ERROR_HTTP_STATUS = AppInfo.getInt("http.errorcode", 499);
 
 	public static boolean isCookieEnable() {
 		return AppInfo.getBoolean("http.header.usecookie", true);

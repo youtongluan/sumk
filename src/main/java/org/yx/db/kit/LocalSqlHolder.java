@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.bean.Loader;
+import org.yx.common.LogType;
 import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
@@ -37,7 +38,7 @@ public class LocalSqlHolder {
 			loadSql(loader);
 			startListen(loader);
 		} catch (Throwable e) {
-			Log.printStack(e);
+			Log.printStack(LogType.SQL_ERROR, e);
 		}
 	}
 
@@ -55,7 +56,7 @@ public class LocalSqlHolder {
 				Log.get("sumk.sql").info("local sql changed at {}", DateUtil.toDateTimeString(new Date()));
 				loadSql(load);
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack(LogType.SQL_ERROR, e);
 			}
 		});
 	}
@@ -77,7 +78,7 @@ public class LocalSqlHolder {
 						}
 					});
 				} catch (IOException e) {
-					Log.printStack(e);
+					Log.printStack(LogType.SQL_ERROR, e);
 				}
 			});
 		}

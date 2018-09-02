@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.log.Log;
 
 public class HttpLoginWrapper extends HttpServlet {
@@ -37,7 +37,7 @@ public class HttpLoginWrapper extends HttpServlet {
 	private Map<String, LoginServlet> servs = new HashMap<>();
 
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		String type = HttpUtil.getType(req);
+		String type = InnerHttpUtil.getType(req);
 		LoginServlet s = servs.get(type);
 		if (s != null) {
 			s.service(req, resp);

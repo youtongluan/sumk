@@ -20,15 +20,36 @@ import java.sql.SQLException;
 
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.yx.db.DBType;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public class DataSourceWraper extends BasicDataSource {
 
 	public DataSourceWraper(String name, String type) {
 		this.name = name;
-		this.type = DBType.parseFromConfigFile(type);
+		this.type = parseFromConfigFile(type);
 		if (!this.type.isWritable()) {
 			this.setDefaultReadOnly(true);
+		}
+	}
+
+	private static DBType parseFromConfigFile(String type) {
+		String type2 = type.toLowerCase();
+		switch (type2) {
+		case "w":
+		case "write":
+			return DBType.WRITE;
+		case "r":
+		case "read":
+		case "readonly":
+			return DBType.READ;
+		case "wr":
+		case "rw":
+		case "any":
+			return DBType.ANY;
+		default:
+			SumkException.throwException(2342312, type + " is not correct db type");
+			return null;
 		}
 	}
 

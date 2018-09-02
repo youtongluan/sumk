@@ -34,22 +34,25 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import javax.sql.DataSource;
-
 import org.yx.common.ThreadContext;
 
 public class ConnectionWrapper implements Connection {
 
 	private Connection inner;
 
-	private DataSource dataSource;
+	private DataSourceWraper dataSource;
 
-	public ConnectionWrapper(Connection inner, DataSource ds) {
+	@Override
+	public boolean isReadOnly() {
+		return !this.dataSource.getType().isWritable();
+	}
+
+	public ConnectionWrapper(Connection inner, DataSourceWraper ds) {
 		this.inner = inner;
 		this.dataSource = ds;
 	}
 
-	public DataSource getDataSource() {
+	public DataSourceWraper getDataSource() {
 		return dataSource;
 	}
 
@@ -151,11 +154,6 @@ public class ConnectionWrapper implements Connection {
 	@Override
 	public void setReadOnly(boolean readOnly) throws SQLException {
 		inner.setReadOnly(readOnly);
-	}
-
-	@Override
-	public boolean isReadOnly() throws SQLException {
-		return inner.isReadOnly();
 	}
 
 	@Override

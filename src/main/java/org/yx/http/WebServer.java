@@ -45,4 +45,9 @@ public class WebServer extends AbstractHttpServer {
 		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.inst.handle(wc);
 	}
+
+	@Override
+	protected ActParser getParser() {
+		return ActParser.paramterActParser;
+	}
 }

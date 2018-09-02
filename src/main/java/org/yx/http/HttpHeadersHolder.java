@@ -76,7 +76,7 @@ public final class HttpHeadersHolder {
 	}
 
 	public static String getType() {
-		return HttpUtil.getType(_req.get());
+		return InnerHttpUtil.getType(_req.get());
 	}
 
 	static void remove() {

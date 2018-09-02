@@ -17,7 +17,7 @@ package org.yx.util.secury;
 
 public class EncryUtil {
 
-	private static Encry encry = new FastEncry();
+	private static Encry encry = new AESEncry();
 
 	public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
 		return encry.encrypt(contentBytes, key);

@@ -15,10 +15,24 @@
  */
 package org.yx.rpc;
 
-public final class RpcUtils {
+import org.yx.common.ThreadContext;
 
-	public static String getAppId(String method) {
-		int k = method.indexOf(".");
-		return k > 0 ? method.substring(0, k) : method;
+public final class RpcUtil {
+
+	public static String userId() {
+		return ThreadContext.get().userId();
+	}
+
+	public static void setUserId(String userId) {
+		ThreadContext.get().userId(userId);
+	}
+
+	public static boolean setUserIdIfEmpty(String userId) {
+		ThreadContext tc = ThreadContext.get();
+		if (tc.userId() == null) {
+			tc.userId(userId);
+			return true;
+		}
+		return false;
 	}
 }

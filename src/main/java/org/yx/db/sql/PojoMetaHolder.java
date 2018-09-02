@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.ibatis.javassist.Modifier;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.Table;
 import org.yx.exception.SumkException;
@@ -69,7 +70,13 @@ public class PojoMetaHolder {
 		while (clz != Object.class) {
 			Field[] fields = clz.getDeclaredFields();
 			for (Field f : fields) {
-				map.putIfAbsent(f.getName(), f);
+				int modify = f.getModifiers();
+				if (Modifier.isStatic(modify) || Modifier.isFinal(modify)) {
+					continue;
+				}
+				if (map.putIfAbsent(f.getName(), f) != null) {
+					continue;
+				}
 			}
 			clz = clz.getSuperclass();
 		}

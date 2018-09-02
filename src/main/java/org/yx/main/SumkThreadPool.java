@@ -15,6 +15,7 @@
  */
 package org.yx.main;
 
+import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -53,26 +54,30 @@ public class SumkThreadPool {
 				});
 	}
 
-	public static synchronized void runDeamon(Deamon runnable, String threadName) {
+	public static synchronized void runDeamon(Deamon deamon, String threadName) {
 		if (SumkServer.isDestoryed()) {
 			return;
 		}
 		Runnable r = () -> {
 			while (true) {
-				try {
-					if (SumkServer.isDestoryed()) {
-						break;
-					}
-					if (!runnable.run()) {
-						break;
-					}
-				} catch (InterruptedException e1) {
+				if (SumkServer.isDestoryed()) {
 					try {
-						runnable.run();
+						Thread.interrupted();
+						deamon.close();
 					} catch (Exception e) {
-						Log.printStack(e);
+						Log.get("sumk.log").trace(e.getMessage(), e);
+					}
+					break;
+				}
+				try {
+					if (!deamon.run()) {
+						break;
 					}
 				} catch (Exception e) {
+					if (InterruptedException.class.isInstance(e) || ClosedByInterruptException.class.isInstance(e)) {
+						Thread.interrupted();
+						continue;
+					}
 					Log.printStack(e);
 				}
 			}
@@ -88,6 +93,12 @@ public class SumkThreadPool {
 		scheduledExecutor.shutdown();
 		EXECUTOR.shutdown();
 		deamonThreads.forEach(Thread::interrupt);
+		deamonThreads.forEach(t -> {
+			try {
+				t.join(2000);
+			} catch (InterruptedException e) {
+			}
+		});
 		deamonThreads.clear();
 	}
 }

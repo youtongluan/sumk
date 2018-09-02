@@ -31,7 +31,7 @@ import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
-public final class HttpUtil {
+public final class InnerHttpUtil {
 	static final int MAXLENGTH = 1024 * 1024 * 100;
 
 	public static String getType(HttpServletRequest req) {

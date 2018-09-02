@@ -15,17 +15,12 @@
  */
 package org.yx.common;
 
-public abstract class StartConstants {
+import org.slf4j.Logger;
+import org.yx.log.Log;
 
-	public static final String INNER_PACKAGE = String.join(".", "o" + "r" + "g", "y" + "x");
-	public static final String IOC_PACKAGES = "sumk.ioc";
-	public static final String SOA_PACKAGES = "soa";
-	public static final String HTTP_PACKAGES = "http";
-	public static final String SOA_PORT = "soa.port";
-	public static final String HTTP_PORT = "http.port";
-
-	public static final String NOSOA = "nosoa";
-	public static final String NOSOA_ClIENT = "nosoaClient";
-	public static final String NOHTTP = "nohttp";
-	public static final String NOJETTY = "sumk.http.nojetty";
+public class LogType {
+	public static final String SQL_ERROR = "sumk.sql.error";
+	public static final Logger SQL_LOG = Log.get("sumk.sql");
+	public static final Logger RPC_LOG = Log.get("sumk.rpc");
+	public static final Logger HTTP_LOG = Log.get("sumk.http");
 }

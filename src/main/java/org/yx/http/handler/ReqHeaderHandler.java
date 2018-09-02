@@ -21,7 +21,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.Web;
 
 public class ReqHeaderHandler implements HttpHandler {
@@ -34,7 +34,7 @@ public class ReqHeaderHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		HttpServletRequest req = ctx.httpRequest();
-		ctx.charset(HttpUtil.charset(req));
+		ctx.charset(InnerHttpUtil.charset(req));
 		ctx.sign(req.getParameter("sign"));
 		String data = req.getParameter("data");
 		if (data != null) {

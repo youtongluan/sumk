@@ -129,7 +129,7 @@ public class BeanPool {
 		synchronized (this) {
 			if (!oldWrapper.getClass().isArray()) {
 				if (clz == this.getBeanClass(oldWrapper)) {
-					Log.get(this.getClass(), "put").info("{}={} duplicate,will be ignored", name, clz.getName());
+					Log.get(this.getClass()).debug("{}={} duplicate,will be ignored", name, clz.getName());
 					return;
 				}
 				map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
@@ -138,7 +138,7 @@ public class BeanPool {
 			BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
 			for (BeanWrapper o : objs) {
 				if (clz == this.getBeanClass(o)) {
-					Log.get(this.getClass(), "put").info("{}={} duplicate,will be ignored.", name, clz.getName());
+					Log.get(this.getClass()).debug("{}={} duplicate,will be ignored.", name, clz.getName());
 					return;
 				}
 			}

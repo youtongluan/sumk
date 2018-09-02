@@ -55,7 +55,7 @@ class SoaFactory {
 		String classFullName = clz.getName();
 		for (final Method m : actMethods) {
 			Soa act = m.getAnnotation(Soa.class);
-			String soaName = nameResolver.solve(clz, m, act.value());
+			String soaName = nameResolver.solve(clz, m, act);
 			if (RpcActionHolder.getActionNode(soaName) != null) {
 				RpcActionNode node = RpcActionHolder.getActionNode(soaName);
 				Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",

@@ -27,7 +27,7 @@ import org.yx.http.ErrorCode;
 import org.yx.http.HttpHeader;
 import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
@@ -43,15 +43,15 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 		try {
 			LoginObject obj = login(sid, user, req);
 
-			Charset charset = HttpUtil.charset(req);
+			Charset charset = InnerHttpUtil.charset(req);
 			if (obj == null) {
 				Log.get("sumk.loginAction").info(user + ":login Object must not be null");
-				HttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
+				InnerHttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
 				Log.get("sumk.loginAction").debug(user + ":" + obj.getErrorMsg());
-				HttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
+				InnerHttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
 			byte[] key = createEncryptKey(req);

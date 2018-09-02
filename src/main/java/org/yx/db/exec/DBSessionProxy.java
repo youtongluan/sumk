@@ -16,6 +16,7 @@
 package org.yx.db.exec;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import org.yx.db.DBAction;
@@ -52,6 +53,23 @@ public class DBSessionProxy implements DBAction {
 				dbCtx.rollback();
 			}
 			throw e;
+		} finally {
+			if (dbCtx != null) {
+				dbCtx.close();
+			}
+		}
+	}
+
+	public void execInAutoCommit(DBExecutor executor) throws Exception {
+		try {
+			ExeContext context = new ExeContext();
+			context.param = container.getParam();
+			context.action = this;
+			dbCtx = ConnectionPool.create(container.getDb(), dbType);
+			Connection conn = dbCtx.getDefaultconnection();
+			conn.setAutoCommit(true);
+			executor.exec(context);
+			this.container.result = context.getResult();
 		} finally {
 			if (dbCtx != null) {
 				dbCtx.close();

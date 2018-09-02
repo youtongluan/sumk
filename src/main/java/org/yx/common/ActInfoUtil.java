@@ -16,6 +16,7 @@
 package org.yx.common;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -40,6 +41,9 @@ public class ActInfoUtil {
 
 			Field[] fs = tempClz.getDeclaredFields();
 			for (Field f : fs) {
+				if (Modifier.isStatic(f.getModifiers())) {
+					continue;
+				}
 				map.putIfAbsent(f.getName(), describe(f.getType()));
 			}
 			tempClz = tempClz.getSuperclass();

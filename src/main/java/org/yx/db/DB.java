@@ -115,10 +115,12 @@ public class DB {
 	}
 
 	public static void commit() throws SQLException {
-		ConnectionPool.get().commit();
+		ConnectionPool pool = ConnectionPool.get();
+		pool.commit();
 	}
 
 	public static void rollback() throws SQLException {
-		ConnectionPool.get().rollback();
+		ConnectionPool pool = ConnectionPool.get();
+		pool.rollback();
 	}
 }

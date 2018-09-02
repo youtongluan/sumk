@@ -18,16 +18,33 @@ package org.yx.rpc.server.start;
 import java.lang.reflect.Method;
 
 import org.yx.conf.AppInfo;
+import org.yx.rpc.Soa;
 
 class SoaNameResolver {
 
-	public String solve(Class<?> clz, Method m, String soaName) {
+	private String groupId;
+	private String appId;
+
+	SoaNameResolver() {
+		groupId = AppInfo.groupId();
+		appId = AppInfo.appId();
+	}
+
+	public String solve(Class<?> clz, Method m, Soa soa) {
+		String soaName = soa.value();
 		if (soaName != null) {
 			soaName = soaName.trim();
 			if (soaName.length() > 0) {
-				return soaName;
+				StringBuilder sb = new StringBuilder();
+				if (soa.groupPrefix()) {
+					sb.append(this.groupId).append('.');
+				}
+				if (soa.appIdPrefix()) {
+					sb.append(this.appId).append('.');
+				}
+				return sb.append(soaName).toString();
 			}
 		}
-		return AppInfo.groupId() + "." + AppInfo.appId() + "." + m.getName();
+		return String.join(".", groupId, appId, m.getName());
 	}
 }

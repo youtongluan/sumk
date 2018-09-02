@@ -89,10 +89,14 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	protected CharSequence buildField() {
-		if (this.selectColumns != null && this.selectColumns.size() > 0) {
-			return String.join(",", this.selectColumns.toArray(new String[this.selectColumns.size()]));
-		}
 		StringJoiner sj = new StringJoiner(",");
+		if (this.selectColumns != null && this.selectColumns.size() > 0) {
+			for (String filedName : this.selectColumns) {
+				ColumnMeta cm = pojoMeta.getByFieldName(filedName);
+				sj.add(cm.dbColumn);
+			}
+			return sj.toString();
+		}
 		for (ColumnMeta cm : this.pojoMeta.fieldMetas) {
 			sj.add(cm.dbColumn);
 		}

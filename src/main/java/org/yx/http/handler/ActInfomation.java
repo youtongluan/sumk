@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.bean.Bean;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.SumkServlet;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.util.GsonUtil;
@@ -45,8 +45,8 @@ public class ActInfomation extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setCharacterEncoding("UTF-8");
-		HttpUtil.noCache(resp);
+		InnerHttpUtil.noCache(resp);
+		resp.setContentType("text/html;charset=UTF-8");
 		String md5 = AppInfo.get("sumk.acts.md5", "61C72B1CE5858D83C90BA7B5B1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
@@ -60,17 +60,25 @@ public class ActInfomation extends HttpServlet {
 		if ("1".equals(req.getParameter("pretty"))) {
 			builder.setPrettyPrinting();
 		}
+		String ln = req.getParameter("ln");
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
 			List<Map<String, Object>> list = HttpActionHolder.infos();
-			resp.getWriter().write(gson.toJson(list));
+			write(resp, gson.toJson(list), ln);
 			return;
 		}
 		if (mode.equals("rpc")) {
 			List<Map<String, Object>> list = RpcActionHolder.infos();
-			resp.getWriter().write(gson.toJson(list));
+			write(resp, gson.toJson(list), ln);
 			return;
 		}
 
+	}
+
+	private void write(HttpServletResponse resp, String msg, String ln) throws IOException {
+		if (ln != null) {
+			msg = msg.replace("\n", ln);
+		}
+		resp.getWriter().write(msg);
 	}
 }

@@ -17,7 +17,7 @@ package org.yx.http.handler;
 
 import org.yx.exception.BizException;
 import org.yx.http.ErrorCode;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.Web;
 
 public class ReqTypeChecker implements HttpHandler {
@@ -29,7 +29,7 @@ public class ReqTypeChecker implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		String type = HttpUtil.getType(ctx.httpRequest());
+		String type = InnerHttpUtil.getType(ctx.httpRequest());
 		if (!ctx.httpNode().acceptType(type)) {
 			BizException.throwException(ErrorCode.TYPE_ERROR, "客户端类别错误");
 		}

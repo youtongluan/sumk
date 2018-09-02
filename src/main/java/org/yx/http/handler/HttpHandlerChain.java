@@ -29,7 +29,7 @@ import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
 import org.yx.http.ErrorCode;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
 
@@ -155,7 +155,7 @@ public class HttpHandlerChain implements HttpHandler {
 			writer.close();
 			LOG_REQ.info(stringWriter.toString());
 		}
-		HttpUtil.error(ctx.httpResponse(), code, message, ctx.charset());
+		InnerHttpUtil.error(ctx.httpResponse(), code, message, ctx.charset());
 	}
 
 }

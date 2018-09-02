@@ -24,40 +24,26 @@ import org.yx.http.handler.HttpNode;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
-/**
- * 
- * @author Administrator
- */
 @Bean
-@SumkServlet(value = { "/upload/*" }, loadOnStartup = -1)
-public class UploadServer extends AbstractHttpServer {
+@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1)
+public class RestServer extends AbstractHttpServer {
 
-	private static final long serialVersionUID = 1L;
-	final static String MULTI = "multipart/form-data";
+	private static final long serialVersionUID = 7437235491L;
 
 	@Override
 	protected void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
-		if (HttpHandlerChain.upload == null) {
-			Log.get("sumk.http").error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
-			InnerHttpUtil.error(resp, ErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用", InnerHttpUtil.charset(req));
+		if (info.upload != null) {
+			Log.get(this.getClass()).error(act + " type error.It is not uploader");
 			return;
 		}
-		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
-			Log.get(this.getClass()).error("the MIME of act is " + MULTI + ",not " + req.getContentType());
-			return;
-		}
-		if (info.upload == null) {
 
-			Log.get(this.getClass()).error(act + " has error type, it must be have @Upload");
-			return;
-		}
 		WebContext wc = new WebContext(act, info, req, resp);
-		HttpHandlerChain.upload.handle(wc);
+		HttpHandlerChain.inst.handle(wc);
 	}
 
 	@Override
 	protected ActParser getParser() {
-		return ActParser.paramterActParser;
+		return ActParser.pathActParser;
 	}
 }

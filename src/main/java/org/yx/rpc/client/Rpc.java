@@ -39,7 +39,7 @@ public final class Rpc {
 		try {
 			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
 			String zkUrl = AppInfo.getClinetZKUrl();
-			Log.get("sumk.rpc").info("zkUrl:{}", zkUrl);
+			Log.get("sumk.rpc").info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();
 			strated = true;
 		} catch (Exception e) {
@@ -73,7 +73,7 @@ public final class Rpc {
 	 * @param method
 	 *            注册的接口名称，如a.b.c
 	 * @param args
-	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
+	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型。
 	 * @return json格式的服务器响应结果
 	 * @throws org.yx.exception.SoaException
 	 *             rpc异常

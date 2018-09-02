@@ -19,4 +19,8 @@ package org.yx.common;
 public interface Deamon {
 
 	boolean run() throws Exception;
+
+	default void close() throws Exception {
+
+	}
 }

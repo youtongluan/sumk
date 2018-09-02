@@ -33,23 +33,22 @@ public class ThreadInfoAction extends HttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;
 
-
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		ThreadPoolExecutor pool = (ThreadPoolExecutor) SumkThreadPool.EXECUTOR;
-		String line=req.getParameter("line");
-		if(line==null || line.isEmpty()){
-			line="\n";
+		String line = req.getParameter("line");
+		if (line == null || line.isEmpty()) {
+			line = "\n";
 		}
-		StringBuilder sb=new StringBuilder();
+		StringBuilder sb = new StringBuilder();
 		sb.append("active thread:").append(pool.getActiveCount());
-		sb.append(", thread count:"+pool.getPoolSize());
-		sb.append(", queue:"+pool.getQueue().size());
+		sb.append(", thread count:" + pool.getPoolSize());
+		sb.append(", queue:" + pool.getQueue().size());
 		sb.append(line);
-		sb.append("only for current threads:: commited task:"+pool.getTaskCount());
-		sb.append(", completed task:"+pool.getCompletedTaskCount());
-		if("1".equals(req.getParameter("full"))){
-			
+		sb.append("only for current threads:: commited task:" + pool.getTaskCount());
+		sb.append(", completed task:" + pool.getCompletedTaskCount());
+		if ("1".equals(req.getParameter("full"))) {
+
 			sb.append(line);
 			sb.append("max thread:").append(pool.getMaximumPoolSize());
 			sb.append(", idle timeout(ms):").append(pool.getKeepAliveTime(TimeUnit.MILLISECONDS));

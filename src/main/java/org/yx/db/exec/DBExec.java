@@ -28,6 +28,10 @@ public class DBExec {
 		exec(container, executor, DBType.WRITE);
 	}
 
+	public static void execInAutoCommit(ResultContainer container, DBExecutor executor) throws Exception {
+		DBSessionProxy.create(container, DBType.WRITE).execInAutoCommit(executor);
+	}
+
 	public static void execRWSplit(ResultContainer container, DBExecutor executor) throws Exception {
 		exec(container, executor, DBType.ANY);
 	}

@@ -66,12 +66,12 @@ public class Req {
 	public void setFullSn(String sn, String rootSn, String fatherSn) {
 		StringJoiner joiner = new StringJoiner(",");
 		joiner.add(sn);
-		if (rootSn == null) {
+		if (rootSn == null || rootSn.isEmpty()) {
 			this.n = joiner.toString();
 			return;
 		}
 		joiner.add(rootSn);
-		if (fatherSn == null) {
+		if (fatherSn == null || fatherSn.isEmpty()) {
 			this.n = joiner.toString();
 			return;
 		}

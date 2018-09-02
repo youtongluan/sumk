@@ -19,7 +19,7 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
 
@@ -41,7 +41,7 @@ public class ReqBodyHandler implements HttpHandler {
 		}
 		HttpServletRequest req = ctx.httpRequest();
 		InputStream in = req.getInputStream();
-		ctx.data(HttpUtil.extractData(in));
+		ctx.data(InnerHttpUtil.extractData(in));
 		return false;
 	}
 

@@ -31,10 +31,24 @@ import org.yx.bean.Bean;
 @Bean
 public @interface Soa {
 	/**
-	 * @return 服务名称，如果为空，就根据方法名获取
+	 * @return 服务名称，如果为空。发布的服务名称=groupId.appId.methodName
 	 */
 	String value() default "";
 
 	public String description() default "";
+
+	/**
+	 * 发布的服务名称是否加上groupId前缀，只在value不为空的时候才有作用
+	 * 
+	 * @return
+	 */
+	boolean groupPrefix() default false;
+
+	/**
+	 * 发布的服务名称是否加上appId前缀，只在value不为空的时候才有作用
+	 * 
+	 * @return
+	 */
+	boolean appIdPrefix() default false;
 
 }

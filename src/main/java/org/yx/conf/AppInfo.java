@@ -138,6 +138,18 @@ public final class AppInfo {
 		}
 	}
 
+	public static long getLong(String name, long defaultValue) {
+		String value = info.get(name);
+		if (value == null || value.length() == 0) {
+			return defaultValue;
+		}
+		try {
+			return Long.parseLong(value);
+		} catch (Exception e) {
+			return defaultValue;
+		}
+	}
+
 	public static Charset systemCharset() {
 
 		String charsetName = info == null ? null : info.get("sumk.charset");

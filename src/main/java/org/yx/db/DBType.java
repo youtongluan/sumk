@@ -15,8 +15,6 @@
  */
 package org.yx.db;
 
-import org.yx.exception.SumkException;
-
 public enum DBType {
 
 	WRITE(true, false),
@@ -26,26 +24,6 @@ public enum DBType {
 	READONLY(false, true),
 
 	ANY(true, true);
-
-	public static DBType parseFromConfigFile(String type) {
-		String type2 = type.toLowerCase();
-		switch (type2) {
-		case "w":
-		case "write":
-			return WRITE;
-		case "r":
-		case "read":
-		case "readonly":
-			return READ;
-		case "wr":
-		case "rw":
-		case "any":
-			return ANY;
-		default:
-			SumkException.throwException(2342312, type + " is not correct db type");
-			return null;
-		}
-	}
 
 	private boolean writable;
 	private boolean readable;

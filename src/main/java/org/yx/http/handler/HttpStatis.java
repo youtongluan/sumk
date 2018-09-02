@@ -32,7 +32,7 @@ import org.yx.common.ActStatis;
 import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.SumkServlet;
 import org.yx.util.StringUtil;
 import org.yx.util.secury.MD5Utils;
@@ -60,7 +60,7 @@ public class HttpStatis extends HttpServlet {
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setCharacterEncoding("UTF-8");
-		HttpUtil.noCache(resp);
+		InnerHttpUtil.noCache(resp);
 		String md5 = AppInfo.get("http.monitor", "61C72B1CE5858D83C90BA7B5B1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");

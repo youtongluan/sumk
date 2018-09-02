@@ -19,8 +19,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Savepoint;
 
-import javax.sql.DataSource;
-
 import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
 
@@ -33,7 +31,7 @@ public class SlaveConnectionWrapper extends ConnectionWrapper {
 		return new SlaveConnectionWrapper(write, write.getDataSource());
 	}
 
-	public SlaveConnectionWrapper(Connection write, DataSource ds) {
+	public SlaveConnectionWrapper(Connection write, DataSourceWraper ds) {
 		super(write, ds);
 	}
 

@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.common.LogType;
 import org.yx.common.ThreadContext;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
@@ -182,7 +183,7 @@ public final class ConnectionPool implements AutoCloseable {
 				Log.get("sumk.conn.close").trace("close write connection:{}", this.writeConn);
 				this.writeConn.close();
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack(LogType.SQL_ERROR, e);
 			}
 			this.writeConn = null;
 		}
@@ -191,7 +192,7 @@ public final class ConnectionPool implements AutoCloseable {
 				Log.get("sumk.conn.close").trace("close read connection:{}", this.readConn);
 				this.readConn.close();
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack(LogType.SQL_ERROR, e);
 			}
 			this.readConn = null;
 		}

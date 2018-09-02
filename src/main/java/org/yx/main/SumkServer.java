@@ -30,7 +30,6 @@ import org.yx.bean.ScanerFactorysBean;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.listener.Listener;
 import org.yx.log.Log;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtil;
@@ -64,7 +63,6 @@ public class SumkServer {
 		start(argSet);
 	}
 
-	@SuppressWarnings("rawtypes")
 	public static void start(Collection<String> args) {
 		synchronized (SumkServer.class) {
 			if (started) {
@@ -75,7 +73,7 @@ public class SumkServer {
 		try {
 			handleSystemArgs();
 			handleArgs(args);
-			BeanPublisher.addListeners((List<Listener>) new ScanerFactorysBean().create());
+			BeanPublisher.addListeners(new ScanerFactorysBean().create());
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
@@ -89,7 +87,8 @@ public class SumkServer {
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
-			if (AppInfo.getBoolean(StartConstants.SOA_PACKAGES + ".client.start", false)) {
+			if (StartContext.inst.get(StartConstants.NOSOA_ClIENT) == null
+					&& AppInfo.getBoolean(StartConstants.SOA_PACKAGES + ".client.start", false)) {
 				Rpc.init();
 			}
 
@@ -120,7 +119,7 @@ public class SumkServer {
 	}
 
 	private static List<String> allPackage(List<String> ps) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		for (String p : ps) {
 			if (StringUtil.isEmpty(p)) {
 				continue;

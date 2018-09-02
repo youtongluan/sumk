@@ -23,9 +23,23 @@ class HttpNameResolver {
 		if (name != null && name.length() > 0) {
 			name = name.trim();
 			if (name.length() > 0) {
+				name = name.replace('\\', '/');
+				if (name.contains("/")) {
+					return convertFromPath(name);
+				}
 				return name;
 			}
 		}
 		return m.getName();
+	}
+
+	private String convertFromPath(String path) {
+		while (path.endsWith("/") && path.length() > 0) {
+			path = path.substring(0, path.length() - 1);
+		}
+		while (path.startsWith("/") && path.length() > 0) {
+			path = path.substring(1);
+		}
+		return path.replace('/', '.');
 	}
 }

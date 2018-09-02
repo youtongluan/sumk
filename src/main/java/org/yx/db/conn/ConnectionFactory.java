@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.yx.common.LogType;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -88,7 +89,7 @@ public class ConnectionFactory {
 			Log.get("sumk.db").debug("{}", factory);
 			return factory;
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack(LogType.SQL_ERROR, e);
 			SumkException.throwException(100234325, "create factory failed");
 			return null;
 		}

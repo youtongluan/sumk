@@ -24,7 +24,7 @@ import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.yx.exception.HttpException;
-import org.yx.http.HttpUtil;
+import org.yx.http.InnerHttpUtil;
 import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.log.Log;
@@ -54,7 +54,7 @@ public class UploadHandler implements HttpHandler {
 			String name = fi.getName();
 			if (name == null) {
 				if ("data".equals(fi.getFieldName())) {
-					ctx.data(HttpUtil.extractData(fi.get()));
+					ctx.data(InnerHttpUtil.extractData(fi.get()));
 					continue;
 				}
 				continue;
