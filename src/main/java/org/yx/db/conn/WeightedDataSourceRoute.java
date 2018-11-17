@@ -21,7 +21,7 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.yx.util.WeightedRoute;
+import org.yx.common.route.WeightedRoute;
 
 class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
 

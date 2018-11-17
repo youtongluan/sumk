@@ -13,36 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.conn;
+package org.yx.common.lock;
 
-import javax.sql.DataSource;
+/**
+ * 分布式锁的钥匙
+ * 
+ * @author 游夏
+ *
+ */
+public interface Key extends AutoCloseable {
+	/**
+	 * @return 钥匙的Id，肯定不为空
+	 */
+	String getId();
 
-import org.yx.common.route.WeightedServer;
-import org.yx.exception.SumkException;
-
-class WeightedDS implements WeightedServer {
-
-	public WeightedDS(DataSource ds) {
-		super();
-		this.ds = ds;
-	}
-
-	private DataSource ds;
-	private int weight;
-
-	public DataSource getDs() {
-		return ds;
-	}
-
-	public int getWeight() {
-		return weight;
-	}
-
-	public void setWeight(int weight) {
-		if (weight < 0) {
-			SumkException.throwException(2454335, "db weight must big than or equals 0,but exact is " + weight);
-		}
-		this.weight = weight;
-	}
+	@Override
+	void close();
 
 }

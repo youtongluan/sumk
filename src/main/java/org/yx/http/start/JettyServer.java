@@ -18,6 +18,7 @@ package org.yx.http.start;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.List;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletContextListener;
 
@@ -74,7 +75,7 @@ public class JettyServer implements Plugin {
 			return;
 		}
 		try {
-			server = new Server(new ExecutorThreadPool(SumkThreadPool.EXECUTOR));
+			server = new Server(new ExecutorThreadPool((ThreadPoolExecutor) SumkThreadPool.EXECUTOR));
 			ServerConnector connector = this.createConnector();
 			Log.get("sumk.http").info("listen port：" + port);
 			String host = AppInfo.get("http.host");
@@ -103,7 +104,7 @@ public class JettyServer implements Plugin {
 			server.start();
 			started = true;
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.http", e);
 			System.exit(-1);
 		}
 

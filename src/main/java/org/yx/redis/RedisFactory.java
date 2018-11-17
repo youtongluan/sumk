@@ -63,7 +63,7 @@ public class RedisFactory {
 		return c;
 	}
 
-	public static Redis get(GenericObjectPoolConfig config, RedisParamter p) {
+	public static Redis get(GenericObjectPoolConfig<?> config, RedisParamter p) {
 		Assert.notNull(p, "redis paramter cannot be null");
 		if (p.getTryCount() < 1 || p.getTryCount() > 100) {
 			throw new SumkException(54354354, "tryCount必须介于0和100之间");

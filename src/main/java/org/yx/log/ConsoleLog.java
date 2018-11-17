@@ -15,10 +15,7 @@
  */
 package org.yx.log;
 
-import java.util.Date;
-
-import org.yx.util.DateUtil;
-import org.yx.util.date.SumkDate;
+import org.yx.util.SumkDate;
 
 public class ConsoleLog extends SumkLogger {
 
@@ -64,7 +61,7 @@ public class ConsoleLog extends SumkLogger {
 	@Override
 	protected void output(LogLevel methodLevel, String msg, Throwable e) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(DateUtil.toString(new Date(), SumkDate.DATE_TIME_MILS)).append(" [");
+		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ").append(shorter(name))
 				.append(" - ").append(msg);
 		System.err.print(sb.toString());
@@ -74,7 +71,7 @@ public class ConsoleLog extends SumkLogger {
 	private void show(LogLevel level, String msg, Object... args) {
 		msg = this.buildMessage(msg, args);
 		StringBuilder sb = new StringBuilder();
-		sb.append(DateUtil.toString(new Date(), SumkDate.DATE_TIME_MILS)).append(" [");
+		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ").append(shorter(name))
 				.append(" - ").append(msg);
 		System.out.println(sb.toString());

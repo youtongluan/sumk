@@ -77,9 +77,9 @@ public class HttpHandlerChain implements HttpHandler {
 					if (LOG.isTraceEnabled()) {
 						if (String.class.isInstance(ctx.data())) {
 							String s = ((String) ctx.data());
-							LOG.trace("{} with data:{}", h.getClass().getSimpleName(), s);
+							LOG.trace("{} - {} with data:{}", ctx.act(), h.getClass().getSimpleName(), s);
 						} else {
-							LOG.trace(h.getClass().getSimpleName());
+							LOG.trace("{} - {}", ctx.act(), h.getClass().getSimpleName());
 						}
 					}
 					if (h.handle(ctx)) {
@@ -95,24 +95,24 @@ public class HttpHandlerChain implements HttpHandler {
 			}
 
 			if (HttpException.class.isInstance(temp)) {
-				LOG_ERROR.error(temp.getMessage(), temp);
+				LOG_ERROR.error(msg(ctx, temp.getMessage()), temp);
 				error(ctx, -1013243, "data format error");
 				return true;
 			}
 			if (InvalidParamException.class.isInstance(temp)) {
-				LOG_ERROR.info(temp.getMessage(), temp);
+				LOG_ERROR.info(msg(ctx, temp.getMessage()), temp);
 				error(ctx, ErrorCode.VALIDATE_ERROR, temp.getMessage());
 				return true;
 			}
 			do {
 				if (BizException.class.isInstance(temp)) {
 					BizException be = (BizException) temp;
-					LOG_ERROR.info(temp.toString());
+					LOG_ERROR.info(msg(ctx, temp.toString()));
 					error(ctx, be.getCode(), be.getMessage());
 					return true;
 				}
 			} while ((temp = temp.getCause()) != null);
-			LOG_ERROR.error(e.getMessage(), e);
+			LOG_ERROR.error(msg(ctx, e.getMessage()), e);
 			error(ctx, -2343254, "请求出错");
 		} finally {
 			if (LOG_REQ.isDebugEnabled() && ctx.dataInString() != null) {
@@ -131,7 +131,7 @@ public class HttpHandlerChain implements HttpHandler {
 				writer.endObject();
 				writer.flush();
 				writer.close();
-				LOG_REQ.debug(stringWriter.toString());
+				LOG_REQ.debug(msg(ctx, stringWriter.toString()));
 			}
 			UploadFileHolder.remove();
 			actStatic.visit(ctx.act(), System.currentTimeMillis() - begin, success);
@@ -139,11 +139,17 @@ public class HttpHandlerChain implements HttpHandler {
 		return true;
 	}
 
+	private String msg(WebContext ctx, String message) {
+		StringBuilder sb = new StringBuilder();
+		return sb.append("[").append(ctx.act()).append("] ").append(message).toString();
+	}
+
 	private void error(WebContext ctx, int code, String message) throws UnsupportedEncodingException, IOException {
 		if (LOG_REQ.isInfoEnabled()) {
 			StringWriter stringWriter = new StringWriter();
 			JsonWriter writer = new JsonWriter(stringWriter);
 			writer.beginObject();
+			writer.name("act").value(ctx.act());
 			String data = ctx.dataInString();
 			if (data != null) {
 				writer.name("req").value(data);

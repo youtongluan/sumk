@@ -15,15 +15,18 @@
  */
 package org.yx.rpc.client;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.mina.core.future.WriteFuture;
+import org.yx.common.LogType;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
-import org.yx.log.Log;
 import org.yx.rpc.Host;
 import org.yx.rpc.RpcCode;
+import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.Routes;
 import org.yx.rpc.client.route.RpcRoute;
 import org.yx.util.Assert;
@@ -42,10 +45,24 @@ public final class Sender {
 
 	private long totalStart;
 
+	private Host[] directUrls;
+
+	private boolean backup;
+	private static AtomicInteger counter = new AtomicInteger();
 	private Consumer<RpcResult> callback;
 
 	Sender(String api) {
 		this.api = api;
+	}
+
+	public Sender directUrls(Host... urls) {
+		this.directUrls = urls;
+		return this;
+	}
+
+	public Sender backup(boolean backup) {
+		this.backup = backup;
+		return this;
 	}
 
 	public Sender totalTimeout(int timeout) {
@@ -74,7 +91,7 @@ public final class Sender {
 		return this;
 	}
 
-	public Sender callInMap(Map<String, ?> map) {
+	public Sender paramInMap(Map<String, ?> map) {
 		this.params = GsonUtil.toJson(map);
 		this.paramType = ParamType.JSON;
 		return this;
@@ -86,7 +103,7 @@ public final class Sender {
 	 * @return 用无论是否成功，都会返回future。如果失败的话，异常包含在future中。<BR>
 	 *         通信异常是SoaException；如果是业务类异常，则是BizException
 	 */
-	public RpcFuture send() {
+	public RpcFuture execute() {
 		Assert.notEmpty(api, "api cannot be empty");
 		Assert.notNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
@@ -102,20 +119,49 @@ public final class Sender {
 		RpcFuture f = sendAsync(req, this.totalStart + this.totalTimeout);
 		if (f.getClass() == ErrorRpcFuture.class) {
 			ErrorRpcFuture errorFuture = ErrorRpcFuture.class.cast(f);
-			errorFuture.locker.wakeup(errorFuture.rpcResult());
+			RpcLocker locker = errorFuture.locker;
+			LockHolder.remove(locker.req.getSn());
+			locker.wakeup(errorFuture.rpcResult());
 		}
 		return f;
 	}
 
+	private Host useDirectUrl() {
+		int index = counter.incrementAndGet();
+		if (index < 0) {
+			counter.set((int) (System.nanoTime() & 0xff));
+			index = counter.incrementAndGet();
+		}
+		for (int i = 0; i < this.directUrls.length; i++) {
+			index %= directUrls.length;
+			Host url = this.directUrls[index];
+			if (!HostChecker.get().isDowned(url)) {
+				return url;
+			}
+		}
+		return null;
+	}
+
 	private RpcFuture sendAsync(Req req, long endTime) {
 		String api = req.getApi();
-		RpcRoute route = Routes.getRoute(api);
 		final RpcLocker locker = new RpcLocker(req, callback);
-		if (route == null) {
-			SoaException ex = new SoaException(RpcCode.NO_ROUTE, "can not find route for " + api, (String) null);
-			return new ErrorRpcFuture(ex, locker);
+		Host url = null;
+		if (this.directUrls != null && this.directUrls.length > 0) {
+			url = useDirectUrl();
+			if (url == null && !this.backup) {
+				SoaException ex = new SoaException(RpcCode.NO_NODE_AVAILABLE,
+						"all directUrls is disabled:" + Arrays.toString(this.directUrls), (String) null);
+				return new ErrorRpcFuture(ex, locker);
+			}
 		}
-		Host url = route.getUrl();
+		if (url == null) {
+			RpcRoute route = Routes.getRoute(api);
+			if (route == null) {
+				SoaException ex = new SoaException(RpcCode.NO_ROUTE, "can not find route for " + api, (String) null);
+				return new ErrorRpcFuture(ex, locker);
+			}
+			url = route.getUrl();
+		}
 		if (url == null) {
 			SoaException ex = new SoaException(RpcCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled",
 					(String) null);
@@ -128,7 +174,7 @@ public final class Sender {
 			LockHolder.register(locker, endTime);
 			f = session.write(req);
 		} catch (Exception e) {
-			Log.printStack("sumk.SOA", e);
+			LogType.RPC_LOG.error(e.toString(), e);
 		}
 		if (f == null) {
 			SoaException ex = new SoaException(RpcCode.SEND_FAILED, url + " can not connect", (String) null);

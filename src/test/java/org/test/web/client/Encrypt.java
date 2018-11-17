@@ -17,33 +17,19 @@ package org.test.web.client;
 
 import java.security.MessageDigest;
 
+import org.yx.util.secury.EncryUtil;
+
 /**
  * 客户端使用这个类进行加解密、签名
  */
 public class Encrypt {
 
-	private static byte[] salt = "j33weut305mTUhgueot5x386fjsjowut03185".getBytes();
-
 	public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-		if (contentBytes == null || contentBytes.length == 0) {
-			return contentBytes;
-		}
-		byte[] ret = new byte[contentBytes.length];
-		for (int i = 0; i < contentBytes.length; i++) {
-			ret[i] = (byte) (contentBytes[i] ^ key[i % key.length] ^ salt[i % salt.length]);
-		}
-		return ret;
+		return EncryUtil.encrypt(contentBytes, key);
 	}
 
 	public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
-		if (contentBytes == null || contentBytes.length == 0) {
-			return contentBytes;
-		}
-		byte[] ret = new byte[contentBytes.length];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = (byte) (contentBytes[i] ^ salt[i % salt.length] ^ key[i % key.length]);
-		}
-		return ret;
+		return EncryUtil.decrypt(contentBytes, key);
 	}
 
 	/**

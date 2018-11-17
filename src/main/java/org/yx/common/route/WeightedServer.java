@@ -13,26 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.common.route;
 
-import org.yx.common.ThreadContext;
+public interface WeightedServer {
 
-public final class RpcUtil {
-
-	public static String userId() {
-		return ThreadContext.get().userId();
-	}
-
-	public static void setUserId(String userId) {
-		ThreadContext.get().userId(userId);
-	}
-
-	public static boolean setUserIdIfEmpty(String userId) {
-		ThreadContext tc = ThreadContext.get();
-		if (tc.userId() == null) {
-			tc.userId(userId);
-			return true;
-		}
-		return false;
-	}
+	int getWeight();
 }

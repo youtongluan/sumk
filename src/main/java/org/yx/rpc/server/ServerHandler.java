@@ -61,13 +61,13 @@ public class ServerHandler extends IoHandlerAdapter {
 		if (session.getIdleCount(status) > 10000) {
 			Log.get("sumk.rpc.session").debug("session:{}, idle:{},will close", session.getId(),
 					session.getIdleCount(status));
-			session.close(true);
+			session.closeNow();
 		}
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) {
-		session.close(false);
+		session.closeOnFlush();
 		if (cause == null) {
 			return;
 		}
@@ -88,8 +88,10 @@ public class ServerHandler extends IoHandlerAdapter {
 		try {
 			if (Request.class.isInstance(message)) {
 				Request req = (Request) message;
-				ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(), ThreadContext.get().isTest())
-						.userId(req.getUserId());
+				ThreadContext context = ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(),
+						ThreadContext.get().isTest());
+				context.userId(req.getUserId());
+				context.setAttachments(req.getAttachments());
 			}
 			for (RequestHandler h : handlers) {
 				if (h.accept(message)) {

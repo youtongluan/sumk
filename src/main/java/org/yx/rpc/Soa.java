@@ -40,14 +40,14 @@ public @interface Soa {
 	/**
 	 * 发布的服务名称是否加上groupId前缀，只在value不为空的时候才有作用
 	 * 
-	 * @return
+	 * @return groupId前缀
 	 */
 	boolean groupPrefix() default false;
 
 	/**
 	 * 发布的服务名称是否加上appId前缀，只在value不为空的时候才有作用
 	 * 
-	 * @return
+	 * @return appId前缀
 	 */
 	boolean appIdPrefix() default false;
 

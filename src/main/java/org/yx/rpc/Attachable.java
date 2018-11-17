@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.date;
+package org.yx.rpc;
 
-import java.util.Calendar;
+import java.util.Map;
 
-/**
- * yyyy-MM-dd HH:mm:ss
- */
-public class DateFormater implements SumkDateFormater {
+public interface Attachable {
+	Map<String, String> getAttachments();
 
-	public static SumkDateFormater inst = new DateFormater();
+	void setAttachments(Map<String, String> attachments);
 
-	@Override
-	public Calendar parse(String text) {
-		int year = Integer.parseInt(text.substring(0, 4));
-		int month = Integer.parseInt(text.substring(5, 7)) - 1;
-		int day = Integer.parseInt(text.substring(8, 10));
-		Calendar cal = Calendar.getInstance();
-		cal.set(year, month, day, 0, 0, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		return cal;
-	}
+	void setAttachment(String key, String value);
 
+	void setAttachmentIfAbsent(String key, String value);
+
+	void addAttachments(Map<String, String> attachments);
+
+	void addAttachmentsIfAbsent(Map<String, String> attachments);
+
+	String getAttachment(String key);
+
+	String getAttachment(String key, String defaultValue);
 }

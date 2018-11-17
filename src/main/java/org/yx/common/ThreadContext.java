@@ -15,10 +15,14 @@
  */
 package org.yx.common;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.yx.conf.AppInfo;
+import org.yx.rpc.Attachable;
 import org.yx.util.StringUtil;
 
-public class ThreadContext {
+public class ThreadContext implements Attachable {
 
 	private static final String TEST = "sumk.test";
 
@@ -38,6 +42,8 @@ public class ThreadContext {
 
 	private boolean test;
 
+	private Map<String, String> attachments;
+
 	public boolean isTest() {
 		return test;
 	}
@@ -48,8 +54,6 @@ public class ThreadContext {
 			this.test = isTest;
 		}
 	}
-
-	public Object info;
 
 	private ThreadContext(ActionType type, String act, boolean isTest) {
 		this.type = type;
@@ -109,6 +113,12 @@ public class ThreadContext {
 		return rootSn;
 	}
 
+	public void setRootSnIfAbsent(String sn) {
+		if (this.rootSn == null) {
+			this.rootSn = sn;
+		}
+	}
+
 	public String userId() {
 		return userId;
 	}
@@ -123,6 +133,69 @@ public class ThreadContext {
 			sn = contextSn;
 		}
 		return sn;
+	}
+
+	@Override
+	public Map<String, String> getAttachments() {
+		return attachments;
+	}
+
+	@Override
+	public void setAttachments(Map<String, String> attachments) {
+		this.attachments = attachments;
+	}
+
+	@Override
+	public void setAttachment(String key, String value) {
+		if (attachments == null) {
+			attachments = new HashMap<>();
+		}
+		attachments.put(key, value);
+	}
+
+	@Override
+	public void setAttachmentIfAbsent(String key, String value) {
+		if (attachments == null) {
+			attachments = new HashMap<>();
+		}
+		attachments.putIfAbsent(key, value);
+	}
+
+	@Override
+	public void addAttachments(Map<String, String> attachments) {
+		if (attachments == null) {
+			return;
+		}
+		if (this.attachments == null) {
+			this.attachments = new HashMap<>();
+		}
+		this.attachments.putAll(attachments);
+	}
+
+	@Override
+	public void addAttachmentsIfAbsent(Map<String, String> attachments) {
+		if (attachments == null) {
+			return;
+		}
+		for (Map.Entry<String, String> entry : attachments.entrySet()) {
+			setAttachmentIfAbsent(entry.getKey(), entry.getValue());
+		}
+	}
+
+	@Override
+	public String getAttachment(String key) {
+		if (attachments == null) {
+			return null;
+		}
+		return attachments.get(key);
+	}
+
+	@Override
+	public String getAttachment(String key, String defaultValue) {
+		if (attachments == null) {
+			return defaultValue;
+		}
+		return attachments.getOrDefault(key, defaultValue);
 	}
 
 }

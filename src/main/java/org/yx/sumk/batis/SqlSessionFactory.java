@@ -17,6 +17,7 @@ package org.yx.sumk.batis;
 
 import java.io.InputStream;
 import java.sql.Connection;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,25 +29,34 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.defaults.DefaultSqlSession;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.managed.ManagedTransaction;
+import org.yx.bean.IOC;
 import org.yx.common.LogType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
-/**
- * 负责创建SqlSession，但不负责SqlSession的事务等操作。<BR>
- * reload用于重新加载。<BR>
- * 在无法确认是只读的情况下，就使用写库.
- */
 public class SqlSessionFactory {
 
-	private static Configuration configuration = new Configuration();
 	private static Map<String, SqlSessionFactory> factoryMap = new ConcurrentHashMap<>();
 
+	private Configuration configuration;
 	private String db;
 
-	private SqlSessionFactory(String dbName) {
-		this.db = dbName;
+	static SqlSessionFactory create(String dbName) throws Exception {
+		SqlSessionFactory sessionFactory = new SqlSessionFactory();
+		sessionFactory.db = dbName;
+		List<ConfigurationFactory> confFactorys = IOC.getBeans(ConfigurationFactory.class);
+		if (confFactorys != null && confFactorys.size() > 0) {
+			for (ConfigurationFactory f : confFactorys) {
+				Configuration conf = f.create(dbName);
+				if (conf != null) {
+					sessionFactory.configuration = conf;
+					return sessionFactory.sqlParse();
+				}
+			}
+		}
+		sessionFactory.configuration = new Configuration();
+		return sessionFactory.sqlParse();
 	}
 
 	public static SqlSessionFactory get(String dbName) {
@@ -62,8 +72,7 @@ public class SqlSessionFactory {
 				if (factory != null) {
 					return factory;
 				}
-				factory = new SqlSessionFactory(dbName);
-				factory.init();
+				factory = SqlSessionFactory.create(dbName);
 				factoryMap.put(dbName, factory);
 			}
 			return factory;
@@ -85,8 +94,7 @@ public class SqlSessionFactory {
 		if (factory == null) {
 			return;
 		}
-		factory = new SqlSessionFactory(dbName);
-		factory.init();
+		factory = SqlSessionFactory.create(dbName);
 		SqlSessionFactory old = factoryMap.put(dbName, factory);
 		old.destroy();
 	}
@@ -98,7 +106,7 @@ public class SqlSessionFactory {
 		return new DefaultSqlSession(configuration, excutor);
 	}
 
-	void init() throws Exception {
+	SqlSessionFactory sqlParse() throws Exception {
 		Map<String, InputStream> sqls = MybatisSqlXmlUtils.openInputs(db);
 		Set<Map.Entry<String, InputStream>> entries = sqls.entrySet();
 		for (Map.Entry<String, InputStream> entry : entries) {
@@ -108,6 +116,7 @@ public class SqlSessionFactory {
 			xmlMapperBuilder.parse();
 			in.close();
 		}
+		return this;
 	}
 
 }

@@ -23,11 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.yx.common.LogType;
 import org.yx.exception.HttpException;
 import org.yx.http.InnerHttpUtil;
 import org.yx.http.Upload;
 import org.yx.http.Web;
-import org.yx.log.Log;
 
 public class UploadHandler implements HttpHandler {
 
@@ -45,7 +45,7 @@ public class UploadHandler implements HttpHandler {
 		factory.setSizeThreshold(uploadInfo.maxSize());
 		ServletFileUpload upload = new ServletFileUpload(factory);
 		upload.setHeaderEncoding(ctx.charset().name());
-		List<FileItem> list = (List<FileItem>) upload.parseRequest(request);
+		List<FileItem> list = upload.parseRequest(request);
 		if (list == null || list.isEmpty()) {
 			HttpException.throwException(this.getClass(), "没有文件");
 		}
@@ -59,7 +59,7 @@ public class UploadHandler implements HttpHandler {
 				}
 				continue;
 			}
-			Log.get(this.getClass()).debug("fileupload#name:{},field:{}", name, fi.getFieldName());
+			LogType.HTTP_LOG.debug("fileupload#name:{},field:{}", name, fi.getFieldName());
 			name = name.toLowerCase();
 			boolean valid = false;
 			for (String ext : uploadInfo.exts()) {

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.lock;
+package org.yx.common.lock;
 
 public class LockedKey implements Key {
 	static LockedKey key = new LockedKey();

@@ -15,10 +15,10 @@
  */
 package org.yx.rpc.client.route;
 
+import org.yx.common.route.WeightedServer;
 import org.yx.rpc.Host;
-import org.yx.util.WeightedRoute;
 
-public class ServerMachine implements WeightedRoute.Server {
+public class ServerMachine implements WeightedServer {
 
 	public Host getUrl() {
 		return url;

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.kit;
+package org.yx.common.date;
 
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -24,19 +24,23 @@ import java.time.ZoneId;
 import java.util.Date;
 
 import org.yx.exception.SumkException;
-import org.yx.util.date.SumkDate;
+import org.yx.util.SumkDate;
 
 public class TimeUtil {
 
 	public static boolean isGenericDate(Class<?> type) {
 		return type == Date.class || type == java.sql.Date.class || type == Time.class || type == Timestamp.class
-				|| type == LocalDate.class || type == LocalTime.class || type == LocalDateTime.class;
+				|| type == LocalDate.class || type == LocalTime.class || type == LocalDateTime.class
+				|| type == SumkDate.class;
 	}
 
 	@SuppressWarnings("unchecked")
 	public static <T> T toType(Object v, Class<?> type, boolean failIfNotSupport) {
 		if (v.getClass() == type) {
 			return (T) v;
+		}
+		if (type == SumkDate.class) {
+			return toSumkDate(v, failIfNotSupport);
 		}
 		if (Date.class.isInstance(v)) {
 			return toType((Date) v, type, failIfNotSupport);
@@ -53,9 +57,66 @@ public class TimeUtil {
 		if (LocalTime.class == sourceClz) {
 			return toType((LocalTime) v, type, failIfNotSupport);
 		}
+		if (SumkDate.class == sourceClz) {
+			return toType((SumkDate) v, type, failIfNotSupport);
+		}
 
 		if (failIfNotSupport || !isGenericDate(type)) {
 			throw new SumkException(1234345, type.getClass().getName() + " cannot convert to " + type.getName());
+		}
+		return (T) v;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T toSumkDate(Object v, boolean failIfNotSupport) {
+		if (Date.class.isInstance(v)) {
+			return (T) SumkDate.of((Date) v);
+		}
+		if (LocalDateTime.class.isInstance(v)) {
+			return (T) SumkDate.of((LocalDateTime) v);
+		}
+		if (LocalDate.class.isInstance(v)) {
+			return (T) SumkDate.of((LocalDate) v, null);
+		}
+		if (LocalTime.class.isInstance(v)) {
+			return (T) SumkDate.of(null, (LocalTime) v);
+		}
+		if (failIfNotSupport) {
+			throw new SumkException(63414353, v.getClass().getName() + "is not supported Date type");
+		}
+		return (T) v;
+	}
+
+	@SuppressWarnings({ "unchecked", "deprecation" })
+	private static <T> T toType(SumkDate v, Class<?> type, boolean failIfNotSupport) {
+		if (Date.class == type) {
+			return (T) v.toDate();
+		}
+		if (java.sql.Date.class == type) {
+			return (T) java.sql.Date.valueOf(v.toLocalDate());
+		}
+
+		if (Timestamp.class == type) {
+			return (T) v.toTimestamp();
+		}
+
+		if (Time.class == type) {
+			return (T) new Time(v.getHour(), v.getMinute(), v.getSecond());
+		}
+
+		if (LocalDate.class == type) {
+			return (T) v.toLocalDate();
+		}
+
+		if (LocalDateTime.class == type) {
+			return (T) v.toLocalDateTime();
+		}
+
+		if (LocalTime.class == type) {
+			return (T) v.toLocalTime();
+		}
+		if (failIfNotSupport || !isGenericDate(type)) {
+			throw new SumkException(63414353, type.getClass().getName() + "is not supported Date type");
 		}
 		return (T) v;
 	}
@@ -83,7 +144,7 @@ public class TimeUtil {
 			}
 			return (T) new Time(v.getHours(), v.getMinutes(), v.getSeconds());
 		}
-		SumkDate sumk = new SumkDate(v);
+		SumkDate sumk = SumkDate.of(v);
 
 		if (LocalDate.class == type) {
 			if (Time.class == v.getClass()) {

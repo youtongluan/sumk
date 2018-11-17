@@ -6,7 +6,7 @@ import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.SoftDelete;
 import org.yx.db.annotation.Table;
-import org.yx.util.DateUtil;
+import org.yx.util.SumkDate;
 
 @Table
 @SoftDelete(value = "enable", columnType = Byte.class)
@@ -53,7 +53,7 @@ public class DemoUser {
 	@Override
 	public String toString() {
 		return "DemoUser [id=" + id + ", name=" + name + ", age=" + age + ", lastUpdate="
-				+ DateUtil.toDateTimeString(lastUpdate) + "]";
+				+ (lastUpdate==null ? "null" : SumkDate.of(lastUpdate)).toString() + "]";
 	}
 
 	@Override

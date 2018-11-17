@@ -13,10 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.date;
+package org.yx.util;
 
-import java.util.Calendar;
+import org.yx.common.ThreadContext;
+import org.yx.rpc.RpcAttachment;
 
-public interface SumkDateFormater {
-	Calendar parse(String text);
+public final class RpcUtil {
+
+	public static String userId() {
+		return ThreadContext.get().userId();
+	}
+
+	public static void setUserId(String userId) {
+		ThreadContext.get().userId(userId);
+	}
+
+	public static boolean setUserIdIfEmpty(String userId) {
+		ThreadContext tc = ThreadContext.get();
+		if (tc.userId() == null) {
+			tc.userId(userId);
+			return true;
+		}
+		return false;
+	}
+
+	public static RpcAttachment getRpcAttachment() {
+		return RpcAttachment.get();
+	}
 }

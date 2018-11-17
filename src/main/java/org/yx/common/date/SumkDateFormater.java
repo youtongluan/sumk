@@ -13,21 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.lock;
+package org.yx.common.date;
 
-/**
- * 分布式锁的钥匙
- * 
- * @author 游夏
- *
- */
-public interface Key extends AutoCloseable {
-	/**
-	 * @return 钥匙的Id，肯定不为空
-	 */
-	String getId();
+import org.yx.common.Ordered;
+import org.yx.util.SumkDate;
 
-	@Override
-	void close();
+public interface SumkDateFormater extends Ordered {
+	SumkDate parse(String text);
 
+	boolean accept(String format);
 }

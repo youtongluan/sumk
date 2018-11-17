@@ -64,7 +64,7 @@ public final class LockHolder {
 
 	private static class LockTimeoutMonitor implements Runnable {
 
-		private static final DelayQueue<DelayedObject> QUEUE = new DelayQueue<DelayedObject>();
+		private static final DelayQueue<DelayedObject> QUEUE = new DelayQueue<>();
 
 		@Override
 		public void run() {
@@ -99,10 +99,12 @@ public final class LockHolder {
 			this.sn = sn;
 		}
 
+		@Override
 		public long getDelay(TimeUnit unit) {
 			return unit.convert(endTime - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
 		}
 
+		@Override
 		public int compareTo(Delayed other) {
 			long d = other instanceof DelayedObject ? this.endTime - DelayedObject.class.cast(other).endTime
 					: this.getDelay(TimeUnit.MILLISECONDS) - other.getDelay(TimeUnit.MILLISECONDS);

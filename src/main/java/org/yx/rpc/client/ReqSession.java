@@ -30,6 +30,7 @@ import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.rpc.Host;
 import org.yx.rpc.SoaExcutors;
+import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.codec.SumkCodecFactory;
 
 public class ReqSession {
@@ -70,7 +71,8 @@ public class ReqSession {
 				}
 			}
 		} catch (Exception e1) {
-			Log.printStack(e1);
+			Log.get("sumk.rpc.session").error(e1.toString(), e1);
+			HostChecker.get().addDownUrl(addr);
 		}
 
 		if (session == null || session.isClosing()) {
@@ -110,7 +112,7 @@ public class ReqSession {
 	public void close() {
 		IoSession s = this.session;
 		if (s != null && s.isConnected()) {
-			this.session.close(true);
+			this.session.closeNow();
 		}
 	}
 }

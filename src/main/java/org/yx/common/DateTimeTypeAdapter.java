@@ -18,18 +18,17 @@ package org.yx.common;
 import java.io.IOException;
 import java.util.Date;
 
-import org.yx.util.DateUtil;
 import org.yx.util.StringUtil;
-import org.yx.util.date.SumkDate;
+import org.yx.util.SumkDate;
 
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
-public class DateTimeTypeAdapter extends TypeAdapter<Date> {
+public final class DateTimeTypeAdapter extends TypeAdapter<Date> {
 
-	private String dateFormat;
+	private String dateFormat = SumkDate.yyyy_MM_dd_HH_mm_ss_SSS;
 
 	public void setDateFormat(String format) {
 		if (StringUtil.isEmpty(format)) {
@@ -47,30 +46,12 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 		return deserializeToDate(in.nextString());
 	}
 
-	private Date deserializeToDate(final String json) throws IOException {
-		if (json == null) {
-			return null;
+	private Date deserializeToDate(final String text) throws IOException {
+		try {
+			return SumkDate.of(text).toDate();
+		} catch (Exception e) {
 		}
-
-		if (json.contains(":")) {
-			String format = null;
-			if (this.dateFormat != null && json.length() == this.dateFormat.length()) {
-				format = this.dateFormat;
-			} else if (json.length() == 19) {
-				format = SumkDate.DATE_TIME;
-			} else if (json.length() == 23) {
-				format = SumkDate.DATE_TIME_MILS;
-			}
-			if (format != null) {
-				try {
-					return DateUtil.parse(json, format);
-				} catch (Exception e) {
-				}
-			}
-			throw new IOException(json + " cannot convert to Date");
-		}
-
-		String num = json;
+		String num = text;
 		if (num.contains(".")) {
 
 			num = num.substring(0, num.indexOf("."));
@@ -88,7 +69,7 @@ public class DateTimeTypeAdapter extends TypeAdapter<Date> {
 			out.value(value.getTime());
 			return;
 		}
-		out.value(DateUtil.toString(value, this.dateFormat));
+		out.value(SumkDate.format(value, this.dateFormat));
 	}
 
 }

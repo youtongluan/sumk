@@ -19,9 +19,10 @@ import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
+import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
+import org.yx.util.SumkDate;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.TypeAdapter;
@@ -38,13 +39,19 @@ public class DateAdapters {
 		builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
 		builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
 		builder.registerTypeAdapter(LocalTime.class, new LocalTimeAdapter());
+		builder.registerTypeAdapter(SumkDate.class, new SumkDateAdapter());
+		builder.registerTypeAdapter(java.sql.Date.class, new SqlDateAdapter());
 	}
 
 	public static class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
 
 		@Override
 		public void write(JsonWriter out, LocalDateTime value) throws IOException {
-			out.value(value.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+			if (value == null) {
+				out.nullValue();
+				return;
+			}
+			out.value(SumkDate.of(value).to_yyyy_MM_dd_HH_mm_ss_SSS());
 		}
 
 		@Override
@@ -54,19 +61,20 @@ public class DateAdapters {
 				return null;
 			}
 			String v = in.nextString();
-			v = v.replace(' ', 'T');
-			return LocalDateTime.parse(v, DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+			return SumkDate.of(v).toLocalDateTime();
 		}
 
 	}
 
 	public static class LocalDateAdapter extends TypeAdapter<LocalDate> {
 
-		private DateTimeFormatter formater = DateTimeFormatter.ISO_LOCAL_DATE;
-
 		@Override
 		public void write(JsonWriter out, LocalDate value) throws IOException {
-			out.value(value.format(formater));
+			if (value == null) {
+				out.nullValue();
+				return;
+			}
+			out.value(SumkDate.of(value, null).to_yyyy_MM_dd());
 		}
 
 		@Override
@@ -76,18 +84,20 @@ public class DateAdapters {
 				return null;
 			}
 			String v = in.nextString();
-			return LocalDate.parse(v, formater);
+			return SumkDate.of(v, SumkDate.yyyy_MM_dd).toLocalDate();
 		}
 
 	}
 
 	public static class LocalTimeAdapter extends TypeAdapter<LocalTime> {
 
-		private DateTimeFormatter formater = DateTimeFormatter.ISO_LOCAL_TIME;
-
 		@Override
 		public void write(JsonWriter out, LocalTime value) throws IOException {
-			out.value(value.format(formater));
+			if (value == null) {
+				out.nullValue();
+				return;
+			}
+			out.value(SumkDate.of(null, value).to_HH_mm_ss_SSS());
 		}
 
 		@Override
@@ -97,7 +107,53 @@ public class DateAdapters {
 				return null;
 			}
 			String v = in.nextString();
-			return LocalTime.parse(v, formater);
+			return SumkDate.of(v, SumkDate.HH_mm_ss_SSS).toLocalTime();
+		}
+
+	}
+
+	public static class SumkDateAdapter extends TypeAdapter<SumkDate> {
+
+		@Override
+		public void write(JsonWriter out, SumkDate sd) throws IOException {
+			if (sd == null) {
+				out.nullValue();
+				return;
+			}
+			out.value(sd.to_yyyy_MM_dd_HH_mm_ss_SSS());
+		}
+
+		@Override
+		public SumkDate read(JsonReader in) throws IOException {
+			if (in.peek() == JsonToken.NULL) {
+				in.nextNull();
+				return null;
+			}
+			String v = in.nextString();
+			return SumkDate.of(v);
+		}
+
+	}
+
+	public static class SqlDateAdapter extends TypeAdapter<java.sql.Date> {
+
+		@Override
+		public void write(JsonWriter out, java.sql.Date d) throws IOException {
+			if (d == null) {
+				out.nullValue();
+				return;
+			}
+			out.value(SumkDate.of(d).to_yyyy_MM_dd());
+		}
+
+		@Override
+		public java.sql.Date read(JsonReader in) throws IOException {
+			if (in.peek() == JsonToken.NULL) {
+				in.nextNull();
+				return null;
+			}
+			String v = in.nextString();
+			return TimeUtil.toType(SumkDate.of(v, SumkDate.yyyy_MM_dd), java.sql.Date.class, true);
 		}
 
 	}

@@ -24,7 +24,7 @@ import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
-import org.yx.util.date.SumkDate;
+import org.yx.util.SumkDate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -47,7 +47,7 @@ public final class HttpGson {
 		String module = "http.pc";
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
-		String format = AppInfo.get(module + ".json.date.format", SumkDate.DATE_TIME_MILS);
+		String format = AppInfo.get(module + ".json.date.format", SumkDate.yyyy_MM_dd_HH_mm_ss_SSS);
 		if (StringUtil.isNotEmpty(format)) {
 			da.setDateFormat(format);
 		}

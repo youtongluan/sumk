@@ -7,7 +7,10 @@ import org.yx.main.SumkServer;
 public class Main {
 	public static void main(String[] args) {
 		try {
+			Log.get(Main.class).info("为了测试方便，测试环境内置了zookeeper服务器。");
+			Log.get(Main.class).info("现在开始启动内置zookeeper。。。");
 			SOAServer.startZKServer();
+			Log.get(Main.class).info("zookeeper启动完成，现在开始启动真正的sumk服务器。。。");
 			SumkServer.start();
 			System.out.println("启动完成");
 			Thread.currentThread().join();

@@ -2,18 +2,16 @@ package org.test.web.client;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
@@ -30,7 +28,10 @@ import org.yx.demo.member.DemoUser;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;
 
-public class HttpTest {
+/*
+ * 通过这个类，可以了解web的通讯。
+ */
+public class PlainClientTest {
 
 	private String getUrl(String act) {
 		return "http://localhost:8080/intf/webserver/demo?act=" + act;
@@ -40,6 +41,16 @@ public class HttpTest {
 		return "http://localhost:8080/intf/upload/demo?act=" + act;
 	}
 
+	private HttpResponse login(HttpClient client) throws Exception {
+		HttpGet post = new HttpGet("http://localhost:8080/intf/login?username=admin&password=123456&code=9999");
+		HttpResponse resp = client.execute(post);
+		String line = resp.getStatusLine().toString();
+		Assert.assertTrue(line, resp.getStatusLine().getStatusCode() == 200);
+		return resp;
+	}
+
+	Random r = new Random();
+	
 	@Test
 	public void plain() throws IOException {
 		String charset = "GBK";
@@ -59,24 +70,28 @@ public class HttpTest {
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 	}
 
+	//测试需要登录的情况
 	@Test
-	public void plain_sign() throws Exception {
-		String charset = "GBK";
+	public void login_sign() throws Exception {
+		String charset = "UTF-8";
 		HttpClient client = HttpClientBuilder.create().build();
+		login(client);
 		String act = "plain_sign";
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "小明");
 		String req = GsonUtil.toJson(json);
 		String sign = Encrypt.sign(req.getBytes(charset));
 		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
-		StringEntity se = new StringEntity(req, charset);
+		StringEntity se = new StringEntity(req,charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);
+		
+		//以下验证请求是否正确
 		String line = resp.getStatusLine().toString();
 		Assert.assertEquals("HTTP/1.1 200 OK", line);
 		HttpEntity resEntity = resp.getEntity();
-		String ret = EntityUtils.toString(resEntity, charset);
-		Assert.assertEquals("hello 小明", ret);
+		String ret = EntityUtils.toString(resEntity,charset);
+		Assert.assertEquals("hello 小明，来自admin的问候", ret);
 	}
 
 	@Test
@@ -88,7 +103,7 @@ public class HttpTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		String req = Base64.encodeBase64String(GsonUtil.toJson(json).replace("\"names\"", "names").getBytes(charset));
+		String req = Base64.getEncoder().encodeToString(GsonUtil.toJson(json).replace("\"names\"", "names").getBytes(charset));
 		System.out.println("req:" + req);
 		StringEntity se = new StringEntity(req, charset);
 		post.setEntity(se);
@@ -96,107 +111,14 @@ public class HttpTest {
 		String line = resp.getStatusLine().toString();
 		Assert.assertEquals("HTTP/1.1 200 OK", line);
 		HttpEntity resEntity = resp.getEntity();
-		String ret = new String(Base64.decodeBase64(EntityUtils.toString(resEntity)), charset);
+		String ret = new String(Base64.getMimeDecoder().decode(EntityUtils.toString(resEntity)), charset);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 	}
+
+	
+
 
 	@Test
-	public void aes_base64() throws Exception {
-		String charset = "UTF-8";
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpResponse resp = login(client);
-		String logined = EntityUtils.toString(resp.getEntity());
-		int ln = logined.indexOf("\t\n");
-		String key_str = logined.substring(0, ln);
-		Log.get("login").info("key:{}", key_str);
-		byte[] key = Base64.decodeBase64(key_str);
-		String act = "aes_base64";
-		HttpPost post = new HttpPost(getUrl(act));
-		Map<String, Object> json = new HashMap<>();
-		json.put("echo", "你好!!!");
-		json.put("names", Arrays.asList("小明", "小张"));
-		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
-		String req = Base64.encodeBase64String(conts);
-		System.out.println("req:" + req);
-		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
-		StringEntity se = new StringEntity("data=" + URLEncoder.encode(req, "ASCII"), charset);
-		post.setEntity(se);
-		resp = client.execute(post);
-		String line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_base64").info(line);
-		Assert.assertEquals("HTTP/1.1 200 OK", line);
-		HttpEntity resEntity = resp.getEntity();
-		String raw = EntityUtils.toString(resEntity);
-		Log.get("aes").info("raw resp:{}", raw);
-		byte[] contentBytes = Base64.decodeBase64(raw);
-		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
-		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
-
-		/*
-		 * 非表单MIME的方式提交,去掉application/x-www-form-urlencoded，内容也不要URLEncoder编码
-		 */
-		post = new HttpPost(getUrl(act));
-		System.out.println("req:" + req);
-		se = new StringEntity("data=" + req, charset);
-		post.setEntity(se);
-		resp = client.execute(post);
-		line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_base64").info(line);
-		Assert.assertEquals("HTTP/1.1 200 OK", line);
-		resEntity = resp.getEntity();
-		raw = EntityUtils.toString(resEntity);
-		Log.get("aes").info("raw resp:{}", raw);
-		contentBytes = Base64.decodeBase64(raw);
-		ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
-		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
-
-		post = new HttpPost(getUrl("bizError"));
-		resp = client.execute(post);
-		Assert.assertEquals(499, resp.getStatusLine().getStatusCode());
-		resEntity = resp.getEntity();
-		String errMsg = EntityUtils.toString(resEntity);
-		Log.get("aes").info("raw resp:{}", errMsg);
-		Assert.assertEquals("{\"code\":12345,\"message\":\"业务异常\"}", errMsg);
-	}
-
-	@Test
-	public void aes_sign() throws Exception {
-		String charset = "UTF-8";
-		HttpClient client = HttpClientBuilder.create().build();
-		HttpResponse resp = login(client);
-		String logined = EntityUtils.toString(resp.getEntity());
-		int ln = logined.indexOf("\t\n");
-		String key_str = logined.substring(0, ln);
-		Log.get("login").info("key:{}", key_str);
-		byte[] key = Base64.decodeBase64(key_str);
-		String act = "aes_sign";
-		Map<String, Object> json = new HashMap<>();
-		json.put("name", "小明");
-		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
-		String req = Base64.encodeBase64String(conts);
-		Log.get("aes_sign").info("req:" + req);
-		String sign = Encrypt.sign(GsonUtil.toJson(json).getBytes(charset));
-		System.out.println("sign:" + sign);
-		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
-
-		StringEntity se = new StringEntity(req, charset);
-		post.setEntity(se);
-		resp = client.execute(post);
-		String line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_sign").info(line);
-
-		HttpEntity resEntity = resp.getEntity();
-		String raw = EntityUtils.toString(resEntity);
-		Log.get("aes").info("raw resp:{}", raw);
-		byte[] contentBytes = Base64.decodeBase64(raw);
-		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
-		Assert.assertEquals("hello 小明", ret);
-	}
-
-//	@Test
 	public void upload() throws IOException {
 		String charset = "UTF-8";
 		HttpClient client = HttpClientBuilder.create().build();
@@ -205,13 +127,13 @@ public class HttpTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "张三");
 		json.put("age", 23);
-		String req = Base64.encodeBase64String(GsonUtil.toJson(json).getBytes(charset));
+		String req = Base64.getEncoder().encodeToString(GsonUtil.toJson(json).getBytes(charset));
 		System.out.println("req:" + req);
 
 		MultipartEntity reqEntity = new MultipartEntity();
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("data", StringBody.create(req, "text/plain", Charset.forName(charset)));
-		reqEntity.addPart("img", new FileBody(new File("E:\\doc\\logo.jpg")));
+		reqEntity.addPart("img", new FileBody(new File("logo_bluce.jpg")));
 
 		post.setEntity(reqEntity);
 		HttpResponse resp = client.execute(post);
@@ -221,15 +143,7 @@ public class HttpTest {
 		Log.get("upload").info(EntityUtils.toString(resEntity, charset));
 	}
 
-	private HttpResponse login(HttpClient client) throws Exception {
-		HttpGet post = new HttpGet("http://localhost:8080/intf/login?username=admin&password=123456&code=9999");
-		HttpResponse resp = client.execute(post);
-		String line = resp.getStatusLine().toString();
-		Assert.assertTrue(line, resp.getStatusLine().getStatusCode() == 200);
-		return resp;
-	}
-
-	Random r = new Random();
+	
 
 	@Test
 	public void db_insert() throws IOException {
@@ -237,7 +151,7 @@ public class HttpTest {
 		HttpClient client = HttpClientBuilder.create().build();
 		String act = "add";
 		HttpPost post = new HttpPost(getUrl(act));
-		List<DemoUser> list = new ArrayList<DemoUser>();
+		List<DemoUser> list = new ArrayList<>();
 
 		for (int i = 0; i < 10; i++) {
 			DemoUser obj = new DemoUser();
@@ -265,7 +179,7 @@ public class HttpTest {
 		HttpClient client = HttpClientBuilder.create().build();
 		String act = "addAndGet";
 		HttpPost post = new HttpPost(getUrl(act));
-		List<DemoUser> list = new ArrayList<DemoUser>();
+		List<DemoUser> list = new ArrayList<>();
 
 		for (int i = 0; i < 10; i++) {
 			DemoUser obj = new DemoUser();
@@ -286,4 +200,5 @@ public class HttpTest {
 		Log.get("db_insert_query").info("返回结果：" + ret);
 		System.out.println(ret);
 	}
+	
 }

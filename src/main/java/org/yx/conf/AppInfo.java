@@ -126,6 +126,14 @@ public final class AppInfo {
 		return info.get(name, defaultValue);
 	}
 
+	public static String get(String name1, String name2, String defaultValue) {
+		String value = info.get(name1);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		return info.get(name2, defaultValue);
+	}
+
 	public static int getInt(String name, int defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {

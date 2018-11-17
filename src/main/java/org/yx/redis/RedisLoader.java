@@ -30,13 +30,13 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class RedisLoader {
-	private static GenericObjectPoolConfig defaultConfig = null;
+	private static GenericObjectPoolConfig<?> defaultConfig = null;
 
-	public static GenericObjectPoolConfig getDefaultConfig() {
+	public static GenericObjectPoolConfig<?> getDefaultConfig() {
 		return defaultConfig;
 	}
 
-	public static void setDefaultConfig(GenericObjectPoolConfig defaultConfig) {
+	public static void setDefaultConfig(GenericObjectPoolConfig<?> defaultConfig) {
 		RedisLoader.defaultConfig = defaultConfig;
 	}
 

@@ -17,7 +17,6 @@ package org.yx.db.kit;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -28,7 +27,7 @@ import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
-import org.yx.util.DateUtil;
+import org.yx.util.SumkDate;
 
 public class LocalSqlHolder {
 	private static Map<String, String> SQLS = new HashMap<>();
@@ -53,7 +52,7 @@ public class LocalSqlHolder {
 	private static void startListen(MultiResourceLoader loader) {
 		loader.startListen(load -> {
 			try {
-				Log.get("sumk.sql").info("local sql changed at {}", DateUtil.toDateTimeString(new Date()));
+				Log.get("sumk.sql").info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
 				loadSql(load);
 			} catch (Exception e) {
 				Log.printStack(LogType.SQL_ERROR, e);

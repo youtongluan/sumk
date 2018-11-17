@@ -62,7 +62,7 @@ public final class DBConfigUtils {
 				reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
 				read(reader);
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack("sumk.db.conf", e);
 			} finally {
 				if (reader != null) {
 					try {

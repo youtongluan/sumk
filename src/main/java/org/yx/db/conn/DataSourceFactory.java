@@ -20,17 +20,19 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.conf.AppInfo;
 import org.yx.conf.DBConfig;
 import org.yx.conf.DBConfigUtils;
 import org.yx.db.DBType;
-import org.yx.util.Assert;
+import org.yx.exception.SumkException;
+import org.yx.log.Log;
 
 public class DataSourceFactory {
 
 	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
 		Map<String, Map<String, String>> hmap = parse(db);
-		List<WeightedDS> readDSList = new ArrayList<>(4);
-		List<WeightedDS> writeDSList = new ArrayList<>(4);
+		List<WeightedDS> readDSList = new ArrayList<>(1);
+		List<WeightedDS> writeDSList = new ArrayList<>(1);
 
 		for (String key : hmap.keySet()) {
 			Map<String, String> p = hmap.get(key);
@@ -55,8 +57,21 @@ public class DataSourceFactory {
 				readDSList.add(r);
 			}
 		}
-		Assert.isTrue(readDSList.size() > 0, "you have not config any read datasource");
-		Assert.isTrue(writeDSList.size() > 0, "you have not config any write datasource");
+
+		if (readDSList.isEmpty()) {
+			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
+				Log.get("sumk.db.conf").warn("you have not config any read datasource for [{}]", db);
+			} else {
+				SumkException.throwException(83587871, "you have not config read datasource for " + db);
+			}
+		}
+		if (writeDSList.isEmpty()) {
+			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
+				Log.get("sumk.db.conf").warn("you have not config any write datasource for [{}]", db);
+			} else {
+				SumkException.throwException(83587871, "you have not config write datasource for " + db);
+			}
+		}
 		WeightedDataSourceRoute read = new WeightedDataSourceRoute(readDSList);
 		WeightedDataSourceRoute write = new WeightedDataSourceRoute(writeDSList);
 		Map<DBType, WeightedDataSourceRoute> poolMap = new HashMap<>();

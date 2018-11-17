@@ -13,21 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.date;
+package org.yx.sumk.batis;
 
-import java.util.Calendar;
+import org.apache.ibatis.session.Configuration;
+import org.yx.common.Ordered;
 
-/**
- * yyyy-MM-dd HH:mm:ss.SSS
- */
-public class FullDateTimeFormater extends DateTimeFormater {
-	public static SumkDateFormater inst = new FullDateTimeFormater();
+public interface ConfigurationFactory extends Ordered {
 
-	@Override
-	public Calendar parse(String text) {
-		Calendar cal = super.parse(text);
-		cal.set(Calendar.MILLISECOND, Integer.parseInt(text.substring(20, 23)));
-		return cal;
-	}
-
+	Configuration create(String name);
 }

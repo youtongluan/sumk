@@ -2,13 +2,28 @@
 <configuration scan="true" scanPeriod="60 seconds" debug="false">
 	<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
 		<layout class="ch.qos.logback.classic.PatternLayout">
-			<Pattern>%d{HH:mm:ss SSS} [%thread] %-5level %logger{36} %L - %msg%n
+			<Pattern>%d{yyyy-MM-dd HH:mm:ss SSS} [%thread] %-5level %logger{36} %L - %msg%n
 			</Pattern>
 		</layout>
+	</appender>
+	<appender name="FILE"
+		class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<file>D:/logs/sumk.log</file>
+		<append>true</append>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<fileNamePattern>D:/logs/sumk-%d{yyyy-MM-dd}.log</fileNamePattern>
+			<maxHistory>30</maxHistory>
+		</rollingPolicy>
+		<encoder>
+			<pattern>%d{yyyy-MM-dd HH:mm:ss SSS} [%thread] %-5level %logger{36} %L - %msg%n
+			</pattern>
+		</encoder>
 	</appender>
 	
         
 	<root level="INFO">
 		<appender-ref ref="STDOUT" />
+		<!-- <appender-ref ref="FILE" /> -->
 	</root>
+	
 </configuration>

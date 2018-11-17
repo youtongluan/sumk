@@ -47,8 +47,8 @@ public class HostChecker {
 	}
 
 	public List<Host> available(List<Host> urls) {
-		List<Host> us = new ArrayList<Host>(urls);
-		List<Host> avas = new ArrayList<Host>(us.size());
+		List<Host> us = new ArrayList<>(urls);
+		List<Host> avas = new ArrayList<>(us.size());
 		for (Host u : us) {
 			if (!downUrls.containsKey(u)) {
 				avas.add(u);
@@ -59,6 +59,7 @@ public class HostChecker {
 
 	public void addDownUrl(Host url) {
 		downUrls.putIfAbsent(url, System.currentTimeMillis());
+		Log.get("sumk.rpc").info("{} is down", url);
 	}
 
 	private class Checker implements Runnable {

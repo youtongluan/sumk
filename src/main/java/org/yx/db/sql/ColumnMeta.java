@@ -18,12 +18,12 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import org.yx.common.date.TimeUtil;
 import org.yx.conf.Const;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.ColumnType;
 import org.yx.db.annotation.UpdateType;
 import org.yx.db.kit.NumUtil;
-import org.yx.db.kit.TimeUtil;
 import org.yx.util.StringUtil;
 
 public class ColumnMeta implements Comparable<ColumnMeta> {

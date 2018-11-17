@@ -25,6 +25,7 @@ import org.yx.http.Web;
 import org.yx.http.filter.UserSession;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
+import org.yx.util.UUIDSeed;
 
 public class ReqUserHandler implements HttpHandler {
 
@@ -59,6 +60,7 @@ public class ReqUserHandler implements HttpHandler {
 		ctx.key(key);
 		session.flushSession();
 		ThreadContext.get().userId(session.getUserId());
+		ThreadContext.get().setRootSnIfAbsent(UUIDSeed.seq18());
 		return false;
 	}
 

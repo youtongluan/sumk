@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.client;
 
+import java.util.Map;
 import java.util.StringJoiner;
 
 import org.yx.rpc.ReqProtocol;
@@ -50,6 +51,8 @@ public class Req {
 	private long s;
 
 	private int z;
+
+	private Map<String, String> attachments;
 
 	private void parseSn() {
 		if (n == null) {
@@ -176,4 +179,13 @@ public class Req {
 	public void setUserId(String userId) {
 		this.u = userId;
 	}
+
+	public Map<String, String> getAttachments() {
+		return attachments;
+	}
+
+	public void setAttachments(Map<String, String> attachments) {
+		this.attachments = attachments;
+	}
+
 }

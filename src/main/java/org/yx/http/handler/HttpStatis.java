@@ -16,10 +16,8 @@
 package org.yx.http.handler;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Date;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -35,6 +33,7 @@ import org.yx.http.HttpActionHolder;
 import org.yx.http.InnerHttpUtil;
 import org.yx.http.SumkServlet;
 import org.yx.util.StringUtil;
+import org.yx.util.SumkDate;
 import org.yx.util.secury.MD5Utils;
 
 @Bean
@@ -48,8 +47,7 @@ public class HttpStatis extends HttpServlet {
 		long ms = now - startTime;
 		StringBuilder sb = new StringBuilder();
 		String ln = "\n";
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
-		sb.append("start at:" + sdf.format(new Date(startTime)));
+		sb.append("start at:" + SumkDate.of(startTime).to_yyyy_MM_dd_HH_mm_ss_SSS());
 		sb.append(ln);
 		sb.append("run(ms):" + ms);
 		return sb.toString();

@@ -5,18 +5,22 @@ import java.util.List;
 
 import org.junit.Assert;
 import org.yx.bean.Box;
-import org.yx.bean.Box.Transaction;
 import org.yx.db.DB;
 import org.yx.db.DBType;
+import org.yx.db.sql.Insert;
 import org.yx.demo.member.DemoUser;
 import org.yx.exception.BizException;
 import org.yx.http.Web;
 import org.yx.rpc.Soa;
 import org.yx.util.SeqUtil;
-
+/*
+ * 这个文件用来演示DB操作，其中@Box相当于Spring的@Transactional，用来开启数据库事务。
+ * 在Sumk中它是必须的，而且也只需要这个注解。
+ * 除此之外，也演示了将@Box、@Soa和@Web混合使用，实际开发中可能会将Controller和Service分开
+ */
 public class DBDemo {
 
-	@Box(transaction=Transaction.EMBED)
+	@Box
 	public long insert(long id, boolean success) {
 		if (id == 0) {
 			id = SeqUtil.next();
@@ -36,25 +40,16 @@ public class DBDemo {
 	@Soa
 	@Box(dbType = DBType.WRITE)
 	public int add(List<DemoUser> users) {
-		long successId = this.insert(0, true);
-		int count = 0;
+		//这个是批处理方式
+		Insert insert=DB.insert(DemoUser.class);
 		for (DemoUser user : users) {
-			count += DB.insert(user).execute();
+			insert.insert(user);
 		}
-		long failId = 123456789;
-		try {
-			this.insert(failId, false);
-		} catch (Exception e) {
-		}
-		DemoUser obj = DB.select().tableClass(DemoUser.class).byPrimaryId(successId).queryOne();
-		Assert.assertEquals(Long.valueOf(successId), obj.getId());
-		Assert.assertNull(DB.select().tableClass(DemoUser.class).byPrimaryId(failId).queryOne());
-		return count;
+		return insert.execute();
 	}
 
 	@Web
-	@Box(dbType = DBType.WRITE) // 实际开发中，一般不需要dbType =
-								// DBType.WRITE。只有在插入后要立即查询的情况下，才需要加入这行
+	@Box(dbType = DBType.WRITE) // 实际开发中，一般不需要dbType=DBType.WRITE。只有在插入后要立即查询的情况下，才需要加入这行
 	public List<DemoUser> addAndGet(List<DemoUser> users) {
 		for (DemoUser user : users) {
 			DB.insert(user).execute();

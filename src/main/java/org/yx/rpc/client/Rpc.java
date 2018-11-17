@@ -49,20 +49,22 @@ public final class Rpc {
 
 	static Req createReq(String method) {
 		Req req = new Req();
-		if (ThreadContext.get().isTest()) {
+		ThreadContext context = ThreadContext.get();
+		if (context.isTest()) {
 			req.setTest(true);
 		}
 		req.setStart(System.currentTimeMillis());
 		String sn = UUIDSeed.random();
-		ThreadContext context = ThreadContext.get();
 		req.setFullSn(sn, context.rootSn(), context.contextSn());
 		req.setUserId(context.userId());
 		req.setApi(method);
 		req.setSrc(AppInfo.appId());
+
+		req.setAttachments(context.getAttachments());
 		return req;
 	}
 
-	public static Sender make(String method) {
+	public static Sender sender(String method) {
 		return new Sender(method);
 	}
 
@@ -81,7 +83,7 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String call(String method, Object... args) {
-		return new Sender(method).paramInArray(args).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
+		return new Sender(method).paramInArray(args).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**
@@ -97,11 +99,11 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String callInJson(String method, String json) {
-		return new Sender(method).paramInJson(json).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
+		return new Sender(method).paramInJson(json).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	public static String callInMap(String method, Map<String, ?> map) {
-		return new Sender(method).callInMap(map).totalTimeout(DEFAULT_TIMEOUT).send().getOrException();
+		return new Sender(method).paramInMap(map).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**
@@ -114,7 +116,7 @@ public final class Rpc {
 	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callAsync(String method, Object... args) {
-		return new Sender(method).paramInArray(args).send();
+		return new Sender(method).paramInArray(args).execute();
 	}
 
 	/**
@@ -126,11 +128,11 @@ public final class Rpc {
 	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callInJsonAsync(String method, String json) {
-		return new Sender(method).paramInJson(json).send();
+		return new Sender(method).paramInJson(json).execute();
 	}
 
 	public static RpcFuture callInMapAsync(String method, Map<String, ?> map) {
-		return new Sender(method).callInMap(map).send();
+		return new Sender(method).paramInMap(map).execute();
 	}
 
 }
