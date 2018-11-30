@@ -19,8 +19,8 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.util.Date;
 
-import org.yx.common.DateAdapters;
-import org.yx.common.DateTimeTypeAdapter;
+import org.yx.common.date.DateAdapters;
+import org.yx.common.date.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.db.dao.Pojo;
 import org.yx.log.Log;

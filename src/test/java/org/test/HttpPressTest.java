@@ -38,8 +38,8 @@ public class HttpPressTest {
 	@Test
 	public void test() throws IOException, InterruptedException {
 		String charset = "GBK";
-		HttpClient client = HttpClientBuilder.create().setMaxConnTotal(100).setMaxConnPerRoute(100).build();
-		ExecutorService executor=Executors.newFixedThreadPool(50);
+		HttpClient client = HttpClientBuilder.create().setMaxConnTotal(500).setMaxConnPerRoute(200).build();
+		ExecutorService executor=Executors.newFixedThreadPool(100);
 		HttpPost post = new HttpPost("http://localhost:8080/intf/webserver/demo?act=echo");
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");

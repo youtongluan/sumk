@@ -46,9 +46,8 @@ public final class BeanPublisher {
 	private static ListenerGroup<BeanEvent> group = new ListenerGroupImpl<>();
 
 	public static synchronized void publishBeans(List<String> packageNames) {
-		if (packageNames == null || packageNames.isEmpty()) {
-			Log.get("sumk.SYS").error("sumk.ioc in app.properties cannot be empty");
-			return;
+		if (packageNames.isEmpty()) {
+			Log.get("sumk.SYS").warn("property [sumk.ioc] is empty");
 		}
 		if (!packageNames.contains(StartConstants.INNER_PACKAGE)) {
 			packageNames.add(0, StartConstants.INNER_PACKAGE);

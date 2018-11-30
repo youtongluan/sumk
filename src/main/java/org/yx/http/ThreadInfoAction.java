@@ -28,7 +28,7 @@ import org.yx.bean.Bean;
 import org.yx.main.SumkThreadPool;
 
 @Bean
-@SumkServlet(value = { "/thread_info" }, loadOnStartup = -1)
+@SumkServlet(value = { "/_thread_info" }, loadOnStartup = -1)
 public class ThreadInfoAction extends HttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;

@@ -37,7 +37,7 @@ import org.yx.util.SumkDate;
 import org.yx.util.secury.MD5Utils;
 
 @Bean
-@SumkServlet(value = { "/sumk_statis" }, loadOnStartup = -1)
+@SumkServlet(value = { "/_sumk_statis" }, loadOnStartup = -1)
 public class HttpStatis extends HttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;

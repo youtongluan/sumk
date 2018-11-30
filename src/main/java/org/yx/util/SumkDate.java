@@ -232,7 +232,7 @@ public final class SumkDate implements Comparable<SumkDate> {
 	 *            不能为null
 	 * @param format
 	 *            格式
-	 * @return 如果日期为null，就返回null
+	 * @return SumkDate对象，如果日期为null，就返回null
 	 */
 	public static String format(Date d, String format) {
 		if (d == null) {

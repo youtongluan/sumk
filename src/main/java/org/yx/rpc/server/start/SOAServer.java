@@ -37,7 +37,7 @@ import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.util.GsonUtil;
 import org.yx.util.ZkClientHolder;
 
-public class SOAServer implements Plugin {
+public class SOAServer implements Plugin, Runnable {
 
 	private volatile boolean started = false;
 	private final int port;
@@ -77,57 +77,8 @@ public class SOAServer implements Plugin {
 	}
 
 	@Override
-	public synchronized void start() {
-		if (started) {
-			return;
-		}
-		try {
-			String ip = AppInfo.get("soa.host", AppInfo.getIp());
-
-			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
-					+ AppInfo.get("soa.zk.port", String.valueOf(port));
-			zkUrl = AppInfo.getServerZKUrl();
-			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
-			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);
-
-			startServer(ip, port);
-			if (this.enable) {
-				this.zkRegister.run();
-			} else {
-				this.zkUnRegister.run();
-			}
-			AppInfo.addObserver(new Observer() {
-
-				@Override
-				public void update(Observable o, Object arg) {
-					if (!SOAServer.this.started) {
-						Log.get("sumk.rpc.zk").debug("soa server unstarted");
-						return;
-					}
-					boolean serverEnable = soaServerEnable();
-					if (serverEnable == enable) {
-						return;
-					}
-					try {
-						if (serverEnable) {
-							SOAServer.this.zkRegister.run();
-							Log.get("sumk.rpc").info("soa server enabled");
-						} else {
-							SOAServer.this.zkUnRegister.run();
-							Log.get("sumk.rpc").info("soa server disabled!!!");
-						}
-						enable = serverEnable;
-					} catch (Exception e) {
-						Log.printStack(e);
-					}
-				}
-
-			});
-			started = true;
-		} catch (Exception e) {
-			Log.printStack(e);
-			System.exit(-1);
-		}
+	public void start() {
+		this.run();
 	}
 
 	private void startServer(String ip, int port) throws Exception {
@@ -202,6 +153,61 @@ public class SOAServer implements Plugin {
 			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
 			client.unsubscribeStateChanges(stateListener);
 			client.delete(path);
+		}
+
+	}
+
+	@Override
+	public synchronized void run() {
+		if (started) {
+			return;
+		}
+		try {
+			String ip = AppInfo.get("soa.host", AppInfo.getIp());
+
+			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
+					+ AppInfo.get("soa.zk.port", String.valueOf(port));
+			zkUrl = AppInfo.getServerZKUrl();
+			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);
+
+			startServer(ip, port);
+			if (this.enable) {
+				this.zkRegister.run();
+			} else {
+				this.zkUnRegister.run();
+			}
+			AppInfo.addObserver(new Observer() {
+
+				@Override
+				public void update(Observable o, Object arg) {
+					if (!SOAServer.this.started) {
+						Log.get("sumk.rpc.zk").debug("soa server unstarted");
+						return;
+					}
+					boolean serverEnable = soaServerEnable();
+					if (serverEnable == enable) {
+						return;
+					}
+					try {
+						if (serverEnable) {
+							SOAServer.this.zkRegister.run();
+							Log.get("sumk.rpc").info("soa server enabled");
+						} else {
+							SOAServer.this.zkUnRegister.run();
+							Log.get("sumk.rpc").info("soa server disabled!!!");
+						}
+						enable = serverEnable;
+					} catch (Exception e) {
+						Log.printStack(e);
+					}
+				}
+
+			});
+			started = true;
+		} catch (Exception e) {
+			Log.printStack(e);
+			System.exit(-1);
 		}
 
 	}

@@ -19,7 +19,7 @@ import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.common.DateTimeTypeAdapter;
+import org.yx.common.date.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.GsonUtil;

@@ -32,7 +32,7 @@ import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
 
 @Bean
-public class HttpServer implements Plugin {
+public class HttpServer implements Plugin, Runnable {
 
 	private Plugin server;
 
@@ -42,7 +42,7 @@ public class HttpServer implements Plugin {
 	private static final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
 
 	@Override
-	public void start() {
+	public synchronized void run() {
 		if (!SumkServer.isHttpEnable()) {
 			return;
 		}
@@ -86,6 +86,11 @@ public class HttpServer implements Plugin {
 	@Override
 	public int order() {
 		return 10000;
+	}
+
+	@Override
+	public void start() {
+		this.run();
 	}
 
 }

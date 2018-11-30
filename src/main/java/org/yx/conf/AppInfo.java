@@ -39,13 +39,20 @@ public final class AppInfo {
 	private static SystemConfig info;
 	static {
 		try {
-			Class<?> clz = Loader.loadClass("org.yx.conf.SystemConfigImpl");
-			Object obj = clz.newInstance();
-			if (SystemConfig.class.isInstance(obj)) {
-				Log.get("sumk.SYS").debug("use SystemConfigImpl for appInfo");
-				info = (SystemConfig) obj;
+
+			String clzName = System.getProperty("sumk.appinfo.class");
+			if (clzName != null && clzName.length() > 5) {
+				Class<?> clz = Loader.loadClass(clzName);
+				Object obj = clz.newInstance();
+				if (SystemConfig.class.isInstance(obj)) {
+					System.out.println("use " + clzName + " for appInfo");
+					info = (SystemConfig) obj;
+					info.initAppInfo();
+				}
 			}
 		} catch (Throwable e) {
+			System.out.println("#AppInfo#error for sumk.appinfo.class:");
+			e.printStackTrace();
 		}
 		try {
 			if (info == null) {

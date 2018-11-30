@@ -52,12 +52,12 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 
 	protected JedisPoolConfig defaultPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMinIdle(1);
-		config.setMaxIdle(20);
-		config.setMaxTotal(100);
+		config.setMinIdle(AppInfo.getInt("sumk.redis.minidle", 1));
+		config.setMaxIdle(AppInfo.getInt("sumk.redis.maxidle", 20));
+		config.setMaxTotal(AppInfo.getInt("sumk.redis.maxtotal", 100));
 		config.setTestWhileIdle(true);
-		config.setTimeBetweenEvictionRunsMillis(5 * 60000);
-		config.setNumTestsPerEvictionRun(3);
+		config.setTimeBetweenEvictionRunsMillis(AppInfo.getInt("sumk.redis.timebetweenevictionrunsmillis", 5 * 60000));
+		config.setNumTestsPerEvictionRun(AppInfo.getInt("sumk.redis.numtestsperevictionrun", 3));
 		return config;
 	}
 
@@ -226,4 +226,7 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 		return "Redis [hosts=" + hosts + ", db=" + db + ", tryCount=" + tryCount + "]";
 	}
 
+	void shutdown() {
+		this.pool.close();
+	}
 }

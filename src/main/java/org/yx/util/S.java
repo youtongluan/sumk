@@ -24,7 +24,7 @@ public abstract class S {
 	/**
 	 * 分布式锁
 	 */
-	public static class UnionLock {
+	public static final class UnionLock {
 		/**
 		 * 解除所有分布式锁
 		 */

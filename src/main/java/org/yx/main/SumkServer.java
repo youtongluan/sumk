@@ -31,6 +31,7 @@ import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.redis.RedisPool;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtil;
 
@@ -156,17 +157,20 @@ public class SumkServer {
 		}
 		SumkThreadPool.shutdown();
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
-		if (lifes == null || lifes.isEmpty()) {
-			return;
+		if (lifes != null && lifes.size() > 0) {
+			Collections.reverse(lifes);
+			lifes.forEach(b -> {
+				try {
+					b.stop();
+				} catch (Exception e) {
+					Log.printStack(e);
+				}
+			});
 		}
-		Collections.reverse(lifes);
-		lifes.forEach(b -> {
-			try {
-				b.stop();
-			} catch (Exception e) {
-				Log.printStack(e);
-			}
-		});
+		try {
+			RedisPool.shutdown();
+		} catch (Throwable e2) {
+		}
 		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 }

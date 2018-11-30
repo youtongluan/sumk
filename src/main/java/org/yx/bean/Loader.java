@@ -24,7 +24,10 @@ public class Loader {
 
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
 		if (!clz.startsWith("org") && !clz.startsWith("com") && !clz.startsWith("net")) {
-			clz = "org.yx.".concat(clz);
+			try {
+				return Loader.class.getClassLoader().loadClass("org.yx.".concat(clz));
+			} catch (Throwable e) {
+			}
 		}
 		return Loader.class.getClassLoader().loadClass(clz);
 	}

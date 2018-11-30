@@ -15,11 +15,14 @@
  */
 package org.yx.redis;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.main.SumkServer;
 import org.yx.util.SeqUtil;
 
 public class RedisPool {
@@ -29,18 +32,20 @@ public class RedisPool {
 
 	static Redis _defaultRedis;
 	static {
-		try {
-			RedisLoader.init();
-			Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
-			if (counter == null) {
-				counter = RedisPool.getRedisExactly("session");
+		if (!SumkServer.isDestoryed()) {
+			try {
+				RedisLoader.init();
+				Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
+				if (counter == null) {
+					counter = RedisPool.getRedisExactly("session");
+				}
+				if (counter != null) {
+					SeqUtil.setCounter(new RedisCounter(counter));
+				}
+			} catch (Exception e) {
+				Log.printStack(e);
+				System.exit(-1);
 			}
-			if (counter != null) {
-				SeqUtil.setCounter(new RedisCounter(counter));
-			}
-		} catch (Exception e) {
-			Log.printStack(e);
-			System.exit(-1);
 		}
 	}
 
@@ -71,5 +76,18 @@ public class RedisPool {
 
 	static void attachRead(String host, RedisParamter[] reads) {
 		readParamsMap.put(host, reads);
+	}
+
+	public static void shutdown() {
+		Set<Redis> redises = new HashSet<>(map.values());
+		if (_defaultRedis != null) {
+			redises.add(_defaultRedis);
+		}
+
+		for (Redis r : redises) {
+			r.shutdown();
+		}
+		map.clear();
+		readParamsMap.clear();
 	}
 }
