@@ -18,17 +18,17 @@ package org.yx.rpc.client;
 import org.yx.exception.BizException;
 import org.yx.exception.CodeException;
 import org.yx.exception.SoaException;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.util.GsonUtil;
 
 public final class RpcResult {
 	static RpcResult timeout(Req req) {
 		if (req == null) {
-			return new RpcResult(null, new SoaException(RpcCode.TIMEOUT, "服务器繁忙，请稍候", "req is null"), null);
+			return new RpcResult(null, new SoaException(RpcErrorCode.TIMEOUT, "服务器繁忙，请稍候", "req is null"), null);
 		}
 		long timeout = System.currentTimeMillis() - req.getStart();
 		String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
-		SoaException exception = new SoaException(RpcCode.TIMEOUT, "服务器繁忙，请稍候", msg);
+		SoaException exception = new SoaException(RpcErrorCode.TIMEOUT, "服务器繁忙，请稍候", msg);
 		return new RpcResult(null, exception, req.getSn());
 	}
 
@@ -45,7 +45,7 @@ public final class RpcResult {
 			return null;
 		}
 		if (!CodeException.class.isInstance(e)) {
-			return new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
+			return new SoaException(RpcErrorCode.UNKNOW, e.getMessage(), e);
 		}
 		if (SoaException.class == e.getClass()) {
 			SoaException ex = (SoaException) e;

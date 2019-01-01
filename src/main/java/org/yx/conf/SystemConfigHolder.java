@@ -13,27 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.conf;
 
-import org.yx.exception.BizException;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+public class SystemConfigHolder {
+	static SystemConfig config;
 
-public class ReqTypeChecker implements HttpHandler {
-
-	@Override
-	public boolean accept(Web web) {
-		return true;
+	/**
+	 * 通过外部方式注入，这种方式不一定会调用init方法
+	 * 
+	 * @param config
+	 *            外部注入
+	 */
+	public static boolean setSystemConfig(SystemConfig config) {
+		SystemConfigHolder.config = config;
+		return AppInfo.refreshConfig();
 	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		String type = InnerHttpUtil.getType(ctx.httpRequest());
-		if (!ctx.httpNode().acceptType(type)) {
-			BizException.throwException(HttpErrorCode.TYPE_ERROR, "客户端类别错误");
-		}
-		return false;
-	}
-
 }

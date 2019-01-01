@@ -18,7 +18,7 @@ package org.yx.http.handler;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.http.ErrorCode;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeadersHolder;
 import org.yx.http.HttpSessionHolder;
 import org.yx.http.Web;
@@ -47,7 +47,7 @@ public class ReqUserHandler implements HttpHandler {
 				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId, type)) {
-						int code = AppInfo.getInt("http.session.single.code", ErrorCode.LOGIN_AGAIN);
+						int code = AppInfo.getInt("http.session.single.code", HttpErrorCode.LOGIN_AGAIN);
 						String msg = AppInfo.get("http.session.single.msg", "您已在其他地方登录！");
 						Log.get("sumk.http").info("session:{}, login by other", sessionID);
 						BizException.throwException(code, msg);
@@ -55,7 +55,7 @@ public class ReqUserHandler implements HttpHandler {
 				}
 			}
 			Log.get("sumk.http").info("session:{}, has expired", sessionID);
-			BizException.throwException(ErrorCode.SESSION_ERROR, "请重新登陆");
+			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆");
 		}
 		ctx.key(key);
 		session.flushSession();

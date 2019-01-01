@@ -20,12 +20,13 @@ import java.lang.reflect.Method;
 import org.yx.annotation.ErrorHandler;
 import org.yx.asm.ArgPojo;
 import org.yx.common.CalleeNode;
+import org.yx.conf.AppInfo;
 import org.yx.http.HttpSettings;
 import org.yx.http.Upload;
 import org.yx.http.Web;
 import org.yx.validate.Param;
 
-public final class HttpNode extends CalleeNode {
+public final class HttpActionNode extends CalleeNode {
 
 	public final Web action;
 	public final Upload upload;
@@ -48,10 +49,11 @@ public final class HttpNode extends CalleeNode {
 		return false;
 	}
 
-	public HttpNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
-			Class<?>[] argTypes, Param[] params, Method m) {
-		super(obj, proxyMethod, argClz, argNames, argTypes, params);
-		this.action = m.getAnnotation(Web.class);
+	public HttpActionNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
+			Class<?>[] argTypes, Param[] params, Method m, Web action) {
+		super(obj, proxyMethod, argClz, argNames, argTypes, params,
+				action.priority() > 0 ? action.priority() : AppInfo.getInt("http.thread.priority.default", 100000));
+		this.action = action;
 		if (HttpSettings.isUploadEnable()) {
 			this.upload = m.getAnnotation(Upload.class);
 		} else {

@@ -32,12 +32,18 @@ import org.yx.util.StringUtil;
 public class RedisLoader {
 	private static GenericObjectPoolConfig<?> defaultConfig = null;
 
+	private static SingleResourceLoader resourceLoader;
+
 	public static GenericObjectPoolConfig<?> getDefaultConfig() {
 		return defaultConfig;
 	}
 
 	public static void setDefaultConfig(GenericObjectPoolConfig<?> defaultConfig) {
 		RedisLoader.defaultConfig = defaultConfig;
+	}
+
+	public static void setResourceLoader(SingleResourceLoader resourceLoader) {
+		RedisLoader.resourceLoader = resourceLoader;
 	}
 
 	private static final String REDIS_FILE = "redis.properties";
@@ -52,15 +58,17 @@ public class RedisLoader {
 	}
 
 	private static InputStream loadConfig() throws Exception {
-		String resourceFactory = AppInfo.get("sumk.redis.conf.loader", "redis.RedisPropertiesLoader");
-		if (resourceFactory == null || resourceFactory.isEmpty()) {
-			return null;
+		if (resourceLoader == null) {
+			String resourceFactory = AppInfo.get("sumk.redis.conf.loader", "redis.RedisPropertiesLoader");
+			if (resourceFactory == null || resourceFactory.isEmpty()) {
+				return null;
+			}
+			Class<?> factoryClz = Loader.loadClass(resourceFactory);
+			Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
+					resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
+			resourceLoader = (SingleResourceLoader) factoryClz.newInstance();
 		}
-		Class<?> factoryClz = Loader.loadClass(resourceFactory);
-		Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
-				resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
-		SingleResourceLoader factory = (SingleResourceLoader) factoryClz.newInstance();
-		return factory.openInput(REDIS_FILE);
+		return resourceLoader.openInput(REDIS_FILE);
 	}
 
 	private static void loadRedisByConfig() throws IOException, Exception {

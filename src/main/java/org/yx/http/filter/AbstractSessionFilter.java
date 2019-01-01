@@ -23,7 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.ErrorCode;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeader;
 import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
@@ -46,12 +46,12 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			Charset charset = InnerHttpUtil.charset(req);
 			if (obj == null) {
 				Log.get("sumk.loginAction").info(user + ":login Object must not be null");
-				InnerHttpUtil.error(resp, ErrorCode.LOGINFAILED, "login failed", charset);
+				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
 				Log.get("sumk.loginAction").debug(user + ":" + obj.getErrorMsg());
-				InnerHttpUtil.error(resp, ErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
+				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
 			byte[] key = createEncryptKey(req);

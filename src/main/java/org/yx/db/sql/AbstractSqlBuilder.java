@@ -42,6 +42,21 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	protected boolean failIfPropertyNotMapped;
 
+	protected String sub;
+
+	protected void sub(String sub) {
+		if (this.sub != null) {
+			SumkException.throwException(14323543, "sub已经设置了，这个属性只允许调用一次");
+		}
+		if (sub == null || sub.isEmpty()) {
+			return;
+		}
+		this.sub = sub;
+		if (this.pojoMeta != null) {
+			this.pojoMeta = PojoMetaHolder.getPojoMeta(this.pojoMeta, sub);
+		}
+	}
+
 	protected void checkMap(Map<String, ?> map, PojoMeta pm) {
 		if (!this.failIfPropertyNotMapped) {
 			return;
@@ -82,7 +97,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		}
 
 		if (this.pojoMeta == null) {
-			this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass());
+			this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass(), sub);
 			if (this.pojoMeta == null) {
 				SumkException.throwException(3654, src.getClass() + " does not config as a table");
 			}
@@ -96,7 +111,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	private PojoMeta parsePojoMeta() {
 		if (this.tableClass != null) {
-			return PojoMetaHolder.getPojoMeta(tableClass);
+			return PojoMetaHolder.getPojoMeta(tableClass, sub);
 		}
 
 		return pojoMeta;

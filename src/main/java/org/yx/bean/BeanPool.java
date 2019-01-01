@@ -120,6 +120,21 @@ public class BeanPool {
 		return this.getBean(beanName, clz);
 	}
 
+	public <T> T putBean(String beanName, T bean) {
+		Assert.notNull(bean);
+		Class<?> clz = bean.getClass();
+		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? getBeanNames(clz)
+				: Collections.singleton(beanName);
+		if (names == null || names.isEmpty()) {
+			names = Collections.singleton(getBeanName(clz));
+		}
+		BeanWrapper w = new BeanWrapper(bean, clz);
+		for (String name : names) {
+			put(name, w);
+		}
+		return bean;
+	}
+
 	private void put(String name, BeanWrapper w) {
 		Class<?> clz = w.getTargetClass();
 		Object oldWrapper = map.putIfAbsent(name, w);

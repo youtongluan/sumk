@@ -26,7 +26,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.codec.Request;
 import org.yx.util.GsonUtil;
 
@@ -102,7 +102,7 @@ public class ServerHandler extends IoHandlerAdapter {
 			}
 		} catch (Exception e) {
 			Response resp = new Response();
-			resp.exception(new SoaException(RpcCode.SERVER_UNKNOW, "server handler error", e));
+			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(GsonUtil.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
 				Log.printStack(e);

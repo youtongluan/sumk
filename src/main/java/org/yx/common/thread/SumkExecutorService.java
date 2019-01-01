@@ -13,27 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.common.thread;
 
-import org.yx.exception.BizException;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+import java.util.concurrent.ExecutorService;
 
-public class ReqTypeChecker implements HttpHandler {
-
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		String type = InnerHttpUtil.getType(ctx.httpRequest());
-		if (!ctx.httpNode().acceptType(type)) {
-			BizException.throwException(HttpErrorCode.TYPE_ERROR, "客户端类别错误");
-		}
-		return false;
-	}
+public interface SumkExecutorService extends ExecutorService, ThresholdExecutor {
 
 }

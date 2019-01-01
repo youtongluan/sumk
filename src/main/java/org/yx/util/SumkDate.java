@@ -15,15 +15,19 @@
  */
 package org.yx.util;
 
+import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -539,114 +543,140 @@ public final class SumkDate implements Comparable<SumkDate> {
 		return this.milSecond - d.milSecond;
 	}
 
-}
-
-class SumkDateStringBuilder {
-	private static final char DATE_SPLIT = '-';
-	private static final char TIME_SPLIT = ':';
-
-	private final SumkDate sumkDate;
-
-	public SumkDateStringBuilder(SumkDate sumkDate) {
-		this.sumkDate = sumkDate;
+	public SumkDate withYear(int year) {
+		if (year == this.year) {
+			return this;
+		}
+		return new SumkDate(year, month, day, hour, minute, second, milSecond);
 	}
 
 	/**
-	 * 返回的格式如13:12:59
+	 * 设置月份（不修改原来的对象）
 	 * 
-	 * @return HH:mm:ss 格式
+	 * @param month
+	 *            1-12
+	 * @return 新的SumkDate对象
 	 */
-	public StringBuilder to_HH_mm_ss() {
-		StringBuilder sb = new StringBuilder();
-		if (sumkDate.hour < 10) {
-			sb.append('0');
+	public SumkDate withMonth(int month) {
+		if (month == this.month) {
+			return this;
 		}
-		sb.append(sumkDate.hour).append(TIME_SPLIT);
+		if (month < 1 || month > 12) {
+			throw new DateTimeException(
+					new StringBuilder().append("月份参数 ").append(month).append(" 不在有效值范围内").toString());
+		}
+		return new SumkDate(year, (byte) month, day, hour, minute, second, milSecond);
+	}
 
-		if (sumkDate.minute < 10) {
-			sb.append('0');
+	public SumkDate withDay(int day) {
+		if (day == this.day) {
+			return this;
 		}
-		sb.append(sumkDate.minute).append(TIME_SPLIT);
+		DAY_OF_MONTH.checkValidValue(day);
+		return new SumkDate(year, month, (byte) day, hour, minute, second, milSecond);
+	}
 
-		if (sumkDate.second < 10) {
-			sb.append('0');
+	public SumkDate withHour(int h) {
+		if (h == this.hour) {
+			return this;
 		}
-		return sb.append(sumkDate.second);
+		if (h < 0 || h > 23) {
+			throw new DateTimeException(new StringBuilder().append("小时参数 ").append(h).append(" 不在有效值范围内").toString());
+		}
+		return new SumkDate(year, month, day, (byte) h, minute, second, milSecond);
+	}
+
+	public SumkDate withMinute(int m) {
+		if (m == this.minute) {
+			return this;
+		}
+		if (m < 0 || m > 59) {
+			throw new DateTimeException(new StringBuilder().append("分钟参数 ").append(m).append(" 不在有效值范围内").toString());
+		}
+		return new SumkDate(year, month, day, hour, (byte) m, second, milSecond);
+	}
+
+	public SumkDate withSecond(int sec) {
+		if (sec == this.second) {
+			return this;
+		}
+		if (sec < 0 || sec > 59) {
+			throw new DateTimeException(new StringBuilder().append("秒参数 ").append(sec).append(" 不在有效值范围内").toString());
+		}
+		return new SumkDate(year, month, day, hour, minute, (byte) sec, milSecond);
 	}
 
 	/**
-	 * 返回的格式如13:12:59.123
 	 * 
-	 * @return HH:mm:ss.SSS 格式
+	 * @param milSecond
+	 *            0-999
+	 * @return
 	 */
-	public StringBuilder to_HH_mm_ss_SSS() {
-		StringBuilder sb = this.to_HH_mm_ss().append('.');
-		String milStr = String.valueOf(sumkDate.milSecond);
-		for (int i = 0; i < 3 - milStr.length(); i++) {
-			sb.append('0');
+	public SumkDate withMilSecond(int milSecond) {
+		if (milSecond == this.milSecond) {
+			return this;
 		}
-		return sb.append(milStr);
+		if (milSecond < 0 || milSecond > 999) {
+			throw new DateTimeException(
+					new StringBuilder().append("毫秒参数 ").append(milSecond).append(" 不在有效值范围内").toString());
+		}
+		return new SumkDate(year, month, day, hour, minute, second, (short) milSecond);
+	}
+
+	public SumkDate plusYears(int years) {
+		if (years == 0) {
+			return this;
+		}
+		return new SumkDate(year + years, month, day, hour, minute, second, milSecond);
 	}
 
 	/**
-	 * 返回的格式如2018-10
+	 * months个月以后的日期
 	 * 
-	 * @return yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+	 * @param months
+	 *            任意数字，正数、负数都可以
+	 * @return months个月以后的日期
 	 */
-	public StringBuilder to_yyyy_MM() {
-		StringBuilder sb = new StringBuilder();
-		if (sumkDate.year == Integer.MIN_VALUE) {
-			sb.append(sumkDate.year);
-		} else {
-			if (sumkDate.year < 0) {
-				sb.append('-');
-			}
-			int y = sumkDate.year >= 0 ? sumkDate.year : -sumkDate.year;
-			if (y < 1000) {
-				if (y >= 100) {
-					sb.append('0');
-				} else if (y >= 10) {
-					sb.append("00");
-				} else {
-					sb.append("000");
-				}
-			}
-			sb.append(y);
+	public SumkDate plusMonths(int months) {
+		if (months == 0) {
+			return this;
 		}
+		return of(this.toLocalDateTime().plusMonths(months));
+	}
 
-		sb.append(DATE_SPLIT);
-		if (sumkDate.month < 10) {
-			sb.append('0');
+	public SumkDate plusDays(int days) {
+		if (days == 0) {
+			return this;
 		}
-		return sb.append(sumkDate.month);
+		return of(this.toLocalDateTime().plusDays(days));
 	}
 
-	/**
-	 * 返回的格式如2018-10-20
-	 * 
-	 * @return yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
-	 */
-	public StringBuilder to_yyyy_MM_dd() {
-		StringBuilder sb = this.to_yyyy_MM();
-		sb.append(DATE_SPLIT);
-
-		if (sumkDate.day < 10) {
-			sb.append('0');
+	public SumkDate plusHours(int hours) {
+		if (hours == 0) {
+			return this;
 		}
-		return sb.append(sumkDate.day);
+		return of(this.toLocalDateTime().plusHours(hours));
 	}
 
-	/**
-	 * 返回的格式如2018-10-20 13:12:59
-	 * 
-	 * @return yyyy-MM-dd HH:mm:ss 格式<BR>
-	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
-	 */
-	public StringBuilder to_yyyy_MM_dd_HH_mm_ss() {
-		return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss());
+	public SumkDate plusMinutes(int minutes) {
+		if (minutes == 0) {
+			return this;
+		}
+		return of(this.toLocalDateTime().plusMinutes(minutes));
 	}
 
-	public StringBuilder to_yyyy_MM_dd_HH_mm_ss_SSS() {
-		return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss_SSS());
+	public SumkDate plusSeconds(int seconds) {
+		if (seconds == 0) {
+			return this;
+		}
+		return of(this.toLocalDateTime().plusSeconds(seconds));
 	}
+
+	public SumkDate plusMilSeconds(int mils) {
+		if (mils == 0) {
+			return this;
+		}
+		return of(this.toLocalDateTime().plus(mils, ChronoUnit.MILLIS));
+	}
+
 }

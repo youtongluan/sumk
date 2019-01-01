@@ -15,8 +15,11 @@
  */
 package org.yx.http.handler;
 
+import org.yx.bean.IOC;
+import org.yx.common.LogType;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
+import org.yx.http.Signer;
 import org.yx.http.Web;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
@@ -24,12 +27,26 @@ import org.yx.util.secury.MD5Utils;
 
 public class ReqSignValidateHandler implements HttpHandler {
 
+	private Signer signer;
+	private byte[] salt;
+
+	public ReqSignValidateHandler() {
+
+		String saltStr = AppInfo.get("sumk.sign.salt");
+		if (StringUtil.isNotEmpty(saltStr)) {
+			salt = saltStr.getBytes();
+		}
+
+		this.signer = IOC.get(Signer.class);
+		if (signer != null) {
+			LogType.HTTP_LOG.info("use {} for http request sign", signer.getClass().getSimpleName());
+		}
+	}
+
 	@Override
 	public boolean accept(Web web) {
 		return web.sign();
 	}
-
-	private byte[] salt = null;
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
@@ -41,21 +58,13 @@ public class ReqSignValidateHandler implements HttpHandler {
 		if (bs == null) {
 			return false;
 		}
-		if (salt == null) {
-			String saltStr = AppInfo.get("sumk.sign.salt");
-			if (StringUtil.isEmpty(saltStr)) {
-				salt = new byte[0];
-			} else {
-				salt = saltStr.getBytes();
-			}
-		}
-		if (salt.length > 0) {
+		if (salt != null) {
 			byte[] temp = new byte[bs.length + salt.length];
 			System.arraycopy(bs, 0, temp, 0, bs.length);
 			System.arraycopy(salt, 0, temp, bs.length, salt.length);
 			bs = temp;
 		}
-		String sign1 = MD5Utils.encrypt(bs);
+		String sign1 = signer == null ? MD5Utils.encrypt(bs) : signer.sign(bs, ctx.httpRequest());
 		if (!sign.equals(sign1)) {
 			Log.get("sign").debug("client sign:{},computed is:{}", sign, sign1);
 			HttpException.throwException(this.getClass(), "签名验证错误");

@@ -43,7 +43,7 @@ public class HttpSessionHolder {
 		}
 		if (session == null) {
 			Log.get("session").info("session has not created");
-			BizException.throwException(ErrorCode.SESSION_ERROR, "请重新登陆.");
+			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆.");
 		}
 		return session;
 	}

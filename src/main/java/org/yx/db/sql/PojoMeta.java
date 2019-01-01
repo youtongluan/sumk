@@ -35,7 +35,9 @@ import org.yx.redis.Counter;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
-public class PojoMeta {
+public class PojoMeta implements Cloneable {
+
+	public static final String WILDCHAR = "?";
 	private final static char KEY_SPLIT = ',';
 	final Table table;
 
@@ -333,6 +335,25 @@ public class PojoMeta {
 			key.append(v);
 		}
 		return key.toString();
+	}
+
+	public PojoMeta subPojoMeta(String sub) {
+		if (!this.tableName.contains(WILDCHAR)) {
+			return this;
+		}
+		PojoMeta clone;
+		try {
+			clone = (PojoMeta) this.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new SumkException(3456346, e.getMessage());
+		}
+		clone.tableName = subTableName(sub);
+		clone.pre = this.pre.replace(WILDCHAR, sub);
+		return clone;
+	}
+
+	String subTableName(String sub) {
+		return this.tableName.replace(WILDCHAR, sub);
 	}
 
 }

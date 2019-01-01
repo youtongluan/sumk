@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import org.yx.asm.ArgPojo;
 import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
+import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.util.GsonUtil;
 import org.yx.validate.Param;
@@ -31,7 +32,8 @@ public final class RpcActionNode extends CalleeNode {
 
 	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
 			Class<?>[] argTypes, Param[] params, Soa action) {
-		super(obj, method, argClz, argNames, argTypes, params);
+		super(obj, method, argClz, argNames, argTypes, params,
+				action.priority() > 0 ? action.priority() : AppInfo.getInt("soa.thread.priority.default", 100000));
 		this.action = action;
 	}
 

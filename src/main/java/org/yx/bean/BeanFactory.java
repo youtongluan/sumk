@@ -16,6 +16,7 @@
 package org.yx.bean;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -123,7 +124,13 @@ public class BeanFactory extends AbstractBeanListener {
 
 			Bean b = clz.getAnnotation(Bean.class);
 			if (b != null) {
-				InnerIOC.putClass(b.value(), clz);
+				if (FactoryBean.class.isAssignableFrom(clz)) {
+					FactoryBean factory = (FactoryBean) clz.newInstance();
+					Collection<?> beans = factory.beans();
+					putFactoryBean(beans);
+				} else {
+					InnerIOC.putClass(b.value(), clz);
+				}
 			}
 
 			if (!this.cachedScan) {
@@ -146,6 +153,34 @@ public class BeanFactory extends AbstractBeanListener {
 			SumkException.throwException(-345365, "IOC error", e);
 		}
 
+	}
+
+	private void putFactoryBean(Collection<?> beans) throws Exception {
+		if (beans != null && beans.size() > 0) {
+			for (Object obj : beans) {
+				putBean(null, obj);
+			}
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void putBean(String name, Object obj) throws Exception {
+		if (obj == null) {
+			return;
+		}
+		Class<?> clz = obj.getClass();
+		if (clz == Class.class) {
+			InnerIOC.putClass(name, Class.class.cast(obj));
+			return;
+		}
+
+		if (clz == NamedBean.class) {
+			NamedBean named = NamedBean.class.cast(obj);
+			this.putBean(named.getBeanName(), named.getBean());
+			return;
+		}
+
+		InnerIOC.putBean(name, obj);
 	}
 
 }

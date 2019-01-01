@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.common.ActInfoUtil;
-import org.yx.http.handler.HttpNode;
+import org.yx.http.handler.HttpActionNode;
 import org.yx.main.SumkServer;
 
 /**
@@ -33,7 +33,7 @@ public class HttpActionHolder {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
 
-	private static Map<String, HttpNode> actMap = new ConcurrentHashMap<>();
+	private static Map<String, HttpActionNode> actMap = new ConcurrentHashMap<>();
 
 	public static Class<?> getArgType(String method) {
 		String m = getArgClassName(method);
@@ -45,11 +45,11 @@ public class HttpActionHolder {
 		return method.substring(0, k) + "_" + method.substring(k + 1);
 	}
 
-	public static HttpNode getHttpInfo(String name) {
+	public static HttpActionNode getHttpInfo(String name) {
 		return actMap.get(name);
 	}
 
-	public static void putActInfo(String name, HttpNode actInfo) {
+	public static void putActInfo(String name, HttpActionNode actInfo) {
 		actMap.putIfAbsent(name, actInfo);
 	}
 

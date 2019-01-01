@@ -25,7 +25,7 @@ import org.yx.common.LogType;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.rpc.Host;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.Routes;
 import org.yx.rpc.client.route.RpcRoute;
@@ -149,7 +149,7 @@ public final class Sender {
 		if (this.directUrls != null && this.directUrls.length > 0) {
 			url = useDirectUrl();
 			if (url == null && !this.backup) {
-				SoaException ex = new SoaException(RpcCode.NO_NODE_AVAILABLE,
+				SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE,
 						"all directUrls is disabled:" + Arrays.toString(this.directUrls), (String) null);
 				return new ErrorRpcFuture(ex, locker);
 			}
@@ -157,13 +157,14 @@ public final class Sender {
 		if (url == null) {
 			RpcRoute route = Routes.getRoute(api);
 			if (route == null) {
-				SoaException ex = new SoaException(RpcCode.NO_ROUTE, "can not find route for " + api, (String) null);
+				SoaException ex = new SoaException(RpcErrorCode.NO_ROUTE, "can not find route for " + api,
+						(String) null);
 				return new ErrorRpcFuture(ex, locker);
 			}
 			url = route.getUrl();
 		}
 		if (url == null) {
-			SoaException ex = new SoaException(RpcCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled",
+			SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled",
 					(String) null);
 			return new ErrorRpcFuture(ex, locker);
 		}
@@ -177,7 +178,7 @@ public final class Sender {
 			LogType.RPC_LOG.error(e.toString(), e);
 		}
 		if (f == null) {
-			SoaException ex = new SoaException(RpcCode.SEND_FAILED, url + " can not connect", (String) null);
+			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", (String) null);
 			return new ErrorRpcFuture(ex, locker);
 		}
 		f.addListener(locker);

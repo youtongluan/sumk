@@ -20,7 +20,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.Bean;
 import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.HttpNode;
+import org.yx.http.handler.HttpActionNode;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
@@ -36,11 +36,11 @@ public class UploadServer extends AbstractHttpServer {
 	final static String MULTI = "multipart/form-data";
 
 	@Override
-	protected void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
+	protected void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
 		if (HttpHandlerChain.upload == null) {
 			Log.get("sumk.http").error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
-			InnerHttpUtil.error(resp, ErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用", InnerHttpUtil.charset(req));
+			InnerHttpUtil.error(resp, HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用", InnerHttpUtil.charset(req));
 			return;
 		}
 		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {

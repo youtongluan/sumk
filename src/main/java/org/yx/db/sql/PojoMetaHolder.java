@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -23,8 +24,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import org.apache.ibatis.javassist.Modifier;
 import org.yx.db.annotation.Column;
 import org.yx.db.annotation.Table;
 import org.yx.exception.SumkException;
@@ -32,8 +33,8 @@ import org.yx.log.Log;
 
 public class PojoMetaHolder {
 
-	private static final Map<Class<?>, PojoMeta> pojoMetas = new ConcurrentHashMap<>();
-	private static final Map<String, PojoMeta> tableMetas = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<Class<?>, PojoMeta> pojoMetas = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, PojoMeta> tableMetas = new ConcurrentHashMap<>();
 
 	public static PojoMeta getTableMeta(String table) {
 		return tableMetas.get(table);
@@ -44,7 +45,34 @@ public class PojoMetaHolder {
 		return pms.toArray(new PojoMeta[0]);
 	}
 
-	public static PojoMeta getPojoMeta(Class<?> clz) {
+	public static PojoMeta getPojoMeta(PojoMeta pm, String sub) {
+		PojoMeta temp = tableMetas.get(pm.subTableName(sub));
+		if (temp != null) {
+			return temp;
+		}
+		pm = pm.subPojoMeta(sub);
+		tableMetas.putIfAbsent(pm.getTableName(), pm);
+		return pm;
+	}
+
+	public static PojoMeta getPojoMeta(Class<?> clz, String sub) {
+		PojoMeta pm = getPojoMeta(clz);
+		if (pm == null) {
+			return null;
+		}
+		if (sub == null || sub.isEmpty()) {
+			return pm;
+		}
+		PojoMeta temp = tableMetas.get(pm.subTableName(sub));
+		if (temp != null) {
+			return temp;
+		}
+		pm = pm.subPojoMeta(sub);
+		tableMetas.putIfAbsent(pm.getTableName(), pm);
+		return pm;
+	}
+
+	private static PojoMeta getPojoMeta(Class<?> clz) {
 		if (clz == null || clz.isInterface() || clz == Object.class) {
 			return null;
 		}

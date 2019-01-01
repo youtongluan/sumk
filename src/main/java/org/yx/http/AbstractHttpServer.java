@@ -29,7 +29,7 @@ import org.yx.common.LogType;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.http.handler.HttpNode;
+import org.yx.http.handler.HttpActionNode;
 import org.yx.util.StringUtil;
 
 public abstract class AbstractHttpServer extends HttpServlet {
@@ -64,19 +64,19 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			log.trace("act={}", act);
 			if (act == null || act.isEmpty()) {
 				log.error("act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
-				InnerHttpUtil.error(resp, -1002, "请求格式不正确", InnerHttpUtil.charset(req));
+				InnerHttpUtil.error(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确", InnerHttpUtil.charset(req));
 				return;
 			}
 			if (FUSING.contains(act)) {
 				log.error("{} is in fusing", act);
-				InnerHttpUtil.error(resp, ErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"),
+				InnerHttpUtil.error(resp, HttpErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"),
 						InnerHttpUtil.charset(req));
 				return;
 			}
-			HttpNode info = HttpActionHolder.getHttpInfo(act);
+			HttpActionNode info = HttpActionHolder.getHttpInfo(act);
 			if (info == null) {
 				log.error(act + " donot found handler");
-				InnerHttpUtil.error(resp, -1003, "请求格式不正确", InnerHttpUtil.charset(req));
+				InnerHttpUtil.error(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", InnerHttpUtil.charset(req));
 				return;
 			}
 			ThreadContext.httpContext(act, req.getParameter("thisIsTest"));
@@ -104,6 +104,6 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
 	}
 
-	protected abstract void handle(String act, HttpNode info, HttpServletRequest req, HttpServletResponse resp)
+	protected abstract void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception;
 }

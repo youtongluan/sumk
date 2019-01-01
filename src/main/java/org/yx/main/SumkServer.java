@@ -40,6 +40,10 @@ public class SumkServer {
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
 
+	public static void resetStatus() {
+		started = false;
+	}
+
 	public static boolean isHttpEnable() {
 		return httpEnable;
 	}
@@ -53,7 +57,7 @@ public class SumkServer {
 	}
 
 	public static void start() {
-		start(new ArrayList<String>());
+		start(Collections.emptyList());
 	}
 
 	public static void start(String... args) {
@@ -78,13 +82,15 @@ public class SumkServer {
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
-			if (StartContext.inst.get(StartConstants.NOSOA) == null
+			String soa = AppInfo.get(StartConstants.SOA_PACKAGES);
+			String http = AppInfo.get(StartConstants.HTTP_PACKAGES);
+			if (StartContext.inst.get(StartConstants.NOSOA) == null && StringUtil.isNotEmpty(soa)
 					&& AppInfo.getInt(StartConstants.SOA_PORT, -1) > 0) {
-				ps.add(AppInfo.get(StartConstants.SOA_PACKAGES));
+				ps.add(soa);
 				rpcEnable = true;
 			}
-			if (StartContext.inst.get(StartConstants.NOHTTP) == null) {
-				ps.add(AppInfo.get(StartConstants.HTTP_PACKAGES));
+			if (StartContext.inst.get(StartConstants.NOHTTP) == null && StringUtil.isNotEmpty(http)) {
+				ps.add(http);
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));

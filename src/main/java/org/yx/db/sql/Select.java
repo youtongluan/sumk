@@ -53,6 +53,18 @@ public final class Select extends SelectBuilder {
 	}
 
 	/**
+	 * 物理分表的情况下，设置分区名。这个方法只能调用一次
+	 * 
+	 * @param sub
+	 *            分区名
+	 * @return 当前对象
+	 */
+	public Select partition(String sub) {
+		sub(sub);
+		return this;
+	}
+
+	/**
 	 * 允许不设置where条件
 	 * 
 	 * @param empty

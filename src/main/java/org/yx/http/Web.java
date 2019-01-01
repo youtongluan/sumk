@@ -50,4 +50,6 @@ public @interface Web {
 
 	String[] type() default { "" };
 
+	int priority() default 0;
+
 }

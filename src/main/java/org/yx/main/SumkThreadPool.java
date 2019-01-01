@@ -18,22 +18,28 @@ package org.yx.main;
 import java.nio.channels.ClosedByInterruptException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yx.common.Deamon;
-import org.yx.common.ThreadPools;
+import org.yx.common.thread.SumkExecutorService;
+import org.yx.common.thread.ThreadPools;
+import org.yx.common.thread.ThresholdThreadPool;
 import org.yx.conf.AppInfo;
+import org.yx.exception.BizException;
+import org.yx.exception.ErrorCode;
 import org.yx.log.Log;
 
 public class SumkThreadPool {
 
 	public static final ScheduledThreadPoolExecutor scheduledExecutor;
 
-	public static final ExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
+	public static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
 
+	public static final BizException THREAD_THRESHOLD_OVER = new BizException(ErrorCode.THREAD_THRESHOLD_OVER,
+			"系统限流降级");
 	private static List<Thread> deamonThreads = new ArrayList<>();
 	static {
 		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 2),
@@ -52,6 +58,21 @@ public class SumkThreadPool {
 					}
 
 				});
+		scheduledExecutor.scheduleAtFixedRate(() -> {
+
+			int threshold = AppInfo.getInt("sumk.threadpool.threshold", -1);
+			if (threshold > 0) {
+				EXECUTOR.threshold(threshold);
+				return;
+			}
+			if (!ThresholdThreadPool.class.isInstance(EXECUTOR)) {
+				return;
+			}
+			ThresholdThreadPool pool = (ThresholdThreadPool) EXECUTOR;
+			threshold = pool.getPoolSize() + pool.getQueue().size();
+			EXECUTOR.threshold(threshold);
+			Log.get("sumk.thread").trace("set pool threshold to {}", threshold);
+		}, 0, 5, TimeUnit.SECONDS);
 	}
 
 	public static synchronized void runDeamon(Deamon deamon, String threadName) {

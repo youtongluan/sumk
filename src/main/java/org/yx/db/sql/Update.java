@@ -113,6 +113,18 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 	}
 
 	/**
+	 * 分表的情况下，设置分区名。这个方法只能调用一次
+	 * 
+	 * @param sub
+	 *            分区名
+	 * @return 当前对象
+	 */
+	public Update partition(String sub) {
+		sub(sub);
+		return this;
+	}
+
+	/**
 	 * 根据缓存id更新数据。默认是根据数据库主键更新
 	 * 
 	 * @return 当前对象
@@ -141,7 +153,7 @@ public final class Update extends AbstractSqlBuilder<Integer> implements Executa
 			this.updateTo = new HashMap<>((Map<String, Object>) pojo);
 			return this;
 		}
-		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass());
+		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass(), this.sub);
 		if (this.pojoMeta == null) {
 			SumkException.throwException(36541, pojo.getClass() + " does not config as a table");
 		}

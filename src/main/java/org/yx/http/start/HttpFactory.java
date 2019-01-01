@@ -25,7 +25,7 @@ import org.yx.bean.InnerIOC;
 import org.yx.common.MethodDesc;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.Web;
-import org.yx.http.handler.HttpNode;
+import org.yx.http.handler.HttpActionNode;
 import org.yx.log.Log;
 import org.yx.validate.ParamFactory;
 
@@ -62,12 +62,14 @@ class HttpFactory {
 			}
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			if (m.getParameterTypes().length == 0) {
-				HttpActionHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, null, null, null, null, m));
+				HttpActionHolder.putActInfo(soaName,
+						new HttpActionNode(obj, proxyedMethod, null, null, null, null, m, act));
 				continue;
 			}
 			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-			HttpActionHolder.putActInfo(soaName, new HttpNode(obj, proxyedMethod, ArgPojos.create(classFullName, mInfo),
-					mInfo.getArgNames(), m.getParameterTypes(), ParamFactory.create(m), m));
+			HttpActionHolder.putActInfo(soaName,
+					new HttpActionNode(obj, proxyedMethod, ArgPojos.create(classFullName, mInfo), mInfo.getArgNames(),
+							m.getParameterTypes(), ParamFactory.create(m), m, act));
 		}
 
 	}

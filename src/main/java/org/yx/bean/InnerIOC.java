@@ -26,6 +26,10 @@ public final class InnerIOC {
 		return pool.putClass(BeanPool.getBeanName(intf), clz);
 	}
 
+	public static <T> T putBean(String beanName, T bean) {
+		return pool.putBean(beanName, bean);
+	}
+
 	public static <T> T getOrCreate(Class<T> clz) throws Exception {
 		T obj = IOC.get(clz);
 		if (obj != null) {

@@ -51,4 +51,6 @@ public @interface Soa {
 	 */
 	boolean appIdPrefix() default false;
 
+	int priority() default 0;
+
 }

@@ -22,7 +22,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 可用于缓存的dao,用于类上表示加入IOC，作用与属性上，表示要注入
+ * 仅用于缓存类型的bean。<br>
+ * 用于实现Cachable接口的dao类上，表示要加该类加入到Bean列表中，而且开启缓存功能<br>
+ * 作用于字段上，表示该字段要注入使用Cached注解的Bean
  * 
  * @see Cachable
  */

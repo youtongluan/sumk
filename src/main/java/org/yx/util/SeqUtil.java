@@ -29,6 +29,14 @@ public class SeqUtil {
 		return inst.next(name);
 	}
 
+	public static String nextString() {
+		return Long.toString(next(), Character.MAX_RADIX);
+	}
+
+	public static String nextString(String name) {
+		return Long.toString(next(name), Character.MAX_RADIX);
+	}
+
 	public static long getDate(long seq) {
 		return Seq.getDate(seq);
 	}

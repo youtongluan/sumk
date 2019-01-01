@@ -38,6 +38,19 @@ public final class AppInfo {
 
 	private static SystemConfig info;
 	static {
+		init();
+	}
+
+	private static void init() {
+		try {
+			if (refreshConfig()) {
+				return;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
 		try {
 
 			String clzName = System.getProperty("sumk.appinfo.class");
@@ -63,6 +76,16 @@ public final class AppInfo {
 			e.printStackTrace();
 			System.exit(-1);
 		}
+	}
+
+	static boolean refreshConfig() {
+		SystemConfig config = SystemConfigHolder.config;
+		if (info == config || config == null) {
+			return false;
+		}
+		info = config;
+		info.initAppInfo();
+		return true;
 	}
 
 	public static synchronized void addObserver(Observer ob) {
@@ -200,6 +223,8 @@ public final class AppInfo {
 
 	private static class AppPropertiesInfo extends PropertiesInfo {
 
+		private volatile boolean started;
+
 		AppPropertiesInfo() {
 			super("app.properties");
 		}
@@ -214,7 +239,11 @@ public final class AppInfo {
 		}
 
 		@Override
-		public void initAppInfo() {
+		public synchronized void initAppInfo() {
+			if (started) {
+				return;
+			}
+			started = true;
 			this.start();
 		}
 

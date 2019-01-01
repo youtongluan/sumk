@@ -13,27 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.common.thread;
 
-import org.yx.exception.BizException;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+public interface ThresholdExecutor {
 
-public class ReqTypeChecker implements HttpHandler {
+	static final int DEFAULT_THRESHOLD = 100000;
 
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
+	void execute(Runnable command, int priority);
 
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		String type = InnerHttpUtil.getType(ctx.httpRequest());
-		if (!ctx.httpNode().acceptType(type)) {
-			BizException.throwException(HttpErrorCode.TYPE_ERROR, "客户端类别错误");
-		}
-		return false;
-	}
+	int threshold();
+
+	void threshold(int threshold);
 
 }

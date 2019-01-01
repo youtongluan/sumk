@@ -51,7 +51,7 @@ public class TableGenerator implements Plugin {
 			PojoMeta[] pms = PojoMetaHolder.allPojoMeta();
 			for (PojoMeta pm : pms) {
 				try {
-					generoate(pm);
+					generate(pm);
 				} catch (Exception e) {
 					Log.printStack(LogType.SQL_ERROR, e);
 				}
@@ -62,7 +62,10 @@ public class TableGenerator implements Plugin {
 		Log.get("sumk.db.generator").info("generate table end!!!");
 	}
 
-	private void generoate(PojoMeta pm) throws Exception {
+	private void generate(PojoMeta pm) throws Exception {
+		if (pm.getTableName().contains(PojoMeta.WILDCHAR)) {
+			return;
+		}
 		StringBuilder sb = new StringBuilder();
 		sb.append("CREATE TABLE ").append(name(pm.getTableName())).append(" (\n\t");
 		ColumnMeta[] cms = pm.fieldMetas;

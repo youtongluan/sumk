@@ -17,7 +17,7 @@ package org.yx.rpc.client;
 
 import org.yx.exception.CodeException;
 import org.yx.exception.SoaException;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 
 public class ErrorRpcFuture extends AbstractRpcFuture {
 
@@ -27,7 +27,7 @@ public class ErrorRpcFuture extends AbstractRpcFuture {
 
 	public ErrorRpcFuture(Throwable e, RpcLocker locker) {
 		CodeException exception = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
-				: new SoaException(RpcCode.UNKNOW, e.getMessage(), e);
+				: new SoaException(RpcErrorCode.UNKNOW, e.getMessage(), e);
 		this.rpcResult = new RpcResult(null, exception);
 		this.locker = locker;
 	}

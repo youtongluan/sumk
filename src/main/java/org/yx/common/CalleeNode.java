@@ -20,6 +20,8 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import org.yx.asm.ArgPojo;
+import org.yx.log.Log;
+import org.yx.main.SumkThreadPool;
 import org.yx.validate.Param;
 import org.yx.validate.ParamInfo;
 
@@ -42,8 +44,10 @@ public abstract class CalleeNode {
 
 	public final Field[] fields;
 
+	public final int priority;
+
 	public CalleeNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
-			Class<?>[] argTypes, Param[] params) {
+			Class<?>[] argTypes, Param[] params, int priority) {
 		this.obj = obj;
 		this.method = proxyMethod;
 		this.argClz = argClz;
@@ -51,6 +55,7 @@ public abstract class CalleeNode {
 		this.argTypes = argTypes;
 		this.method.setAccessible(true);
 		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
+		this.priority = priority;
 		if (this.paramInfos != null) {
 			for (int i = 0; i < this.paramInfos.length; i++) {
 				Param p = params[i];
@@ -69,6 +74,17 @@ public abstract class CalleeNode {
 	}
 
 	public Object accept(Visitor visitor) throws Throwable {
+		if (this.priority < SumkThreadPool.EXECUTOR.threshold()) {
+			if (Log.get("sumk.thread").isDebugEnabled()) {
+				String msg = new StringBuilder().append("[")
+						.append(this.getClass().getSimpleName().replace("ActionNode", "")).append("] ")
+						.append(this.method.getDeclaringClass().getSimpleName()).append(".")
+						.append(this.method.getName()).append("() - priority=").append(priority)
+						.append(" ,  threshold=").append(SumkThreadPool.EXECUTOR.threshold()).toString();
+				Log.get("sumk.thread").debug(msg);
+			}
+			throw SumkThreadPool.THREAD_THRESHOLD_OVER;
+		}
 		return visitor.visit(this);
 	}
 

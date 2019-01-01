@@ -10,7 +10,7 @@
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk</artifactId>
-    <version>1.8.1</version>
+    <version>1.8.6</version>
 </dependency>
 ```
 

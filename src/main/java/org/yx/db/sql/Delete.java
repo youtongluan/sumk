@@ -53,6 +53,18 @@ public final class Delete extends AbstractSqlBuilder<Integer> implements Executa
 		return this;
 	}
 
+	/**
+	 * 分表的情况下，设置分区名。这个方法只能调用一次
+	 * 
+	 * @param sub
+	 *            分区名
+	 * @return 当前对象
+	 */
+	public Delete partition(String sub) {
+		sub(sub);
+		return this;
+	}
+
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		if (CollectionUtil.isEmpty(this.in)) {
 			SumkException.throwException(64342245, "can not delete all records");

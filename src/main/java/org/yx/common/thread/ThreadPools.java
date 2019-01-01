@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.thread;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -32,20 +32,21 @@ public class ThreadPools {
 		return create(type, type, core, max);
 	}
 
-	public static ExecutorService create(String type, String configPrefix, int core, int max) {
+	public static SumkExecutorService create(String type, String configPrefix, int core, int max) {
 		return create(type, configPrefix, core, max, 3000);
 	}
 
-	public static ExecutorService create(String type, String configPrefix, int core, int max, int aliveTime) {
+	public static SumkExecutorService create(String type, String configPrefix, int core, int max, int aliveTime) {
 		if (configPrefix.endsWith(".")) {
 			configPrefix = configPrefix.substring(0, configPrefix.length() - 1);
 		}
 		core = AppInfo.getInt(configPrefix + ".threadpool.core", core);
 		AbortPolicyQueue abortPolicyQueue = new AbortPolicyQueue(
 				AppInfo.getInt(configPrefix + ".threadpool.maxqueue", 100000), core);
-		ThreadPoolExecutor pool = new ThreadPoolExecutor(core, AppInfo.getInt(configPrefix + ".threadpool.max", max),
+		ThresholdThreadPool pool = new ThresholdThreadPool(core, AppInfo.getInt(configPrefix + ".threadpool.max", max),
 				AppInfo.getInt(configPrefix + ".threadpool.alive", aliveTime), TimeUnit.MILLISECONDS, abortPolicyQueue,
-				new DefaultThreadFactory(type), abortPolicyQueue);
+				new DefaultThreadFactory(type), abortPolicyQueue,
+				AppInfo.getInt(configPrefix + ".threshold", ThresholdExecutor.DEFAULT_THRESHOLD));
 		abortPolicyQueue.pool = pool;
 		if (AppInfo.getBoolean(configPrefix + ".threadpool.allowCoreThreadTimeOut", false)) {
 			pool.allowCoreThreadTimeOut(true);
@@ -55,7 +56,7 @@ public class ThreadPools {
 
 	private static class AbortPolicyQueue extends LinkedBlockingQueue<Runnable> implements RejectedExecutionHandler {
 
-		ThreadPoolExecutor pool;
+		private SumkExecutorService pool;
 		private static final long serialVersionUID = 1L;
 		private int softCapacity;
 
@@ -65,18 +66,30 @@ public class ThreadPools {
 		}
 
 		@Override
-		public boolean offer(Runnable e) {
+		public boolean offer(Runnable r) {
 			int size = this.size();
 			if (size > softCapacity) {
 				return false;
 			}
 
-			return super.offer(e);
+			return super.offer(r);
 		}
 
 		@Override
 		public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
-			if (pool.isShutdown() || !super.offer(r)) {
+			if (pool.isShutdown()) {
+				throw new RejectedExecutionException("Task " + r.toString() + " rejected from " + e.toString()
+						+ ",because of Thread pool shutdowned");
+			}
+
+			if (PriorityRunnable.class == r.getClass()
+					&& PriorityRunnable.class.cast(r).priority() < pool.threshold()) {
+				String msg = new StringBuilder().append("Task ").append(r.toString()).append(" rejected from ")
+						.append(e.toString()).append(", because of ").append(PriorityRunnable.class.cast(r).priority())
+						.append(" lower than ").append(pool.threshold()).toString();
+				throw new RejectedExecutionException(msg);
+			}
+			if (!super.offer(r)) {
 				throw new RejectedExecutionException("Task " + r.toString() + " rejected from " + e.toString());
 			}
 		}

@@ -25,7 +25,7 @@ import org.apache.mina.core.future.WriteFuture;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.Host;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.util.Assert;
@@ -101,7 +101,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		}
 		Thread currentThread = Thread.currentThread();
 		if (!awaitThread.compareAndSet(null, currentThread)) {
-			throw new SoaException(RpcCode.TIMEOUT, "cannot await twice", new TimeoutException());
+			throw new SoaException(RpcErrorCode.TIMEOUT, "cannot await twice", new TimeoutException());
 		}
 		while (result.get() == null) {
 

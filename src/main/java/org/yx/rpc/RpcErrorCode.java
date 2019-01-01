@@ -15,22 +15,24 @@
  */
 package org.yx.rpc;
 
-public interface RpcCode {
+import org.yx.exception.ErrorCode;
 
-	int UNKNOW = 300;
+public interface RpcErrorCode extends ErrorCode {
 
-	int WAIT_TWICE = 310;
+	int UNKNOW = 700;
 
-	int NO_ROUTE = 400;
+	int WAIT_TWICE = 710;
 
-	int NO_NODE_AVAILABLE = 410;
+	int NO_ROUTE = 720;
 
-	int TIMEOUT = 420;
+	int NO_NODE_AVAILABLE = 730;
 
-	int SEND_FAILED = 430;
+	int TIMEOUT = 740;
 
-	int SERVER_HANDLE_ERROR = 540;
+	int SEND_FAILED = 750;
 
-	int SERVER_UNKNOW = 500;
+	int SERVER_HANDLE_ERROR = 760;
+
+	int SERVER_UNKNOW = 770;
 
 }

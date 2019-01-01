@@ -22,7 +22,7 @@ import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
-import org.yx.rpc.RpcCode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
@@ -57,7 +57,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.exception(null);
 		} catch (Throwable e) {
 			resp.json(null);
-			resp.exception(new SoaException(RpcCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
+			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 			LogType.RPC_LOG.debug(req.getApi() + "," + e.toString(), e);
 		} finally {
 			resp.serviceInvokeMilTime(System.currentTimeMillis() - start);

@@ -43,7 +43,7 @@ public class InvokeHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Throwable {
-		HttpNode info = ctx.httpNode();
+		HttpActionNode info = ctx.httpNode();
 		if (ctx.data() != null && !String.class.isInstance(ctx.data())) {
 			HttpException.throwException(this.getClass(), ctx.data().getClass().getName() + " is not String");
 		}
@@ -69,7 +69,7 @@ public class InvokeHandler implements HttpHandler {
 		return false;
 	}
 
-	private static Object exec(HttpNode info, WebContext ctx) throws Throwable {
+	private static Object exec(HttpActionNode info, WebContext ctx) throws Throwable {
 		return info.accept(http -> {
 			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
 				return exec(http.method, http.obj, null, null, ctx);

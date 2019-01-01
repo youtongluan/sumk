@@ -28,7 +28,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
-import org.yx.http.ErrorCode;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.InnerHttpUtil;
 import org.yx.http.Web;
 import org.yx.log.Log;
@@ -96,12 +96,12 @@ public class HttpHandlerChain implements HttpHandler {
 
 			if (HttpException.class.isInstance(temp)) {
 				LOG_ERROR.error(msg(ctx, temp.getMessage()), temp);
-				error(ctx, -1013243, "data format error");
+				error(ctx, HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
 				return true;
 			}
 			if (InvalidParamException.class.isInstance(temp)) {
 				LOG_ERROR.info(msg(ctx, temp.getMessage()), temp);
-				error(ctx, ErrorCode.VALIDATE_ERROR, temp.getMessage());
+				error(ctx, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
 				return true;
 			}
 			do {
@@ -113,7 +113,7 @@ public class HttpHandlerChain implements HttpHandler {
 				}
 			} while ((temp = temp.getCause()) != null);
 			LOG_ERROR.error(msg(ctx, e.getMessage()), e);
-			error(ctx, -2343254, "请求出错");
+			error(ctx, HttpErrorCode.HANDLE_ERROR, "请求出错");
 		} finally {
 			if (LOG_REQ.isDebugEnabled() && ctx.dataInString() != null) {
 				StringWriter stringWriter = new StringWriter();

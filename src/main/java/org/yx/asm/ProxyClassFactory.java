@@ -22,16 +22,11 @@ import java.util.Map;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.yx.bean.Box;
-import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 
 public class ProxyClassFactory {
 
 	public static Class<?> proxyIfNeed(Class<?> clz) throws Exception {
-
-		if ("no".equals(AppInfo.get("sumk.aop.proxy", "config"))) {
-			return clz;
-		}
 		Map<String, Method> aopMethods = new HashMap<>();
 		Method[] bethods = clz.getDeclaredMethods();
 		for (Method m : bethods) {
@@ -42,7 +37,7 @@ public class ProxyClassFactory {
 				continue;
 			}
 			if (aopMethods.put(m.getName(), m) != null) {
-				SumkException.throwException(-2321435, "the name of box method cannot duplicate in one class");
+				SumkException.throwException(-2321435, "box method [" + m.getName() + "] duplicate in one class");
 			}
 		}
 		if (aopMethods.isEmpty()) {
