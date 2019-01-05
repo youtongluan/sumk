@@ -80,7 +80,11 @@ public class LocalUserSession implements UserSession {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends SessionObject> T getUserObject(Class<T> clz) {
-		TimedObject to = map.get(HttpHeadersHolder.sessionId());
+		String sid = HttpHeadersHolder.sessionId();
+		if (sid == null) {
+			return null;
+		}
+		TimedObject to = map.get(sid);
 		if (to == null) {
 			return null;
 		}
@@ -89,7 +93,11 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public void flushSession() {
-		TimedObject to = map.get(HttpHeadersHolder.sessionId());
+		String sid = HttpHeadersHolder.sessionId();
+		if (sid == null) {
+			return;
+		}
+		TimedObject to = map.get(sid);
 		if (to == null) {
 			return;
 		}

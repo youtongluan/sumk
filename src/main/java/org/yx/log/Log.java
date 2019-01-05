@@ -22,17 +22,21 @@ import org.yx.conf.AppInfo;
 public abstract class Log {
 	static {
 		try {
-			String logType = AppInfo.get("sumk.log.type", LogType.console.name());
-			setLogType(LogType.valueOf(logType.trim().toLowerCase()));
+			parseLogType();
 		} catch (Exception e) {
-			ConsoleLog.get("sumk.log").error(e.getMessage(), e);
+			e.printStackTrace();
 		}
 	}
 
-	private static LogType logType;
+	private static LogType logType = LogType.console;
 
 	public static void setLogType(LogType type) {
 		Log.logType = type;
+	}
+
+	static void parseLogType() {
+		String logType = AppInfo.get("sumk.log.type", LogType.console.name());
+		Log.setLogType(LogType.valueOf(logType.trim().toLowerCase()));
 	}
 
 	public static boolean isTraceEnable(String module) {

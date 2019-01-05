@@ -30,6 +30,8 @@ import org.yx.bean.ScanerFactorysBean;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.conf.SystemConfig;
+import org.yx.conf.SystemConfigHolder;
 import org.yx.log.Log;
 import org.yx.redis.RedisPool;
 import org.yx.rpc.client.Rpc;
@@ -66,6 +68,11 @@ public class SumkServer {
 			argSet.addAll(Arrays.asList(args));
 		}
 		start(argSet);
+	}
+
+	public static void start(SystemConfig config, Collection<String> args) {
+		SystemConfigHolder.setSystemConfig(config);
+		start(args);
 	}
 
 	public static void start(Collection<String> args) {

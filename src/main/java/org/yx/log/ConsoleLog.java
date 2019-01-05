@@ -49,11 +49,6 @@ public class ConsoleLog extends SumkLogger {
 	}
 
 	@Override
-	protected void output(LogLevel methodLevel, String msg) {
-		this.show(methodLevel, msg);
-	}
-
-	@Override
 	protected void output(LogLevel methodLevel, String format, Object... arguments) {
 		this.show(methodLevel, format, arguments);
 	}
@@ -62,8 +57,8 @@ public class ConsoleLog extends SumkLogger {
 	protected void output(LogLevel methodLevel, String msg, Throwable e) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
-		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ").append(shorter(name))
-				.append(" - ").append(msg);
+		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ")
+				.append(LogKits.shorter(name, 40)).append(" - ").append(msg);
 		System.err.print(sb.toString());
 		e.printStackTrace();
 	}
@@ -72,8 +67,8 @@ public class ConsoleLog extends SumkLogger {
 		msg = this.buildMessage(msg, args);
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
-		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ").append(shorter(name))
-				.append(" - ").append(msg);
+		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ")
+				.append(LogKits.shorter(name, 40)).append(" - ").append(msg);
 		System.out.println(sb.toString());
 	}
 

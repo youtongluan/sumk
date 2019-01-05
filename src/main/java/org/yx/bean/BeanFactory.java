@@ -15,82 +15,29 @@
  */
 package org.yx.bean;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.yx.common.LogType;
 import org.yx.common.StartConstants;
+import org.yx.common.WildcardMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.db.Cachable;
 import org.yx.db.Cached;
 import org.yx.exception.SumkException;
-import org.yx.util.StringUtil;
 
 public class BeanFactory extends AbstractBeanListener {
 
 	private boolean cachedScan;
-	private boolean useRedis;
+	private boolean useRedisAsCache;
 
-	private Set<String> excludes;
-
-	private List<String> excludeStarts;
-
-	private List<String> excludeEnds;
+	private final WildcardMatcher excludeMatcher;
 
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
 		this.cachedScan = AppInfo.getBoolean("sumk.ioc.cached.enable", true);
-		this.useRedis = AppInfo.getBoolean("sumk.dao.cache", true);
-		String noProxys = AppInfo.get("sumk.ioc.exclude", null);
-		if (noProxys == null) {
-			return;
-		}
-		Set<String> exact = new HashSet<>();
-		Set<String> start = new HashSet<>();
-		Set<String> end = new HashSet<>();
-		String[] noProxyArray = StringUtil.splitByComma(noProxys);
-		final String WILDCARD = "*";
-		for (String s : noProxyArray) {
-			if ((s = s.trim()).isEmpty()) {
-				continue;
-			}
-
-			if (!s.contains(WILDCARD)) {
-				exact.add(s);
-				continue;
-			}
-
-			if (s.indexOf(WILDCARD) != s.lastIndexOf(WILDCARD)) {
-				LogType.IOC_LOG.error("{}出现了2次*,本配置将被忽略", s);
-				continue;
-			}
-			if (s.length() == 1) {
-				LogType.IOC_LOG.error("{}的长度太短，将被忽略", s);
-				continue;
-			}
-			if (s.startsWith(WILDCARD)) {
-				end.add(s.substring(1));
-			} else if (s.endsWith(WILDCARD)) {
-				start.add(s.substring(0, s.length() - 1));
-			} else {
-				LogType.IOC_LOG.error("{}的*不是出现在头尾，将被忽略", s);
-			}
-		}
-		if (exact.size() > 0) {
-			excludes = exact;
-			LogType.IOC_LOG.debug("exacts:{}", excludes);
-		}
-		if (start.size() > 0) {
-			excludeStarts = new ArrayList<>(start);
-			LogType.IOC_LOG.debug("excludeStarts:{}", excludeStarts);
-		}
-		if (end.size() > 0) {
-			excludeEnds = new ArrayList<>(end);
-			LogType.IOC_LOG.debug("excludeEnds:{}", excludeEnds);
-		}
+		this.useRedisAsCache = AppInfo.getBoolean("sumk.dao.cache", true);
+		excludeMatcher = new WildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);
+		LogType.IOC_LOG.info("bean exclude matcher:{}", excludeMatcher);
 	}
 
 	@Override
@@ -98,28 +45,9 @@ public class BeanFactory extends AbstractBeanListener {
 		try {
 			Class<?> clz = event.clz();
 			String clzName = clz.getName();
-
-			if (this.excludes != null && this.excludes.contains(clzName)) {
-				LogType.IOC_LOG.info("{} excluded by user", clzName);
+			if (excludeMatcher.match(clzName)) {
+				LogType.IOC_LOG.info("{} excluded", clzName);
 				return;
-			}
-
-			if (this.excludeStarts != null) {
-				for (String start : this.excludeStarts) {
-					if (clzName.startsWith(start)) {
-						LogType.IOC_LOG.info("{} excluded for pattern {}*", clzName, start);
-						return;
-					}
-				}
-			}
-
-			if (this.excludeEnds != null) {
-				for (String end : this.excludeEnds) {
-					if (clzName.endsWith(end)) {
-						LogType.IOC_LOG.info("{} excluded for pattern *{}", clzName, end);
-						return;
-					}
-				}
 			}
 
 			Bean b = clz.getAnnotation(Bean.class);
@@ -142,7 +70,7 @@ public class BeanFactory extends AbstractBeanListener {
 				if (!Cachable.class.isInstance(bean)) {
 					SumkException.throwException(35423543, clz.getName() + " is not instance of Cachable");
 				}
-				if (this.useRedis) {
+				if (this.useRedisAsCache) {
 					Cachable cache = (Cachable) bean;
 					cache.setCacheEnable(true);
 				}

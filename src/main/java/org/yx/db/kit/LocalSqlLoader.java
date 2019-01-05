@@ -16,11 +16,10 @@
 package org.yx.db.kit;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -67,14 +66,14 @@ public class LocalSqlLoader implements MultiResourceLoader, Runnable {
 	}
 
 	@Override
-	public Map<String, InputStream> openInputs(String db) throws Exception {
-		Map<String, InputStream> map = new HashMap<>();
+	public Map<String, byte[]> openResources(String db) throws Exception {
+		Map<String, byte[]> map = new HashMap<>();
 		List<File> files = new ArrayList<>();
 		FileUtil.listAllSubFiles(files, getRoot());
 		times = new FileTime[files.size()];
 		for (int i = 0; i < files.size(); i++) {
 			File f = files.get(i);
-			map.put(f.getName(), new FileInputStream(f));
+			map.put(f.getName(), Files.readAllBytes(f.toPath()));
 			times[i] = new FileTime(f.getAbsolutePath(), f.lastModified());
 		}
 		return map;

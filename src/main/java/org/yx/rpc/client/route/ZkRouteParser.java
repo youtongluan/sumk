@@ -37,7 +37,7 @@ import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
-import org.yx.util.ZkClientHolder;
+import org.yx.util.ZkClientHelper;
 
 public class ZkRouteParser {
 	private String zkUrl;
@@ -55,14 +55,14 @@ public class ZkRouteParser {
 
 	public void readRouteAndListen() throws IOException {
 		Map<Host, ZkData> datas = new HashMap<>();
-		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
+		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 
 		final IZkDataListener nodeListener = new IZkDataListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
-				ServerData d = parser.buildZkNodeData(dataPath, ZkClientHolder.data2String((byte[]) data));
+				ServerData d = parser.buildZkNodeData(dataPath, ZkClientHelper.data2String((byte[]) data));
 				if (d == null) {
 					parser.handle(RouteEvent.delete(Host.create(dataPath)));
 					return;
@@ -129,8 +129,8 @@ public class ZkRouteParser {
 	}
 
 	private ServerData getZkNodeData(String path) throws IOException {
-		ZkClient zk = ZkClientHolder.getZkClient(zkUrl);
-		String json = ZkClientHolder.data2String(zk.readData(ZKConst.SOA_ROOT + "/" + path));
+		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
+		String json = ZkClientHelper.data2String(zk.readData(ZKConst.SOA_ROOT + "/" + path));
 		return buildZkNodeData(path, json);
 	}
 

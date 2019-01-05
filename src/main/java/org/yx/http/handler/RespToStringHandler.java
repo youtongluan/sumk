@@ -33,6 +33,9 @@ public class RespToStringHandler implements HttpHandler {
 			return false;
 		}
 		Class<?> clz = obj.getClass();
+		if (clz == byte[].class) {
+			return false;
+		}
 		if (clz.isArray()) {
 			ctx.result(HttpGson.gson().toJson(obj));
 			return false;

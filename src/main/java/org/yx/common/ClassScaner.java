@@ -74,6 +74,7 @@ public class ClassScaner {
 				while (eUrl.hasMoreElements()) {
 					url = eUrl.nextElement();
 					filePath = url.getFile();
+
 					if (filePath.indexOf("src/test/") == -1 && filePath.indexOf("src/main/") == -1) {
 						file = new File(url.getPath());
 						this.parseFile(classNameList, file, packagePath, url);

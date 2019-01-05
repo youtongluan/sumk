@@ -19,13 +19,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.Bean;
-import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.HttpActionNode;
+import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
 @Bean
-@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1)
+@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
 public class RestServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 7437235491L;

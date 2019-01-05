@@ -23,6 +23,7 @@ public class SystemConfigHolder {
 	 * 
 	 * @param config
 	 *            外部注入
+	 * @return true表示设置被更新，如果config跟原来是同一个对象，也会返回false
 	 */
 	public static boolean setSystemConfig(SystemConfig config) {
 		SystemConfigHolder.config = config;

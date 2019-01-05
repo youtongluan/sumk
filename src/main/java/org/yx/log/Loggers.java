@@ -23,18 +23,19 @@ import org.yx.conf.AppInfo;
 
 public class Loggers {
 	public static final String ROOT = "root";
+	private static LogLevel DEFAULT_LEVEL = LogLevel.INFO;
+	private static Map<String, LogLevel> levelMap = new HashMap<>();
+
 	private Map<String, SumkLogger> map = new ConcurrentHashMap<>();
-	private LogLevel DEFAULT_LEVEL = LogLevel.INFO;
-	private Map<String, LogLevel> levelMap = new HashMap<>();
 
 	private Loggers() {
 	}
 
-	public static Loggers create() {
-		final Loggers loggers = new Loggers();
+	static {
 
 		AppInfo.addObserver((a, b) -> {
 			try {
+				Log.parseLogType();
 				String temp = AppInfo.get("sumk.log.level", "info");
 				String[] levelStrs = temp.replace('，', ',').split(",");
 				Map<String, LogLevel> newLevels = new HashMap<>();
@@ -55,12 +56,15 @@ public class Loggers {
 						ConsoleLog.get("sumk.log").error("{} is not valid name:level format", levelStr);
 					}
 				}
-				loggers.resetLevel(newLevels);
+				resetLevel(newLevels);
 			} catch (Exception e) {
-				ConsoleLog.get("sumk.log").error(e.getMessage(), e);
+				e.printStackTrace();
 			}
 		});
-		return loggers;
+	}
+
+	public static synchronized Loggers create() {
+		return new Loggers();
 	}
 
 	private LogLevel level(String logName) {
@@ -101,11 +105,11 @@ public class Loggers {
 		return level(name);
 	}
 
-	public synchronized void resetLevel(Map<String, LogLevel> newLevels) {
+	public static synchronized void resetLevel(Map<String, LogLevel> newLevels) {
 		LogLevel defaultLevel = newLevels.remove(ROOT);
 		if (defaultLevel != null) {
-			this.DEFAULT_LEVEL = defaultLevel;
+			DEFAULT_LEVEL = defaultLevel;
 		}
-		this.levelMap = newLevels;
+		levelMap = newLevels;
 	}
 }

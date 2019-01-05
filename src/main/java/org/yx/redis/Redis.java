@@ -72,7 +72,6 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 		String masterName = p.masterName();
 		if (masterName == null) {
 			Host host = p.hosts().get(0);
-			Log.get(LOG_NAME).info("create redis pool,host={},port={},db={}", host.ip(), host.port(), p.getDb());
 
 			this.pool = new JedisPool(config, host.ip(), host.port(), p.getTimeout(), p.getPassword(), p.getDb(),
 					AppInfo.appId());
@@ -223,10 +222,10 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 
 	@Override
 	public String toString() {
-		return "Redis [hosts=" + hosts + ", db=" + db + ", tryCount=" + tryCount + "]";
+		return "[hosts=" + hosts + ", db=" + db + ", tryCount=" + tryCount + "]";
 	}
 
-	void shutdown() {
+	public void shutdown() {
 		this.pool.close();
 	}
 }

@@ -15,13 +15,12 @@
  */
 package org.yx.conf;
 
-import java.io.InputStream;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public interface MultiResourceLoader {
 
-	Map<String, InputStream> openInputs(String dbName) throws Exception;
+	Map<String, byte[]> openResources(String name) throws Exception;
 
 	boolean startListen(Consumer<MultiResourceLoader> consumer);
 }

@@ -34,15 +34,15 @@ import org.yx.util.GsonUtil;
 public class PlainClientTest {
 
 	private String getUrl(String act) {
-		return "http://localhost:8080/intf/webserver/demo?act=" + act;
+		return "http://localhost:8080/rest/" + act;
 	}
 
 	private String getUploadUrl(String act) {
-		return "http://localhost:8080/intf/upload/demo?act=" + act;
+		return "http://localhost:8080/upload/" + act;
 	}
 
 	private HttpResponse login(HttpClient client) throws Exception {
-		HttpGet post = new HttpGet("http://localhost:8080/intf/login?username=admin&password=123456&code=9999");
+		HttpGet post = new HttpGet("http://localhost:8080/login?username=admin&password=123456&code=9999");
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
 		Assert.assertTrue(line, resp.getStatusLine().getStatusCode() == 200);
@@ -81,7 +81,7 @@ public class PlainClientTest {
 		json.put("name", "小明");
 		String req = GsonUtil.toJson(json);
 		String sign = Encrypt.sign(req.getBytes(charset));
-		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);
 		StringEntity se = new StringEntity(req,charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);

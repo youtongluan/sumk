@@ -21,10 +21,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.I0Itec.zkclient.ZkClient;
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
-import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.yx.common.SimpleZkSerializer;
 
-public final class ZkClientHolder {
+public final class ZkClientHelper {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
 	public static final Charset SERIAL_CHARSET = StandardCharsets.UTF_8;
 
@@ -56,34 +55,13 @@ public final class ZkClientHolder {
 		if (zk != null) {
 			return zk;
 		}
-		synchronized (ZkClientHolder.class) {
+		synchronized (ZkClientHelper.class) {
 			zk = map.get(url);
 			if (zk != null) {
 				return zk;
 			}
 			zk = new ZkClient(url, 30000);
-			zk.setZkSerializer(new ZkSerializer() {
-
-				@Override
-				public byte[] serialize(Object data) throws ZkMarshallingError {
-					if (data == null) {
-						return null;
-					}
-					if (byte[].class.isInstance(data)) {
-						return (byte[]) data;
-					}
-					if (String.class.isInstance(data)) {
-						return ((String) data).getBytes(SERIAL_CHARSET);
-					}
-					return GsonUtil.toJson(data).getBytes(SERIAL_CHARSET);
-				}
-
-				@Override
-				public Object deserialize(byte[] bytes) throws ZkMarshallingError {
-					return bytes;
-				}
-
-			});
+			zk.setZkSerializer(new SimpleZkSerializer(SERIAL_CHARSET));
 			if (map.putIfAbsent(url, zk) != null) {
 				zk.close();
 			}

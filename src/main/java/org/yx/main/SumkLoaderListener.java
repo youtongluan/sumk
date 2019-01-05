@@ -41,6 +41,7 @@ import org.yx.http.filter.HttpLoginWrapper;
 import org.yx.http.filter.LoginServlet;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 /**
  * 如果使用tomcat等外部容器启动sumk，请在web.xml中添加：<BR>
@@ -97,9 +98,15 @@ public class SumkLoaderListener implements ServletContextListener {
 			ServletRegistration.Dynamic dynamic = context.addServlet(name, bean);
 			dynamic.setAsyncSupported(sumk.asyncSupported());
 			dynamic.setLoadOnStartup(sumk.loadOnStartup());
-			dynamic.addMapping(sumk.value());
-			Log.get("sumk.http").trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
-					Arrays.toString(sumk.value()));
+			String[] values = sumk.value();
+			String value = null;
+			if (StringUtil.isNotEmpty(sumk.appKey())
+					&& (value = AppInfo.get("http.servlet." + sumk.appKey())) != null) {
+				values = StringUtil.splitByComma(value);
+			}
+			dynamic.addMapping(values);
+			Log.get("sumk.http.action").trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
+					Arrays.toString(values));
 		}
 	}
 
@@ -117,7 +124,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			if (name.isEmpty()) {
 				name = bean.getClass().getSimpleName();
 			}
-			Log.get("sumk.http").trace("add web filter : {} - {}", name, bean.getClass().getSimpleName());
+			Log.get("sumk.http.action").trace("add web filter : {} - {}", name, bean.getClass().getSimpleName());
 			FilterRegistration.Dynamic r = context.addFilter(name, bean);
 			r.setAsyncSupported(sumk.asyncSupported());
 			DispatcherType[] type = sumk.dispatcherType();

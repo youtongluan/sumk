@@ -16,10 +16,9 @@
 package org.yx.sumk.batis;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -51,13 +50,13 @@ public class LocalSqlXmlLoader implements MultiResourceLoader {
 	}
 
 	@Override
-	public Map<String, InputStream> openInputs(String db) throws Exception {
-		Map<String, InputStream> map = new HashMap<>();
+	public Map<String, byte[]> openResources(String db) throws Exception {
+		Map<String, byte[]> map = new HashMap<>();
 		List<File> xmlFiles = new ArrayList<>();
 		parseFileList(xmlFiles, getParent(db));
 		for (File f : xmlFiles) {
 			Log.get("sumk.db.batis").debug("mybatis file:{}", f.getAbsolutePath());
-			map.put(f.getAbsolutePath(), new FileInputStream(f));
+			map.put(f.getAbsolutePath(), Files.readAllBytes(f.toPath()));
 		}
 		return map;
 	}

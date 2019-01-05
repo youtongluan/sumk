@@ -19,7 +19,6 @@ import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -63,7 +62,7 @@ public class RedisFactory {
 		return c;
 	}
 
-	public static Redis get(GenericObjectPoolConfig<?> config, RedisParamter p) {
+	public static Redis get(JedisPoolConfig config, RedisParamter p) {
 		Assert.notNull(p, "redis paramter cannot be null");
 		if (p.getTryCount() < 1 || p.getTryCount() > 100) {
 			throw new SumkException(54354354, "tryCount必须介于0和100之间");

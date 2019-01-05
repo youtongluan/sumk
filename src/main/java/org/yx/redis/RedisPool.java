@@ -20,28 +20,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
-import org.yx.util.SeqUtil;
 
 public class RedisPool {
 	private static final Map<String, Redis> map = new ConcurrentHashMap<>();
-
-	private static final Map<String, RedisParamter[]> readParamsMap = new ConcurrentHashMap<>();
 
 	static Redis _defaultRedis;
 	static {
 		if (!SumkServer.isDestoryed()) {
 			try {
+				ConsoleLog.get("sumk.SYS").debug("redis pool init");
 				RedisLoader.init();
-				Redis counter = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
-				if (counter == null) {
-					counter = RedisPool.getRedisExactly("session");
-				}
-				if (counter != null) {
-					SeqUtil.setCounter(new RedisCounter(counter));
-				}
 			} catch (Exception e) {
 				Log.printStack(e);
 				System.exit(-1);
@@ -71,11 +62,12 @@ public class RedisPool {
 	}
 
 	public static void put(String alias, Redis redis) {
-		map.putIfAbsent(alias.toLowerCase(), redis);
-	}
-
-	static void attachRead(String host, RedisParamter[] reads) {
-		readParamsMap.put(host, reads);
+		Redis old = map.put(alias.toLowerCase(), redis);
+		Log.get("sumk.redis").info("redis name {} : {}", alias, redis);
+		if (old != null) {
+			old.shutdown();
+			Log.get("sumk.redis").info("shutdown old redis {} : {}", alias, redis);
+		}
 	}
 
 	public static void shutdown() {
@@ -88,6 +80,5 @@ public class RedisPool {
 			r.shutdown();
 		}
 		map.clear();
-		readParamsMap.clear();
 	}
 }

@@ -23,13 +23,14 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yx.common.Deamon;
+import org.yx.common.Daemon;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
 import org.yx.common.thread.ThresholdThreadPool;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.ErrorCode;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
 public class SumkThreadPool {
@@ -75,19 +76,13 @@ public class SumkThreadPool {
 		}, 0, 5, TimeUnit.SECONDS);
 	}
 
-	public static synchronized void runDeamon(Deamon deamon, String threadName) {
+	public static synchronized void runDeamon(Daemon deamon, String threadName) {
 		if (SumkServer.isDestoryed()) {
 			return;
 		}
 		Runnable r = () -> {
 			while (true) {
 				if (SumkServer.isDestoryed()) {
-					try {
-						Thread.interrupted();
-						deamon.close();
-					} catch (Exception e) {
-						Log.get("sumk.log").trace(e.getMessage(), e);
-					}
 					break;
 				}
 				try {
@@ -102,7 +97,13 @@ public class SumkThreadPool {
 					Log.printStack(e);
 				}
 			}
-			Log.get("sumk.SYS").info("{} stoped", threadName);
+			try {
+				Thread.interrupted();
+				deamon.close();
+			} catch (Exception e) {
+				ConsoleLog.get("sumk.SYS").error(e.getMessage(), e);
+			}
+			ConsoleLog.get("sumk.SYS").info("{} stoped", threadName);
 		};
 		Thread t = new Thread(r, threadName);
 		t.setDaemon(true);
@@ -113,10 +114,10 @@ public class SumkThreadPool {
 	public static void shutdown() {
 		scheduledExecutor.shutdown();
 		EXECUTOR.shutdown();
-		deamonThreads.forEach(Thread::interrupt);
+		deamonThreads.forEach(t -> t.interrupt());
 		deamonThreads.forEach(t -> {
 			try {
-				t.join(2000);
+				t.join(AppInfo.getLong("sumk.thread.jointime", 3000));
 			} catch (InterruptedException e) {
 			}
 		});

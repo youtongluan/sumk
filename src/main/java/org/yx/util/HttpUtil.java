@@ -50,14 +50,6 @@ public final class HttpUtil {
 		HttpSessionHolder.remove();
 	}
 
-	/**
-	 * 获取http请求中的header头部 <BR>
-	 * <B>注意：不能在自定义的servlet中调用</B>
-	 * 
-	 * @param name
-	 *            header头部的名字
-	 * @return header中相应的value
-	 */
 	public static String getHeader(String name) {
 		return HttpHeadersHolder.getHeader(name);
 	}

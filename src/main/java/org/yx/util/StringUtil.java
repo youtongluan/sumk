@@ -41,6 +41,13 @@ public class StringUtil {
 		return str == null || str.length() == 0;
 	}
 
+	public static String toLatin(String v) {
+		if (v == null || v.isEmpty()) {
+			return v;
+		}
+		return v.replace('，', ',').replace('；', ';').replace('　', ' ').replace('：', ':');
+	}
+
 	public static String capitalize(String str) {
 		int strLen;
 		if (str == null || (strLen = str.length()) == 0) {

@@ -16,29 +16,31 @@
 package org.yx.redis;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.StringReader;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
+import org.yx.conf.NamePairs;
 import org.yx.conf.SingleResourceLoader;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
+import redis.clients.jedis.JedisPoolConfig;
+
 public class RedisLoader {
-	private static GenericObjectPoolConfig<?> defaultConfig = null;
+	private static JedisPoolConfig defaultConfig = null;
 
 	private static SingleResourceLoader resourceLoader;
 
-	public static GenericObjectPoolConfig<?> getDefaultConfig() {
+	public static JedisPoolConfig getDefaultConfig() {
 		return defaultConfig;
 	}
 
-	public static void setDefaultConfig(GenericObjectPoolConfig<?> defaultConfig) {
+	public static void setDefaultConfig(JedisPoolConfig defaultConfig) {
 		RedisLoader.defaultConfig = defaultConfig;
 	}
 
@@ -57,7 +59,11 @@ public class RedisLoader {
 		}
 	}
 
-	private static InputStream loadConfig() throws Exception {
+	private static byte[] loadConfig() throws Exception {
+		if (AppInfo.getBoolean("sumk.redis.appinfo", true)) {
+			Map<String, String> redis = AppInfo.subMap("s.redis.");
+			return new NamePairs(redis).toBytes();
+		}
 		if (resourceLoader == null) {
 			String resourceFactory = AppInfo.get("sumk.redis.conf.loader", "redis.RedisPropertiesLoader");
 			if (resourceFactory == null || resourceFactory.isEmpty()) {
@@ -68,15 +74,15 @@ public class RedisLoader {
 					resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
 			resourceLoader = (SingleResourceLoader) factoryClz.newInstance();
 		}
-		return resourceLoader.openInput(REDIS_FILE);
+		return resourceLoader.readResource(REDIS_FILE);
 	}
 
 	private static void loadRedisByConfig() throws IOException, Exception {
-		InputStream in = loadConfig();
-		if (in == null) {
+		byte[] bs = loadConfig();
+		if (bs == null || bs.length == 0) {
 			return;
 		}
-		Map<String, String> p = CollectionUtil.loadMap(in);
+		Map<String, String> p = CollectionUtil.loadMap(new StringReader(new String(bs, AppInfo.systemCharset())));
 		Log.get(Redis.LOG_NAME).debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {
@@ -84,10 +90,10 @@ public class RedisLoader {
 				continue;
 			}
 			String v = p.get(kk);
-			Redis redis = create(v);
+			kk = kk.toLowerCase();
+			Redis redis = create(kk, v);
 			String[] moduleKeys = kk.replace('，', ',').split(",");
 			for (String key : moduleKeys) {
-				key = key.toLowerCase();
 				if (StringUtil.isEmpty(key)) {
 					continue;
 				}
@@ -96,6 +102,7 @@ public class RedisLoader {
 				}
 				if (RedisConstants.DEFAULT.equals(key)) {
 					RedisPool._defaultRedis = redis;
+					Log.get("sumk.redis").debug("set default redis to {}", redis);
 				} else {
 					RedisPool.put(key, redis);
 				}
@@ -121,7 +128,12 @@ public class RedisLoader {
 		return param;
 	}
 
-	private static Redis create(String v) throws Exception {
-		return RedisFactory.get(defaultConfig, createParam(v));
+	private static Redis create(String name, String v) throws Exception {
+		Log.get(Redis.LOG_NAME).trace("create redis {} with {}", name, v);
+		JedisPoolConfig config = JedisPoolConfigHolder.getConfig(name);
+		if (config == null) {
+			config = defaultConfig;
+		}
+		return RedisFactory.get(config, createParam(v));
 	}
 }

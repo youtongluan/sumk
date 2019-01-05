@@ -18,8 +18,6 @@ package org.yx.util;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.exception.SumkException;
-
 public class SBuilder {
 	public static boolean isMap(Object obj) {
 		return Map.class.isInstance(obj);
@@ -31,6 +29,14 @@ public class SBuilder {
 
 	public static MapBuilder map(String key, Object value) {
 		return map().put(key, value);
+	}
+
+	public static StringMapBuilder stringMap() {
+		return new StringMapBuilder();
+	}
+
+	public static StringMapBuilder stringMap(String key, String value) {
+		return stringMap().put(key, value);
 	}
 
 	public static class MapBuilder {
@@ -47,37 +53,18 @@ public class SBuilder {
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public static Map<String, Object> flatToLevel(Map<String, Object> map) {
-		Map<String, Object> ret = new HashMap<>();
-		for (Map.Entry<String, Object> entry : map.entrySet()) {
-			String k = entry.getKey();
-			Object v = entry.getValue();
-			if (!k.contains(".")) {
-				ret.put(k, v);
-				continue;
-			}
-			String[] ks = k.split("\\.");
-			int lastIndex = ks.length - 1;
-			Map<String, Object> temp = ret;
-			for (int i = 0; i < lastIndex; i++) {
-				String k0 = ks[i];
-				Object obj = temp.get(k0);
-				if (obj == null) {
-					Map<String, Object> temp2 = new HashMap<>();
-					temp.put(k0, temp2);
-					temp = temp2;
-					continue;
-				}
-				if (Map.class.isInstance(obj)) {
-					temp = (Map<String, Object>) obj;
-					continue;
-				}
-				throw new SumkException(546456452, k + " conflit with index " + i);
-			}
-			temp.put(ks[lastIndex], v);
+	public static class StringMapBuilder {
+		private Map<String, String> map = new HashMap<>();
+
+		public StringMapBuilder put(String key, String value) {
+			map.put(key, value);
+			return this;
 		}
 
-		return ret;
+		public Map<String, String> toMap() {
+			return this.map;
+		}
+
 	}
+
 }

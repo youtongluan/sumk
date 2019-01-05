@@ -86,7 +86,8 @@ public class JettyServer implements Plugin {
 
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = createServletContextHandler();
-			context.setContextPath(AppInfo.get("http.jetty.web.root", "/intf"));
+			String contextPath = AppInfo.get("http.jetty.web.root");
+			context.setContextPath(contextPath == null ? "/" : contextPath);
 			context.addEventListener(new SumkLoaderListener());
 			addUserListener(context, Arrays.asList(ServletContextListener.class, ContextScopeListener.class));
 			String resourcePath = AppInfo.get("http.jetty.resource");

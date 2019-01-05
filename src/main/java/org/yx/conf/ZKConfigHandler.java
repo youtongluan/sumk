@@ -17,16 +17,16 @@ package org.yx.conf;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.yx.util.ZkClientHolder;
+import org.yx.util.ZkClientHelper;
 
 public class ZKConfigHandler {
 
 	public static NamePairs readAndListen(String zkUrl, String path, IZkDataListener listener) {
-		ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 		if (!client.exists(path)) {
 			return null;
 		}
-		String data = ZkClientHolder.data2String(client.readData(path));
+		String data = ZkClientHelper.data2String(client.readData(path));
 		if (listener != null) {
 			client.subscribeDataChanges(path, listener);
 		}

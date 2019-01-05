@@ -18,8 +18,38 @@ package org.yx.util;
 import org.yx.common.lock.Key;
 import org.yx.common.lock.Lock;
 import org.yx.common.lock.SLock;
+import org.yx.util.secury.EncryUtil;
+import org.yx.util.secury.MD5Utils;
 
 public abstract class S {
+
+	/**
+	 * AES加解密
+	 */
+	public static class Aes {
+
+		public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
+			return EncryUtil.encrypt(contentBytes, key);
+		}
+
+		public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
+			return EncryUtil.decrypt(contentBytes, key);
+
+		}
+
+	}
+
+	public static class MD5 {
+
+		public static String encrypt(byte[] data) throws Exception {
+			return MD5Utils.encrypt(data);
+		}
+
+		public static byte[] encryptByte(byte[] data) throws Exception {
+			return MD5Utils.encryptByte(data);
+		}
+
+	}
 
 	/**
 	 * 分布式锁

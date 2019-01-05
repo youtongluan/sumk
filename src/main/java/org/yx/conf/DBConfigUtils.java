@@ -21,23 +21,68 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
 public final class DBConfigUtils {
 
-	public static InputStream openConfig(String db) throws Exception {
+	public static Map<String, Map<String, String>> pureMap(Map<String, Object> objectMap) {
+		if (objectMap == null || objectMap.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		final Map<String, Map<String, String>> ret = new HashMap<String, Map<String, String>>();
+
+		objectMap.forEach((catagory, value) -> {
+			if (!Map.class.isInstance(value)) {
+				ConsoleLog.get("sumk.db.config").info("{} is not valid config, value : {}", catagory, value);
+				return;
+			}
+			@SuppressWarnings("unchecked")
+			Map<String, Object> config = (Map<String, Object>) value;
+			Map<String, String> real = new HashMap<>();
+			config.forEach((propertyName, v) -> {
+				if (!String.class.isInstance(v)) {
+					ConsoleLog.get("sumk.db.config").info("{}.{} is not valid config,value:{}", catagory, propertyName,
+							v);
+					return;
+				}
+				real.put(propertyName, (String) v);
+			});
+			if (real.size() > 0) {
+				ret.put(catagory, real);
+			}
+		});
+		return ret;
+	}
+
+	public static Map<String, DBConfig> parseConfigMap(Map<String, Map<String, String>> rawMap) throws Exception {
+		if (rawMap == null || rawMap.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		Map<String, DBConfig> map = new HashMap<>();
+		for (String key : rawMap.keySet()) {
+			Map<String, String> p = rawMap.get(key);
+			DBConfig dc = new DBConfig();
+			dc.setProperties(p);
+			map.put(key, dc);
+		}
+		return map;
+	}
+
+	public static byte[] openConfig(String db) throws Exception {
 		String resourceFactory = AppInfo.get("sumk.db.conf.loader." + db, LocalDBResourceLoader.class.getName());
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
 		Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
 				resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
 		SingleResourceLoader factory = (SingleResourceLoader) factoryClz.newInstance();
-		return factory.openInput(db);
+		return factory.readResource(db);
 	}
 
 	public static Map<String, Map<String, String>> parseIni(String filename) throws FileNotFoundException {

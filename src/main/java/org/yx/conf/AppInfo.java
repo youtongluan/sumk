@@ -16,6 +16,7 @@
 package org.yx.conf;
 
 import java.io.InputStream;
+import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -33,11 +34,25 @@ public final class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
-	static final List<Observer> observers = new ArrayList<>(4);
+	private static final List<Observer> observers = new ArrayList<>(4);
 	private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	private static SystemConfig info;
+	private static String pid;
+	private static String groupId;
+	private static String appId;
+	private static String localIp;
+	public static final String GROUPID_DEFAULT = "sumk";
+	public static final String APPID_DEFAULT = "app";
+
 	static {
+		try {
+			String temp = ManagementFactory.getRuntimeMXBean().getName();
+			pid = temp.substring(0, temp.indexOf("@"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			pid = "UNKNOW";
+		}
 		init();
 	}
 
@@ -78,6 +93,10 @@ public final class AppInfo {
 		}
 	}
 
+	public static String pid() {
+		return pid;
+	}
+
 	static boolean refreshConfig() {
 		SystemConfig config = SystemConfigHolder.config;
 		if (info == config || config == null) {
@@ -85,6 +104,7 @@ public final class AppInfo {
 		}
 		info = config;
 		info.initAppInfo();
+		notifyUpdate();
 		return true;
 	}
 
@@ -113,7 +133,7 @@ public final class AppInfo {
 	}
 
 	public static String getIp() {
-		String ip = info.get("sumk.ip");
+		String ip = localIp;
 		if (ip != null) {
 			return ip;
 		}
@@ -130,7 +150,7 @@ public final class AppInfo {
 	 * @return 当前应用的id
 	 */
 	public static String appId() {
-		return info.get("sumk.appId", "app");
+		return appId;
 	}
 
 	/**
@@ -138,7 +158,7 @@ public final class AppInfo {
 	 * @return 大系统的id
 	 */
 	public static String groupId() {
-		return info.get("sumk.groupId", "sumk");
+		return groupId;
 	}
 
 	/**
@@ -150,6 +170,11 @@ public final class AppInfo {
 	 */
 	public static String get(String name) {
 		return info.get(name);
+	}
+
+	public static String getLatin(String name) {
+		String v = info.get(name);
+		return StringUtil.toLatin(v);
 	}
 
 	public static String get(String name, String defaultValue) {
@@ -221,21 +246,32 @@ public final class AppInfo {
 		return map;
 	}
 
+	public static void notifyUpdate() {
+		if (groupId == null || GROUPID_DEFAULT.equals(groupId)) {
+			groupId = info.get("sumk.groupId", GROUPID_DEFAULT);
+		}
+		if (appId == null || APPID_DEFAULT.equals(appId)) {
+			appId = info.get("sumk.appId", APPID_DEFAULT);
+		}
+		localIp = info.get("sumk.ip");
+
+		AppInfo.observers.forEach(ob -> {
+			ob.update(null, null);
+		});
+	}
+
 	private static class AppPropertiesInfo extends PropertiesInfo {
 
 		private volatile boolean started;
 
 		AppPropertiesInfo() {
-			super("app.properties");
+			super(System.getProperty("appinfo", "app.properties"));
 		}
 
 		@Override
 		public void deal(InputStream in) throws Exception {
 			super.deal(in);
-
-			AppInfo.observers.forEach(ob -> {
-				ob.update(null, null);
-			});
+			notifyUpdate();
 		}
 
 		@Override

@@ -28,7 +28,7 @@ import org.yx.util.GsonUtil;
 public class AesClientTest {
 
 	private String getUrl(String act) {
-		return "http://localhost:8080/intf/webserver/demo?act=" + act;
+		return "http://localhost:8080/rest/" + act;
 	}
 
 
@@ -123,7 +123,7 @@ public class AesClientTest {
 		String sign = Encrypt.sign(GsonUtil.toJson(map).getBytes(charset));
 		System.out.println("sign:" + sign);
 		
-		HttpPost post = new HttpPost(getUrl(act) + "&sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
@@ -140,7 +140,7 @@ public class AesClientTest {
 
 
 	private HttpResponse login(HttpClient client) throws Exception {
-		HttpGet post = new HttpGet("http://localhost:8080/intf/login?username=admin&password=123456&code=9999");
+		HttpGet post = new HttpGet("http://localhost:8080/login?username=admin&password=123456&code=9999");
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
 		Assert.assertTrue(line, resp.getStatusLine().getStatusCode() == 200);

@@ -20,7 +20,6 @@ import org.yx.log.Log;
 
 public class LogType {
 	public static final String SQL_ERROR = "sumk.sql.error";
-	public static final Logger SQL_LOG = Log.get("sumk.sql");
 	public static final Logger RPC_LOG = Log.get("sumk.rpc");
 	public static final Logger HTTP_LOG = Log.get("sumk.http");
 	public static final Logger IOC_LOG = Log.get("sumk.ioc");

@@ -42,6 +42,10 @@ public final class Seq {
 		this.counter = counter;
 	}
 
+	public SeqCounter getCounter() {
+		return this.counter;
+	}
+
 	private int localHashIndex(String name) {
 		if (name == null || name.isEmpty()) {
 			return LOCAL_SEQ_INDEX;

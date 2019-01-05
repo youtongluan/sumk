@@ -15,7 +15,6 @@
  */
 package org.yx.sumk.batis;
 
-import java.io.InputStream;
 import java.util.Map;
 
 import org.yx.bean.Loader;
@@ -32,13 +31,13 @@ import org.yx.util.Assert;
  */
 public final class MybatisSqlXmlUtils {
 
-	public static Map<String, InputStream> openInputs(String db) throws Exception {
+	public static Map<String, byte[]> openInputs(String db) throws Exception {
 		String resourceFactory = AppInfo.get("sumk.db.batis.loader." + db, LocalSqlXmlLoader.class.getName());
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
 		Assert.isTrue(MultiResourceLoader.class.isAssignableFrom(factoryClz),
 				resourceFactory + " should extend from MultiResourceLoader");
 		MultiResourceLoader factory = (MultiResourceLoader) factoryClz.newInstance();
-		return factory.openInputs(db);
+		return factory.openResources(db);
 	}
 
 }

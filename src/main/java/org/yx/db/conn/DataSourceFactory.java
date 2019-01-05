@@ -20,9 +20,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.conf.DBConfig;
-import org.yx.conf.DBConfigUtils;
+import org.yx.conf.DBConfigFactory;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -30,14 +31,12 @@ import org.yx.log.Log;
 public class DataSourceFactory {
 
 	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
-		Map<String, Map<String, String>> hmap = parse(db);
+		Map<String, DBConfig> configs = getConfigs(db);
 		List<WeightedDS> readDSList = new ArrayList<>(1);
 		List<WeightedDS> writeDSList = new ArrayList<>(1);
 
-		for (String key : hmap.keySet()) {
-			Map<String, String> p = hmap.get(key);
-			DBConfig dc = new DBConfig();
-			dc.setProperties(p);
+		for (String key : configs.keySet()) {
+			DBConfig dc = configs.get(key);
 			DataSourceWraper ds = dc.createDS(key);
 			if (ds.getType().isWritable()) {
 				ds.setDefaultReadOnly(false);
@@ -80,8 +79,20 @@ public class DataSourceFactory {
 		return poolMap;
 	}
 
-	static Map<String, Map<String, String>> parse(String db) throws Exception {
-		return DBConfigUtils.parseIni(DBConfigUtils.openConfig(db));
+	/**
+	 * @param db
+	 * @return
+	 * @throws Exception
+	 */
+	private static Map<String, DBConfig> getConfigs(String db) throws Exception {
+		List<DBConfigFactory> factorys = IOC.getBeans(DBConfigFactory.class);
+		for (DBConfigFactory factory : factorys) {
+			Map<String, DBConfig> configs = factory.create(db);
+			if (configs != null) {
+				return configs;
+			}
+		}
+		throw new SumkException(83587875, "no DBConfigFactory for " + db);
 	}
 
 }

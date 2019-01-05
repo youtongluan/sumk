@@ -17,12 +17,43 @@ package org.yx.util;
 
 import org.yx.common.Seq;
 import org.yx.common.SeqCounter;
+import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
+import org.yx.redis.Redis;
+import org.yx.redis.RedisCounter;
+import org.yx.redis.RedisPool;
+import org.yx.redis.SnowflakeCounter;
 
 public class SeqUtil {
 	static Seq inst = new Seq();
+	static {
+		initCounter();
+	}
 
 	public static long next() {
 		return inst.next();
+	}
+
+	/**
+	 * 
+	 */
+	private static void initCounter() {
+		String snowKey = "sumk.counter.snow";
+		int snow = AppInfo.getInt(snowKey, Integer.getInteger(snowKey, Integer.MIN_VALUE));
+		if (snow != Integer.MIN_VALUE) {
+			inst.setCounter(new SnowflakeCounter(snow));
+			ConsoleLog.get("sumk.SYS").debug("use snow counter");
+			return;
+		}
+
+		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
+		if (redis == null) {
+			redis = RedisPool.getRedisExactly("session");
+		}
+		if (redis != null) {
+			ConsoleLog.get("sumk.SYS").debug("use redis counter");
+			inst.setCounter(new RedisCounter(redis));
+		}
 	}
 
 	public static long next(String name) {

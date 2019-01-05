@@ -10,7 +10,7 @@
 <dependency>
     <groupId>com.github.youtongluan</groupId>
     <artifactId>sumk</artifactId>
-    <version>1.8.6</version>
+    <version>2.0.0</version>
 </dependency>
 ```
 
@@ -39,8 +39,8 @@
 
 ### 环境搭建
 * 安装JDK8、eclipse及maven
-* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在test/resources/db/sumk.ini中
-* 安装redis服务器（可选），如果有redis服务器，就将redis.properties的注释打开
+* 搭建mysql数据库，执行根目录下的test.sql（创建用于测试的数据库）。mysql数据库的用户名、密码配置在app.properties中
+* 安装redis服务器（可选），如果有redis服务器，就配置在app.properties中
 * zookeeper服务器（可选），目前只有RPC功能有用到zookeeper。`org.test.Main`启动的时候，会启动测试环境内置的zookeeper，这样做的目的是便于新手入门
 
 ### 执行测试用例
@@ -105,7 +105,7 @@ public class Demo {
 	}
 }
 ```
-* 客户端就是一般的http请求，请求路径是http://localhost/intf/webserver/demo?act=echo，请求实体是data={"echo":"hi",“names”:["张三","李四"]}<br>
+* 客户端就是一般的http请求，请求路径是http://localhost/rest/echo，请求实体是data={"echo":"hi",“names”:["张三","李四"]}<br>
 
 #### RPC服务器端：
 

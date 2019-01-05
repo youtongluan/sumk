@@ -19,8 +19,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.Bean;
-import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.HttpActionNode;
+import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
@@ -29,7 +29,7 @@ import org.yx.log.Log;
  * @author Administrator
  */
 @Bean
-@SumkServlet(value = { "/upload/*" }, loadOnStartup = -1)
+@SumkServlet(value = { "/upload/*" }, loadOnStartup = -1, appKey = "upload")
 public class UploadServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 1L;
@@ -58,6 +58,6 @@ public class UploadServer extends AbstractHttpServer {
 
 	@Override
 	protected ActParser getParser() {
-		return ActParser.paramterActParser;
+		return ActParser.pathActParser;
 	}
 }

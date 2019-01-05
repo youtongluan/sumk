@@ -15,12 +15,8 @@
  */
 package org.yx.conf;
 
-import java.io.InputStream;
-import java.util.function.Consumer;
-
 public interface SingleResourceLoader {
 
-	InputStream openInput(String dbName) throws Exception;
+	byte[] readResource(String name) throws Exception;
 
-	boolean startListen(Consumer<MultiResourceLoader> consumer);
 }

@@ -35,7 +35,7 @@ import org.yx.rpc.client.route.IntfInfo;
 import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
 import org.yx.util.GsonUtil;
-import org.yx.util.ZkClientHolder;
+import org.yx.util.ZkClientHelper;
 
 public class SOAServer implements Plugin, Runnable {
 
@@ -58,7 +58,7 @@ public class SOAServer implements Plugin, Runnable {
 
 		@Override
 		public void handleNewSession() throws Exception {
-			ZkClientHolder.getZkClient(zkUrl).createEphemeral(path, createZkRouteData());
+			ZkClientHelper.getZkClient(zkUrl).createEphemeral(path, createZkRouteData());
 			Log.get("sumk.rpc.zk").debug("handleNewSession");
 		}
 
@@ -116,7 +116,7 @@ public class SOAServer implements Plugin, Runnable {
 	@Override
 	public synchronized void stop() {
 		try {
-			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			client.unsubscribeAll();
 			client.delete(path);
 			client.close();
@@ -137,7 +137,7 @@ public class SOAServer implements Plugin, Runnable {
 		@Override
 		public void run() {
 			zkUnRegister.run();
-			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			String zkData = createZkRouteData();
 			client.createEphemeral(path, zkData);
 			client.subscribeStateChanges(stateListener);
@@ -150,7 +150,7 @@ public class SOAServer implements Plugin, Runnable {
 
 		@Override
 		public void run() {
-			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			client.unsubscribeStateChanges(stateListener);
 			client.delete(path);
 		}
@@ -168,8 +168,8 @@ public class SOAServer implements Plugin, Runnable {
 			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
 					+ AppInfo.get("soa.zk.port", String.valueOf(port));
 			zkUrl = AppInfo.getServerZKUrl();
-			ZkClient client = ZkClientHolder.getZkClient(zkUrl);
-			ZkClientHolder.makeSure(client, ZKConst.SOA_ROOT);
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+			ZkClientHelper.makeSure(client, ZKConst.SOA_ROOT);
 
 			startServer(ip, port);
 			if (this.enable) {

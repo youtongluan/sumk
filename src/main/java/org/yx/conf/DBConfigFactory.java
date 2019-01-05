@@ -13,14 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.conf;
 
-@FunctionalInterface
-public interface Deamon {
+import java.util.Map;
 
-	boolean run() throws Exception;
+import org.yx.common.Ordered;
 
-	default void close() throws Exception {
+public interface DBConfigFactory extends Ordered {
 
-	}
+	Map<String, DBConfig> create(String dbName) throws Exception;
 }

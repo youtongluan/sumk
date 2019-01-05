@@ -45,4 +45,6 @@ public @interface SumkServlet {
 
 	boolean asyncSupported() default false;
 
+	String appKey() default "";
+
 }

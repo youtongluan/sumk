@@ -22,10 +22,16 @@ import static org.yx.log.LogLevel.TRACE;
 import static org.yx.log.LogLevel.WARN;
 
 import org.slf4j.helpers.MarkerIgnoringBase;
+import org.yx.conf.AppInfo;
 
 public abstract class SumkLogger extends MarkerIgnoringBase {
 
 	private static final long serialVersionUID = 1;
+	protected int maxLogNameLength = AppInfo.getInt("sumk.log.maxLogNameLength", 40);
+
+	public int maxLogNameLength() {
+		return this.maxLogNameLength;
+	}
 
 	protected abstract Loggers loggers();
 
@@ -50,18 +56,9 @@ public abstract class SumkLogger extends MarkerIgnoringBase {
 		return sb.toString();
 	}
 
-	protected static String shorter(String name) {
-		if (name == null || name.length() < 40) {
-			return name;
-		}
-		return "..." + name.substring(name.length() - 35);
-	}
-
 	protected boolean isLogable(LogLevel methodLevel) {
 		return methodLevel.ordinal() >= loggers().getLevel(this).ordinal();
 	}
-
-	protected abstract void output(LogLevel methodLevel, String msg);
 
 	protected abstract void output(LogLevel methodLevel, String format, Object... arguments);
 

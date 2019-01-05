@@ -16,27 +16,21 @@
 package org.yx.redis;
 
 import java.io.InputStream;
-import java.util.function.Consumer;
 
-import org.yx.conf.MultiResourceLoader;
 import org.yx.conf.SingleResourceLoader;
 import org.yx.log.Log;
+import org.yx.util.StreamUtil;
 
 public class RedisPropertiesLoader implements SingleResourceLoader {
 
 	@Override
-	public InputStream openInput(String fileName) throws Exception {
+	public byte[] readResource(String fileName) throws Exception {
 		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(fileName);
 		if (in != null) {
-			return in;
+			return StreamUtil.extractData(in);
 		}
 		Log.get("sumk.redis").info("can not found redis property file:{}", fileName);
 		return null;
-	}
-
-	@Override
-	public boolean startListen(Consumer<MultiResourceLoader> consumer) {
-		return false;
 	}
 
 }

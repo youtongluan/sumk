@@ -17,9 +17,8 @@ package org.yx.db.kit;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringReader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,11 +26,11 @@ import org.yx.conf.AppInfo;
 
 public class SqlUtil {
 
-	public static Map<String, String> loadMap(InputStream in) throws IOException {
+	public static Map<String, String> loadMap(byte[] in) throws IOException {
 		if (in == null) {
 			return null;
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
+		BufferedReader reader = new BufferedReader(new StringReader(new String(in, AppInfo.systemCharset())));
 		return loadMap(reader);
 	}
 

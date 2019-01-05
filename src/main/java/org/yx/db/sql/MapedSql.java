@@ -15,10 +15,15 @@
  */
 package org.yx.db.sql;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.db.event.DBEvent;
+import org.yx.log.LogKits;
+import org.yx.util.GsonUtil;
+
+import com.google.gson.stream.JsonWriter;
 
 public class MapedSql {
 
@@ -71,6 +76,28 @@ public class MapedSql {
 	@Override
 	public String toString() {
 		return sql + " -- " + paramters;
+	}
+
+	public String toJson() {
+		try {
+			StringWriter stringWriter = new StringWriter();
+			JsonWriter writer = new JsonWriter(stringWriter);
+			writer.setSerializeNulls(true);
+			writer.beginObject();
+			writer.name("sql").value(sql);
+			writer.name("hash").value(sql.hashCode());
+			String params = GsonUtil.toJson(paramters);
+			params = LogKits.clipIfNecessary(params);
+			writer.name("paramters").value(params);
+			writer.endObject();
+			writer.flush();
+			writer.close();
+			return stringWriter.toString();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return "";
+		}
+
 	}
 
 }

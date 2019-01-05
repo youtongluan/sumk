@@ -15,7 +15,7 @@
  */
 package org.yx.sumk.batis;
 
-import java.io.InputStream;
+import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
@@ -107,14 +107,13 @@ public class SqlSessionFactory {
 	}
 
 	SqlSessionFactory sqlParse() throws Exception {
-		Map<String, InputStream> sqls = MybatisSqlXmlUtils.openInputs(db);
-		Set<Map.Entry<String, InputStream>> entries = sqls.entrySet();
-		for (Map.Entry<String, InputStream> entry : entries) {
-			InputStream in = entry.getValue();
-			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(in, configuration, entry.getKey(),
-					configuration.getSqlFragments());
+		Map<String, byte[]> sqls = MybatisSqlXmlUtils.openInputs(db);
+		Set<Map.Entry<String, byte[]>> entries = sqls.entrySet();
+		for (Map.Entry<String, byte[]> entry : entries) {
+			byte[] bs = entry.getValue();
+			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new ByteArrayInputStream(bs), configuration,
+					entry.getKey(), configuration.getSqlFragments());
 			xmlMapperBuilder.parse();
-			in.close();
 		}
 		return this;
 	}

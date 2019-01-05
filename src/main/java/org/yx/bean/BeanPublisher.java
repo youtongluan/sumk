@@ -85,6 +85,7 @@ public final class BeanPublisher {
 
 	private static Collection<String> fileConfigBeans() {
 		try {
+
 			Enumeration<URL> urls = Loader.getResources("beans.sumk");
 			if (urls == null) {
 				return null;

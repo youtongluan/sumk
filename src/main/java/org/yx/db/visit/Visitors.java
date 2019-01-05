@@ -36,7 +36,8 @@ import org.yx.db.sql.SqlBuilder;
 import org.yx.log.Log;
 
 public final class Visitors {
-	private static Logger log = Log.get("sumk.sql");
+	private static final Logger log = Log.get("sumk.sql");
+	private static final Logger LOG_SQL_JSON = Log.get("sumk.sql.json");
 
 	private static interface Transform<T> {
 		T transFrom(ResultSet ret) throws Exception;
@@ -78,8 +79,8 @@ public final class Visitors {
 	}
 
 	private static void attachParams(PreparedStatement statement, MapedSql maped) throws Exception {
-		if (Log.isON(log)) {
-			log.trace(String.valueOf(maped));
+		if (Log.isON(LOG_SQL_JSON)) {
+			LOG_SQL_JSON.trace(maped.toJson());
 		}
 		List<Object> params = maped.getParamters();
 		if (params != null && params.size() > 0) {

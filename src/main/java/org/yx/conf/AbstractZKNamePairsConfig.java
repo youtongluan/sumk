@@ -15,14 +15,29 @@
  */
 package org.yx.conf;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+
 import org.I0Itec.zkclient.IZkDataListener;
+import org.yx.log.ConsoleLog;
 
-public abstract class ZKNamePairsConfig implements SystemConfig {
+public abstract class AbstractZKNamePairsConfig implements SystemConfig {
 
-	private NamePairs zkInfo = new NamePairs(null);
+	private NamePairs zkInfo = new NamePairs((String) null);
 
 	private void setZkInfo(NamePairs info) {
-		zkInfo = info == null ? new NamePairs(null) : info;
+		zkInfo = info == null ? new NamePairs((String) null) : info;
+	}
+
+	protected Charset charset = StandardCharsets.UTF_8;
+
+	public Charset getCharset() {
+		return charset;
+	}
+
+	public void setCharset(Charset charset) {
+		this.charset = charset;
 	}
 
 	public void initAppInfo() {
@@ -30,12 +45,19 @@ public abstract class ZKNamePairsConfig implements SystemConfig {
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
-				ZKNamePairsConfig.this.setZkInfo(new NamePairs((String) data));
+				try {
+					ConsoleLog.get("sumk.zk.data").debug("data in zk path {} changed", dataPath);
+					AbstractZKNamePairsConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
+					AppInfo.notifyUpdate();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 
 			@Override
 			public void handleDataDeleted(String dataPath) throws Exception {
-				ZKNamePairsConfig.this.setZkInfo(new NamePairs(null));
+				AbstractZKNamePairsConfig.this.setZkInfo(new NamePairs((String) null));
+				AppInfo.notifyUpdate();
 			}
 
 		});
@@ -43,7 +65,8 @@ public abstract class ZKNamePairsConfig implements SystemConfig {
 	}
 
 	protected NamePairs fromZK(IZkDataListener listener) {
-		return ZKConfigHandler.readAndListen(getZkUrl(), getDataPath(), listener);
+		String zkUrl = getZkUrl();
+		return ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
 	}
 
 	protected abstract String getDataPath();
@@ -64,4 +87,8 @@ public abstract class ZKNamePairsConfig implements SystemConfig {
 		return v;
 	}
 
+	@Override
+	public Collection<String> keys() {
+		return zkInfo.keys();
+	}
 }

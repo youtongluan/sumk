@@ -606,12 +606,6 @@ public final class SumkDate implements Comparable<SumkDate> {
 		return new SumkDate(year, month, day, hour, minute, (byte) sec, milSecond);
 	}
 
-	/**
-	 * 
-	 * @param milSecond
-	 *            0-999
-	 * @return
-	 */
 	public SumkDate withMilSecond(int milSecond) {
 		if (milSecond == this.milSecond) {
 			return this;

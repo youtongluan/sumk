@@ -20,7 +20,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.function.Consumer;
+
+import org.yx.util.StreamUtil;
 
 public class LocalDBResourceLoader implements SingleResourceLoader {
 
@@ -28,7 +29,12 @@ public class LocalDBResourceLoader implements SingleResourceLoader {
 		return this.getClass().getClassLoader().getResourceAsStream(uri);
 	}
 
-	public InputStream openInput(String dbName) throws Exception {
+	public byte[] readResource(String dbName) throws Exception {
+		InputStream in = this.openInputStream(dbName);
+		return StreamUtil.extractData(in);
+	}
+
+	private InputStream openInputStream(String dbName) throws Exception {
 		String uri = AppInfo.get("sumk.db.config.path", AppInfo.CLASSPATH_URL_PREFIX + "db/#.ini");
 		uri = uri.trim().replace("#", dbName);
 		if (uri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
@@ -38,11 +44,6 @@ public class LocalDBResourceLoader implements SingleResourceLoader {
 			return fileInClassPath(uri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()));
 		}
 		return new FileInputStream(new File(uri));
-	}
-
-	@Override
-	public boolean startListen(Consumer<MultiResourceLoader> consumer) {
-		return false;
 	}
 
 }

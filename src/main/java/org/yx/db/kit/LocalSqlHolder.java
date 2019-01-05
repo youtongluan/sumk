@@ -16,7 +16,6 @@
 package org.yx.db.kit;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ public class LocalSqlHolder {
 	private static void startListen(MultiResourceLoader loader) {
 		loader.startListen(load -> {
 			try {
-				Log.get("sumk.sql").info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
+				Log.get("sumk.db").info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
 				loadSql(load);
 			} catch (Exception e) {
 				Log.printStack(LogType.SQL_ERROR, e);
@@ -61,7 +60,7 @@ public class LocalSqlHolder {
 	}
 
 	private static void loadSql(MultiResourceLoader loader) throws Exception {
-		Map<String, InputStream> inputMap = loader.openInputs(null);
+		Map<String, byte[]> inputMap = loader.openResources(null);
 		Map<String, String> sqlMap = new HashMap<>();
 		if (inputMap != null && inputMap.size() > 0) {
 			inputMap.forEach((name, in) -> {
