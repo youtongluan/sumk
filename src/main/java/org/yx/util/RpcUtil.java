@@ -37,7 +37,7 @@ public final class RpcUtil {
 		return false;
 	}
 
-	public static RpcAttachment getRpcAttachment() {
+	public static RpcAttachment attachments() {
 		return RpcAttachment.get();
 	}
 }

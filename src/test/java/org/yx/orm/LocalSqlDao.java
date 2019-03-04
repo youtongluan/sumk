@@ -49,6 +49,6 @@ public class LocalSqlDao {
 	
 	@Box
 	public Map<String, Object> select2(long id){
-		return NamedUtil.selectOne("demo.selectByName",SBuilder.map("Id", id).put("TABLE", "demouser").toMap());
+		return NamedUtil.selectOne("demo.selectByName",SBuilder.map("Id", id).put("TABLE", "demo_user").toMap());
 	}
 }

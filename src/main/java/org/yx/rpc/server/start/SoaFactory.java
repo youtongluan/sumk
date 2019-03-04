@@ -22,6 +22,8 @@ import java.util.List;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
+import org.yx.bean.Loader;
+import org.yx.common.LogType;
 import org.yx.common.MethodDesc;
 import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
@@ -30,7 +32,14 @@ import org.yx.rpc.Soa;
 import org.yx.validate.ParamFactory;
 
 class SoaFactory {
-	private SoaNameResolver nameResolver = new SoaNameResolver();
+	private SoaNameResolver nameResolver;
+
+	public SoaFactory() {
+		nameResolver = Loader.newInstanceFromAppKey("soa.name.resolver");
+		if (nameResolver == null) {
+			nameResolver = new SoaNameResolverImpl();
+		}
+	}
 
 	public void resolve(Class<?> clz) throws Exception {
 		Method[] methods = clz.getMethods();
@@ -62,6 +71,7 @@ class SoaFactory {
 						node.method.getDeclaringClass().getName(), node.method.getName(), classFullName, m.getName());
 				continue;
 			}
+			LogType.RPC_LOG.debug("{} publish", soaName);
 			Method proxyedMethod = AsmUtils.proxyMethod(m, proxyClz);
 			int argSize = m.getParameterTypes().length;
 			if (argSize == 0) {

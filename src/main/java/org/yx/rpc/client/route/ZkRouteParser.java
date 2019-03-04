@@ -16,9 +16,7 @@
 package org.yx.rpc.client.route;
 
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -31,20 +29,30 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.yx.common.WildcardMatcher;
+import org.yx.conf.AppInfo;
+import org.yx.conf.NamePairs;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.Host;
 import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtil;
-import org.yx.util.GsonUtil;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHelper;
 
 public class ZkRouteParser {
 	private String zkUrl;
 	private Set<String> childs = Collections.emptySet();
+	private WildcardMatcher includes;
+	private WildcardMatcher excludes;
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
+		String temp = AppInfo.getLatin("soa.server.includes");
+		includes = StringUtil.isEmpty(temp) ? null : new WildcardMatcher(temp, 1);
+
+		temp = AppInfo.getLatin("soa.server.excludes");
+		excludes = StringUtil.isEmpty(temp) ? null : new WildcardMatcher(temp, 1);
 	}
 
 	public static ZkRouteParser get(String zkUrl) {
@@ -82,16 +90,18 @@ public class ZkRouteParser {
 
 			@Override
 			public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
+				List<String> ips = filter(currentChilds);
+
 				List<String> createChilds = new ArrayList<>();
 				Set<String> deleteChilds = new HashSet<>(parser.childs);
-				for (String zkChild : currentChilds) {
+				for (String zkChild : ips) {
 					boolean exist = deleteChilds.remove(zkChild);
 
 					if (!exist) {
 						createChilds.add(zkChild);
 					}
 				}
-				parser.childs = new HashSet<>(currentChilds);
+				parser.childs = new HashSet<>(ips);
 				for (String create : createChilds) {
 					ServerData d = parser.getZkNodeData(create);
 					if (d == null) {
@@ -108,6 +118,7 @@ public class ZkRouteParser {
 			}
 
 		});
+		paths = filter(paths);
 		this.childs = new HashSet<>(paths);
 		for (String path : paths) {
 			ServerData d = getZkNodeData(path);
@@ -128,6 +139,31 @@ public class ZkRouteParser {
 		}, "rpc-client-route");
 	}
 
+	private List<String> filter(List<String> currentChilds) {
+
+		if (includes != null) {
+			List<String> ips = S.Collection.list();
+			for (String ip : currentChilds) {
+				if (includes.match(ip)) {
+					ips.add(ip);
+				}
+			}
+			return ips;
+		}
+
+		if (excludes != null) {
+			List<String> ips = S.Collection.list();
+			for (String ip : currentChilds) {
+				if (!excludes.match(ip)) {
+					ips.add(ip);
+				}
+			}
+			return ips;
+		}
+
+		return currentChilds;
+	}
+
 	private ServerData getZkNodeData(String path) throws IOException {
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 		String json = ZkClientHelper.data2String(zk.readData(ZKConst.SOA_ROOT + "/" + path));
@@ -138,25 +174,26 @@ public class ZkRouteParser {
 		if (path.contains("/")) {
 			path = path.substring(path.lastIndexOf("/") + 1);
 		}
-		Map<String, String> map = CollectionUtil.loadMap(new StringReader(json));
-		String methods = map.get(ZKConst.METHODS);
-		if (StringUtil.isEmpty(methods)) {
+		Map<String, String> map = NamePairs.createByString(json).values();
+		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS + ".");
+		if (methodMap.isEmpty()) {
 			return null;
 		}
 		ZkData data = new ZkData();
 		data.setWeight(map.get(ZKConst.WEIGHT));
-		Arrays.stream(methods.split(ZKConst.METHOD_SPLIT)).forEach(m -> {
+		data.setClientCount(map.get(ZKConst.CLIENT_COUNT));
+		methodMap.forEach((m, value) -> {
 			if (m.length() == 0) {
-				return;
-			}
-			if (m.startsWith("{")) {
-				IntfInfo intf = GsonUtil.fromJson(m, IntfInfo.class);
-				data.addIntf(intf);
 				return;
 			}
 			IntfInfo intf = new IntfInfo();
 			intf.setName(m);
 			data.addIntf(intf);
+			if (value != null && value.length() > 0) {
+				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
+				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
+				intf.setClientCount(methodProperties.get(ZKConst.CLIENT_COUNT));
+			}
 		});
 		return new ServerData(Host.create(path), data);
 	}

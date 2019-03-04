@@ -39,11 +39,7 @@ public final class AppInfo {
 
 	private static SystemConfig info;
 	private static String pid;
-	private static String groupId;
-	private static String appId;
 	private static String localIp;
-	public static final String GROUPID_DEFAULT = "sumk";
-	public static final String APPID_DEFAULT = "app";
 
 	static {
 		try {
@@ -146,19 +142,21 @@ public final class AppInfo {
 	}
 
 	/**
-	 * 
+	 * @param defaultValue
+	 *            如果没有设置的话，就返回这个默认值
 	 * @return 当前应用的id
 	 */
-	public static String appId() {
-		return appId;
+	public static String appId(String defaultValue) {
+		return get("sumk.appId", defaultValue);
 	}
 
 	/**
-	 * 
+	 * @param defaultValue
+	 *            如果没有设置的话，就返回这个默认值
 	 * @return 大系统的id
 	 */
-	public static String groupId() {
-		return groupId;
+	public static String groupId(String defaultValue) {
+		return get("sumk.groupId", defaultValue);
 	}
 
 	/**
@@ -177,8 +175,17 @@ public final class AppInfo {
 		return StringUtil.toLatin(v);
 	}
 
+	public static String getLatin(String name, String defaultValue) {
+		String v = getLatin(name);
+		return StringUtil.isEmpty(v) ? defaultValue : v;
+	}
+
 	public static String get(String name, String defaultValue) {
-		return info.get(name, defaultValue);
+		String v = info.get(name);
+		if (v == null || v.isEmpty()) {
+			return defaultValue;
+		}
+		return v;
 	}
 
 	public static String get(String name1, String name2, String defaultValue) {
@@ -186,7 +193,7 @@ public final class AppInfo {
 		if (value != null && value.length() > 0) {
 			return value;
 		}
-		return info.get(name2, defaultValue);
+		return get(name2, defaultValue);
 	}
 
 	public static int getInt(String name, int defaultValue) {
@@ -247,12 +254,6 @@ public final class AppInfo {
 	}
 
 	public static void notifyUpdate() {
-		if (groupId == null || GROUPID_DEFAULT.equals(groupId)) {
-			groupId = info.get("sumk.groupId", GROUPID_DEFAULT);
-		}
-		if (appId == null || APPID_DEFAULT.equals(appId)) {
-			appId = info.get("sumk.appId", APPID_DEFAULT);
-		}
 		localIp = info.get("sumk.ip");
 
 		AppInfo.observers.forEach(ob -> {

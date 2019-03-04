@@ -54,6 +54,7 @@ public class SoaServer implements Plugin {
 	public void stop() {
 		if (server != null) {
 			server.stop();
+			server = null;
 		}
 	}
 

@@ -40,4 +40,11 @@ public class ZkData {
 		this.weight = Integer.parseInt(w);
 	}
 
+	void setClientCount(String w) {
+		if (StringUtil.isEmpty(w)) {
+			return;
+		}
+		this.clientCount = Integer.parseInt(w);
+	}
+
 }

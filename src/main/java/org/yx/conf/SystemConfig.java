@@ -26,8 +26,6 @@ import java.util.Collection;
 public interface SystemConfig {
 	String get(String key);
 
-	String get(String key, String defaultValue);
-
 	Collection<String> keys();
 
 	void initAppInfo();

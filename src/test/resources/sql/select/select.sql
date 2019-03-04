@@ -1,5 +1,5 @@
 [demo.select]
-select * from demouser where id=?
+select * from demo_user where id=?
 
 [demo.selectByName]
 select * from ${table} where id=#{id}

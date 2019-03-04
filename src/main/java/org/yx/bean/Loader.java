@@ -20,7 +20,28 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Enumeration;
 
+import org.yx.conf.AppInfo;
+
 public class Loader {
+
+	public static Object newInstance(String clz) throws Throwable {
+		Class<?> daoClass = Loader.loadClass(clz);
+		return daoClass.newInstance();
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T newInstanceFromAppKey(String key) {
+		String daoClz = AppInfo.get(key);
+		if (daoClz != null && daoClz.length() > 2) {
+			try {
+				return (T) Loader.newInstance(daoClz);
+			} catch (Throwable e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		return null;
+	}
 
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
 		if (!clz.startsWith("org") && !clz.startsWith("com") && !clz.startsWith("net")) {

@@ -62,7 +62,7 @@ public final class BeanPublisher {
 		for (String c : clzs) {
 			try {
 
-				Class<?> clz = BeanPublisher.class.getClassLoader().loadClass(c);
+				Class<?> clz = Loader.loadClass(c);
 				if (AsmUtils.notPublicOnly(clz.getModifiers()) || clz.isInterface() || clz.isAnonymousClass()
 						|| clz.isLocalClass() || clz.isAnnotation() || clz.isEnum()) {
 					continue;

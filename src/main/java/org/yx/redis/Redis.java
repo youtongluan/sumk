@@ -74,7 +74,7 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 			Host host = p.hosts().get(0);
 
 			this.pool = new JedisPool(config, host.ip(), host.port(), p.getTimeout(), p.getPassword(), p.getDb(),
-					AppInfo.appId());
+					AppInfo.appId("sumk"));
 			return;
 		}
 
@@ -85,7 +85,7 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 		}
 		Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, p.getDb());
 		this.pool = new JedisSentinelPool(masterName, sentinels, config, p.getTimeout(), p.getTimeout(),
-				p.getPassword(), p.getDb(), AppInfo.appId());
+				p.getPassword(), p.getDb(), AppInfo.appId("sumk"));
 	}
 
 	/**

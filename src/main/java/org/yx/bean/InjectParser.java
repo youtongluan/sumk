@@ -16,37 +16,29 @@
 package org.yx.bean;
 
 import java.lang.reflect.Field;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class InjectParser {
 
-	private static Map<String, Object> map = new ConcurrentHashMap<>();
+	private static ConcurrentMap<String, BeanHandler> map = new ConcurrentHashMap<>();
 
 	static Object get(Field field, Inject inject, Object bean)
 			throws ClassNotFoundException, InstantiationException, IllegalAccessException {
 		String handler = inject.handler();
-		Object handlerClz = map.get(handler);
-		BeanHandler beanHandler = null;
-		if (handlerClz == null) {
-			beanHandler = (BeanHandler) map.get(handler);
-			if (beanHandler == null) {
-				Class<?> clz = Loader.loadClass(handler);
-				beanHandler = (BeanHandler) clz.newInstance();
-				map.put(handler, beanHandler);
-			}
-			return beanHandler.handle(inject, field);
+		if (handler == null || handler.isEmpty()) {
+			return null;
 		}
-		if (String.class.isInstance(handlerClz)) {
-			Class<?> clz = Loader.loadClass((String) handlerClz);
+		BeanHandler beanHandler = map.get(handler);
+		if (beanHandler == null) {
+			Class<?> clz = Loader.loadClass(handler);
 			beanHandler = (BeanHandler) clz.newInstance();
 			map.put(handler, beanHandler);
-			return beanHandler.handle(inject, field);
 		}
-		if (BeanHandler.class.isInstance(handlerClz)) {
-			beanHandler = (BeanHandler) handlerClz;
-			return beanHandler.handle(inject, field);
-		}
-		return null;
+		return beanHandler.handle(inject, field);
+	}
+
+	public static void putAlias(String alias, BeanHandler beanHandler) {
+		map.put(alias, beanHandler);
 	}
 }

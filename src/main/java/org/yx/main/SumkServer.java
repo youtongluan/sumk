@@ -121,6 +121,9 @@ public class SumkServer {
 	}
 
 	private static void handleArgs(Collection<String> args) {
+		if (args == null) {
+			return;
+		}
 		args.forEach(arg -> {
 			if (arg.contains("=")) {
 				String[] kv = arg.split("=", 2);

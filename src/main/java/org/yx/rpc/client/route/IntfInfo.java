@@ -15,33 +15,41 @@
  */
 package org.yx.rpc.client.route;
 
+import org.yx.util.StringUtil;
+
 public class IntfInfo {
-	private String n;
-	private Integer w;
-	private Integer c;
+	private String name;
+	private Integer weight;
+	private Integer clientCount;
 
 	public String getName() {
-		return n;
+		return name;
 	}
 
 	public void setName(String name) {
-		this.n = name;
+		this.name = name;
 	}
 
 	public Integer getWeight() {
-		return w;
-	}
-
-	public void setWeight(Integer weight) {
-		this.w = weight;
+		return weight;
 	}
 
 	public Integer getClientCount() {
-		return c;
+		return clientCount;
 	}
 
-	public void setClientCount(Integer clientCount) {
-		this.c = clientCount;
+	void setWeight(String w) {
+		if (StringUtil.isEmpty(w)) {
+			return;
+		}
+		this.weight = Integer.valueOf(w);
+	}
+
+	void setClientCount(String w) {
+		if (StringUtil.isEmpty(w)) {
+			return;
+		}
+		this.clientCount = Integer.valueOf(w);
 	}
 
 }

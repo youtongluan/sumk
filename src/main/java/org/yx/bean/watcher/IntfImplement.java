@@ -34,7 +34,7 @@ public class IntfImplement {
 				Log.get("sumk.SYS").error("sumk-intf file cannot found");
 				return;
 			}
-			Map<String, String> map = CollectionUtil.loadMap(in);
+			Map<String, String> map = CollectionUtil.loadMap(in, false);
 			for (String key : map.keySet()) {
 				if (StringUtil.isEmpty(key)) {
 					continue;

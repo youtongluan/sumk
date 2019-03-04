@@ -27,7 +27,7 @@ public class RedisPropertiesLoader implements SingleResourceLoader {
 	public byte[] readResource(String fileName) throws Exception {
 		InputStream in = RedisLoader.class.getClassLoader().getResourceAsStream(fileName);
 		if (in != null) {
-			return StreamUtil.extractData(in);
+			return StreamUtil.extractData(in, true);
 		}
 		Log.get("sumk.redis").info("can not found redis property file:{}", fileName);
 		return null;

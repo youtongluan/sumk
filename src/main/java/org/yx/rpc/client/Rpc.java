@@ -32,11 +32,18 @@ public final class Rpc {
 
 	private static volatile boolean strated;
 
+	private static String appId;
+
+	public static void resetStatus() {
+		strated = false;
+	}
+
 	public static synchronized void init() {
 		if (strated) {
 			return;
 		}
 		try {
+			appId = AppInfo.appId("sumk");
 			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Log.get("sumk.rpc").info("rpc client zkUrl:{}", zkUrl);
@@ -58,7 +65,7 @@ public final class Rpc {
 		req.setFullSn(sn, context.rootSn(), context.contextSn());
 		req.setUserId(context.userId());
 		req.setApi(method);
-		req.setSrc(AppInfo.appId());
+		req.setSrc(appId);
 
 		req.setAttachments(context.getAttachments());
 		return req;

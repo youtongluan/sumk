@@ -15,7 +15,7 @@
  */
 package org.yx.conf;
 
-public class ZKSystemConfig extends AbstractZKNamePairsConfig {
+public class ZKSystemConfig extends AbstractZKConfig {
 	private String dataPath = System.getProperty("sumk.zkconf.root", "/sumk/appinfo");
 	private String zkUrl = System.getProperty("sumk.zkconf.url");
 

@@ -38,18 +38,18 @@ public @interface Soa {
 	public String description() default "";
 
 	/**
-	 * 发布的服务名称是否加上groupId前缀，只在value不为空的时候才有作用
+	 * 发布的服务名称是否加上groupId前缀，只在groupId不为空的时候才有作用
 	 * 
 	 * @return groupId前缀
 	 */
-	boolean groupPrefix() default false;
+	boolean groupPrefix() default true;
 
 	/**
-	 * 发布的服务名称是否加上appId前缀，只在value不为空的时候才有作用
+	 * 发布的服务名称是否加上appId前缀，只在appId不为空的时候才有作用
 	 * 
 	 * @return appId前缀
 	 */
-	boolean appIdPrefix() default false;
+	boolean appIdPrefix() default true;
 
 	int priority() default 0;
 

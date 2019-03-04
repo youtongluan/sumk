@@ -31,7 +31,7 @@ public class LocalDBResourceLoader implements SingleResourceLoader {
 
 	public byte[] readResource(String dbName) throws Exception {
 		InputStream in = this.openInputStream(dbName);
-		return StreamUtil.extractData(in);
+		return StreamUtil.extractData(in, true);
 	}
 
 	private InputStream openInputStream(String dbName) throws Exception {

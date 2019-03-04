@@ -26,8 +26,15 @@ public class RpcTest {
 		Rpc.init();
 	}
 
-	private String pre() {
-		return AppInfo.groupId() + "." + AppInfo.appId();
+	public static String soaName(String soaName){
+		StringBuilder sb=new StringBuilder();
+		if(AppInfo.groupId(null)!=null){
+			sb.append(AppInfo.groupId(null)).append('.');
+		}
+		if(AppInfo.appId(null)!=null){
+			sb.append(AppInfo.appId(null)).append('.');
+		}
+		return sb.append(soaName).toString();
 	}
 
 	@Test
@@ -35,16 +42,16 @@ public class RpcTest {
 		List<String> names = Arrays.asList("游夏", "游侠");
 		String echo = "how are you";
 		// ret是json格式
-		String ret = Rpc.call(pre() + ".echo", echo, names);
+		String ret = Rpc.call(soaName("echo"), echo, names);
 		System.out.println("result:" + ret);
 		Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
 		for (int i = 0; i < 5; i++) {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo);
 			map.put("names", names);
-			ret = Rpc.callInJson(pre() + ".echo", GsonUtil.toJson(map));
+			ret = Rpc.callInJson(soaName("echo"), GsonUtil.toJson(map));
 			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
-			ret = Rpc.call(pre() + ".echo", echo, names);
+			ret = Rpc.call(soaName("echo"), echo, names);
 			Assert.assertEquals(new EchoAction().echo(echo, names), GsonUtil.fromJson(ret, List.class));
 			System.out.println("test:" + ret);
 		}
@@ -71,12 +78,12 @@ public class RpcTest {
 			String ret;
 			Map<String, Object> map = new HashMap<>();
 			map.put("users", list);
-			ret = Rpc.callInJson(pre() + ".add", GsonUtil.toJson(map));
+			ret = Rpc.callInJson(soaName("add"), GsonUtil.toJson(map));
 			System.out.println("返回的信息：" + ret);
 			Assert.assertEquals(list.size() + "", ret);
 
 			list = create();
-			ret = Rpc.call(pre() + ".add", list);
+			ret = Rpc.call(soaName("add"), list);
 			System.out.println("返回的信息：" + ret);
 			Assert.assertEquals(list.size() + "", ret);
 		}
@@ -94,8 +101,8 @@ public class RpcTest {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo + i);
 			map.put("names", names);
-			retList.add(Rpc.callInJsonAsync(pre() + ".echo", GsonUtil.toJson(map)));
-			retList2.add(Rpc.callAsync(pre() + ".echo", echo + i, names));
+			retList.add(Rpc.callInJsonAsync(soaName("echo"), GsonUtil.toJson(map)));
+			retList2.add(Rpc.callAsync(soaName("echo"), echo + i, names));
 		}
 
 		for (int i = 0; i < 5; i++) {

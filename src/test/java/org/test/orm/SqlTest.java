@@ -55,8 +55,8 @@ public class SqlTest extends BaseOrmTest{
 		Assert.assertEquals(name+"_1", map.get("name"));
 		Assert.assertEquals(id, map.get("id"));
 		Assert.assertEquals(age+1, map.get("AGE"));
-		System.out.println(map.get("lastUpdate").getClass());
-		Assert.assertEquals(lastUpdate, TimeUtil.toType(map.get("lastUpdate"), Timestamp.class, true));
+		System.out.println(map.get("last_update").getClass());
+		Assert.assertEquals(lastUpdate, TimeUtil.toType(map.get("last_update"), Timestamp.class, true));
 	}
 
 }

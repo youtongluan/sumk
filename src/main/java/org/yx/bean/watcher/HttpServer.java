@@ -80,6 +80,7 @@ public class HttpServer implements Plugin, Runnable {
 	public void stop() {
 		if (this.server != null) {
 			server.stop();
+			this.server = null;
 		}
 	}
 

@@ -22,14 +22,14 @@ import java.io.OutputStream;
 
 public class StreamUtil {
 
-	public static byte[] extractData(InputStream in) throws IOException {
+	public static byte[] extractData(InputStream in, boolean closeInput) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		copy(in, out);
+		transferTo(in, out, closeInput);
 		out.close();
 		return out.toByteArray();
 	}
 
-	public static int copy(InputStream in, OutputStream output) throws IOException {
+	public static int transferTo(InputStream in, OutputStream output, boolean closeInput) throws IOException {
 		if (in == null) {
 			return 0;
 		}
@@ -41,6 +41,9 @@ public class StreamUtil {
 			count += n;
 		}
 		output.flush();
+		if (closeInput) {
+			in.close();
+		}
 		return count;
 	}
 }

@@ -1,6 +1,6 @@
 [demo.insert]
 
-INSERT INTO demouser (	
+INSERT INTO demo_user (	
 				name ,
 				id ,
 				age,
@@ -13,12 +13,12 @@ INSERT INTO demouser (
 		
 		
  [ demo.update]
-UPDATE  demouser       
+UPDATE  demo_user       
 
 		   SET  
 				name  =   #{name}      ,
 				age  =   #{age}      ,
-				lastUpdate=#{lastUpdate}
+				last_update=#{lastUpdate}
 		WHERE 
 			id = #{id}
 			

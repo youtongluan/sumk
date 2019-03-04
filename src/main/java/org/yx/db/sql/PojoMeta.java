@@ -166,7 +166,8 @@ public class PojoMeta implements Cloneable {
 		String _pre = table.preInCache();
 
 		this.pre = StringUtil.isEmpty(_pre) ? "{" + this.pojoClz.getSimpleName() + "}" : _pre;
-		this.tableName = StringUtil.isEmpty(table.value()) ? this.pojoClz.getSimpleName().toLowerCase() : table.value();
+		this.tableName = StringUtil.isEmpty(table.value())
+				? DBNameResolvers.getResolver().resolveTableName(this.pojoClz.getSimpleName()) : table.value();
 	}
 
 	public String getTableName() {

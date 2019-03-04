@@ -55,7 +55,8 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 			this.updateType = c.updateType();
 			this.comment = c.comment();
 		}
-		this.dbColumn = (c == null || StringUtil.isEmpty(c.value())) ? field.getName().toLowerCase() : c.value();
+		this.dbColumn = (c == null || StringUtil.isEmpty(c.value()))
+				? DBNameResolvers.getResolver().resolveColumnName(field.getName()) : c.value();
 		this.isNumber = Number.class.isAssignableFrom(field.getType());
 		this.isDate = TimeUtil.isGenericDate(field.getType());
 	}

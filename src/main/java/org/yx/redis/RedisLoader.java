@@ -82,7 +82,8 @@ public class RedisLoader {
 		if (bs == null || bs.length == 0) {
 			return;
 		}
-		Map<String, String> p = CollectionUtil.loadMap(new StringReader(new String(bs, AppInfo.systemCharset())));
+		Map<String, String> p = CollectionUtil.loadMap(new StringReader(new String(bs, AppInfo.systemCharset())),
+				false);
 		Log.get(Redis.LOG_NAME).debug("config:{}", p);
 		Set<String> keys = p.keySet();
 		for (String kk : keys) {

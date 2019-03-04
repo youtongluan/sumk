@@ -43,15 +43,6 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	}
 
 	@Override
-	public String get(String key, String defaultValue) {
-		String v = get(key);
-		if (v == null || v.isEmpty()) {
-			return defaultValue;
-		}
-		return v;
-	}
-
-	@Override
 	public Collection<String> keys() {
 		return pairs.keys();
 	}

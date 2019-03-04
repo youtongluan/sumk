@@ -80,4 +80,26 @@ public class StringUtil {
 
 	}
 
+	public static String camelToUnderline(String param) {
+		if (param == null) {
+			return param;
+		}
+		int len = param.length();
+		StringBuilder sb = new StringBuilder(len + 10);
+		for (int i = 0; i < len; i++) {
+			char c = param.charAt(i);
+			if (i == 0) {
+				sb.append(Character.toLowerCase(c));
+				continue;
+			}
+			if (Character.isUpperCase(c)) {
+				sb.append('_');
+				sb.append(Character.toLowerCase(c));
+			} else {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
+	}
+
 }

@@ -69,6 +69,10 @@ public final class ZkClientHelper {
 		return map.get(url);
 	}
 
+	public static ZkClient remove(String url) {
+		return map.remove(url);
+	}
+
 	public static String data2String(byte[] zkData) {
 		if (zkData == null) {
 			return null;

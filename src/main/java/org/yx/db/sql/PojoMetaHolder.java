@@ -51,8 +51,8 @@ public class PojoMetaHolder {
 			return temp;
 		}
 		pm = pm.subPojoMeta(sub);
-		tableMetas.putIfAbsent(pm.getTableName(), pm);
-		return pm;
+		temp = tableMetas.putIfAbsent(pm.getTableName(), pm);
+		return temp != null ? temp : pm;
 	}
 
 	public static PojoMeta getPojoMeta(Class<?> clz, String sub) {
@@ -68,8 +68,8 @@ public class PojoMetaHolder {
 			return temp;
 		}
 		pm = pm.subPojoMeta(sub);
-		tableMetas.putIfAbsent(pm.getTableName(), pm);
-		return pm;
+		temp = tableMetas.putIfAbsent(pm.getTableName(), pm);
+		return temp != null ? temp : pm;
 	}
 
 	private static PojoMeta getPojoMeta(Class<?> clz) {
@@ -120,7 +120,7 @@ public class PojoMetaHolder {
 			return;
 		}
 		Collections.sort(list);
-		PojoMeta tm = new PojoMeta(table, list.toArray(new ColumnMeta[0]), pojoClz);
+		PojoMeta tm = new PojoMeta(table, list.toArray(new ColumnMeta[list.size()]), pojoClz);
 		if (tm.getPrimaryIDs().length == 0) {
 			SumkException.throwException(56456456, pojoClz.getName() + " has no primary key");
 		}

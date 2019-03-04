@@ -22,15 +22,14 @@ import java.util.Collection;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.yx.log.ConsoleLog;
 
-public abstract class AbstractZKNamePairsConfig implements SystemConfig {
+public abstract class AbstractZKConfig implements SystemConfig {
 
-	private NamePairs zkInfo = new NamePairs((String) null);
+	protected NamePairs zkInfo = new NamePairs((String) null);
+	private Charset charset = StandardCharsets.UTF_8;
 
 	private void setZkInfo(NamePairs info) {
 		zkInfo = info == null ? new NamePairs((String) null) : info;
 	}
-
-	protected Charset charset = StandardCharsets.UTF_8;
 
 	public Charset getCharset() {
 		return charset;
@@ -47,7 +46,7 @@ public abstract class AbstractZKNamePairsConfig implements SystemConfig {
 			public void handleDataChange(String dataPath, Object data) throws Exception {
 				try {
 					ConsoleLog.get("sumk.zk.data").debug("data in zk path {} changed", dataPath);
-					AbstractZKNamePairsConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
+					AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
 					AppInfo.notifyUpdate();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -56,7 +55,7 @@ public abstract class AbstractZKNamePairsConfig implements SystemConfig {
 
 			@Override
 			public void handleDataDeleted(String dataPath) throws Exception {
-				AbstractZKNamePairsConfig.this.setZkInfo(new NamePairs((String) null));
+				AbstractZKConfig.this.setZkInfo(new NamePairs((String) null));
 				AppInfo.notifyUpdate();
 			}
 
@@ -76,15 +75,6 @@ public abstract class AbstractZKNamePairsConfig implements SystemConfig {
 	@Override
 	public String get(String key) {
 		return zkInfo.getValue(key);
-	}
-
-	@Override
-	public String get(String key, String defaultValue) {
-		String v = get(key);
-		if (v == null || v.isEmpty()) {
-			return defaultValue;
-		}
-		return v;
 	}
 
 	@Override

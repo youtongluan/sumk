@@ -16,6 +16,8 @@
 package org.yx.rpc.server.start;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -27,14 +29,12 @@ import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
-import org.yx.db.sql.ItemJoiner;
 import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.ZKConst;
-import org.yx.rpc.client.route.IntfInfo;
 import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.ReqHandlerFactorysBean;
-import org.yx.util.GsonUtil;
+import org.yx.util.CollectionUtil;
 import org.yx.util.ZkClientHelper;
 
 public class SOAServer implements Plugin, Runnable {
@@ -89,37 +89,30 @@ public class SOAServer implements Plugin, Runnable {
 	private String createZkRouteData() {
 		Set<String> methodSet = RpcActionHolder.soaSet();
 		String[] methods = methodSet.toArray(new String[methodSet.size()]);
-		final ItemJoiner sj = new ItemJoiner("\n", null, null);
+		final Map<String, String> map = new HashMap<>();
 		if (methods.length > 0) {
-			ItemJoiner methodJoiner = new ItemJoiner(ZKConst.METHOD_SPLIT, null, null);
 			for (String method : methods) {
-				String methodJson = AppInfo.get("soa.methods." + method);
-				if (methodJson != null && methodJson.startsWith("{")) {
-					IntfInfo info = GsonUtil.fromJson(methodJson, IntfInfo.class);
-					info.setName(method);
-					methodJoiner.item().append(GsonUtil.toJson(info));
-					continue;
-				}
-
-				methodJoiner.item().append(method);
+				map.put(ZKConst.METHODS + "." + method, AppInfo.get("soa.methods." + method));
 			}
-			sj.item().append(ZKConst.METHODS).append('=').append(methodJoiner.toCharSequence());
 		}
-		sj.item().append(ZKConst.FEATURE).append('=').append(Profile.featureInHex());
-		sj.item().append(ZKConst.START).append('=').append(System.currentTimeMillis());
-		sj.item().append(ZKConst.WEIGHT).append('=').append(AppInfo.getInt("soa.weight", 100));
+		map.put(ZKConst.FEATURE, Profile.featureInHex());
+		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));
+		map.put(ZKConst.WEIGHT, AppInfo.get("soa.weight", "100"));
+		map.put(ZKConst.CLIENT_COUNT, AppInfo.get("soa.client.count", "1000"));
 
-		String zkData = sj.toString();
+		String zkData = CollectionUtil.saveMapToText(map, "\n", "=");
 		return zkData;
 	}
 
 	@Override
 	public synchronized void stop() {
 		try {
-			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			client.unsubscribeAll();
-			client.delete(path);
-			client.close();
+			ZkClient client = ZkClientHelper.remove(zkUrl);
+			if (client != null) {
+				client.unsubscribeAll();
+				client.delete(path);
+				client.close();
+			}
 		} catch (Exception e) {
 		}
 
@@ -130,6 +123,7 @@ public class SOAServer implements Plugin, Runnable {
 				Log.printStack("sumk.rpc", e);
 			}
 		}
+		started = false;
 	}
 
 	public class ZKResiter implements Runnable {

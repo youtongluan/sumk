@@ -22,6 +22,7 @@ import java.util.List;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.InnerIOC;
+import org.yx.bean.Loader;
 import org.yx.common.MethodDesc;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.Web;
@@ -30,7 +31,14 @@ import org.yx.log.Log;
 import org.yx.validate.ParamFactory;
 
 class HttpFactory {
-	private HttpNameResolver nameResolver = new HttpNameResolver();
+	private HttpNameResolver nameResolver;
+
+	public HttpFactory() {
+		nameResolver = Loader.newInstanceFromAppKey("http.name.resolver");
+		if (nameResolver == null) {
+			nameResolver = new HttpNameResolverImpl();
+		}
+	}
 
 	public void resolve(Class<?> clz) throws Exception {
 		Method[] methods = clz.getMethods();

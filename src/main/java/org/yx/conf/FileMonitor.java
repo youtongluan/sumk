@@ -31,7 +31,7 @@ import org.yx.main.SumkThreadPool;
 public class FileMonitor {
 
 	public final static FileMonitor inst = new FileMonitor();
-	private static volatile boolean started;
+	private volatile boolean started;
 	private List<FileHandler> handlers = new CopyOnWriteArrayList<>();
 	private Map<String, Long> lastModif = new HashMap<String, Long>();
 

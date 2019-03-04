@@ -34,12 +34,22 @@ import org.yx.conf.AppInfo;
  */
 public class CollectionUtil {
 
-	public static Map<String, String> loadMap(InputStream in) throws IOException {
+	@SafeVarargs
+	public static <T> void addAll(Collection<T> col, T... a) {
+		if (a == null || a.length == 0) {
+			return;
+		}
+		for (T t : a) {
+			col.add(t);
+		}
+	}
+
+	public static Map<String, String> loadMap(InputStream in, boolean keepNullValue) throws IOException {
 		if (in == null) {
 			return null;
 		}
 		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
-		return loadMap(reader);
+		return loadMap(reader, keepNullValue);
 	}
 
 	public static Map<String, String> loadMapFromText(String text, String bigDelimiter, String smallDelimiter) {
@@ -64,12 +74,16 @@ public class CollectionUtil {
 	public static String saveMapToText(Map<String, ?> map, String bigDelimiter, String smallDelimiter) {
 		StringBuilder sb = new StringBuilder();
 		map.forEach((k, v) -> {
-			sb.append(k).append(smallDelimiter).append(v).append(bigDelimiter);
+			sb.append(k);
+			if (v != null) {
+				sb.append(smallDelimiter).append(v);
+			}
+			sb.append(bigDelimiter);
 		});
 		return sb.toString();
 	}
 
-	public static Map<String, String> loadMap(Reader in) throws IOException {
+	public static Map<String, String> loadMap(Reader in, boolean keepNullValue) throws IOException {
 		BufferedReader reader = BufferedReader.class.isInstance(in) ? (BufferedReader) in : new BufferedReader(in);
 		Map<String, String> map = new HashMap<>();
 		try {
@@ -81,6 +95,9 @@ public class CollectionUtil {
 				}
 				String[] vs = line.split("=", 2);
 				if (vs.length != 2) {
+					if (keepNullValue) {
+						map.put(vs[0].trim(), null);
+					}
 					continue;
 				}
 				map.put(vs[0].trim(), vs[1].trim());
@@ -172,5 +189,23 @@ public class CollectionUtil {
 		}
 
 		return ret;
+	}
+
+	/**
+	 * 不为null
+	 * 
+	 * @param source
+	 * @param prefix
+	 * @return
+	 */
+	public static <T> Map<String, T> subMap(Map<String, T> source, String prefix) {
+		int len = prefix.length();
+		Map<String, T> map = new HashMap<>();
+		source.forEach((key, value) -> {
+			if (key.startsWith(prefix)) {
+				map.put(key.substring(len), value);
+			}
+		});
+		return map;
 	}
 }

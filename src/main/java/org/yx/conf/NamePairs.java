@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.util.CollectionUtil;
@@ -36,7 +37,7 @@ public class NamePairs {
 	}
 
 	public Map<String, String> values() {
-		return Collections.unmodifiableMap(this.map);
+		return new HashMap<>(this.map);
 	}
 
 	public NamePairs unmodify() {
