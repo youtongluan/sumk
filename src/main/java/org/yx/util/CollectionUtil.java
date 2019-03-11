@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yx.conf.AppInfo;
 
@@ -33,6 +35,34 @@ import org.yx.conf.AppInfo;
  * 本类的许多方法都会对key、value做trim()处理
  */
 public class CollectionUtil {
+
+	/**
+	 * 生成一个java.util.ArrayList对象
+	 * 
+	 * @param a
+	 *            列表中的元素
+	 * @return java.util.ArrayList对象
+	 */
+	@SafeVarargs
+	public static <T> List<T> list(T... a) {
+		List<T> list = new ArrayList<>();
+		CollectionUtil.addAll(list, a);
+		return list;
+	}
+
+	/**
+	 * 生成一个java.util.HashSet对象
+	 * 
+	 * @param a
+	 *            set中的元素
+	 * @return java.util.HashSet对象
+	 */
+	@SafeVarargs
+	public static <T> Set<T> hashSet(T... a) {
+		Set<T> set = new HashSet<>();
+		CollectionUtil.addAll(set, a);
+		return set;
+	}
 
 	@SafeVarargs
 	public static <T> void addAll(Collection<T> col, T... a) {

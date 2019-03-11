@@ -15,7 +15,7 @@
  */
 package org.yx.rpc.server;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.listener.ClassLoaderFactorysBean;
 
 @Bean

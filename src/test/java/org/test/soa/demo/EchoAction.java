@@ -1,12 +1,12 @@
 package org.test.soa.demo;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yx.http.HttpSessionHolder;
-import org.yx.rpc.Soa;
+import org.yx.annotation.Bean;
+import org.yx.annotation.rpc.Soa;
 
+@Bean
 public class EchoAction {
 
 	@Soa

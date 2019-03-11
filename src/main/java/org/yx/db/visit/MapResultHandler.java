@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.db.annotation.CacheType;
+import org.yx.annotation.db.CacheType;
 import org.yx.db.sql.PojoMeta;
 import org.yx.util.CollectionUtil;
 import org.yx.util.GsonUtil;

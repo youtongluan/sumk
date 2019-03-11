@@ -15,7 +15,7 @@
  */
 package org.yx.db.sql;
 
-import org.yx.db.annotation.SoftDelete;
+import org.yx.annotation.db.SoftDelete;
 
 public interface SoftDeleteParser {
 

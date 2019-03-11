@@ -17,7 +17,7 @@ package org.yx.validate;
 
 import java.util.List;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.exception.InvalidParamException;

@@ -15,8 +15,8 @@
  */
 package org.yx.db.sql;
 
+import org.yx.annotation.db.ColumnType;
 import org.yx.conf.AppInfo;
-import org.yx.db.annotation.ColumnType;
 import org.yx.log.Log;
 
 class OrmSettings {

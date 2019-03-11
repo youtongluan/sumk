@@ -16,30 +16,48 @@
 package org.yx.asm;
 
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.yx.bean.Box;
-import org.yx.exception.SumkException;
+import org.yx.annotation.Box;
 
 public class ProxyClassFactory {
 
 	public static Class<?> proxyIfNeed(Class<?> clz) throws Exception {
-		Map<String, Method> aopMethods = new HashMap<>();
-		Method[] bethods = clz.getDeclaredMethods();
+		List<Method> aopMethods = new ArrayList<>();
+
+		Method[] bethods = clz.getMethods();
 		for (Method m : bethods) {
-			if (!AsmUtils.canProxy(m.getModifiers())) {
+			if (!AsmUtils.canProxy(m.getModifiers()) || m.getDeclaringClass().isInterface()) {
 				continue;
 			}
+
 			if (m.getAnnotation(Box.class) == null) {
 				continue;
 			}
-			if (aopMethods.put(m.getName(), m) != null) {
-				SumkException.throwException(-2321435, "box method [" + m.getName() + "] duplicate in one class");
+			if (!aopMethods.contains(m)) {
+				aopMethods.add(m);
 			}
 		}
+
+		bethods = clz.getDeclaredMethods();
+		for (Method m : bethods) {
+
+			if (!AsmUtils.canProxy(m.getModifiers()) || (m.getModifiers() & Modifier.PROTECTED) == 0) {
+				continue;
+			}
+
+			if (m.getAnnotation(Box.class) == null) {
+				continue;
+			}
+			if (!aopMethods.contains(m)) {
+				aopMethods.add(m);
+			}
+		}
+
 		if (aopMethods.isEmpty()) {
 			return clz;
 		}

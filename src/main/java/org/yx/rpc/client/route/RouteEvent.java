@@ -15,7 +15,7 @@
  */
 package org.yx.rpc.client.route;
 
-import org.yx.rpc.Host;
+import org.yx.common.Host;
 
 public class RouteEvent {
 	private RouteEventType type;

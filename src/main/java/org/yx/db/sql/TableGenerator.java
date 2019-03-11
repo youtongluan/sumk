@@ -23,9 +23,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
-import org.yx.common.LogType;
+import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.db.RawDB;
 import org.yx.db.exec.DBExec;
@@ -53,11 +53,11 @@ public class TableGenerator implements Plugin {
 				try {
 					generate(pm);
 				} catch (Exception e) {
-					Log.printStack(LogType.SQL_ERROR, e);
+					Log.printStack(SumkLogs.SQL_ERROR, e);
 				}
 			}
 		} catch (Exception e) {
-			Log.printStack(LogType.SQL_ERROR, e);
+			Log.printStack(SumkLogs.SQL_ERROR, e);
 		}
 		Log.get("sumk.db.generator").info("generate table end!!!");
 	}

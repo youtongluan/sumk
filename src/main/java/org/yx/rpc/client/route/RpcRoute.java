@@ -17,8 +17,8 @@ package org.yx.rpc.client.route;
 
 import java.util.Collection;
 
+import org.yx.common.Host;
 import org.yx.common.route.WeightedRoute;
-import org.yx.rpc.Host;
 
 public class RpcRoute extends WeightedRoute<ServerMachine> {
 

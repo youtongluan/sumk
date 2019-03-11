@@ -19,7 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Collections;
 import java.util.Map;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.util.CollectionUtil;
 
 @Bean

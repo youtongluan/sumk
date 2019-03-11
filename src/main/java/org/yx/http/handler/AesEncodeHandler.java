@@ -15,8 +15,8 @@
  */
 package org.yx.http.handler;
 
-import org.yx.http.Web;
-import org.yx.util.secury.EncryUtil;
+import org.yx.annotation.http.Web;
+import org.yx.http.EncryUtil;
 
 public class AesEncodeHandler implements HttpHandler {
 

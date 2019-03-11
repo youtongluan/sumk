@@ -16,7 +16,7 @@
 package org.yx.rpc.server.impl;
 
 import org.yx.common.CalleeNode;
-import org.yx.common.LogType;
+import org.yx.common.SumkLogs;
 import org.yx.common.ThreadContext;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
@@ -58,7 +58,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 		} catch (Throwable e) {
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
-			LogType.RPC_LOG.debug(req.getApi() + "," + e.toString(), e);
+			SumkLogs.RPC_LOG.debug(req.getApi() + "," + e.toString(), e);
 		} finally {
 			resp.serviceInvokeMilTime(System.currentTimeMillis() - start);
 			ThreadContext.remove();

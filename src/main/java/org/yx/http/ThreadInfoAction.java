@@ -24,7 +24,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.SumkServlet;
 import org.yx.main.SumkThreadPool;
 
 @Bean

@@ -25,13 +25,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.SumkServlet;
 import org.yx.common.ActStatis;
 import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.SumkServlet;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 import org.yx.util.secury.MD5Utils;
@@ -77,7 +77,7 @@ public class HttpStatis extends HttpServlet {
 			return;
 		}
 		if (mode.equals("statis")) {
-			ActStatis actStatic = HttpHandlerChain.actStatic;
+			ActStatis actStatic = InnerHttpUtil.getActStatic();
 			Map<String, Statis> map = actStatic.getAll();
 			Collection<Statis> values = map.values();
 			for (Statis v : values) {

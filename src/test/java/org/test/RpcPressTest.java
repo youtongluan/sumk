@@ -42,7 +42,7 @@ public class RpcPressTest {
 		long begin=System.currentTimeMillis();
 		for(int i=0;i<count;i++){
 			String msg="asdf-"+i;
-			Rpc.sender("a.b.repeat").paramInArray(msg).totalTimeout(30000).callback(result->{
+			Rpc.sender("a.b.repeat").paramInArray(msg).timeout(30000).callback(result->{
 				if(!msg.equals(result.optResult(String.class))){
 					failCount.incrementAndGet();
 				}

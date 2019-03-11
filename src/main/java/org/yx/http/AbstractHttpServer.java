@@ -25,11 +25,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
-import org.yx.common.LogType;
+import org.yx.common.SumkLogs;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.handler.HttpActionNode;
+import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.log.HttpLogHolder;
 import org.yx.util.StringUtil;
 
 public abstract class AbstractHttpServer extends HttpServlet {
@@ -53,7 +55,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		});
 	}
 
-	protected Logger log = LogType.HTTP_LOG;
+	protected Logger log = SumkLogs.HTTP_LOG;
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) {
@@ -64,19 +66,18 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			log.trace("act={}", act);
 			if (act == null || act.isEmpty()) {
 				log.error("act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
-				InnerHttpUtil.error(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确", InnerHttpUtil.charset(req));
+				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确", req);
 				return;
 			}
 			if (FUSING.contains(act)) {
 				log.error("{} is in fusing", act);
-				InnerHttpUtil.error(resp, HttpErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"),
-						InnerHttpUtil.charset(req));
+				errorAndLog(resp, HttpErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"), req);
 				return;
 			}
 			HttpActionNode info = HttpActionHolder.getHttpInfo(act);
 			if (info == null) {
 				log.error(act + " donot found handler");
-				InnerHttpUtil.error(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", InnerHttpUtil.charset(req));
+				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", req);
 				return;
 			}
 			ThreadContext.httpContext(act, req.getParameter("thisIsTest"));
@@ -89,13 +90,19 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				log.error(e.toString(), e);
 			}
 			try {
-				InnerHttpUtil.error(resp, -1005, "请求格式不正确", InnerHttpUtil.charset(req));
+				errorAndLog(resp, -1005, "请求格式不正确", req);
 			} catch (IOException e1) {
 				log.error(e.toString(), e);
 			}
 		} finally {
 			ThreadContext.remove();
 		}
+	}
+
+	protected void errorAndLog(HttpServletResponse resp, int code, String errorMsg, HttpServletRequest req)
+			throws IOException {
+		HttpLogHolder.errorLog(code, errorMsg, req);
+		InnerHttpUtil.error(resp, code, errorMsg, InnerHttpUtil.charset(req));
 	}
 
 	protected abstract ActParser getParser();

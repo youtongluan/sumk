@@ -9,17 +9,19 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Param;
+import org.yx.annotation.http.Upload;
+import org.yx.annotation.http.Web;
+import org.yx.annotation.rpc.Soa;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
 import org.yx.http.HttpHeadersHolder;
 import org.yx.http.HttpSessionHolder;
-import org.yx.http.Upload;
-import org.yx.http.Web;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
-import org.yx.rpc.Soa;
-import org.yx.validate.Param;
 
+@Bean
 public class PlainServer {
 	
 	@Soa("a.b.repeat")

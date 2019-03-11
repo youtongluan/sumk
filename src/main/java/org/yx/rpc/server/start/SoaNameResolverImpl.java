@@ -17,8 +17,8 @@ package org.yx.rpc.server.start;
 
 import java.lang.reflect.Method;
 
+import org.yx.annotation.rpc.Soa;
 import org.yx.conf.AppInfo;
-import org.yx.rpc.Soa;
 
 public class SoaNameResolverImpl implements SoaNameResolver {
 

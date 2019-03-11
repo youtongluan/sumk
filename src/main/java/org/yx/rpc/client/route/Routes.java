@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.yx.rpc.Host;
+import org.yx.common.Host;
 
 public class Routes {
 	private final Map<String, RpcRoute> routes;
@@ -36,17 +36,7 @@ public class Routes {
 	private static volatile Routes ROUTE = new Routes(Collections.emptyMap(), Collections.emptyMap());
 
 	public static RpcRoute getRoute(String api) {
-		Map<String, RpcRoute> routes = ROUTE.routes;
-
-		for (;; api = api.substring(0, api.lastIndexOf("."))) {
-			RpcRoute r = routes.get(api);
-			if (r != null) {
-				return r;
-			}
-			if (!api.contains(".")) {
-				return null;
-			}
-		}
+		return ROUTE.routes.get(api);
 	}
 
 	private static void _refresh(Map<Host, ZkData> data, Map<String, RpcRoute> route) {

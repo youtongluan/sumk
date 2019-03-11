@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import org.yx.rpc.Host;
+import org.yx.common.Host;
 import org.yx.util.Assert;
 
 import redis.clients.jedis.Protocol;

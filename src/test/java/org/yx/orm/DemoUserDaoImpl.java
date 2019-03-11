@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.Random;
 
 import org.junit.Assert;
-import org.yx.bean.Bean;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.db.sql.Select;
 import org.yx.db.visit.MapResultHandler;

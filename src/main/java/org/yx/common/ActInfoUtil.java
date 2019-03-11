@@ -22,8 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.annotation.Param;
 import org.yx.util.StringUtil;
-import org.yx.validate.Param;
 import org.yx.validate.ParamInfo;
 
 public class ActInfoUtil {

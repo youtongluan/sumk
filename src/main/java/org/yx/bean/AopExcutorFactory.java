@@ -17,7 +17,8 @@ package org.yx.bean;
 
 import java.lang.annotation.Annotation;
 
-import org.yx.bean.Box.Transaction;
+import org.yx.annotation.Box;
+import org.yx.annotation.Box.Transaction;
 import org.yx.common.AopExcutor;
 import org.yx.common.DBTransaction;
 

@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.annotation.rpc.Soa;
 import org.yx.common.ActInfoUtil;
 import org.yx.main.SumkServer;
 

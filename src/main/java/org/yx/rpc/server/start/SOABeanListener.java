@@ -25,13 +25,13 @@ import org.yx.log.Log;
 public class SOABeanListener extends AbstractBeanListener {
 
 	public SOABeanListener() {
-		super(AppInfo.get(StartConstants.SOA_PACKAGES));
+		super(AppInfo.get("soa"));
 		if (StartContext.inst.get(StartConstants.NOSOA) != null) {
 			this.valid = false;
 		}
 	}
 
-	private SoaFactory factory = new SoaFactory();
+	private SoaAnnotationResolver factory = new SoaAnnotationResolver();
 
 	@Override
 	public void listen(BeanEvent event) {

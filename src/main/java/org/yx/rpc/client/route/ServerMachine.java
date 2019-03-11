@@ -15,8 +15,8 @@
  */
 package org.yx.rpc.client.route;
 
+import org.yx.common.Host;
 import org.yx.common.route.WeightedServer;
-import org.yx.rpc.Host;
 
 public class ServerMachine implements WeightedServer {
 

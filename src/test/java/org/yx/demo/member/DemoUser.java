@@ -2,10 +2,10 @@ package org.yx.demo.member;
 
 import java.util.Date;
 
-import org.yx.db.annotation.Column;
-import org.yx.db.annotation.ColumnType;
-import org.yx.db.annotation.SoftDelete;
-import org.yx.db.annotation.Table;
+import org.yx.annotation.db.Column;
+import org.yx.annotation.db.ColumnType;
+import org.yx.annotation.db.SoftDelete;
+import org.yx.annotation.db.Table;
 import org.yx.util.SumkDate;
 
 @Table

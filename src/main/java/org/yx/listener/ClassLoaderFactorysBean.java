@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.yx.bean.BeanWrapper;
 import org.yx.bean.Loader;
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.common.Ordered;
@@ -32,7 +31,7 @@ import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public abstract class ClassLoaderFactorysBean<T extends Ordered> implements FactorysBean<T>, BeanWatcher<T> {
+public abstract class ClassLoaderFactorysBean<T extends Ordered> implements ListenerFactory<T>, BeanWatcher {
 
 	protected String userPackage;
 
@@ -90,12 +89,15 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements Fact
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public void beanPost(BeanWrapper w) {
-		Object obj = w.getBean();
-		if (userPackage != null && acceptClass().isInstance(obj)
-				&& w.getTargetClass().getName().startsWith(this.userPackage)) {
-			this.userBeans.add((T) obj);
+	public void afterInstalled(Object[] beans) {
+		for (Object bean : beans) {
+			if (userPackage != null && acceptClass().isInstance(bean)
+					&& bean.getClass().getName().startsWith(this.userPackage)) {
+				this.userBeans.add((T) bean);
+			}
 		}
 	}
+
+	protected abstract Class<T> acceptClass();
 
 }

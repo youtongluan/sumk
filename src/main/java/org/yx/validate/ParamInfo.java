@@ -15,6 +15,8 @@
  */
 package org.yx.validate;
 
+import org.yx.annotation.Param;
+
 public class ParamInfo {
 	final Param param;
 

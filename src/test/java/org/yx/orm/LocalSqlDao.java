@@ -18,8 +18,8 @@ package org.yx.orm;
 import java.util.Date;
 import java.util.Map;
 
-import org.yx.bean.Bean;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
 import org.yx.db.NamedUtil;
 import org.yx.db.RawUtil;
 import org.yx.util.SBuilder;

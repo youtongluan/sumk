@@ -2,8 +2,8 @@ package org.test.web.demo;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.bean.Bean;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.demo.member.DemoUser;
 import org.yx.http.filter.AbstractSessionFilter;

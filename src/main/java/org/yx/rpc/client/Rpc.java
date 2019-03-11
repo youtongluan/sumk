@@ -90,7 +90,7 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String call(String method, Object... args) {
-		return new Sender(method).paramInArray(args).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Sender(method).paramInArray(args).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**
@@ -106,11 +106,11 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String callInJson(String method, String json) {
-		return new Sender(method).paramInJson(json).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Sender(method).paramInJson(json).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	public static String callInMap(String method, Map<String, ?> map) {
-		return new Sender(method).paramInMap(map).totalTimeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Sender(method).paramInMap(map).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**

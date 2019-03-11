@@ -17,6 +17,8 @@ package org.yx.bean;
 
 import java.lang.reflect.Field;
 
+import org.yx.annotation.Inject;
+
 public interface BeanHandler {
 
 	Object handle(Inject inject, Field field);

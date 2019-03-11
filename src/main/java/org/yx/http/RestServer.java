@@ -18,7 +18,8 @@ package org.yx.http;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.SumkServlet;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;

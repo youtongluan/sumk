@@ -21,10 +21,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.yx.common.Host;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.rpc.Host;
 
 import redis.clients.jedis.BinaryJedisCommands;
 import redis.clients.jedis.BinaryScriptingCommands;

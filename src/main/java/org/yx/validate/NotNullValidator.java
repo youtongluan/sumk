@@ -15,7 +15,7 @@
  */
 package org.yx.validate;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.exception.InvalidParamException;
 
 @Bean

@@ -64,10 +64,10 @@ public abstract class Log {
 			module = "root";
 		}
 
-		if (logType == null || logType == LogType.console) {
-			return ConsoleLog.getLogger(module);
+		if (logType == LogType.slf4j) {
+			return LoggerFactory.getLogger(module);
 		}
-		return LoggerFactory.getLogger(module);
+		return ConsoleLog.getLogger(module);
 	}
 
 	/**

@@ -47,13 +47,13 @@ public class DBTransaction {
 		if (BizException.class.isInstance(e)) {
 			Log.get("sumk.SYS").info("code:{},message:{}", BizException.class.cast(e).getCode(), e.getMessage());
 		} else {
-			Log.printStack(LogType.SQL_ERROR, e);
+			Log.printStack(SumkLogs.SQL_ERROR, e);
 		}
 		if (dbCtx != null) {
 			try {
 				dbCtx.rollback();
 			} catch (SQLException e1) {
-				Log.printStack(LogType.SQL_ERROR, e1);
+				Log.printStack(SumkLogs.SQL_ERROR, e1);
 			}
 		}
 		if (RuntimeException.class.isInstance(e)) {
@@ -69,7 +69,7 @@ public class DBTransaction {
 		try {
 			this.dbCtx.commit();
 		} catch (SQLException e) {
-			Log.printStack(LogType.SQL_ERROR, e);
+			Log.printStack(SumkLogs.SQL_ERROR, e);
 		}
 	}
 

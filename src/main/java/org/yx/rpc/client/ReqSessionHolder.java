@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.rpc.Host;
+import org.yx.common.Host;
 
 public class ReqSessionHolder {
 	private static Map<Host, Object> map = new ConcurrentHashMap<>();

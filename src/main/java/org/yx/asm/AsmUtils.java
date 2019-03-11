@@ -249,17 +249,18 @@ public final class AsmUtils {
 		return locals;
 	}
 
-	public static Method proxyMethod(Method method, Class<?> proxyedClass) {
+	public static Method getSameMethod(Method method, Class<?> otherClass) {
 		Class<?> clz = method.getDeclaringClass();
-		if (clz == proxyedClass) {
+		if (clz == otherClass) {
 			return method;
 		}
 		String methodName = method.getName();
 		Class<?>[] argTypes = method.getParameterTypes();
-		Method[] proxyedMethods = proxyedClass.getDeclaredMethods();
+
+		Method[] proxyedMethods = otherClass.getMethods();
 		for (Method proxyedMethod : proxyedMethods) {
-			if (proxyedMethod.getName().equals(methodName)
-					&& Arrays.equals(argTypes, proxyedMethod.getParameterTypes())) {
+			if (proxyedMethod.getName().equals(methodName) && Arrays.equals(argTypes, proxyedMethod.getParameterTypes())
+					&& !proxyedMethod.getDeclaringClass().isInterface()) {
 				return proxyedMethod;
 			}
 		}

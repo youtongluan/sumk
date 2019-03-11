@@ -1,8 +1,8 @@
 package org.yx.orm;
 
 import org.junit.Assert;
-import org.yx.bean.Bean;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
 import org.yx.db.NamedDB;
 import org.yx.db.RawDB;
 import org.yx.util.SBuilder;

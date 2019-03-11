@@ -15,8 +15,8 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.http.Web;
 import org.yx.common.Ordered;
-import org.yx.http.Web;
 
 public interface HttpHandler extends Ordered {
 	boolean accept(Web web);

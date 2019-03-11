@@ -15,8 +15,8 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.http.Web;
 import org.yx.http.HttpGson;
-import org.yx.http.Web;
 
 public class RespToStringHandler implements HttpHandler {
 

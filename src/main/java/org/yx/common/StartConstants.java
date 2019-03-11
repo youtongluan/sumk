@@ -19,8 +19,6 @@ public abstract class StartConstants {
 
 	public static final String INNER_PACKAGE = String.join(".", "o" + "r" + "g", "y" + "x");
 	public static final String IOC_PACKAGES = "sumk.ioc";
-	public static final String SOA_PACKAGES = "soa";
-	public static final String HTTP_PACKAGES = "http";
 	public static final String SOA_PORT = "soa.port";
 	public static final String HTTP_PORT = "http.port";
 

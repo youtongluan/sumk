@@ -1,8 +1,8 @@
 package org.yx.demo.member;
 
-import org.yx.db.annotation.Column;
-import org.yx.db.annotation.ColumnType;
-import org.yx.db.annotation.Table;
+import org.yx.annotation.db.Column;
+import org.yx.annotation.db.ColumnType;
+import org.yx.annotation.db.Table;
 import org.yx.db.dao.Pojo;
 
 @Table

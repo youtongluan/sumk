@@ -22,18 +22,18 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.yx.annotation.Inject;
+import org.yx.annotation.db.Cached;
 import org.yx.asm.AsmUtils;
+import org.yx.bean.watcher.BeanCreate;
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.LifeCycleHandler;
-import org.yx.bean.watcher.Scaned;
 import org.yx.common.ClassScaner;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
-import org.yx.db.Cached;
 import org.yx.exception.SumkException;
 import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
@@ -146,77 +146,66 @@ public final class BeanPublisher {
 	}
 
 	private static void autoWiredAll() {
-		BeanPool pool = InnerIOC.pool;
-		Map<Object, BeanWrapper> beanMap = pool.allBeans();
-		Collection<BeanWrapper> beanwrapers = beanMap.values();
-		Collection<Object> beans = beanMap.keySet();
+		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
 
-		IOC.getBeans(Scaned.class).forEach(w -> w.afterScaned());
-		injectProperties(beans);
+		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
+		for (Object bean : beans) {
+			injectProperties(bean);
+		}
 		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
-			for (BeanWrapper bw : beanwrapers) {
-
-				if (BeanWatcher.class.isAssignableFrom(bw.getTargetClass())
-						|| !watcher.acceptClass().isInstance(bw.getBean())) {
-					continue;
-				}
-				watcher.beanPost(bw);
-			}
+			watcher.afterInstalled(beans);
 		});
 		LifeCycleHandler.instance.start();
 	}
 
-	private static void injectProperties(Collection<Object> beans) {
+	private static void injectProperties(Object bean) {
+		Class<?> tempClz = bean.getClass();
+		while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
-		beans.forEach(bean -> {
-			Class<?> tempClz = bean.getClass();
-			while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
-
-				Field[] fs = tempClz.getDeclaredFields();
-				for (Field f : fs) {
-					Inject inject = f.getAnnotation(Inject.class);
-					if (inject != null) {
-						Class<?> clz = inject.beanClz();
-						Object target = null;
-						if (inject.handler().length() > 0) {
-							try {
-								target = InjectParser.get(f, inject, bean);
-							} catch (Exception e) {
-								Log.printStack(e);
-								SumkException.throwException(-235435628, bean.getClass().getName() + "." + f.getName()
-										+ " cannot injected with " + inject.handler());
-							}
-						} else if (f.getType().isArray()) {
-							target = getArrayField(f, clz, bean);
-						} else if (List.class == f.getType()) {
-							target = getListField(f, clz, bean);
-						} else if (Set.class == f.getType()) {
-							target = getSetField(f, clz, bean);
-						} else {
-							target = getBean(f, clz);
+			Field[] fs = tempClz.getDeclaredFields();
+			for (Field f : fs) {
+				Inject inject = f.getAnnotation(Inject.class);
+				if (inject != null) {
+					Class<?> clz = inject.beanClz();
+					Object target = null;
+					if (inject.handler().length() > 0) {
+						try {
+							target = InjectParser.get(f, inject, bean);
+						} catch (Exception e) {
+							Log.printStack(e);
+							SumkException.throwException(-235435628, bean.getClass().getName() + "." + f.getName()
+									+ " cannot injected with " + inject.handler());
 						}
-						if (target == null) {
-							SumkException.throwException(-235435658,
-									bean.getClass().getName() + "." + f.getName() + " cannot injected.");
-						}
-						injectField(f, bean, target);
-						continue;
+					} else if (f.getType().isArray()) {
+						target = getArrayField(f, clz, bean);
+					} else if (List.class == f.getType()) {
+						target = getListField(f, clz, bean);
+					} else if (Set.class == f.getType()) {
+						target = getSetField(f, clz, bean);
+					} else {
+						target = getBean(f, clz);
 					}
-
-					Cached c = f.getAnnotation(Cached.class);
-					if (c != null) {
-						Object target = getCacheObject(f);
-						if (target == null) {
-							SumkException.throwException(23526568,
-									bean.getClass().getName() + "." + f.getName() + " cannot injected");
-						}
-						injectField(f, bean, target);
-						continue;
+					if (target == null) {
+						SumkException.throwException(-235435658,
+								bean.getClass().getName() + "." + f.getName() + " cannot injected.");
 					}
+					injectField(f, bean, target);
+					continue;
 				}
-				tempClz = tempClz.getSuperclass();
+
+				Cached c = f.getAnnotation(Cached.class);
+				if (c != null) {
+					Object target = getCacheObject(f);
+					if (target == null) {
+						SumkException.throwException(23526568,
+								bean.getClass().getName() + "." + f.getName() + " cannot injected");
+					}
+					injectField(f, bean, target);
+					continue;
+				}
 			}
-		});
+			tempClz = tempClz.getSuperclass();
+		}
 	}
 
 	private static Set<?> getSetField(Field f, Class<?> clz, Object bean) {

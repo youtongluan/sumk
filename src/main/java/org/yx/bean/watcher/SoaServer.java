@@ -17,7 +17,7 @@ package org.yx.bean.watcher;
 
 import java.lang.reflect.Constructor;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;

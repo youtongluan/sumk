@@ -5,7 +5,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-import org.yx.bean.Box;
+import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.db.visit.MapResultHandler;
 import org.yx.demo.member.DemoUser;

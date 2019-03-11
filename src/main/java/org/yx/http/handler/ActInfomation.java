@@ -24,11 +24,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.SumkServlet;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.SumkServlet;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
@@ -57,27 +57,28 @@ public class ActInfomation extends HttpServlet {
 		} catch (Exception e) {
 		}
 		GsonBuilder builder = GsonUtil.gsonBuilder("sumk.acts");
+		boolean pretty = false;
 		if ("1".equals(req.getParameter("pretty"))) {
 			builder.setPrettyPrinting();
+			pretty = true;
 		}
-		String ln = req.getParameter("ln");
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
 			List<Map<String, Object>> list = HttpActionHolder.infos();
-			write(resp, gson.toJson(list), ln);
+			write(resp, gson.toJson(list), pretty);
 			return;
 		}
 		if (mode.equals("rpc")) {
 			List<Map<String, Object>> list = RpcActionHolder.infos();
-			write(resp, gson.toJson(list), ln);
+			write(resp, gson.toJson(list), pretty);
 			return;
 		}
 
 	}
 
-	private void write(HttpServletResponse resp, String msg, String ln) throws IOException {
-		if (ln != null) {
-			msg = msg.replace("\n", ln);
+	private void write(HttpServletResponse resp, String msg, boolean pretty) throws IOException {
+		if (pretty) {
+			msg = msg.replace("\n", "<br/>").replace(" ", "&nbsp;");
 		}
 		resp.getWriter().write(msg);
 	}

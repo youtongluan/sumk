@@ -19,8 +19,8 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +39,7 @@ public class BeanPool {
 
 	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 
-	public static String getBeanName(Class<?> clz) {
+	public static String resloveBeanName(Class<?> clz) {
 		String name = StringUtil.uncapitalize(clz.getSimpleName());
 		if (name.endsWith("Impl")) {
 			name = name.substring(0, name.length() - 4);
@@ -47,12 +47,12 @@ public class BeanPool {
 		return name;
 	}
 
-	static Set<String> getBeanNames(Class<?> clazz) {
+	static Set<String> resloveBeanNames(Class<?> clazz) {
 		Assert.notNull(clazz, "Class must not be null");
 		Set<Class<?>> interfaces = new HashSet<>();
 		resloveSuperClassAndInterface(clazz, interfaces);
 		Set<String> names = new HashSet<>();
-		interfaces.forEach(clz -> names.add(getBeanName(clz)));
+		interfaces.forEach(clz -> names.add(resloveBeanName(clz)));
 		return names;
 	}
 
@@ -80,40 +80,55 @@ public class BeanPool {
 		return w.getTargetClass();
 	}
 
-	Map<Object, BeanWrapper> allBeans() {
-		Map<Object, BeanWrapper> beans = new HashMap<>();
+	String[] beanNames() {
+		Set<String> names = map.keySet();
+		return names.toArray(new String[0]);
+	}
+
+	Collection<BeanWrapper> allBeanWrapper() {
+		Map<BeanWrapper, Boolean> beans = new IdentityHashMap<>();
+		Collection<Object> vs = map.values();
+		for (Object v : vs) {
+			if (!v.getClass().isArray()) {
+				beans.putIfAbsent((BeanWrapper) v, Boolean.TRUE);
+				continue;
+			}
+			BeanWrapper[] objs = (BeanWrapper[]) v;
+			for (BeanWrapper o : objs) {
+				beans.putIfAbsent(o, Boolean.TRUE);
+			}
+		}
+		return beans.keySet();
+	}
+
+	Collection<Object> beans() {
+		Map<Object, Boolean> beans = new IdentityHashMap<>();
 		Collection<Object> vs = map.values();
 		for (Object v : vs) {
 			if (!v.getClass().isArray()) {
 				Object bean = getBean(v);
-				if (beans.containsKey(bean)) {
-					continue;
-				}
-				beans.put(bean, (BeanWrapper) v);
+				beans.putIfAbsent(bean, Boolean.TRUE);
 				continue;
 			}
-			Object[] objs = (Object[]) v;
-			for (Object o : objs) {
-				Object bean = getBean(o);
-				if (beans.containsKey(bean)) {
-					continue;
-				}
-				beans.put(bean, (BeanWrapper) o);
+			BeanWrapper[] objs = (BeanWrapper[]) v;
+			for (BeanWrapper o : objs) {
+				Object bean = o.getBean();
+				beans.putIfAbsent(bean, Boolean.TRUE);
 			}
 		}
-		return beans;
+		return beans.keySet();
 	}
 
 	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
 		Assert.notNull(clz);
-		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? getBeanNames(clz)
+		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
 				: Collections.singleton(beanName);
 		if (names == null || names.isEmpty()) {
-			names = Collections.singleton(getBeanName(clz));
+			names = Collections.singleton(resloveBeanName(clz));
 		}
 		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
 		Object bean = proxyClz.newInstance();
-		BeanWrapper w = new BeanWrapper(bean, clz);
+		BeanWrapper w = new BeanWrapper(bean);
 		for (String name : names) {
 			put(name, w);
 		}
@@ -123,12 +138,12 @@ public class BeanPool {
 	public <T> T putBean(String beanName, T bean) {
 		Assert.notNull(bean);
 		Class<?> clz = bean.getClass();
-		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? getBeanNames(clz)
+		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
 				: Collections.singleton(beanName);
 		if (names == null || names.isEmpty()) {
-			names = Collections.singleton(getBeanName(clz));
+			names = Collections.singleton(resloveBeanName(clz));
 		}
-		BeanWrapper w = new BeanWrapper(bean, clz);
+		BeanWrapper w = new BeanWrapper(bean);
 		for (String name : names) {
 			put(name, w);
 		}
@@ -168,7 +183,7 @@ public class BeanPool {
 	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> clz) {
 		if (name == null || name.length() == 0) {
-			name = getBeanName(clz);
+			name = resloveBeanName(clz);
 		}
 		if (clz == Object.class) {
 			clz = null;
@@ -216,7 +231,7 @@ public class BeanPool {
 	public <T> List<T> getBeans(String name, Class<T> clz) {
 		List<T> list = new ArrayList<>(4);
 		if (name == null || name.length() == 0) {
-			name = getBeanName(clz);
+			name = resloveBeanName(clz);
 		}
 		if (clz == Object.class) {
 			clz = null;
@@ -280,6 +295,10 @@ public class BeanPool {
 				return sb.toString();
 			sb.append(',').append(' ');
 		}
+	}
+
+	Object getBeanWrapper(String name) {
+		return map.get(name);
 	}
 
 }

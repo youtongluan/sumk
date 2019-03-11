@@ -17,7 +17,7 @@ package org.yx.http.handler;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.Web;
+import org.yx.annotation.http.Web;
 
 public class RespHeaderHandler implements HttpHandler {
 

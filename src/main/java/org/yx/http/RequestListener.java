@@ -20,7 +20,7 @@ import javax.servlet.ServletRequestEvent;
 import javax.servlet.ServletRequestListener;
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 
 @Bean
 public class RequestListener implements ServletRequestListener {

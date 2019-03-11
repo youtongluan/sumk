@@ -15,10 +15,10 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+import org.yx.http.kit.InnerHttpUtil;
 
 public class ReqTypeChecker implements HttpHandler {
 

@@ -16,35 +16,29 @@
 package org.yx.http.handler;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.yx.common.ActStatis;
-import org.yx.conf.AppInfo;
+import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.log.HttpLogHolder;
 import org.yx.log.Log;
-
-import com.google.gson.stream.JsonWriter;
 
 public class HttpHandlerChain implements HttpHandler {
 
 	private Logger LOG = Log.get("sumk.http.chain");
-	private Logger LOG_REQ = Log.get("sumk.http.req");
 	private Logger LOG_ERROR = Log.get("sumk.http.req.error");
 	private List<HttpHandler> handlers = new ArrayList<>();
 
 	public static HttpHandlerChain inst = new HttpHandlerChain();
 	public static HttpHandlerChain upload = new HttpHandlerChain();
-	static final ActStatis actStatic = new ActStatis();
 
 	private HttpHandlerChain() {
 
@@ -68,7 +62,6 @@ public class HttpHandlerChain implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		long begin = System.currentTimeMillis();
 		boolean success = true;
 		try {
 			for (int i = 0; i < this.handlers.size(); i++) {
@@ -115,26 +108,9 @@ public class HttpHandlerChain implements HttpHandler {
 			LOG_ERROR.error(msg(ctx, e.getMessage()), e);
 			error(ctx, HttpErrorCode.HANDLE_ERROR, "请求出错");
 		} finally {
-			if (LOG_REQ.isDebugEnabled() && ctx.dataInString() != null) {
-				StringWriter stringWriter = new StringWriter();
-				JsonWriter writer = new JsonWriter(stringWriter);
-				writer.beginObject();
-				writer.name("req").value(ctx.dataInString());
-				String resp = ctx.respInString();
-				int maxLen = AppInfo.getInt("http.log.resp.length", 10000000);
-				if (resp != null && maxLen > 0) {
-					if (resp.length() > maxLen) {
-						resp = resp.substring(0, maxLen);
-					}
-					writer.name("resp").value(resp);
-				}
-				writer.endObject();
-				writer.flush();
-				writer.close();
-				LOG_REQ.debug(msg(ctx, stringWriter.toString()));
-			}
+			HttpLogHolder.log(ctx);
 			UploadFileHolder.remove();
-			actStatic.visit(ctx.act(), System.currentTimeMillis() - begin, success);
+			InnerHttpUtil.act(ctx.act(), System.currentTimeMillis() - ctx.beginTime(), success);
 		}
 		return true;
 	}
@@ -145,22 +121,7 @@ public class HttpHandlerChain implements HttpHandler {
 	}
 
 	private void error(WebContext ctx, int code, String message) throws UnsupportedEncodingException, IOException {
-		if (LOG_REQ.isInfoEnabled()) {
-			StringWriter stringWriter = new StringWriter();
-			JsonWriter writer = new JsonWriter(stringWriter);
-			writer.beginObject();
-			writer.name("act").value(ctx.act());
-			String data = ctx.dataInString();
-			if (data != null) {
-				writer.name("req").value(data);
-			}
-			writer.name("err_code").value(code);
-			writer.name("err_msg").value(message);
-			writer.endObject();
-			writer.flush();
-			writer.close();
-			LOG_REQ.info(stringWriter.toString());
-		}
+		HttpLogHolder.errorLog(code, message, ctx);
 		InnerHttpUtil.error(ctx.httpResponse(), code, message, ctx.charset());
 	}
 

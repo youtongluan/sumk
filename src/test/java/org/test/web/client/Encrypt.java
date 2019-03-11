@@ -17,7 +17,8 @@ package org.test.web.client;
 
 import java.security.MessageDigest;
 
-import org.yx.util.secury.EncryUtil;
+import org.yx.http.EncryUtil;
+
 
 /**
  * 客户端使用这个类进行加解密、签名

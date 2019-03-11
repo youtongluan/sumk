@@ -17,7 +17,6 @@ package org.yx.rpc.codec.encoders;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-import org.yx.common.LogType;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
@@ -38,7 +37,7 @@ public class ReqEncoder implements SumkMinaEncoder {
 		req.clearParams();
 
 		if (jsonedArg != null) {
-			LogType.RPC_LOG.trace("args:{}", jsonedArg);
+
 			String json_req = String.join(Protocols.LINE_SPLIT, GsonUtil.toJson(req), jsonedArg);
 			SumkProtocolEncoder.encodeString(Protocols.REQ_PARAM_JSON, session, json_req, out);
 			return;

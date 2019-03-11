@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.yx.common.LogType;
+import org.yx.common.SumkLogs;
 import org.yx.common.ThreadContext;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
@@ -188,7 +188,7 @@ public final class ConnectionPool implements AutoCloseable {
 				LOG_CONN_CLOSE.trace("close write connection:{}", this.writeConn);
 				this.writeConn.close();
 			} catch (Exception e) {
-				Log.printStack(LogType.SQL_ERROR, e);
+				Log.printStack(SumkLogs.SQL_ERROR, e);
 			}
 			this.writeConn = null;
 		}
@@ -197,7 +197,7 @@ public final class ConnectionPool implements AutoCloseable {
 				LOG_CONN_CLOSE.trace("close read connection:{}", this.readConn);
 				this.readConn.close();
 			} catch (Exception e) {
-				Log.printStack(LogType.SQL_ERROR, e);
+				Log.printStack(SumkLogs.SQL_ERROR, e);
 			}
 			this.readConn = null;
 		}

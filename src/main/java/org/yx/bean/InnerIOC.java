@@ -15,6 +15,8 @@
  */
 package org.yx.bean;
 
+import java.util.Collection;
+
 public final class InnerIOC {
 	final static BeanPool pool = new BeanPool();
 
@@ -23,7 +25,7 @@ public final class InnerIOC {
 	}
 
 	public static <T> T putClassByInterface(Class<?> intf, Class<T> clz) throws Exception {
-		return pool.putClass(BeanPool.getBeanName(intf), clz);
+		return pool.putClass(BeanPool.resloveBeanName(intf), clz);
 	}
 
 	public static <T> T putBean(String beanName, T bean) {
@@ -38,4 +40,15 @@ public final class InnerIOC {
 		return putClass(null, clz);
 	}
 
+	public static String[] beanNames() {
+		return pool.beanNames();
+	}
+
+	public static Object getBeanWrapper(String name) {
+		return pool.getBeanWrapper(name);
+	}
+
+	public static Collection<Object> beans() {
+		return pool.beans();
+	}
 }

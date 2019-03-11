@@ -18,6 +18,8 @@ package org.yx.http;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.yx.http.kit.InnerHttpUtil;
+
 /**
  * 这个类要在sumk-http中调用，不能在自定义的servlet中调用
  */
@@ -64,7 +66,7 @@ public final class HttpHeadersHolder {
 		return null;
 	}
 
-	static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
+	public static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
 		if (req == null) {
 			return null;
 		}

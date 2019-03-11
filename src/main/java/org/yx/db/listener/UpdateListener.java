@@ -19,8 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.bean.Bean;
-import org.yx.db.annotation.CacheType;
+import org.yx.annotation.Bean;
+import org.yx.annotation.db.CacheType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;

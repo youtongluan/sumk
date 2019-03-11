@@ -2,8 +2,8 @@ package org.yx.orm;
 
 import java.util.Random;
 
-import org.yx.bean.Bean;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.demo.member.Multikey;
 import org.yx.util.UUIDSeed;

@@ -15,12 +15,10 @@
  */
 package org.yx.bean.watcher;
 
-import org.yx.bean.BeanWrapper;
+/**
+ * 只被调用一次
+ */
+public interface BeanWatcher extends IOCWatcher {
 
-public interface BeanWatcher<T> extends IOCWatcher {
-
-	void beanPost(BeanWrapper w);
-
-	Class<T> acceptClass();
-
+	void afterInstalled(Object[] beans);
 }

@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
+import org.yx.common.Host;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
-import org.yx.rpc.Host;
 
 public class HostChecker {
 

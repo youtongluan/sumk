@@ -15,7 +15,7 @@
  */
 package org.yx.http.handler;
 
-import org.yx.http.Web;
+import org.yx.annotation.http.Web;
 
 public class ToByteHandler implements HttpHandler {
 

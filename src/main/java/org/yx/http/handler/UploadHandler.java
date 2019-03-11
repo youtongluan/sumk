@@ -23,11 +23,11 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
-import org.yx.common.LogType;
+import org.yx.annotation.http.Upload;
+import org.yx.annotation.http.Web;
+import org.yx.common.SumkLogs;
 import org.yx.exception.HttpException;
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Upload;
-import org.yx.http.Web;
+import org.yx.http.kit.InnerHttpUtil;
 
 public class UploadHandler implements HttpHandler {
 
@@ -59,7 +59,7 @@ public class UploadHandler implements HttpHandler {
 				}
 				continue;
 			}
-			LogType.HTTP_LOG.debug("fileupload#name:{},field:{}", name, fi.getFieldName());
+			SumkLogs.HTTP_LOG.debug("fileupload#name:{},field:{}", name, fi.getFieldName());
 			name = name.toLowerCase();
 			boolean valid = false;
 			for (String ext : uploadInfo.exts()) {

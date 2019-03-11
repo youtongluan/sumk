@@ -15,6 +15,7 @@
  */
 package org.yx.bean;
 
+import org.yx.annotation.Bean;
 import org.yx.listener.ClassLoaderFactorysBean;
 import org.yx.listener.Listener;
 

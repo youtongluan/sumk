@@ -26,13 +26,13 @@ public class HttpBeanListener extends AbstractBeanListener {
 
 	public HttpBeanListener() {
 
-		super(AppInfo.get(StartConstants.HTTP_PACKAGES));
+		super(AppInfo.get("http"));
 		if (StartContext.inst.get(StartConstants.NOHTTP) != null) {
 			this.valid = false;
 		}
 	}
 
-	private HttpFactory factory;
+	private WebAnnotationResolver factory;
 
 	@Override
 	public void listen(BeanEvent event) {
@@ -44,7 +44,7 @@ public class HttpBeanListener extends AbstractBeanListener {
 				this.valid = false;
 				return;
 			}
-			factory = new HttpFactory();
+			factory = new WebAnnotationResolver();
 		}
 		try {
 			Class<?> clz = event.clz();

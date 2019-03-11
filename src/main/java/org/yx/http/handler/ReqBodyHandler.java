@@ -19,8 +19,8 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+import org.yx.annotation.http.Web;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 
 public class ReqBodyHandler implements HttpHandler {

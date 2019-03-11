@@ -18,11 +18,11 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
+import org.yx.annotation.db.Column;
+import org.yx.annotation.db.ColumnType;
+import org.yx.annotation.db.UpdateType;
 import org.yx.common.date.TimeUtil;
 import org.yx.conf.Const;
-import org.yx.db.annotation.Column;
-import org.yx.db.annotation.ColumnType;
-import org.yx.db.annotation.UpdateType;
 import org.yx.db.kit.NumUtil;
 import org.yx.util.StringUtil;
 

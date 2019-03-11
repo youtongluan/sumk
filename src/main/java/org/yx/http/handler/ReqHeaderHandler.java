@@ -21,8 +21,8 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.InnerHttpUtil;
-import org.yx.http.Web;
+import org.yx.annotation.http.Web;
+import org.yx.http.kit.InnerHttpUtil;
 
 public class ReqHeaderHandler implements HttpHandler {
 

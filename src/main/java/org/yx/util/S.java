@@ -15,64 +15,19 @@
  */
 package org.yx.util;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import org.yx.common.lock.Key;
 import org.yx.common.lock.Lock;
 import org.yx.common.lock.SLock;
-import org.yx.util.secury.EncryUtil;
+import org.yx.util.secury.AESEncry;
+import org.yx.util.secury.Encry;
 import org.yx.util.secury.MD5Utils;
 
 public abstract class S {
 
-	public static class Collection {
-		/**
-		 * 生成一个java.util.ArrayList对象
-		 * 
-		 * @param a
-		 *            列表中的元素
-		 * @return java.util.ArrayList对象
-		 */
-		@SafeVarargs
-		public static <T> List<T> list(T... a) {
-			List<T> list = new ArrayList<>();
-			CollectionUtil.addAll(list, a);
-			return list;
-		}
-
-		/**
-		 * 生成一个java.util.HashSet对象
-		 * 
-		 * @param a
-		 *            set中的元素
-		 * @return java.util.HashSet对象
-		 */
-		@SafeVarargs
-		public static <T> Set<T> set(T... a) {
-			Set<T> set = new HashSet<>();
-			CollectionUtil.addAll(set, a);
-			return set;
-		}
-	}
-
 	/**
 	 * AES加解密
 	 */
-	public static class Aes {
-
-		public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-			return EncryUtil.encrypt(contentBytes, key);
-		}
-
-		public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
-			return EncryUtil.decrypt(contentBytes, key);
-
-		}
-
-	}
+	public static Encry aes = new AESEncry();
 
 	public static class MD5 {
 

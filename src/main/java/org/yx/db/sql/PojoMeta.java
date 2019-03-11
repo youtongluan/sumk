@@ -24,11 +24,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.yx.annotation.db.CacheType;
+import org.yx.annotation.db.SoftDelete;
+import org.yx.annotation.db.Table;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
-import org.yx.db.annotation.CacheType;
-import org.yx.db.annotation.SoftDelete;
-import org.yx.db.annotation.Table;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.redis.Counter;

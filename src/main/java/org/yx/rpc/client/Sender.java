@@ -21,10 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import org.apache.mina.core.future.WriteFuture;
-import org.yx.common.LogType;
+import org.yx.common.Host;
+import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
-import org.yx.rpc.Host;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.Routes;
@@ -65,7 +65,7 @@ public final class Sender {
 		return this;
 	}
 
-	public Sender totalTimeout(int timeout) {
+	public Sender timeout(int timeout) {
 		this.totalTimeout = timeout;
 		return this;
 	}
@@ -175,7 +175,7 @@ public final class Sender {
 			LockHolder.register(locker, endTime);
 			f = session.write(req);
 		} catch (Exception e) {
-			LogType.RPC_LOG.error(e.toString(), e);
+			SumkLogs.RPC_LOG.error(e.toString(), e);
 		}
 		if (f == null) {
 			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", (String) null);

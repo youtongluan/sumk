@@ -15,7 +15,7 @@
  */
 package org.yx.http.handler;
 
-import org.yx.http.Web;
+import org.yx.annotation.http.Web;
 import org.yx.util.secury.Base64Util;
 
 public class Base64EncodeHandler implements HttpHandler {

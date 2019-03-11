@@ -27,7 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
-import org.yx.http.InnerHttpUtil;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 
 public class HttpLoginWrapper extends HttpServlet {

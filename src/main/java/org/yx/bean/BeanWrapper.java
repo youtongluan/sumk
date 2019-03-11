@@ -19,12 +19,8 @@ public class BeanWrapper {
 
 	private Object bean;
 
-	private Class<?> targetClass;
-
-	BeanWrapper(Object bean, Class<?> targetClass) {
-		super();
+	BeanWrapper(Object bean) {
 		this.bean = bean;
-		this.targetClass = targetClass;
 	}
 
 	public Object getBean() {
@@ -32,11 +28,11 @@ public class BeanWrapper {
 	}
 
 	public boolean isProxy() {
-		return bean.getClass() != this.targetClass;
+		return Boxed.class.isInstance(bean);
 	}
 
 	public Class<?> getTargetClass() {
-		return targetClass;
+		return isProxy() ? Boxed.class.cast(bean).targetRawClass() : bean.getClass();
 	}
 
 	@Override

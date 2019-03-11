@@ -26,8 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.yx.db.annotation.Column;
-import org.yx.db.annotation.Table;
+import org.yx.annotation.db.Column;
+import org.yx.annotation.db.Table;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 

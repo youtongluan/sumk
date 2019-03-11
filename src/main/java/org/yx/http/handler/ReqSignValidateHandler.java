@@ -15,12 +15,12 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.http.Web;
 import org.yx.bean.IOC;
-import org.yx.common.LogType;
+import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
 import org.yx.http.Signer;
-import org.yx.http.Web;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 import org.yx.util.secury.MD5Utils;
@@ -39,7 +39,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 
 		this.signer = IOC.get(Signer.class);
 		if (signer != null) {
-			LogType.HTTP_LOG.info("use {} for http request sign", signer.getClass().getSimpleName());
+			SumkLogs.HTTP_LOG.info("use {} for http request sign", signer.getClass().getSimpleName());
 		}
 	}
 

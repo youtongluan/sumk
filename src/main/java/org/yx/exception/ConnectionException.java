@@ -15,7 +15,7 @@
  */
 package org.yx.exception;
 
-import org.yx.rpc.Host;
+import org.yx.common.Host;
 
 public class ConnectionException extends CodeException {
 

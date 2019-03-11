@@ -15,7 +15,7 @@
  */
 package org.yx.http;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.http.handler.HttpHandler;
 import org.yx.listener.ClassLoaderFactorysBean;
 

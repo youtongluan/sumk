@@ -29,30 +29,30 @@ import java.util.concurrent.LinkedBlockingQueue;
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.yx.common.WildcardMatcher;
+import org.yx.common.Host;
+import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.conf.NamePairs;
 import org.yx.main.SumkThreadPool;
-import org.yx.rpc.Host;
 import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtil;
-import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHelper;
 
 public class ZkRouteParser {
 	private String zkUrl;
 	private Set<String> childs = Collections.emptySet();
-	private WildcardMatcher includes;
-	private WildcardMatcher excludes;
+	private TextMatcher includes;
+	private TextMatcher excludes;
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
 		String temp = AppInfo.getLatin("soa.server.includes");
-		includes = StringUtil.isEmpty(temp) ? null : new WildcardMatcher(temp, 1);
+		includes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
 
 		temp = AppInfo.getLatin("soa.server.excludes");
-		excludes = StringUtil.isEmpty(temp) ? null : new WildcardMatcher(temp, 1);
+		excludes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
 	}
 
 	public static ZkRouteParser get(String zkUrl) {
@@ -142,7 +142,7 @@ public class ZkRouteParser {
 	private List<String> filter(List<String> currentChilds) {
 
 		if (includes != null) {
-			List<String> ips = S.Collection.list();
+			List<String> ips = new ArrayList<>();
 			for (String ip : currentChilds) {
 				if (includes.match(ip)) {
 					ips.add(ip);
@@ -152,7 +152,7 @@ public class ZkRouteParser {
 		}
 
 		if (excludes != null) {
-			List<String> ips = S.Collection.list();
+			List<String> ips = new ArrayList<>();
 			for (String ip : currentChilds) {
 				if (!excludes.match(ip)) {
 					ips.add(ip);

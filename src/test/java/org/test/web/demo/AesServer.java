@@ -4,11 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.Web;
 import org.yx.http.EncryptType;
 import org.yx.http.HttpSessionHolder;
-import org.yx.http.Web;
 
-
+@Bean
 public class AesServer {
 
 	@Web(value = "aes_base64", requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)

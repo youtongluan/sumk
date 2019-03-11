@@ -21,12 +21,12 @@ import static org.objectweb.asm.Opcodes.ACC_PRIVATE;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ACC_STATIC;
 import static org.objectweb.asm.Opcodes.ALOAD;
+import static org.objectweb.asm.Opcodes.ARETURN;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Objects;
+import java.util.Collection;
 
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.Attribute;
@@ -35,25 +35,25 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
-import org.yx.bean.Box;
+import org.yx.annotation.Box;
 
 public class ProxyClassVistor extends ClassVisitor {
 
 	private Class<?> orginClz;
-	private Map<String, Method> aopMethods;
+	private Method[] aopMethods;
 	private String clzName;
 
-	public ProxyClassVistor(final ClassVisitor cv, String newClzName, Class<?> clz, Map<String, Method> aopMethods) {
+	public ProxyClassVistor(final ClassVisitor cv, String newClzName, Class<?> clz, Collection<Method> aopMethods) {
 		super(Vars.ASM_VER, cv);
 		this.orginClz = clz;
-		this.aopMethods = aopMethods;
+		this.aopMethods = aopMethods.toArray(new Method[0]);
 		clzName = newClzName;
 
 	}
 
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
 
-		super.visit(version, access, clzName.replace('.', '/'), signature, name, interfaces);
+		super.visit(version, access, clzName.replace('.', '/'), signature, name, new String[] { "org/yx/bean/Boxed" });
 
 		MethodVisitor mv = super.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
 		mv.visitCode();
@@ -62,6 +62,16 @@ public class ProxyClassVistor extends ClassVisitor {
 		mv.visitInsn(RETURN);
 		mv.visitMaxs(1, 1);
 		mv.visitEnd();
+	}
+
+	private Method queryMethod(String name, String desc) {
+		for (Method m : aopMethods) {
+
+			if (m.getName().equals(name) && desc.equals(Type.getMethodDescriptor(m))) {
+				return m;
+			}
+		}
+		return null;
 	}
 
 	@Override
@@ -75,15 +85,10 @@ public class ProxyClassVistor extends ClassVisitor {
 		if ((access & badModifiers) != 0) {
 			return null;
 		}
-		if (aopMethods.containsKey(name)) {
-			Method method = aopMethods.get(name);
+		Method method = queryMethod(name, desc);
+		if (method != null) {
 			Box dbBiz = method.getAnnotation(Box.class);
 			if (dbBiz == null) {
-				return null;
-			}
-
-			if (!desc.equals(Type.getMethodDescriptor(method))
-					|| !Objects.equals(Type.getReturnType(method), Type.getReturnType(desc))) {
 				return null;
 			}
 
@@ -123,6 +128,18 @@ public class ProxyClassVistor extends ClassVisitor {
 	@Override
 	public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
 		return null;
+	}
+
+	@Override
+	public void visitEnd() {
+		MethodVisitor mv = super.visitMethod(ACC_PUBLIC, "targetRawClass", "()Ljava/lang/Class;",
+				"()Ljava/lang/Class<*>;", null);
+		mv.visitCode();
+		mv.visitLdcInsn(Type.getType(this.orginClz));
+		mv.visitInsn(ARETURN);
+		mv.visitMaxs(1, 1);
+		mv.visitEnd();
+		super.visitEnd();
 	}
 
 }

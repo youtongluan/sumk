@@ -32,7 +32,7 @@ import org.yx.util.Assert;
 public final class MybatisSqlXmlUtils {
 
 	public static Map<String, byte[]> openInputs(String db) throws Exception {
-		String resourceFactory = AppInfo.get("sumk.db.batis.loader." + db, LocalSqlXmlLoader.class.getName());
+		String resourceFactory = AppInfo.get("sumk.db.batis.loader", LocalSqlXmlLoader.class.getName());
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
 		Assert.isTrue(MultiResourceLoader.class.isAssignableFrom(factoryClz),
 				resourceFactory + " should extend from MultiResourceLoader");

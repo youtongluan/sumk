@@ -18,7 +18,7 @@ package org.yx.db.listener;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.db.event.DeleteEvent;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;

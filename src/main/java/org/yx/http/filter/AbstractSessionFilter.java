@@ -27,7 +27,7 @@ import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeader;
 import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
-import org.yx.http.InnerHttpUtil;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;

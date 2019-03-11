@@ -18,6 +18,8 @@ package org.yx.validate;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
+import org.yx.annotation.Param;
+
 public class ParamFactory {
 
 	public static Param[] create(Method m) {

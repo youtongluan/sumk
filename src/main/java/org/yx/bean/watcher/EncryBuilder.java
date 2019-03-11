@@ -17,20 +17,20 @@ package org.yx.bean.watcher;
 
 import java.lang.reflect.Field;
 
-import org.yx.bean.Bean;
+import org.yx.annotation.Bean;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
+import org.yx.http.EncryUtil;
 import org.yx.log.Log;
 import org.yx.util.secury.AESEncry;
 import org.yx.util.secury.Encry;
-import org.yx.util.secury.EncryUtil;
 import org.yx.util.secury.FastEncry;
 
 @Bean
-public class EncryBuilder implements Scaned {
+public class EncryBuilder implements BeanCreate {
 
 	@Override
-	public void afterScaned() {
+	public void afterCreate(Object[] beans) {
 		String cipher = AppInfo.get("sumk.encry.cipher");
 		if (cipher == null || cipher.length() == 0) {
 			return;

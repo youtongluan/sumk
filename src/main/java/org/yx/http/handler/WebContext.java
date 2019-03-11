@@ -37,6 +37,11 @@ public class WebContext {
 	private String act;
 	private String str_data;
 	private String str_resp;
+	private final long beginTime;
+
+	public long beginTime() {
+		return this.beginTime;
+	}
 
 	public String dataInString() {
 		return str_data;
@@ -60,6 +65,7 @@ public class WebContext {
 		this.node = node;
 		this.httpRequest = req;
 		this.httpResponse = resp;
+		this.beginTime = System.currentTimeMillis();
 	}
 
 	public Charset charset() {

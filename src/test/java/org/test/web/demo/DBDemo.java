@@ -4,20 +4,22 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Assert;
-import org.yx.bean.Box;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Box;
+import org.yx.annotation.http.Web;
+import org.yx.annotation.rpc.Soa;
 import org.yx.db.DB;
 import org.yx.db.DBType;
 import org.yx.db.sql.Insert;
 import org.yx.demo.member.DemoUser;
 import org.yx.exception.BizException;
-import org.yx.http.Web;
-import org.yx.rpc.Soa;
 import org.yx.util.SeqUtil;
 /*
  * 这个文件用来演示DB操作，其中@Box相当于Spring的@Transactional，用来开启数据库事务。
  * 在Sumk中它是必须的，而且也只需要这个注解。
  * 除此之外，也演示了将@Box、@Soa和@Web混合使用，实际开发中可能会将Controller和Service分开
  */
+@Bean
 public class DBDemo {
 
 	@Box

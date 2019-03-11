@@ -43,10 +43,33 @@ public final class IOC {
 
 	public static <T> T cache(String name, Class<T> clz) {
 		if (name == null || name.isEmpty()) {
-			name = BeanPool.getBeanName(clz);
+			name = BeanPool.resloveBeanName(clz);
 		}
 		name = Cachable.PRE + name;
 		return InnerIOC.pool.getBean(name, clz);
+	}
+
+	/**
+	 * 获取所有bean的名称
+	 * 
+	 * @return
+	 */
+	public static String[] beanNames() {
+		return InnerIOC.beanNames();
+	}
+
+	/**
+	 * 返回bean对应的原始类。
+	 * 
+	 * @param bean
+	 *            sumk中的bean对象
+	 * @return 返回bean对应的原始类。如果有代理，就返回代理前的，如果没有代理，就返回自身对象
+	 */
+	public static Class<?> getTargetClassOfBean(Object bean) {
+		if (Boxed.class.isInstance(bean)) {
+			return Boxed.class.cast(bean).targetRawClass();
+		}
+		return bean.getClass();
 	}
 
 }

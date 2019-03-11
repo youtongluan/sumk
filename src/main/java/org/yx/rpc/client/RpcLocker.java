@@ -22,12 +22,13 @@ import java.util.function.Consumer;
 
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.future.WriteFuture;
+import org.yx.common.Host;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
-import org.yx.rpc.Host;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
+import org.yx.rpc.log.RpcLogHolder;
 import org.yx.util.Assert;
 
 public final class RpcLocker implements IoFutureListener<WriteFuture> {
@@ -58,6 +59,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 	}
 
 	public void wakeup(RpcResult result) {
+		long receiveTime = System.currentTimeMillis();
 		Assert.notNull(result, "result cannot be null");
 		if (this.isWaked()) {
 			return;
@@ -76,6 +78,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 				Log.printStack(e);
 			}
 		}
+		RpcLogHolder.handle(this.url, this.req, result, receiveTime);
 	}
 
 	@Override
