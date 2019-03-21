@@ -17,12 +17,9 @@ package org.yx.http;
 
 import java.util.Date;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.yx.common.date.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
@@ -32,19 +29,17 @@ import com.google.gson.LongSerializationPolicy;
 
 public final class HttpGson {
 	private static Gson gson;
-	private static Gson pc;
 	static {
 		try {
-			gson = GsonUtil.gsonBuilder("http").create();
-			pc = pcGsonBuilder().create();
+			gson = gsonBuilder().create();
 		} catch (Exception e) {
 			Log.printStack(e);
 			System.exit(-1);
 		}
 	}
 
-	private static GsonBuilder pcGsonBuilder() {
-		String module = "http.pc";
+	private static GsonBuilder gsonBuilder() {
+		String module = "http";
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
 		String format = AppInfo.get(module + ".json.date.format", SumkDate.yyyy_MM_dd_HH_mm_ss_SSS);
@@ -71,21 +66,15 @@ public final class HttpGson {
 		if (AppInfo.getBoolean(module + ".json.longSerialize2String", true)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
-
-		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
-			gb.setPrettyPrinting();
-		}
 		return gb;
 	}
 
 	public static Gson gson() {
-		return gson(HttpHeadersHolder.getHttpRequest());
-	}
-
-	public static Gson gson(HttpServletRequest req) {
-		if (HttpHeader.CLIENT_PC.equals(HttpHeadersHolder.clientType())) {
-			return pc;
-		}
 		return gson;
 	}
+
+	public static void gson(Gson gson) {
+		HttpGson.gson = gson;
+	}
+
 }

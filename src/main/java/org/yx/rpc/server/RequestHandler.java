@@ -16,9 +16,10 @@
 package org.yx.rpc.server;
 
 import org.yx.common.Ordered;
+import org.yx.rpc.codec.Request;
 
 public interface RequestHandler extends Ordered {
-	boolean accept(Object message);
 
-	Object received(Object message);
+	Response handle(Request request);
+
 }

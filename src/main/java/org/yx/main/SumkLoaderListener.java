@@ -33,12 +33,11 @@ import javax.servlet.ServletRegistration;
 import org.yx.annotation.http.SumkFilter;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.bean.IOC;
-import org.yx.bean.InnerBeanUtil;
 import org.yx.bean.Loader;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
-import org.yx.http.filter.HttpLoginWrapper;
-import org.yx.http.filter.LoginServlet;
+import org.yx.http.user.HttpLoginWrapper;
+import org.yx.http.user.LoginServlet;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -87,7 +86,8 @@ public class SumkLoaderListener implements ServletContextListener {
 	private void addServlets(ServletContext context) {
 		List<Servlet> servlets = IOC.getBeans(Servlet.class);
 		for (Servlet bean : servlets) {
-			SumkServlet sumk = InnerBeanUtil.getAnnotation(bean.getClass(), Servlet.class, SumkServlet.class);
+			Class<?> targetClz = IOC.getTargetClassOfBean(bean);
+			SumkServlet sumk = targetClz.getAnnotation(SumkServlet.class);
 			if (sumk == null) {
 				continue;
 			}
@@ -102,7 +102,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			String value = null;
 			if (StringUtil.isNotEmpty(sumk.appKey())
 					&& (value = AppInfo.get("http.servlet." + sumk.appKey())) != null) {
-				values = StringUtil.splitByComma(value);
+				values = StringUtil.toLatin(value).split(",");
 			}
 			dynamic.addMapping(values);
 			Log.get("sumk.http.action").trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
@@ -116,7 +116,8 @@ public class SumkLoaderListener implements ServletContextListener {
 			return;
 		}
 		for (Filter bean : filters) {
-			SumkFilter sumk = InnerBeanUtil.getAnnotation(bean.getClass(), Filter.class, SumkFilter.class);
+			Class<?> targetClz = IOC.getTargetClassOfBean(bean);
+			SumkFilter sumk = targetClz.getAnnotation(SumkFilter.class);
 			if (sumk == null) {
 				continue;
 			}

@@ -78,19 +78,10 @@ public final class GsonUtil {
 		return gsonBuilder(module).create();
 	}
 
-	private static Gson[] gsons;
-	private static volatile int index = 0;
-	static {
-		gsons = new Gson[8];
-		for (int i = 0; i < gsons.length; i++) {
-			gsons[i] = createGson();
-		}
-	}
+	private static Gson gson = createGson();
 
 	private static Gson getGson() {
-		int i = ++index;
-		return gsons[i & 0x7];
-
+		return gson;
 	}
 
 	public static String toJson(Object obj) {

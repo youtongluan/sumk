@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.db.CacheType;
+import org.yx.db.DBGson;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
@@ -28,7 +29,6 @@ import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
 import org.yx.redis.RecordReq;
-import org.yx.util.GsonUtil;
 
 @Bean
 public class UpdateListener implements DBListener<UpdateEvent> {
@@ -80,7 +80,7 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			if (pm.cacheType() == CacheType.LIST || event.getIncrMap() != null) {
 				RecordReq.del(pm, id_new);
 			} else {
-				RecordReq.set(pm, id_new, GsonUtil.toJson(to));
+				RecordReq.set(pm, id_new, DBGson.toJson(to));
 			}
 			return;
 		}
@@ -95,11 +95,6 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			return;
 		}
 		RecordReq.del(pm, id_new);
-	}
-
-	@Override
-	public String[] getTags() {
-		return null;
 	}
 
 }

@@ -15,7 +15,6 @@
  */
 package org.yx.conf;
 
-import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -257,33 +256,8 @@ public final class AppInfo {
 		localIp = info.get("sumk.ip");
 
 		AppInfo.observers.forEach(ob -> {
-			ob.update(null, null);
+			ob.update(null, info);
 		});
-	}
-
-	private static class AppPropertiesInfo extends PropertiesInfo {
-
-		private volatile boolean started;
-
-		AppPropertiesInfo() {
-			super(System.getProperty("appinfo", "app.properties"));
-		}
-
-		@Override
-		public void deal(InputStream in) throws Exception {
-			super.deal(in);
-			notifyUpdate();
-		}
-
-		@Override
-		public synchronized void initAppInfo() {
-			if (started) {
-				return;
-			}
-			started = true;
-			this.start();
-		}
-
 	}
 
 }

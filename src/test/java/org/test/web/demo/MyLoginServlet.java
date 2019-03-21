@@ -6,8 +6,8 @@ import org.yx.annotation.Bean;
 import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.demo.member.DemoUser;
-import org.yx.http.filter.AbstractSessionFilter;
-import org.yx.http.filter.LoginObject;
+import org.yx.http.user.AbstractSessionFilter;
+import org.yx.http.user.LoginObject;
 import org.yx.util.SeqUtil;
 
 @Bean

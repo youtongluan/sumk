@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.conf.AppInfo;
+import org.yx.util.StringUtil;
 
 public class StartContext {
 
@@ -64,6 +65,46 @@ public class StartContext {
 		if (AppInfo.getBoolean("sumk.exitIfFail", true)) {
 			System.exit(-1);
 		}
+	}
+
+	public static String soaHostInzk() {
+		return get("soa.zk.host", null);
+	}
+
+	public static String soaHost() {
+		return get("soa.host", AppInfo.getIp());
+	}
+
+	public static int soaPort() {
+		return getInt("soa.port", -1);
+	}
+
+	public static int soaPortInZk() {
+		return getInt("soa.zk.port", -1);
+	}
+
+	public static String httpHost() {
+		return get("http.host", AppInfo.get("http.host"));
+	}
+
+	public static int httpPort() {
+		return getInt("http.port", -1);
+	}
+
+	private static int getInt(String name, int defaultValue) {
+		Integer p = Integer.getInteger(name);
+		if (p != null) {
+			return p.intValue();
+		}
+		return AppInfo.getInt(name, defaultValue);
+	}
+
+	private static String get(String name, String defaultValue) {
+		String v = System.getProperty(name);
+		if (StringUtil.isNotEmpty(v)) {
+			return v;
+		}
+		return AppInfo.get(name, defaultValue);
 	}
 
 }

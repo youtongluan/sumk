@@ -21,25 +21,23 @@ import java.util.List;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.slf4j.Logger;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Request;
 import org.yx.util.GsonUtil;
 
 public class ServerHandler extends IoHandlerAdapter {
-	private List<RequestHandler> handlers;
+	private Logger log = Log.get("sumk.rpc.server");
+	private RequestHandler[] handlers;
 
 	public ServerHandler(List<RequestHandler> handlers) {
-		super();
-		this.handlers = handlers;
-	}
-
-	public void addHandler(RequestHandler h) {
-		this.handlers.add(h);
+		this.handlers = handlers.toArray(new RequestHandler[0]);
 	}
 
 	@Override
@@ -84,26 +82,29 @@ public class ServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-
 		try {
 			if (Request.class.isInstance(message)) {
-				Request req = (Request) message;
+				final Request req = (Request) message;
 				ThreadContext context = ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(),
 						ThreadContext.get().isTest());
 				context.userId(req.getUserId());
 				context.setAttachments(req.getAttachments());
-			}
-			for (RequestHandler h : handlers) {
-				if (h.accept(message)) {
-					Object ret = h.received(message);
-					session.write(ret);
-					return;
+
+				for (RequestHandler h : handlers) {
+					Response ret = h.handle(req);
+					if (ret != null) {
+						if (log.isTraceEnabled()) {
+							log.trace("req:{}\nresp:{}", GsonUtil.toJson(message), GsonUtil.toJson(ret));
+						}
+						session.write(ret);
+						return;
+					}
 				}
 			}
 		} catch (Exception e) {
 			Response resp = new Response();
 			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
-			session.write(GsonUtil.toJson(resp));
+			session.write(RpcGson.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
 				Log.printStack(e);
 			}

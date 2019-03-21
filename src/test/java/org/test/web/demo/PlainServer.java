@@ -17,9 +17,9 @@ import org.yx.annotation.rpc.Soa;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.HttpSessionHolder;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
+import org.yx.http.user.WebSessions;
 
 @Bean
 public class PlainServer {
@@ -66,7 +66,7 @@ public class PlainServer {
 	//本接口要等陆后才能用
 	@Web(value = "plain_sign", sign = true,requireLogin=true)
 	public String plain_sign(String name) {
-		return "hello " + name+"，来自"+HttpSessionHolder.getUserObject(DemoSessionObject.class).getUserId()+"的问候";
+		return "hello " + name+"，来自"+WebSessions.getUserObject(DemoSessionObject.class).getUserId()+"的问候";
 	}
 
 	@Web(requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)

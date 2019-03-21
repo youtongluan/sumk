@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.http.user;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -25,7 +25,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeader;
-import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
@@ -117,7 +116,7 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 
 	@Override
 	public void init(ServletConfig config) {
-		session = HttpSessionHolder.loadUserSession();
+		session = WebSessions.loadUserSession();
 	}
 
 	protected UserSession userSession() {

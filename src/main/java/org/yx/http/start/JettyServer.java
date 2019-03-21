@@ -35,6 +35,7 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkLoaderListener;
@@ -78,7 +79,7 @@ public class JettyServer implements Plugin {
 			server = new Server(new ExecutorThreadPool((ThreadPoolExecutor) SumkThreadPool.EXECUTOR));
 			ServerConnector connector = this.createConnector();
 			Log.get("sumk.http").info("listen port：" + port);
-			String host = AppInfo.get("http.host");
+			String host = StartContext.httpHost();
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);
 			}

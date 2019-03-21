@@ -33,7 +33,7 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 		if (StringUtil.isEmpty(packs)) {
 			return;
 		}
-		String[] ps = packs.replace('，', ',').split(",");
+		String[] ps = StringUtil.toLatin(packs).split(",");
 		for (String p : ps) {
 			addPackage(p);
 		}
@@ -76,11 +76,6 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 			}
 		}
 		return false;
-	}
-
-	@Override
-	public String[] getTags() {
-		return null;
 	}
 
 }

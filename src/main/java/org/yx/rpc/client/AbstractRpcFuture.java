@@ -16,7 +16,7 @@
 package org.yx.rpc.client;
 
 import org.yx.exception.CodeException;
-import org.yx.util.GsonUtil;
+import org.yx.rpc.RpcGson;
 
 public abstract class AbstractRpcFuture implements RpcFuture {
 
@@ -26,7 +26,7 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		if (json == null) {
 			return null;
 		}
-		return GsonUtil.fromJson(json, clz);
+		return RpcGson.fromJson(json, clz);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		if (json == null) {
 			return null;
 		}
-		return GsonUtil.fromJson(json, clz);
+		return RpcGson.fromJson(json, clz);
 	}
 
 	@Override

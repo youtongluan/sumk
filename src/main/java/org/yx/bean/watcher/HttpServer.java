@@ -20,7 +20,6 @@ import java.lang.reflect.Constructor;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
-import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpSettings;
@@ -51,7 +50,7 @@ public class HttpServer implements Plugin, Runnable {
 			if (HttpSettings.isUploadEnable()) {
 				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
 			}
-			int port = AppInfo.getInt(StartConstants.HTTP_PORT, -1);
+			int port = StartContext.httpPort();
 			if (port < 1) {
 				return;
 			}

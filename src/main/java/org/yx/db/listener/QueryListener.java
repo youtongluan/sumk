@@ -21,13 +21,13 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.db.CacheType;
+import org.yx.db.DBGson;
 import org.yx.db.event.QueryEvent;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
 import org.yx.redis.RecordReq;
-import org.yx.util.GsonUtil;
 
 @Bean
 public class QueryListener implements DBListener<QueryEvent> {
@@ -69,21 +69,16 @@ public class QueryListener implements DBListener<QueryEvent> {
 			}
 
 			if (pm.cacheType() == CacheType.LIST) {
-				RecordReq.set(pm, id, GsonUtil.toJson(list));
+				RecordReq.set(pm, id, DBGson.toJson(list));
 				return;
 			}
 			if (list.size() != 1 || list.get(0) == null) {
 				return;
 			}
-			RecordReq.set(pm, id, GsonUtil.toJson(list.get(0)));
+			RecordReq.set(pm, id, DBGson.toJson(list.get(0)));
 		} catch (Exception e) {
 			Log.printStack("db-listener", e);
 		}
-	}
-
-	@Override
-	public String[] getTags() {
-		return null;
 	}
 
 }

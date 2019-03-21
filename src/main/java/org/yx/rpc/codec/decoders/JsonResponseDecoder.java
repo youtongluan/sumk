@@ -16,9 +16,9 @@
 package org.yx.rpc.codec.decoders;
 
 import org.apache.mina.filter.codec.ProtocolDecoderException;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.server.Response;
-import org.yx.util.GsonUtil;
 
 public class JsonResponseDecoder implements SumkMinaDecoder {
 
@@ -29,7 +29,7 @@ public class JsonResponseDecoder implements SumkMinaDecoder {
 
 	@Override
 	public Object decode(int protocol, String message) throws ProtocolDecoderException {
-		return GsonUtil.fromJson(message, Response.class);
+		return RpcGson.fromJson(message, Response.class);
 	}
 
 }

@@ -22,9 +22,9 @@ import java.util.List;
 import org.yx.annotation.rpc.Soa;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
+import org.yx.asm.MethodDesc;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
-import org.yx.common.MethodDesc;
 import org.yx.common.SumkLogs;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
@@ -80,13 +80,16 @@ public class SoaAnnotationResolver {
 		for (final Method m : actMethods) {
 			Soa act = m.getAnnotation(Soa.class);
 			String soaName = nameResolver.solve(clz, m, act);
+			if (soaName == null) {
+				continue;
+			}
 			if (RpcActionHolder.getActionNode(soaName) != null) {
 				RpcActionNode node = RpcActionHolder.getActionNode(soaName);
 				Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
 						node.method.getDeclaringClass().getName(), node.method.getName(), classFullName, m.getName());
 				continue;
 			}
-			SumkLogs.RPC_LOG.debug("{} publish", soaName);
+			SumkLogs.RPC_LOG.debug("{}-{}", soaName, classFullName);
 
 			Method proxyedMethod = AsmUtils.getSameMethod(m, bean.getClass());
 			int argSize = m.getParameterTypes().length;

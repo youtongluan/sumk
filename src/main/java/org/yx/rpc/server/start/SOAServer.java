@@ -16,24 +16,26 @@
 package org.yx.rpc.server.start;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 
 import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.server.MinaServer;
-import org.yx.rpc.server.ReqHandlerFactorysBean;
+import org.yx.rpc.server.RequestHandler;
 import org.yx.util.CollectionUtil;
 import org.yx.util.ZkClientHelper;
 
@@ -47,7 +49,7 @@ public class SOAServer implements Plugin, Runnable {
 	private boolean enable = soaServerEnable();
 
 	private static boolean soaServerEnable() {
-		return AppInfo.getBoolean("soa.server.enable", true);
+		return AppInfo.getBoolean("soa.server.register", true);
 	}
 
 	private final IZkStateListener stateListener = new IZkStateListener() {
@@ -82,12 +84,13 @@ public class SOAServer implements Plugin, Runnable {
 	}
 
 	private void startServer(String ip, int port) throws Exception {
-		server = new MinaServer(ip, port, IOC.get(ReqHandlerFactorysBean.class).create());
+		List<RequestHandler> handlers = IOC.getBeans(RequestHandler.class);
+		server = new MinaServer(ip, port, handlers);
 		server.run();
 	}
 
 	private String createZkRouteData() {
-		Set<String> methodSet = RpcActionHolder.soaSet();
+		Collection<String> methodSet = RpcActionHolder.publishSoaSet();
 		String[] methods = methodSet.toArray(new String[methodSet.size()]);
 		final Map<String, String> map = new HashMap<>();
 		if (methods.length > 0) {
@@ -157,15 +160,23 @@ public class SOAServer implements Plugin, Runnable {
 			return;
 		}
 		try {
-			String ip = AppInfo.get("soa.host", AppInfo.getIp());
+			String ip = StartContext.soaHost();
+			startServer(ip, port);
 
-			path = ZKConst.SOA_ROOT + "/" + AppInfo.get("soa.zk.host", ip) + ":"
-					+ AppInfo.get("soa.zk.port", String.valueOf(port));
+			String ip_zk = StartContext.soaHostInzk();
+			if (ip_zk == null) {
+				ip_zk = ip;
+			}
+			int port_zk = StartContext.soaPortInZk();
+			if (port_zk < 1) {
+				port_zk = port;
+			}
+
+			path = ZKConst.SOA_ROOT + "/" + ip_zk + ":" + port_zk;
 			zkUrl = AppInfo.getServerZKUrl();
 			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			ZkClientHelper.makeSure(client, ZKConst.SOA_ROOT);
 
-			startServer(ip, port);
 			if (this.enable) {
 				this.zkRegister.run();
 			} else {

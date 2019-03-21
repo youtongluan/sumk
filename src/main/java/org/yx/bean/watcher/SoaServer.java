@@ -19,7 +19,7 @@ import java.lang.reflect.Constructor;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
-import org.yx.common.StartConstants;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
@@ -35,7 +35,7 @@ public class SoaServer implements Plugin {
 			if (!SumkServer.isRpcEnable()) {
 				return;
 			}
-			int port = AppInfo.getInt(StartConstants.SOA_PORT, -1);
+			int port = StartContext.soaPort();
 			if (port > 0) {
 				String clzName = AppInfo.get("soa.starter.class", "org.yx.rpc.server.start.SOAServer");
 				Class<?> clz = Class.forName(clzName);

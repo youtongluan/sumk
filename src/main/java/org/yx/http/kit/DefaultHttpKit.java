@@ -24,11 +24,11 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.http.ErrorResp;
+import org.yx.http.HttpGson;
 import org.yx.http.HttpHeader;
 import org.yx.http.HttpHeadersHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
-import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
 public class DefaultHttpKit implements HttpKit {
@@ -61,7 +61,7 @@ public class DefaultHttpKit implements HttpKit {
 		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);
-		resp.getOutputStream().write(GsonUtil.toJson(r).getBytes(charset));
+		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
 	}
 
 	public void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
@@ -70,7 +70,7 @@ public class DefaultHttpKit implements HttpKit {
 		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);
-		resp.getOutputStream().write(GsonUtil.toJson(r).getBytes(charset));
+		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
 	}
 
 	public void noCache(HttpServletResponse resp) {

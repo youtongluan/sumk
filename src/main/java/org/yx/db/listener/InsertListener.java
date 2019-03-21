@@ -20,13 +20,13 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.db.CacheType;
+import org.yx.db.DBGson;
 import org.yx.db.event.InsertEvent;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
 import org.yx.redis.RecordReq;
-import org.yx.util.GsonUtil;
 
 @Bean
 public class InsertListener implements DBListener<InsertEvent> {
@@ -53,16 +53,11 @@ public class InsertListener implements DBListener<InsertEvent> {
 					RecordReq.del(pm, id);
 					return;
 				}
-				RecordReq.set(pm, id, GsonUtil.toJson(map));
+				RecordReq.set(pm, id, DBGson.toJson(map));
 			}
 		} catch (Exception e) {
 			Log.printStack("db-listener", e);
 		}
-	}
-
-	@Override
-	public String[] getTags() {
-		return null;
 	}
 
 }

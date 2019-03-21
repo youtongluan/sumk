@@ -13,42 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.http.user;
 
-public class LoginObject {
-
-	private String errorMsg;
-
-	private String json;
-
-	private String userId;
-
-	public String getJson() {
-		return json;
-	}
-
-	public String getErrorMsg() {
-		return errorMsg;
-	}
+/**
+ * 用户session,要有无构造参数的构造函数
+ */
+public class SessionObject {
+	protected String userId;
+	protected long loginTime;
 
 	public String getUserId() {
 		return userId;
 	}
 
-	public static LoginObject error(String errorMsg) {
-		LoginObject obj = new LoginObject();
-		obj.errorMsg = errorMsg;
-		return obj;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
-	public static LoginObject success(String text) {
-		return success(text, null);
+	public long getLoginTime() {
+		return loginTime;
 	}
 
-	public static LoginObject success(String text, String userId) {
-		LoginObject obj = new LoginObject();
-		obj.json = text;
-		obj.userId = userId;
-		return obj;
+	public void setLoginTime(long loginTime) {
+		this.loginTime = loginTime;
 	}
+
 }

@@ -13,18 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.http.user;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.yx.common.Ordered;
-
-public interface WebFilter extends Ordered {
-
-	public boolean beforeInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params);
-
-	public boolean afterInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params, Object result);
-
-	public Exception error(HttpServletRequest req, Object[] params, Exception e);
+public interface HttpSessionFactory {
+	UserSession create();
 }

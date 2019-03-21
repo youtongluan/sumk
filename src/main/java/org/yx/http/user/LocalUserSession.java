@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.http.user;
 
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +23,6 @@ import java.util.concurrent.TimeUnit;
 import org.yx.common.date.TimedObject;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
@@ -48,7 +47,7 @@ public class LocalUserSession implements UserSession {
 	@Override
 	public void putKey(String sessionId, byte[] key, String userId, String type) {
 		keyMap.put(sessionId, key);
-		if ((!HttpSessionHolder.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
+		if ((!WebSessions.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
 			return;
 		}
 		String oldSession = userSessionMap.put(singleKey(userId, type), sessionId);

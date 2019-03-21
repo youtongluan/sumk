@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.server.impl;
 
+import org.yx.annotation.Bean;
 import org.yx.common.CalleeNode;
 import org.yx.common.SumkLogs;
 import org.yx.common.ThreadContext;
@@ -30,21 +31,14 @@ import org.yx.rpc.server.Response;
 import org.yx.rpc.server.impl.ProxyRpcVisitor.AbstractRpcVisitor;
 import org.yx.util.GsonUtil;
 
+@Bean
 public class OrderedParamReqHandler implements RequestHandler {
 
 	@Override
-	public boolean accept(Object msg) {
-		if (!Request.class.isInstance(msg)) {
-			return false;
+	public Response handle(Request req) {
+		if (!Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_ORDER)) {
+			return null;
 		}
-		Request req = (Request) msg;
-		return Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_ORDER);
-	}
-
-	@Override
-	public Object received(Object msg) {
-		Request req = (Request) msg;
-		long start = System.currentTimeMillis();
 		Response resp = new Response(req.getSn());
 		try {
 			String method = req.getApi();
@@ -52,7 +46,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 			if (node == null) {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");
 			}
-			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(), req));
+			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
 			resp.json(GsonUtil.toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
@@ -60,19 +54,23 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 			SumkLogs.RPC_LOG.debug(req.getApi() + "," + e.toString(), e);
 		} finally {
-			resp.serviceInvokeMilTime(System.currentTimeMillis() - start);
+			resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
 			ThreadContext.remove();
 		}
 		return resp;
 	}
 
-	private static class RpcVisitor extends AbstractRpcVisitor {
+	private static final class RpcVisitor extends AbstractRpcVisitor {
+
+		public RpcVisitor(Request req) {
+			super(req);
+		}
 
 		@Override
 		public Object visit(CalleeNode info) throws Throwable {
 			return RpcActionNode.class.cast(info).invokeByOrder(req.getParamArray());
 		}
 
-	}
+	};
 
 }

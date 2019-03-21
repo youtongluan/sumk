@@ -16,9 +16,9 @@
 package org.yx.rpc.codec.decoders;
 
 import org.apache.mina.filter.codec.ProtocolDecoderException;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
-import org.yx.util.GsonUtil;
 
 public class JsonParamDecoder implements SumkMinaDecoder {
 
@@ -33,7 +33,7 @@ public class JsonParamDecoder implements SumkMinaDecoder {
 		if (msgs.length < 2) {
 			throw new ProtocolDecoderException("error jsoned param req");
 		}
-		Request req = GsonUtil.fromJson(msgs[0], Request.class);
+		Request req = RpcGson.fromJson(msgs[0], Request.class);
 		req.setJsonedParam(msgs[1]);
 		req.protocol(protocol);
 		return req;

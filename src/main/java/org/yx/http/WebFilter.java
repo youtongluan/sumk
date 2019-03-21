@@ -13,27 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.http;
 
-import java.lang.annotation.Annotation;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
-public final class InnerBeanUtil {
+import org.yx.common.Ordered;
 
-	public static <A extends Annotation> A getAnnotation(Class<?> current, Class<?> expect, Class<A> ano) {
-		Class<?> clz = current;
-		do {
-			if (clz == Object.class) {
-				return null;
-			}
+public interface WebFilter extends Ordered {
 
-			if (expect != null && !expect.isAssignableFrom(clz)) {
-				return null;
-			}
-			A a = clz.getAnnotation(ano);
-			if (a != null) {
-				return a;
-			}
-		} while ((clz = clz.getSuperclass()) != null);
-		return null;
-	}
+	public boolean beforeInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params);
+
+	public boolean afterInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params, Object result);
+
+	public Exception error(HttpServletRequest req, Object[] params, Exception e);
 }

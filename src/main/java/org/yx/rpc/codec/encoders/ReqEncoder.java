@@ -17,10 +17,10 @@ package org.yx.rpc.codec.encoders;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
-import org.yx.util.GsonUtil;
 
 public class ReqEncoder implements SumkMinaEncoder {
 
@@ -34,12 +34,13 @@ public class ReqEncoder implements SumkMinaEncoder {
 		Req req = Req.class.cast(message);
 		String jsonedArg = req.getJsonedParam();
 		String[] params = req.getParamArray();
+		int paramProtocal = req.paramProtocol();
 		req.clearParams();
 
-		if (jsonedArg != null) {
+		if (paramProtocal == Protocols.REQ_PARAM_JSON) {
 
-			String json_req = String.join(Protocols.LINE_SPLIT, GsonUtil.toJson(req), jsonedArg);
-			SumkProtocolEncoder.encodeString(Protocols.REQ_PARAM_JSON, session, json_req, out);
+			String json_req = String.join(Protocols.LINE_SPLIT, RpcGson.toJson(req), jsonedArg);
+			SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
 			return;
 		}
 
@@ -47,11 +48,11 @@ public class ReqEncoder implements SumkMinaEncoder {
 			params = new String[0];
 		}
 		StringBuilder json_req = new StringBuilder();
-		json_req.append(String.format("%02d", params.length)).append(GsonUtil.toJson(req));
+		json_req.append(String.format("%02d", params.length)).append(RpcGson.toJson(req));
 		for (String p : params) {
 			json_req.append(Protocols.LINE_SPLIT).append(p);
 		}
-		SumkProtocolEncoder.encodeString(Protocols.REQ_PARAM_ORDER, session, json_req, out);
+		SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
 	}
 
 }

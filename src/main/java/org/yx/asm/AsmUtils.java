@@ -33,7 +33,6 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.common.MethodDesc;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 

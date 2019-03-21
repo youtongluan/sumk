@@ -27,7 +27,7 @@ import org.yx.conf.AppInfo;
 public abstract class SumkLogger extends MarkerIgnoringBase {
 
 	private static final long serialVersionUID = 1;
-	protected int maxLogNameLength = AppInfo.getInt("sumk.log.maxLogNameLength", 40);
+	protected int maxLogNameLength = AppInfo.getInt("sumk.log.maxLogNameLength", 32);
 
 	public int maxLogNameLength() {
 		return this.maxLogNameLength;

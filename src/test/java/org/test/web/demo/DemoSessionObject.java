@@ -15,7 +15,7 @@
  */
 package org.test.web.demo;
 
-import org.yx.http.filter.SessionObject;
+import org.yx.http.user.SessionObject;
 
 public class DemoSessionObject extends SessionObject {
 

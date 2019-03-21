@@ -42,7 +42,8 @@ public class MatcherFactory {
 		Set<String> exact = new HashSet<>();
 		Set<String> start = new HashSet<>();
 		Set<String> end = new HashSet<>();
-		String[] noProxyArray = StringUtil.splitByComma(patterns);
+		patterns = StringUtil.toLatin(patterns);
+		String[] noProxyArray = patterns.split(",");
 		for (String s : noProxyArray) {
 			if ((s = s.trim()).isEmpty()) {
 				continue;

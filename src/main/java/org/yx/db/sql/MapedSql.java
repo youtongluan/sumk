@@ -19,9 +19,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.db.DBGson;
 import org.yx.db.event.DBEvent;
 import org.yx.log.LogKits;
-import org.yx.util.GsonUtil;
 
 import com.google.gson.stream.JsonWriter;
 
@@ -86,7 +86,7 @@ public class MapedSql {
 			writer.beginObject();
 			writer.name("sql").value(sql);
 			writer.name("hash").value(sql.hashCode());
-			String params = GsonUtil.toJson(paramters);
+			String params = DBGson.toJson(paramters);
 			params = LogKits.clipIfNecessary(params);
 			writer.name("paramters").value(params);
 			writer.endObject();

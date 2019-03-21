@@ -16,9 +16,9 @@
 package org.yx.rpc.codec.decoders;
 
 import org.apache.mina.filter.codec.ProtocolDecoderException;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
-import org.yx.util.GsonUtil;
 
 public class OrderedParamDecoder implements SumkMinaDecoder {
 
@@ -33,7 +33,7 @@ public class OrderedParamDecoder implements SumkMinaDecoder {
 		message = message.substring(2);
 		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
 
-		Request req = GsonUtil.fromJson(msgs[0], Request.class);
+		Request req = RpcGson.fromJson(msgs[0], Request.class);
 		int len = Integer.parseInt(argLength);
 		if (len > 0) {
 			String[] params = new String[len];

@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.server.impl;
 
+import org.yx.annotation.Bean;
 import org.yx.common.CalleeNode;
 import org.yx.common.ThreadContext;
 import org.yx.exception.SoaException;
@@ -29,21 +30,14 @@ import org.yx.rpc.server.Response;
 import org.yx.rpc.server.impl.ProxyRpcVisitor.AbstractRpcVisitor;
 import org.yx.util.GsonUtil;
 
+@Bean
 public class JsonedParamReqHandler implements RequestHandler {
 
 	@Override
-	public boolean accept(Object msg) {
-		if (!Request.class.isInstance(msg)) {
-			return false;
+	public Response handle(final Request req) {
+		if (!Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_JSON)) {
+			return null;
 		}
-		Request req = (Request) msg;
-		return Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_JSON);
-	}
-
-	@Override
-	public Object received(Object msg) {
-		Request req = (Request) msg;
-		long start = System.currentTimeMillis();
 		Response resp = new Response(req.getSn());
 		try {
 			String method = req.getApi();
@@ -51,7 +45,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			if (node == null) {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");
 			}
-			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(), req));
+			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
 			resp.json(GsonUtil.toJson(ret));
 		} catch (Throwable e) {
 			resp.json(null);
@@ -59,16 +53,21 @@ public class JsonedParamReqHandler implements RequestHandler {
 		} finally {
 			ThreadContext.remove();
 		}
-		resp.serviceInvokeMilTime(System.currentTimeMillis() - start);
+		resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
 		return resp;
 	}
 
-	private static class RpcVisitor extends AbstractRpcVisitor {
+	private static final class RpcVisitor extends AbstractRpcVisitor {
+
+		public RpcVisitor(Request req) {
+			super(req);
+		}
+
 		@Override
 		public Object visit(CalleeNode info) throws Throwable {
 			return RpcActionNode.class.cast(info).invokeByJsonArg(req.getJsonedParam());
 		}
 
-	}
+	};
 
 }

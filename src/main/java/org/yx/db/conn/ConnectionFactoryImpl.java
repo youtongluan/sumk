@@ -25,10 +25,10 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.yx.db.DBGson;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.GsonUtil;
 
 public class ConnectionFactoryImpl implements ConnectionFactory {
 
@@ -70,7 +70,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 			map.put("maxTotal", ds.getMaxTotal());
 			statusMap.put(ds.toString(), map);
 		}
-		return GsonUtil.toJson(statusMap);
+		return DBGson.toJson(statusMap);
 	}
 
 	public void destroy() {

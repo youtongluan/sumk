@@ -20,9 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.db.CacheType;
+import org.yx.db.DBGson;
 import org.yx.db.sql.PojoMeta;
 import org.yx.util.CollectionUtil;
-import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
 public class MapResultHandler implements ResultHandler {
@@ -47,7 +47,7 @@ public class MapResultHandler implements ResultHandler {
 			}
 
 			if (pm.cacheType() == CacheType.LIST || (json.startsWith("[") && json.endsWith("]"))) {
-				Object[] ts = GsonUtil.fromJson(json, pm.pojoArrayClz());
+				Object[] ts = DBGson.fromJson(json, pm.pojoArrayClz());
 				if (ts == null || ts.length == 0) {
 					continue;
 				}
@@ -59,7 +59,7 @@ public class MapResultHandler implements ResultHandler {
 				}
 				continue;
 			}
-			Object obj = GsonUtil.fromJson(json, pm.pojoClz);
+			Object obj = DBGson.fromJson(json, pm.pojoClz);
 			if (obj == null) {
 				continue;
 			}

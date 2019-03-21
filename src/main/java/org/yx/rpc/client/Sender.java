@@ -25,10 +25,16 @@ import org.yx.common.Host;
 import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
+import org.yx.rpc.RpcActionHolder;
+import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcErrorCode;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.Routes;
 import org.yx.rpc.client.route.RpcRoute;
+import org.yx.rpc.codec.Request;
+import org.yx.rpc.server.LocalRequestHandler;
+import org.yx.rpc.server.Response;
 import org.yx.util.Assert;
 import org.yx.util.GsonUtil;
 
@@ -38,6 +44,7 @@ public final class Sender {
 		JSONARRAY, JSON
 	}
 
+	private static final Host LOCAL = Host.create("local", 0);
 	private final String api;
 	private Object params;
 	private ParamType paramType;
@@ -107,7 +114,7 @@ public final class Sender {
 		Assert.notEmpty(api, "api cannot be empty");
 		Assert.notNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
-		Req req = Rpc.createReq(this.api);
+		Req req = Rpc.req(this.api);
 		if (this.paramType == ParamType.JSONARRAY) {
 			req.setParamArray((String[]) this.params);
 		} else {
@@ -143,7 +150,6 @@ public final class Sender {
 	}
 
 	private RpcFuture sendAsync(Req req, long endTime) {
-		String api = req.getApi();
 		final RpcLocker locker = new RpcLocker(req, callback);
 		Host url = null;
 		if (this.directUrls != null && this.directUrls.length > 0) {
@@ -155,6 +161,12 @@ public final class Sender {
 			}
 		}
 		if (url == null) {
+
+			RpcFuture future = this.tryLocalHandler(req, locker);
+			if (future != null) {
+				return future;
+			}
+
 			RpcRoute route = Routes.getRoute(api);
 			if (route == null) {
 				SoaException ex = new SoaException(RpcErrorCode.NO_ROUTE, "can not find route for " + api,
@@ -182,6 +194,20 @@ public final class Sender {
 			return new ErrorRpcFuture(ex, locker);
 		}
 		f.addListener(locker);
+		return new RpcFutureImpl(locker);
+	}
+
+	private RpcFuture tryLocalHandler(Req req, RpcLocker locker) {
+		RpcActionNode node = RpcActionHolder.getActionNode(api);
+		if (node == null || AppInfo.getBoolean("rpc.localroute.disable", false)) {
+			return null;
+		}
+		locker.url(LOCAL);
+		String json = RpcGson.toJson(req);
+		req = null;
+		Request request = RpcGson.fromJson(json, Request.class);
+		Response resp = LocalRequestHandler.inst.handler(request, node);
+		locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
 		return new RpcFutureImpl(locker);
 	}
 

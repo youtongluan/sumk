@@ -18,8 +18,8 @@ package org.yx.util;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.HttpSessionHolder;
-import org.yx.http.filter.SessionObject;
+import org.yx.http.user.WebSessions;
+import org.yx.http.user.SessionObject;
 
 public final class HttpUtil {
 	/**
@@ -30,7 +30,7 @@ public final class HttpUtil {
 	 * @return session中存储的对象
 	 */
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
-		return HttpSessionHolder.getUserObject(clz);
+		return WebSessions.getUserObject(clz);
 	}
 
 	/**
@@ -40,14 +40,14 @@ public final class HttpUtil {
 	 *            要设置的session对象
 	 */
 	public static void setUserObject(SessionObject sessionObj) {
-		HttpSessionHolder.updateUserObject(sessionObj);
+		WebSessions.updateUserObject(sessionObj);
 	}
 
 	/**
 	 * 移除session内容
 	 */
 	public static void removeUserObject() {
-		HttpSessionHolder.remove();
+		WebSessions.remove();
 	}
 
 	public static String getHeader(String name) {

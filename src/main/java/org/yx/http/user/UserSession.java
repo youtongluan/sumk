@@ -13,10 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.user;
 
-import org.yx.http.filter.UserSession;
+public interface UserSession {
 
-public interface HttpSessionFactory {
-	UserSession create();
+	byte[] getKey(String sid);
+
+	void putKey(String sid, byte[] key, String userId, String type);
+
+	<T extends SessionObject> T getUserObject(Class<T> clz);
+
+	void flushSession();
+
+	void setSession(String sessionId, SessionObject sessionObj);
+
+	/**
+	 * 更新session中的用户信息
+	 * 
+	 * @param sessionObj
+	 *            目标用户信息
+	 */
+	void updateSession(SessionObject sessionObj);
+
+	void removeSession();
+
+	boolean isLogin(String userId, String type);
+
+	/**
+	 * @return 如果不存在，就返回null
+	 */
+	String getUserId();
 }

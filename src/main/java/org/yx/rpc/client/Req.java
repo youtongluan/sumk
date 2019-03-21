@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 import org.yx.rpc.ReqProtocol;
+import org.yx.rpc.codec.Protocols;
 
 public class Req {
 
@@ -30,11 +31,11 @@ public class Req {
 
 	private String n;
 
-	private String sn;
+	private transient String sn;
 
-	private String rootSn;
+	private transient String rootSn;
 
-	private String fatherSn;
+	private transient String fatherSn;
 
 	private String j;
 
@@ -186,6 +187,13 @@ public class Req {
 
 	public void setAttachments(Map<String, String> attachments) {
 		this.attachments = attachments;
+	}
+
+	public int paramProtocol() {
+		if (this.j != null) {
+			return Protocols.REQ_PARAM_JSON;
+		}
+		return Protocols.REQ_PARAM_ORDER;
 	}
 
 }

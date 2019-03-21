@@ -28,7 +28,7 @@ import org.yx.common.BizExcutor;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpGson;
-import org.yx.http.filter.WebFilter;
+import org.yx.http.WebFilter;
 import org.yx.log.Log;
 import org.yx.validate.ParamInfo;
 

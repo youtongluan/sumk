@@ -35,7 +35,7 @@ import org.yx.log.Log;
 import org.yx.util.Assert;
 import org.yx.util.StringUtil;
 
-public class BeanPool {
+public final class BeanPool {
 
 	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 
@@ -211,19 +211,23 @@ public class BeanPool {
 			}
 		}
 
-		Object bean = null;
+		List<Object> beans = new ArrayList<>(2);
 		for (BeanWrapper w : objs) {
-			Object o = w.getBean();
-			if (clz.isInstance(o)) {
-				if (bean != null) {
-					Log.get(this.getClass(), "getBean")
-							.error(name + "存在多个实例:" + o.getClass().getName() + "," + bean.getClass().getName());
-					throw new TooManyBeanException(name + "存在多个" + clz.getName() + "实例");
-				}
-				bean = o;
+			Class<?> targetClz = w.getTargetClass();
+			if (targetClz == clz) {
+				return (T) w.getBean();
+			}
+			if (clz.isAssignableFrom(targetClz)) {
+				beans.add(w.getBean());
 			}
 		}
-		return (T) bean;
+		if (beans.isEmpty()) {
+			return null;
+		}
+		if (beans.size() > 1) {
+			throw new TooManyBeanException(name + "存在多个" + clz.getName() + "实例");
+		}
+		return (T) beans.get(0);
 
 	}
 

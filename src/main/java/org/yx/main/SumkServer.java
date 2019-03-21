@@ -89,12 +89,10 @@ public class SumkServer {
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
-			if (StartContext.inst.get(StartConstants.NOSOA) == null
-					&& AppInfo.getInt(StartConstants.SOA_PORT, -1) > 0) {
+			if (StartContext.inst.get(StartConstants.NOSOA) == null && StartContext.soaPort() > 0) {
 				rpcEnable = true;
 			}
-			if (StartContext.inst.get(StartConstants.NOHTTP) == null
-					&& AppInfo.getInt(StartConstants.HTTP_PORT, -1) > 0) {
+			if (StartContext.inst.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));

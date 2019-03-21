@@ -53,4 +53,5 @@ public @interface Soa {
 
 	int priority() default 0;
 
+	boolean publish() default true;
 }

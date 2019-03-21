@@ -40,13 +40,14 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	private static Set<String> FUSING = Collections.emptySet();
 
 	static {
+
 		AppInfo.addObserver((a, b) -> {
 			String fusing = AppInfo.get("http.fusing", null);
 			if (fusing == null) {
 				FUSING = Collections.emptySet();
 			} else {
 				Set<String> set = new HashSet<>();
-				String[] fs = StringUtil.splitByComma(fusing);
+				String[] fs = StringUtil.toLatin(fusing).split(",");
 				for (String f : fs) {
 					set.add(f.trim());
 				}

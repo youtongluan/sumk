@@ -13,39 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.conf;
 
-import java.lang.reflect.Method;
+import java.io.InputStream;
 
-public final class MethodDesc {
+public class AppPropertiesInfo extends PropertiesInfo {
+	private volatile boolean started;
 
-	private Method method;
-	private String[] argNames;
-	private String[] descs;
-	private String[] signatures;
-
-	public String[] getArgNames() {
-		return argNames;
+	AppPropertiesInfo() {
+		super(System.getProperty("appinfo", "app.properties"));
 	}
 
-	public String[] getDescs() {
-		return descs;
+	@Override
+	public void deal(InputStream in) throws Exception {
+		super.deal(in);
+		AppInfo.notifyUpdate();
 	}
 
-	public String[] getSignatures() {
-		return signatures;
+	@Override
+	public synchronized void initAppInfo() {
+		if (started) {
+			return;
+		}
+		started = true;
+		this.start();
 	}
-
-	public MethodDesc(Method method, String[] argNames, String[] descs, String[] signatures) {
-		super();
-		this.method = method;
-		this.argNames = argNames;
-		this.descs = descs;
-		this.signatures = signatures;
-	}
-
-	public Method getMethod() {
-		return method;
-	}
-
 }

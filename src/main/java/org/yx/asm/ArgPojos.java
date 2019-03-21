@@ -27,7 +27,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
-import org.yx.common.MethodDesc;
 
 public class ArgPojos {
 	private static AtomicInteger ai = new AtomicInteger(1000);

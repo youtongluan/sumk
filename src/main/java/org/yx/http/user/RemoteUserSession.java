@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.http.user;
 
+import org.yx.http.HttpGson;
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.HttpSessionHolder;
 import org.yx.http.HttpSettings;
 import org.yx.redis.Redis;
-import org.yx.util.GsonUtil;
 import org.yx.util.StringUtil;
 
 public class RemoteUserSession implements UserSession {
@@ -58,7 +57,7 @@ public class RemoteUserSession implements UserSession {
 		String bigkey = bigKey(sessionId);
 		redis.hset(bigkey, AES_KEY, key);
 		redis.expire(bigkey, HttpSettings.httpSessionTimeout(type));
-		if ((!HttpSessionHolder.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
+		if ((!WebSessions.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
 			return;
 		}
 
@@ -89,7 +88,7 @@ public class RemoteUserSession implements UserSession {
 		if (json == null) {
 			return null;
 		}
-		return GsonUtil.fromJson(json, clz);
+		return HttpGson.gson().fromJson(json, clz);
 	}
 
 	@Override
@@ -105,7 +104,7 @@ public class RemoteUserSession implements UserSession {
 	@Override
 	public void setSession(String sid, SessionObject sessionObj) {
 		String bigKey = this.bigKey(sid);
-		String json = GsonUtil.toJson(sessionObj);
+		String json = HttpGson.gson().toJson(sessionObj);
 		redis.hset(bigKey, SESSION_OBJECT, json);
 		redis.expire(bigKey, HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()));
 	}

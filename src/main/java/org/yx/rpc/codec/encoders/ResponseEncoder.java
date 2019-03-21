@@ -17,10 +17,10 @@ package org.yx.rpc.codec.encoders;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
 import org.yx.rpc.server.Response;
-import org.yx.util.GsonUtil;
 
 public class ResponseEncoder implements SumkMinaEncoder {
 
@@ -31,7 +31,7 @@ public class ResponseEncoder implements SumkMinaEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		SumkProtocolEncoder.encodeString(Protocols.RESPONSE_JSON, session, GsonUtil.toJson(message), out);
+		SumkProtocolEncoder.encodeString(Protocols.RESPONSE_JSON, session, RpcGson.toJson(message), out);
 	}
 
 }

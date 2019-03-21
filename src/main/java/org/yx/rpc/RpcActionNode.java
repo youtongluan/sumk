@@ -25,7 +25,6 @@ import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.util.GsonUtil;
 
 public final class RpcActionNode extends CalleeNode {
 	public final Soa action;
@@ -44,7 +43,7 @@ public final class RpcActionNode extends CalleeNode {
 		if (argClz == null) {
 			SumkException.throwException(54214657, method.getName() + " args parse error");
 		}
-		ArgPojo argObj = GsonUtil.fromJson(args, argClz);
+		ArgPojo argObj = RpcGson.fromJson(args, argClz);
 		Object[] params = argObj.params();
 		return BizExcutor.exec(method, obj, params, this.paramInfos);
 	}
@@ -71,7 +70,7 @@ public final class RpcActionNode extends CalleeNode {
 				continue;
 			}
 			Field f = fields[k];
-			params[i] = GsonUtil.fromJson(args[i], f.getGenericType());
+			params[i] = RpcGson.fromJson(args[i], f.getGenericType());
 			k++;
 		}
 		return BizExcutor.exec(method, obj, params, this.paramInfos);

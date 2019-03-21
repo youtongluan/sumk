@@ -54,9 +54,4 @@ public class DeleteListener implements DBListener<DeleteEvent> {
 		}
 	}
 
-	@Override
-	public String[] getTags() {
-		return null;
-	}
-
 }

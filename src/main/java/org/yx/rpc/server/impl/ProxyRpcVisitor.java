@@ -24,18 +24,16 @@ import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RpcFilter;
 
-class ProxyRpcVisitor implements Visitor {
+public class ProxyRpcVisitor implements Visitor {
 
 	private AbstractRpcVisitor visitor;
 
-	public static ProxyRpcVisitor proxy(AbstractRpcVisitor visitor, Request req) {
-		ProxyRpcVisitor v = new ProxyRpcVisitor();
-		v.visitor = visitor;
-		visitor.req = req;
-		return v;
+	public static ProxyRpcVisitor proxy(AbstractRpcVisitor visitor) {
+		return new ProxyRpcVisitor(visitor);
 	}
 
-	private ProxyRpcVisitor() {
+	private ProxyRpcVisitor(AbstractRpcVisitor visitor) {
+		this.visitor = visitor;
 	}
 
 	@Override
@@ -65,8 +63,13 @@ class ProxyRpcVisitor implements Visitor {
 		}
 	}
 
-	static abstract class AbstractRpcVisitor implements Visitor {
-		protected Request req;
+	public static abstract class AbstractRpcVisitor implements Visitor {
+
+		public AbstractRpcVisitor(Request req) {
+			this.req = req;
+		}
+
+		protected final Request req;
 	}
 
 }

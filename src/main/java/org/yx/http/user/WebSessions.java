@@ -13,21 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.user;
 
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.http.filter.LocalUserSession;
-import org.yx.http.filter.RemoteUserSession;
-import org.yx.http.filter.SessionObject;
-import org.yx.http.filter.UserSession;
+import org.yx.http.HttpErrorCode;
 import org.yx.log.Log;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisConstants;
 import org.yx.redis.RedisPool;
 
-public class HttpSessionHolder {
+public class WebSessions {
 	static UserSession session;
 
 	public static UserSession userSession() {

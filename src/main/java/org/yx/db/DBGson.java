@@ -13,34 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.filter;
+package org.yx.db;
 
-public interface UserSession {
+import java.lang.reflect.Type;
 
-	byte[] getKey(String sid);
+import org.yx.util.GsonUtil;
 
-	void putKey(String sid, byte[] key, String userId, String type);
+import com.google.gson.Gson;
 
-	<T extends SessionObject> T getUserObject(Class<T> clz);
+public class DBGson {
 
-	void flushSession();
+	private static Gson gson = GsonUtil.gson("rpc");
 
-	void setSession(String sessionId, SessionObject sessionObj);
+	public static Gson getGson() {
+		return gson;
+	}
 
-	/**
-	 * 更新session中的用户信息
-	 * 
-	 * @param sessionObj
-	 *            目标用户信息
-	 */
-	void updateSession(SessionObject sessionObj);
+	public static void setGson(Gson gson) {
+		DBGson.gson = gson;
+	}
 
-	void removeSession();
+	public static String toJson(Object obj) {
+		return gson.toJson(obj);
+	}
 
-	boolean isLogin(String userId, String type);
+	public static <T> T fromJson(String json, Class<T> clz) {
+		return gson.fromJson(json, clz);
+	}
 
-	/**
-	 * @return 如果不存在，就返回null
-	 */
-	String getUserId();
+	public static <T> T fromJson(String json, Type type) {
+		return gson.fromJson(json, type);
+	}
 }

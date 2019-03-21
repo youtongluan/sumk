@@ -54,7 +54,7 @@ public final class Rpc {
 		}
 	}
 
-	static Req createReq(String method) {
+	static Req req(String method) {
 		Req req = new Req();
 		ThreadContext context = ThreadContext.get();
 		if (context.isTest()) {
@@ -71,7 +71,7 @@ public final class Rpc {
 		return req;
 	}
 
-	public static Sender sender(String method) {
+	public static Sender create(String method) {
 		return new Sender(method);
 	}
 

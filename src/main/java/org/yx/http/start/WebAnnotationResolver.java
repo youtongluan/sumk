@@ -22,9 +22,9 @@ import java.util.List;
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
+import org.yx.asm.MethodDesc;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
-import org.yx.common.MethodDesc;
 import org.yx.common.SumkLogs;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
@@ -77,6 +77,9 @@ public class WebAnnotationResolver {
 		for (final Method m : httpMethods) {
 			Web act = m.getAnnotation(Web.class);
 			String soaName = nameResolver.solve(clz, m, act.value());
+			if (soaName == null) {
+				continue;
+			}
 			SumkLogs.HTTP_LOG.debug("http action-{}:{}", soaName, classFullName);
 			if (HttpActionHolder.getHttpInfo(soaName) != null) {
 				SumkLogs.HTTP_LOG.error(soaName + " already existed");

@@ -13,21 +13,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.server;
+package org.yx.asm;
 
-import org.yx.annotation.Bean;
-import org.yx.listener.ClassLoaderFactorysBean;
+import java.lang.reflect.Method;
 
-@Bean
-public class ReqHandlerFactorysBean extends ClassLoaderFactorysBean<RequestHandler> {
+public final class MethodDesc {
 
-	public ReqHandlerFactorysBean() {
-		super("org.yx.rpc.server.impl", "soa.reqhandler", "org.yx.rpc.server.impl");
+	private Method method;
+	private String[] argNames;
+	private String[] descs;
+	private String[] signatures;
+
+	public String[] getArgNames() {
+		return argNames;
 	}
 
-	@Override
-	public Class<RequestHandler> acceptClass() {
-		return RequestHandler.class;
+	public String[] getDescs() {
+		return descs;
+	}
+
+	public String[] getSignatures() {
+		return signatures;
+	}
+
+	public MethodDesc(Method method, String[] argNames, String[] descs, String[] signatures) {
+		super();
+		this.method = method;
+		this.argNames = argNames;
+		this.descs = descs;
+		this.signatures = signatures;
+	}
+
+	public Method getMethod() {
+		return method;
 	}
 
 }

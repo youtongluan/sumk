@@ -23,5 +23,4 @@ public interface Listener<T extends SumkEvent> extends Ordered {
 
 	void listen(T event);
 
-	String[] getTags();
 }
