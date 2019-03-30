@@ -35,7 +35,21 @@ import org.yx.log.Log;
 
 public class SumkThreadPool {
 
-	public static final ScheduledThreadPoolExecutor scheduledExecutor;
+	public static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
+			AppInfo.getInt("sumk.schedule.thread", 2), new ThreadFactory() {
+				private final AtomicInteger threadNumber = new AtomicInteger(1);
+
+				@Override
+				public Thread newThread(Runnable r) {
+					Thread t = new Thread(r);
+					t.setName("sumk-task-" + threadNumber.getAndIncrement());
+					t.setDaemon(true);
+					if (t.getPriority() != Thread.NORM_PRIORITY) {
+						t.setPriority(Thread.NORM_PRIORITY);
+					}
+					return t;
+				}
+			});
 
 	public static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
 
@@ -43,22 +57,6 @@ public class SumkThreadPool {
 			"系统限流降级");
 	private static List<Thread> deamonThreads = new ArrayList<>();
 	static {
-		scheduledExecutor = new ScheduledThreadPoolExecutor(AppInfo.getInt("sumk.schedule.thread", 2),
-				new ThreadFactory() {
-					private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-					@Override
-					public Thread newThread(Runnable r) {
-						Thread t = new Thread(r);
-						t.setName("sumk-task-" + threadNumber.getAndIncrement());
-						t.setDaemon(true);
-						if (t.getPriority() != Thread.NORM_PRIORITY) {
-							t.setPriority(Thread.NORM_PRIORITY);
-						}
-						return t;
-					}
-
-				});
 		scheduledExecutor.scheduleAtFixedRate(() -> {
 
 			int threshold = AppInfo.getInt("sumk.threadpool.threshold", -1);

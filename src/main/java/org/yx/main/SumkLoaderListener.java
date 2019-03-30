@@ -163,10 +163,11 @@ public class SumkLoaderListener implements ServletContextListener {
 			if (org.yx.util.CollectionUtil.isEmpty(listeners)) {
 				continue;
 			}
-			listeners.forEach(lis -> {
+			for (EventListener lis : listeners) {
 				Log.get("sumk.http").trace("add web listener:{}", lis.getClass().getSimpleName());
+
 				context.addListener(lis);
-			});
+			}
 		}
 	}
 

@@ -78,26 +78,27 @@ public class MapedSql {
 		return sql + " -- " + paramters;
 	}
 
-	public String toJson() {
-		try {
-			StringWriter stringWriter = new StringWriter();
-			JsonWriter writer = new JsonWriter(stringWriter);
-			writer.setSerializeNulls(true);
-			writer.beginObject();
-			writer.name("sql").value(sql);
-			writer.name("hash").value(sql.hashCode());
-			String params = DBGson.toJson(paramters);
-			params = LogKits.clipIfNecessary(params);
-			writer.name("paramters").value(params);
-			writer.endObject();
-			writer.flush();
-			writer.close();
-			return stringWriter.toString();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return "";
-		}
-
+	public static interface JsonWriterVisitor {
+		void visit(JsonWriter writer) throws Exception;
 	}
 
+	public String toJson(JsonWriterVisitor visitor) throws Exception {
+		StringWriter stringWriter = new StringWriter();
+		JsonWriter writer = new JsonWriter(stringWriter);
+		writer.setSerializeNulls(true);
+		writer.beginObject();
+		writer.name("sql").value(sql);
+		writer.name("hash").value(sql.hashCode());
+		String params = DBGson.toJson(paramters);
+		params = LogKits.clipIfNecessary(params);
+		writer.name("paramters").value(params);
+		if (visitor != null) {
+			visitor.visit(writer);
+		}
+		writer.endObject();
+		writer.flush();
+		writer.close();
+		return stringWriter.toString();
+
+	}
 }

@@ -15,11 +15,25 @@
  */
 package org.yx.sumk.batis;
 
+import java.util.Objects;
+
 import org.apache.ibatis.logging.LogFactory;
 import org.slf4j.Logger;
+import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
 
 public class MybatisLog implements org.apache.ibatis.logging.Log {
+
+	private static CodeLineMarker marker = new CodeLineMarker("org.yx.sumk.batis.");
+
+	public static CodeLineMarker getMarker() {
+		return marker;
+	}
+
+	public static void setMarker(CodeLineMarker marker) {
+		Objects.requireNonNull(marker);
+		MybatisLog.marker = marker;
+	}
 
 	private Logger log;
 
@@ -39,27 +53,27 @@ public class MybatisLog implements org.apache.ibatis.logging.Log {
 
 	@Override
 	public void error(String s, Throwable e) {
-		log.error(s, e);
+		log.error(marker, s, e);
 	}
 
 	@Override
 	public void error(String s) {
-		log.error(s);
+		log.error(marker, s);
 	}
 
 	@Override
 	public void debug(String s) {
-		log.debug(s);
+		log.debug(marker, s);
 	}
 
 	@Override
 	public void trace(String s) {
-		log.trace(s);
+		log.trace(marker, s);
 	}
 
 	@Override
 	public void warn(String s) {
-		log.info(s);
+		log.info(marker, s);
 	}
 
 	public static void enableMybatisLog() {

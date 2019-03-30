@@ -21,12 +21,18 @@ import static org.yx.log.LogLevel.INFO;
 import static org.yx.log.LogLevel.TRACE;
 import static org.yx.log.LogLevel.WARN;
 
-import org.slf4j.helpers.MarkerIgnoringBase;
+import org.slf4j.Logger;
+import org.slf4j.Marker;
 import org.yx.conf.AppInfo;
 
-public abstract class SumkLogger extends MarkerIgnoringBase {
+public abstract class SumkLogger implements Logger {
 
-	private static final long serialVersionUID = 1;
+	protected String name;
+
+	public String getName() {
+		return name;
+	}
+
 	protected int maxLogNameLength = AppInfo.getInt("sumk.log.maxLogNameLength", 32);
 
 	public int maxLogNameLength() {
@@ -60,25 +66,43 @@ public abstract class SumkLogger extends MarkerIgnoringBase {
 		return methodLevel.ordinal() >= loggers().getLevel(this).ordinal();
 	}
 
-	protected abstract void output(LogLevel methodLevel, String format, Object... arguments);
+	protected abstract void output(Marker marker, LogLevel methodLevel, String format, Object... arguments);
 
-	protected abstract void output(LogLevel methodLevel, String msg, Throwable e);
+	protected abstract void output(Marker marker, LogLevel methodLevel, String msg, Throwable e);
 
 	private void log(LogLevel methodLevel, String msg) {
 		if (this.isLogable(methodLevel)) {
-			this.output(methodLevel, msg);
+			this.output(null, methodLevel, msg);
 		}
 	}
 
 	private void log(LogLevel methodLevel, String format, Object... arguments) {
 		if (this.isLogable(methodLevel)) {
-			this.output(methodLevel, format, arguments);
+			this.output(null, methodLevel, format, arguments);
 		}
 	}
 
 	private void log(LogLevel methodLevel, String msg, Throwable t) {
 		if (this.isLogable(methodLevel)) {
-			this.output(methodLevel, msg, t);
+			this.output(null, methodLevel, msg, t);
+		}
+	}
+
+	private void log(Marker marker, LogLevel methodLevel, String msg) {
+		if (this.isLogable(methodLevel)) {
+			this.output(marker, methodLevel, msg);
+		}
+	}
+
+	private void log(Marker marker, LogLevel methodLevel, String format, Object... arguments) {
+		if (this.isLogable(methodLevel)) {
+			this.output(marker, methodLevel, format, arguments);
+		}
+	}
+
+	private void log(Marker marker, LogLevel methodLevel, String msg, Throwable t) {
+		if (this.isLogable(methodLevel)) {
+			this.output(marker, methodLevel, msg, t);
 		}
 	}
 
@@ -232,15 +256,158 @@ public abstract class SumkLogger extends MarkerIgnoringBase {
 		this.log(ERROR, msg, t);
 	}
 
-	protected static class CodeInfo {
-		String clz;
-		String method;
-		int line;
-
-	}
-
 	public boolean isON() {
 		return loggers().getLevel(this) == LogLevel.ON;
+	}
+
+	@Override
+	public boolean isTraceEnabled(Marker marker) {
+		return this.isTraceEnabled();
+	}
+
+	@Override
+	public void trace(Marker marker, String msg) {
+		this.log(marker, TRACE, msg);
+	}
+
+	@Override
+	public void trace(Marker marker, String format, Object arg) {
+		this.log(marker, TRACE, format, arg);
+	}
+
+	@Override
+	public void trace(Marker marker, String format, Object arg1, Object arg2) {
+		this.log(marker, TRACE, format, arg1, arg2);
+	}
+
+	@Override
+	public void trace(Marker marker, String format, Object... argArray) {
+		this.log(marker, TRACE, format, argArray);
+	}
+
+	@Override
+	public void trace(Marker marker, String msg, Throwable t) {
+		this.log(marker, TRACE, msg, t);
+	}
+
+	@Override
+	public boolean isDebugEnabled(Marker marker) {
+		return this.isDebugEnabled();
+	}
+
+	@Override
+	public void debug(Marker marker, String msg) {
+		this.log(marker, DEBUG, msg);
+	}
+
+	@Override
+	public void debug(Marker marker, String format, Object arg) {
+		this.log(marker, DEBUG, format, arg);
+	}
+
+	@Override
+	public void debug(Marker marker, String format, Object arg1, Object arg2) {
+		this.log(marker, DEBUG, format, arg1, arg2);
+	}
+
+	@Override
+	public void debug(Marker marker, String format, Object... argArray) {
+		this.log(marker, DEBUG, format, argArray);
+	}
+
+	@Override
+	public void debug(Marker marker, String msg, Throwable t) {
+		this.log(marker, DEBUG, msg, t);
+	}
+
+	@Override
+	public boolean isInfoEnabled(Marker marker) {
+		return this.isInfoEnabled();
+	}
+
+	@Override
+	public void info(Marker marker, String msg) {
+		this.log(marker, INFO, msg);
+	}
+
+	@Override
+	public void info(Marker marker, String format, Object arg) {
+		this.log(marker, INFO, format, arg);
+	}
+
+	@Override
+	public void info(Marker marker, String format, Object arg1, Object arg2) {
+		this.log(marker, INFO, format, arg1, arg2);
+	}
+
+	@Override
+	public void info(Marker marker, String format, Object... argArray) {
+		this.log(marker, INFO, format, argArray);
+	}
+
+	@Override
+	public void info(Marker marker, String msg, Throwable t) {
+		this.log(marker, INFO, msg, t);
+	}
+
+	@Override
+	public boolean isWarnEnabled(Marker marker) {
+		return this.isWarnEnabled();
+	}
+
+	@Override
+	public void warn(Marker marker, String msg) {
+		this.log(marker, WARN, msg);
+	}
+
+	@Override
+	public void warn(Marker marker, String format, Object arg) {
+		this.log(marker, WARN, format, arg);
+	}
+
+	@Override
+	public void warn(Marker marker, String format, Object arg1, Object arg2) {
+		this.log(marker, WARN, format, arg1, arg2);
+	}
+
+	@Override
+	public void warn(Marker marker, String format, Object... argArray) {
+		this.log(marker, WARN, format, argArray);
+	}
+
+	@Override
+	public void warn(Marker marker, String msg, Throwable t) {
+		this.log(marker, WARN, msg, t);
+	}
+
+	@Override
+	public boolean isErrorEnabled(Marker marker) {
+		return this.isErrorEnabled();
+	}
+
+	@Override
+	public void error(Marker marker, String msg) {
+		this.log(marker, ERROR, msg);
+	}
+
+	@Override
+	public void error(Marker marker, String format, Object arg) {
+		this.log(marker, ERROR, format, arg);
+	}
+
+	@Override
+	public void error(Marker marker, String format, Object arg1, Object arg2) {
+		this.log(marker, ERROR, format, arg1, arg2);
+	}
+
+	@Override
+	public void error(Marker marker, String format, Object... argArray) {
+		this.log(marker, ERROR, format, argArray);
+	}
+
+	@Override
+	public void error(Marker marker, String msg, Throwable t) {
+		this.log(marker, ERROR, msg, t);
 	}
 
 }

@@ -102,7 +102,7 @@ public final class Select extends SelectBuilder {
 			return this;
 		}
 		if (_compare == null) {
-			_compare = new HashMap[4];
+			_compare = new HashMap[COMPARES.length];
 		}
 		if (this._compare[index] == null) {
 			this._compare[index] = new HashMap<>();
@@ -121,23 +121,35 @@ public final class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select bigThan(String key, Object value) {
-		return setCompare(0, key, value);
+		return setCompare(BIG, key, value);
 	}
 
 	public Select bigOrEqual(String key, Object value) {
-		return setCompare(1, key, value);
+		return setCompare(BIG_EQUAL, key, value);
 	}
 
 	public Select lessThan(String key, Object value) {
-		return setCompare(2, key, value);
+		return setCompare(LESS, key, value);
 	}
 
 	public Select lessOrEqual(String key, Object value) {
-		return setCompare(3, key, value);
+		return setCompare(LESS_EQUAL, key, value);
+	}
+
+	/**
+	 * 
+	 * @param key
+	 *            字段名
+	 * @param value
+	 *            值，不会自动添加%
+	 * @return
+	 */
+	public Select like(String key, Object value) {
+		return setCompare(LIKE, key, value);
 	}
 
 	public Select bigThan(Map<String, Object> map) {
-		return setCompare(0, map);
+		return setCompare(BIG, map);
 	}
 
 	/**
@@ -148,11 +160,11 @@ public final class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select bigOrEqual(Map<String, Object> map) {
-		return setCompare(1, map);
+		return setCompare(BIG_EQUAL, map);
 	}
 
 	public Select lessThan(Map<String, Object> map) {
-		return setCompare(2, map);
+		return setCompare(LESS, map);
 	}
 
 	/**
@@ -163,7 +175,11 @@ public final class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select lessOrEqual(Map<String, Object> map) {
-		return setCompare(3, map);
+		return setCompare(LESS_EQUAL, map);
+	}
+
+	public Select like(Map<String, Object> map) {
+		return setCompare(LIKE, map);
 	}
 
 	/**

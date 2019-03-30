@@ -15,11 +15,11 @@
  */
 package org.yx.log;
 
+import org.slf4j.Marker;
 import org.yx.util.SumkDate;
 
 public class ConsoleLog extends SumkLogger {
 
-	private static final long serialVersionUID = 1;
 	public static final LogLevel DEBUG = LogLevel.DEBUG;
 	public static final LogLevel TRACE = LogLevel.TRACE;
 	private static Loggers loggers = Loggers.create();
@@ -49,12 +49,12 @@ public class ConsoleLog extends SumkLogger {
 	}
 
 	@Override
-	protected void output(LogLevel methodLevel, String format, Object... arguments) {
+	protected void output(Marker marker, LogLevel methodLevel, String format, Object... arguments) {
 		this.show(methodLevel, format, arguments);
 	}
 
 	@Override
-	protected void output(LogLevel methodLevel, String msg, Throwable e) {
+	protected void output(Marker marker, LogLevel methodLevel, String msg, Throwable e) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ")

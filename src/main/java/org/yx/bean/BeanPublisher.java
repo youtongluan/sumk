@@ -31,8 +31,8 @@ import org.yx.bean.watcher.BeanCreate;
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.LifeCycleHandler;
-import org.yx.common.ClassScaner;
 import org.yx.common.StartConstants;
+import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.listener.Listener;
@@ -53,8 +53,7 @@ public final class BeanPublisher {
 			packageNames.add(0, StartConstants.INNER_PACKAGE);
 		}
 		IntfImplement.beforeScan();
-		ClassScaner scaner = new ClassScaner();
-		Collection<String> clzs = scaner.parse(packageNames.toArray(new String[packageNames.size()]));
+		Collection<String> clzs = ClassScaner.parse(packageNames.toArray(new String[packageNames.size()]));
 		Collection<String> userBeans = fileConfigBeans();
 		if (userBeans != null && userBeans.size() > 0) {
 			clzs.addAll(userBeans);
@@ -62,7 +61,7 @@ public final class BeanPublisher {
 		for (String c : clzs) {
 			try {
 
-				Class<?> clz = Loader.loadClass(c);
+				Class<?> clz = Loader.loadClassExactly(c);
 				if (AsmUtils.notPublicOnly(clz.getModifiers()) || clz.isInterface() || clz.isAnonymousClass()
 						|| clz.isLocalClass() || clz.isAnnotation() || clz.isEnum()) {
 					continue;

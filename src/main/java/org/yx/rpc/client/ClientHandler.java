@@ -18,6 +18,7 @@ package org.yx.rpc.client;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.server.Response;
@@ -70,6 +71,11 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void inputClosed(IoSession session) throws Exception {
+
+	}
+
+	@Override
+	public void event(IoSession arg0, FilterEvent arg1) throws Exception {
 
 	}
 

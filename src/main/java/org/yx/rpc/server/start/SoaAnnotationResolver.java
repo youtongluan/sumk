@@ -30,7 +30,6 @@ import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
@@ -50,7 +49,7 @@ public class SoaAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		ConsoleLog.get("sumk.soa").debug("matcher:{}", this.matcher);
+		Log.get("sumk.soa").debug("matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {

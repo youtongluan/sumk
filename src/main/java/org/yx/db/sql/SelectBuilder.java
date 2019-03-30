@@ -34,7 +34,12 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		this.withnull = false;
 	}
 
-	protected static final String[] COMPARES = { ">", ">=", "<", "<=" };
+	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like " };// like前后要有空格
+	protected static final int BIG = 0;
+	protected static final int BIG_EQUAL = 1;
+	protected static final int LESS = 2;
+	protected static final int LESS_EQUAL = 3;
+	protected static final int LIKE = 4;
 
 	List<String> selectColumns;
 
@@ -69,9 +74,19 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			sql.append(" ORDER BY ").append(order);
 		}
 		if (this.offset >= 0 && this.limit > 0) {
-			sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
+			buildLimit(sql);
 		}
 		return new MapedSql(sql.toString(), paramters);
+	}
+
+	/**
+	 * 组装offset和limit
+	 * 
+	 * @param sql
+	 *            已组装出来的sql
+	 */
+	protected void buildLimit(StringBuilder sql) {
+		sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
 	}
 
 	protected CharSequence buildOrder() {

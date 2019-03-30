@@ -12,7 +12,7 @@ import org.yx.log.Log;
 import com.google.gson.stream.JsonWriter;
 
 public class DefaultHttpLogHandler implements HttpLogHandler {
-	private Logger LOG_REQ = Log.get("sumk.http.json");
+	private Logger LOG_REQ = Log.get("sumk.http.log.json");
 	private int maxLen = AppInfo.getInt("http.log.resp.maxlength", 100000);
 
 	public void log(WebContext ctx) {

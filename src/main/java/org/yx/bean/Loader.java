@@ -53,6 +53,10 @@ public class Loader {
 		return Loader.class.getClassLoader().loadClass(clz);
 	}
 
+	public static Class<?> loadClassExactly(String clz) throws ClassNotFoundException {
+		return Loader.class.getClassLoader().loadClass(clz);
+	}
+
 	public static InputStream getResourceAsStream(String name) {
 		name = name.replace('.', '/');
 		InputStream in = loader().getResourceAsStream(name + "-impl");

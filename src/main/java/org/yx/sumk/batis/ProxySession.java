@@ -19,6 +19,7 @@ import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
@@ -171,5 +172,20 @@ public class ProxySession implements SqlSession {
 	@Override
 	public void clearCache() {
 		this.writeSession().clearCache();
+	}
+
+	@Override
+	public <T> Cursor<T> selectCursor(String statement) {
+		return this.readSession().selectCursor(statement);
+	}
+
+	@Override
+	public <T> Cursor<T> selectCursor(String statement, Object parameter) {
+		return this.readSession().selectCursor(statement, parameter);
+	}
+
+	@Override
+	public <T> Cursor<T> selectCursor(String statement, Object parameter, RowBounds rowBounds) {
+		return this.readSession().selectCursor(statement, parameter, rowBounds);
 	}
 }

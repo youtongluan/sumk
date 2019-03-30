@@ -26,7 +26,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.yx.common.ClassScaner;
+import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.log.Log;

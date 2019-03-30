@@ -27,21 +27,18 @@ import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 import redis.clients.jedis.BinaryJedisCommands;
-import redis.clients.jedis.BinaryScriptingCommands;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCommands;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.MultiKeyBinaryCommands;
 import redis.clients.jedis.MultiKeyCommands;
 import redis.clients.jedis.ScriptingCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
 import redis.clients.util.SafeEncoder;
 
-public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryCommands, BinaryScriptingCommands,
-		JedisCommands, MultiKeyCommands, ScriptingCommands {
+public abstract class Redis implements BinaryJedisCommands, JedisCommands, MultiKeyCommands, ScriptingCommands {
 
 	static final String LOG_NAME = "sumk.redis";
 	protected final List<Host> hosts;
@@ -108,13 +105,54 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 	}
 
 	public <T> T exec(RedisCallBack<T> callback) {
-		return new RedisTemplate(this).execute(callback);
+		Jedis jedis = null;
+		try {
+			jedis = this.jedis();
+			return callback.invoke(jedis);
+		} catch (Exception e) {
+			throw new SumkException(12342410, e.getMessage(), e);
+		} finally {
+			if (jedis != null) {
+				jedis.close();
+			}
+		}
 	}
 
-	protected void handleRedisException(Exception e1) {
+	public <T> T executeAndRetry(RedisCallBack<T> callback) {
+		Jedis jedis = null;
+		Exception e1 = null;
+		for (int i = 0; i < this.getTryCount(); i++) {
+			try {
+				e1 = null;
+				jedis = this.jedis();
+				return callback.invoke(jedis);
+			} catch (Exception e) {
+				if (JedisConnectionException.class.isInstance(e)
+						|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()))) {
+					Log.get(Redis.LOG_NAME).error("redis连接错误！" + e.getMessage(), e);
+					if (jedis != null) {
+						jedis.close();
+						jedis = null;
+					}
+					e1 = e;
+					continue;
+				}
+				Log.get(Redis.LOG_NAME).error("redis执行错误！" + e.getMessage(), e);
+				if (jedis != null) {
+					jedis.close();
+					jedis = null;
+				}
+				SumkException.throwException(12342411, e.getMessage(), e);
+			} finally {
+				if (jedis != null) {
+					jedis.close();
+				}
+			}
+		}
 		if (e1 != null) {
 			throw new SumkException(12342422, e1.getMessage(), e1);
 		}
+		throw new SumkException(12342423, "未知redis异常");
 	}
 
 	protected boolean isConnectException(Exception e) {
@@ -122,102 +160,22 @@ public abstract class Redis implements BinaryJedisCommands, MultiKeyBinaryComman
 				|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()));
 	}
 
-	protected void close(Jedis jedis) {
-		if (jedis != null) {
-			jedis.close();
-		}
-	}
-
 	public Long hset(String key, String field, byte[] value) {
-		Jedis jedis = null;
-		Exception e1 = null;
-		for (int i = 0; i < tryCount; i++) {
-			try {
-				jedis = pool.getResource();
-				return jedis.hset(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
-			} catch (Exception e) {
-				if (isConnectException(e)) {
-					Log.get(LOG_NAME).error("redis connection failed！" + e.getMessage(), e);
-					e1 = e;
-					continue;
-				}
-				Log.get(LOG_NAME).error("redis execute error！" + e.getMessage(), e);
-				SumkException.throwException(12342411, e.getMessage(), e);
-			} finally {
-				close(jedis);
-			}
-		}
-		handleRedisException(e1);
-		throw new SumkException(12342423, "未知redis异常");
+		return this.executeAndRetry(jedis -> {
+			return jedis.hset(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
+		});
 	}
 
 	public String setex(String key, int seconds, byte[] value) {
-		Jedis jedis = null;
-		Exception e1 = null;
-		for (int i = 0; i < tryCount; i++) {
-			try {
-				jedis = pool.getResource();
-				return jedis.setex(key.getBytes(UTF8), seconds, value);
-			} catch (Exception e) {
-				if (isConnectException(e)) {
-					Log.get(LOG_NAME).error("redis connection failed！" + e.getMessage(), e);
-					e1 = e;
-					continue;
-				}
-				Log.get(LOG_NAME).error("redis execute error！" + e.getMessage(), e);
-				SumkException.throwException(12342411, e.getMessage(), e);
-			} finally {
-				close(jedis);
-			}
-		}
-		handleRedisException(e1);
-		throw new SumkException(12342423, "未知redis异常");
-	}
-
-	public byte[] getBytes(String key) {
-		Jedis jedis = null;
-		Exception e1 = null;
-		for (int i = 0; i < tryCount; i++) {
-			try {
-				jedis = pool.getResource();
-				return jedis.get(key.getBytes(UTF8));
-			} catch (Exception e) {
-				if (isConnectException(e)) {
-					Log.get(LOG_NAME).error("redis connection failed！" + e.getMessage(), e);
-					e1 = e;
-					continue;
-				}
-				Log.get(LOG_NAME).error("redis execute error！" + e.getMessage(), e);
-				SumkException.throwException(12342411, e.getMessage(), e);
-			} finally {
-				close(jedis);
-			}
-		}
-		handleRedisException(e1);
-		throw new SumkException(12342423, "未知redis异常");
+		return this.executeAndRetry(jedis -> {
+			return jedis.setex(key.getBytes(UTF8), seconds, value);
+		});
 	}
 
 	public byte[] hgetBinarry(String key, String field) {
-		Jedis jedis = null;
-		Exception e1 = null;
-		for (int i = 0; i < tryCount; i++) {
-			try {
-				jedis = pool.getResource();
-				return jedis.hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
-			} catch (Exception e) {
-				if (isConnectException(e)) {
-					Log.get(LOG_NAME).error("redis connection failed！" + e.getMessage(), e);
-					e1 = e;
-					continue;
-				}
-				Log.get(LOG_NAME).error("redis execute error！" + e.getMessage(), e);
-				SumkException.throwException(12342411, e.getMessage(), e);
-			} finally {
-				close(jedis);
-			}
-		}
-		handleRedisException(e1);
-		throw new SumkException(12342423, "未知redis异常");
+		return this.executeAndRetry(jedis -> {
+			return jedis.hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
+		});
 	}
 
 	@Override
