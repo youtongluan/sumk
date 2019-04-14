@@ -6,8 +6,6 @@ INSERT INTO demo_user (
 				age,
 				enable
 	-- 这个是注释
-\\这也是注释
-	// 这个同样是注释
 		)
 		VALUES (?,?,?,1)  
 		
