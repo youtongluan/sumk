@@ -19,16 +19,30 @@ import org.yx.common.Ordered;
 
 /**
  * 实现该接口，并且添加@Bean注解。会在sumk启动或停止的时候，被调用<BR>
- * 这个接口可以用于mongo初始化等。
+ * 这个接口一般用于mongo初始化等。但不用于修改IOC的内部结构。
  * 
  * @author 游夏
  *
  */
 public interface Plugin extends Ordered {
 	/**
-	 * 如果抛出异常，会导致应用启动失败
+	 * 在startAsync()之前执行，同步执行。如果抛出异常，会导致应用启动失败
 	 */
-	void start();
+	default void prepare() {
+
+	}
+
+	/**
+	 * 在所有的prepare()之后异步执行。如果抛出异常，会导致应用启动失败
+	 */
+	void startAsync();
+
+	/**
+	 * 在所有的startAsync()之后执行。如果抛出异常，会导致应用启动失败
+	 */
+	default void afterStarted() {
+
+	}
 
 	void stop();
 }

@@ -31,8 +31,7 @@ public class MybatisLog implements org.apache.ibatis.logging.Log {
 	}
 
 	public static void setMarker(CodeLineMarker marker) {
-		Objects.requireNonNull(marker);
-		MybatisLog.marker = marker;
+		MybatisLog.marker = Objects.requireNonNull(marker);
 	}
 
 	private Logger log;

@@ -34,7 +34,7 @@ import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.yx.bean.IOC;
-import org.yx.bean.Plugin;
+import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
@@ -43,7 +43,7 @@ import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public class JettyServer implements Plugin {
+public class JettyServer implements Lifecycle {
 
 	protected final int port;
 	protected Server server;
@@ -51,6 +51,7 @@ public class JettyServer implements Plugin {
 
 	public JettyServer(int port) {
 		this.port = port;
+		this.init();
 	}
 
 	protected ConnectionFactory[] getConnectionFactorys() throws Exception {
@@ -70,15 +71,11 @@ public class JettyServer implements Plugin {
 		return connector;
 	}
 
-	@Override
-	public synchronized void start() {
-		if (started) {
-			return;
-		}
+	protected synchronized void init() {
 		try {
 			server = new Server(new ExecutorThreadPool((ThreadPoolExecutor) SumkThreadPool.EXECUTOR));
 			ServerConnector connector = this.createConnector();
-			Log.get("sumk.http").info("listen port：" + port);
+			Log.get("sumk.http").info("listen port: {}", port);
 			String host = StartContext.httpHost();
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);
@@ -87,8 +84,7 @@ public class JettyServer implements Plugin {
 
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = createServletContextHandler();
-			String contextPath = AppInfo.get("http.jetty.web.root");
-			context.setContextPath(contextPath == null ? "/" : contextPath);
+			context.setContextPath(AppInfo.get("http.jetty.web.root", "/"));
 			context.addEventListener(new SumkLoaderListener());
 			addUserListener(context, Arrays.asList(ServletContextListener.class, ContextScopeListener.class));
 			String resourcePath = AppInfo.get("http.jetty.resource");
@@ -103,9 +99,22 @@ public class JettyServer implements Plugin {
 				context.insertHandler(h);
 			}
 			server.setHandler(context);
+		} catch (Throwable e) {
+			Log.printStack("sumk.http", e);
+			System.exit(-1);
+		}
+
+	}
+
+	@Override
+	public synchronized void start() {
+		if (started || server == null) {
+			return;
+		}
+		try {
 			server.start();
 			started = true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
 			System.exit(-1);
 		}

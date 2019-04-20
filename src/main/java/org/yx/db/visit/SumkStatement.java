@@ -38,8 +38,7 @@ public class SumkStatement {
 	}
 
 	public static void setMarker(CodeLineMarker marker) {
-		Objects.requireNonNull(marker);
-		SumkStatement.marker = marker;
+		SumkStatement.marker = Objects.requireNonNull(marker);
 	}
 
 	private PreparedStatement statement;

@@ -25,11 +25,12 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
+import org.yx.common.ItemJoiner;
 import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
-import org.yx.db.RawDB;
 import org.yx.db.exec.DBExec;
 import org.yx.db.exec.ResultContainer;
+import org.yx.db.mapper.RawExecutor;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
@@ -42,7 +43,7 @@ public class TableGenerator implements Plugin {
 	}
 
 	@Override
-	public void start() {
+	public void startAsync() {
 
 		if (!AppInfo.getBoolean("sumk.db.generator", false)) {
 			return;
@@ -131,13 +132,13 @@ public class TableGenerator implements Plugin {
 			return;
 		}
 		DBExec.exec(ResultContainer.create(db), ex -> {
-			List<Map<String, Object>> list = RawDB.list("show tables like ?", pm.getTableName());
+			List<Map<String, Object>> list = RawExecutor.list("show tables like ?", pm.getTableName());
 
 			boolean exist = list != null && list.size() > 0;
 			if (exist) {
 				return;
 			}
-			if (RawDB.execute(sql) == 1) {
+			if (RawExecutor.execute(sql) == 1) {
 				Log.get("sumk.db.generator").info("create table {} success", pm.getTableName());
 			} else {
 				Log.get("sumk.db.generator").info("create table {} failed!!", pm.getTableName());

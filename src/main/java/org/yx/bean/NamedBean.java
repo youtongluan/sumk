@@ -20,11 +20,11 @@ import java.util.Objects;
 import org.yx.exception.SumkException;
 
 public class NamedBean {
-	private String beanName;
+	private final String beanName;
 	/**
 	 * 可以是class类，也可以包含实力化后的对象。但不能是NamedBean
 	 */
-	private Object bean;
+	private final Object bean;
 
 	/**
 	 * @param beanName
@@ -33,9 +33,7 @@ public class NamedBean {
 	 *            可以是class类，也可以包含实力化后的对象。但不能是NamedBean
 	 */
 	public NamedBean(String beanName, Object bean) {
-		Objects.requireNonNull(beanName, beanName + " cannot be null");
-		Objects.requireNonNull(bean, bean + " cannot be null");
-		beanName = beanName.trim();
+		beanName = Objects.requireNonNull(beanName, "beanName cannot be null").trim();
 		if (beanName.isEmpty()) {
 			SumkException.throwException(233654645, "bean name can not be empty");
 		}
@@ -43,7 +41,7 @@ public class NamedBean {
 			SumkException.throwException(233654645, "bean can not be a NamedBean object");
 		}
 		this.beanName = beanName;
-		this.bean = bean;
+		this.bean = Objects.requireNonNull(bean, bean + " cannot be null");
 	}
 
 	/**

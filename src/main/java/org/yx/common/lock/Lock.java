@@ -24,7 +24,7 @@ import org.yx.util.Assert;
 import org.yx.util.UUIDSeed;
 
 public final class Lock implements Key {
-	static Logger logger = Log.get("sumk.lock");
+	static final Logger logger = Log.get("sumk.lock");
 	final static String sha = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
 	private String id;
 	String value;

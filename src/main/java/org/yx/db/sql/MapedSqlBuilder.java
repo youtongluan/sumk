@@ -16,7 +16,9 @@
 package org.yx.db.sql;
 
 import java.util.Map;
+import java.util.function.Function;
 
+import org.yx.db.sql.token.MapValueHandler;
 import org.yx.db.sql.token.MapedSqlTokenParser;
 import org.yx.db.sql.token.ReplaceTokenHandler;
 import org.yx.db.sql.token.StringTokenParser;
@@ -24,20 +26,25 @@ import org.yx.db.sql.token.VariableTokenHandler;
 
 public class MapedSqlBuilder implements SqlBuilder {
 	private final String _sql;
-	private final Map<String, Object> map;
+	private final Function<String, Object> valueHandler;
 
 	public MapedSqlBuilder(String sql, Map<String, Object> map) {
 		this._sql = sql;
-		this.map = map;
+		this.valueHandler = new MapValueHandler(map);
+	}
+
+	public MapedSqlBuilder(String sql, Function<String, Object> valueHandler) {
+		this._sql = sql;
+		this.valueHandler = valueHandler;
 	}
 
 	@Override
 	public MapedSql toMapedSql() throws Exception {
 		String sql = _sql;
 		if (sql.contains("${")) {
-			sql = new StringTokenParser("${", "}", new ReplaceTokenHandler(map)).parse(sql);
+			sql = new StringTokenParser("${", "}", ReplaceTokenHandler.create(valueHandler)).parse(sql);
 		}
-		return new MapedSqlTokenParser("#{", "}", new VariableTokenHandler(map)).parse(sql);
+		return new MapedSqlTokenParser("#{", "}", VariableTokenHandler.create(valueHandler)).parse(sql);
 	}
 
 }

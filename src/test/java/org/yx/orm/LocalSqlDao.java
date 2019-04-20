@@ -16,20 +16,27 @@
 package org.yx.orm;
 
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.Box;
-import org.yx.db.NamedUtil;
-import org.yx.db.RawUtil;
+import org.yx.db.mapper.SDB;
 import org.yx.util.SBuilder;
 
 @Bean
 public class LocalSqlDao {
 	
 	@Box
+	public int insertBatch(Map<String,Object> map){
+		return SDB.execute("demo.insertBatch", map);
+	}
+	
+	@Box
 	public int insert(String name,long id,int age){
-		return RawUtil.execute("demo.insert", name,id,age);
+		Map<String,Object> map=SBuilder.map("id",id).put("name", name).put("age", age).toMap();
+		return SDB.execute("demo.insert", map);
 	}
 	
 	@Box
@@ -39,16 +46,23 @@ public class LocalSqlDao {
 				.put("age", age)
 				.put("lastUpdate", lastUpdate)
 				.toMap();
-		return NamedUtil.execute("demo.update", map);
+		return SDB.execute("demo.update", map);
 	}
 	
 	@Box
-	public Map<String, Object> select(long id){
-		return RawUtil.selectOne("demo.select",id);
+	public Map<String, Object> select(Long id){
+		return SDB.selectOne("demo.select",SBuilder.map("id", id).put("table", "demo_user").toMap());
 	}
 	
 	@Box
-	public Map<String, Object> select2(long id){
-		return NamedUtil.selectOne("demo.selectByName",SBuilder.map("Id", id).put("TABLE", "demo_user").toMap());
+	public Map<String, Object> select(Map<String, Object> param){
+		Map<String, Object> map=new HashMap<>(param);
+		map.put("table", "demo_user");
+		return SDB.selectOne("demo.select",map);
+	}
+	
+	@Box
+	public List<Map<String, Object>> selectByIds(Map<String, Object> param){
+		return SDB.list("demo.selectByIds",param);
 	}
 }

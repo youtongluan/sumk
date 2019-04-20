@@ -17,7 +17,7 @@ package org.yx.rpc;
 
 import java.lang.reflect.Type;
 
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 import com.google.gson.Gson;
 
@@ -26,7 +26,7 @@ import com.google.gson.Gson;
  */
 public final class RpcGson {
 
-	private static Gson gson = GsonUtil.gson("rpc");
+	private static Gson gson = JsonUtil.gson("rpc");
 
 	public static Gson getGson() {
 		return gson;

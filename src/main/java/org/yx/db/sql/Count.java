@@ -18,7 +18,7 @@ package org.yx.db.sql;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yx.db.RawDB;
+import org.yx.db.mapper.RawExecutor;
 import org.yx.util.Assert;
 import org.yx.util.StringUtil;
 
@@ -44,7 +44,7 @@ public class Count {
 		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);
 		}
-		return RawDB.count(sql.toString(), paramters);
+		return RawExecutor.count(sql.toString(), paramters);
 	}
 
 }

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -26,6 +27,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public final class DefaultClassNameScaner implements ClassNameScaner {
@@ -51,15 +53,20 @@ public final class DefaultClassNameScaner implements ClassNameScaner {
 				eUrl = classLoader.getResources(packagePath);
 				while (eUrl.hasMoreElements()) {
 					url = eUrl.nextElement();
-					file = new File(url.getPath());
-					if ("jar".equals(url.getProtocol()) || !file.exists()) {
+					if (JarFileUtil.URL_PROTOCOL_JAR.equals(url.getProtocol())
+							|| JarFileUtil.URL_PROTOCOL_ZIP.equals(url.getProtocol())) {
 						this.findClassInJar(classNameList, url, packagePath);
 						continue;
 					}
+					file = new File(url.toURI());
+					if (!file.exists()) {
+						SumkException.throwException(23423, file.getAbsolutePath() + " is not a file");
+					}
 					this.parseFile(classNameList, file, packagePath);
 				}
-			} catch (IOException ex) {
+			} catch (Exception ex) {
 				Log.get("sumk.scaner").error("parse " + packageName + "failed", ex);
+				SumkException.throwException(23423, ex.getMessage(), ex);
 			}
 		}
 		return classNameList;
@@ -98,7 +105,13 @@ public final class DefaultClassNameScaner implements ClassNameScaner {
 	private void findClassInJar(Collection<String> classNameList, URL url, String packagePath) throws IOException {
 		JarFile jarFile = null;
 		try {
-			jarFile = ((JarURLConnection) url.openConnection()).getJarFile();
+
+			URLConnection conn = url.openConnection();
+			if (!JarURLConnection.class.isInstance(conn)) {
+				Log.get("sumk.scaner").error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
+				SumkException.throwException(25345643, conn.getClass().getName() + " is not JarURLConnection");
+			}
+			jarFile = ((JarURLConnection) conn).getJarFile();
 			Enumeration<JarEntry> jarEntryEnum = jarFile.entries();
 			while (jarEntryEnum.hasMoreElements()) {
 				String entityName = jarEntryEnum.nextElement().getName();

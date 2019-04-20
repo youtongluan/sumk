@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE sdb SYSTEM "https://youtongluan.github.io/sumk/sql.dtd">
+<sdb>
+<sql id="test1.queryOne">
+<!-- ${}转化出来的内容，不能包含表达式 -->
+	select * from ${table} where
+	1=1 and
+	<if test="name | age"> name like #{name} </if>
+	<ifnot test="name" falseby="empty"> age=age </ifnot>
+	<!-- #{@}是列表项的占位符 ,collection支持集合和数组-->
+	<ifnot test="name|id">
+		<foreach collection="id" item="tmp"  separator="," open="(" close=")"> id in #{@}</foreach>
+	</ifnot>
+	limit 10
+</sql>
+
+<sql id="selectFirst">
+<!-- ${}转化出来的内容，不能包含表达式 -->
+	select * from ${table} 
+	<![CDATA[
+		where id>1234
+	]]>
+	limit 1
+</sql>
+<sql id="queryWithName">
+	select * from ${table} where
+	1=1 and
+	 name like #{name} 
+	 age=age 
+	limit 10
+</sql>
+<sql id="demouser234314.insert">
+	INSERT INTO demo_user (	
+				name ,
+				id ,
+				age,
+				enable
+	
+		)
+		VALUES (#{name},#{id},#{age},1) 
+</sql>
+</sdb>

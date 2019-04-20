@@ -18,7 +18,7 @@ import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.yx.log.Log;
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 /*
  * 通过这个类，可以了解web的通讯。
@@ -48,7 +48,7 @@ public class AesClientTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(json).getBytes(charset), key);
+		byte[] conts = Encrypt.encrypt(JsonUtil.toJson(json).getBytes(charset), key);
 		String req = Base64.getEncoder().encodeToString(conts);
 		System.out.println("req:" + req);
 		post.setHeader(HttpHeaders.CONTENT_TYPE, "application/x-www-form-urlencoded");
@@ -114,13 +114,13 @@ public class AesClientTest {
 		//加密数据
 		Map<String, Object> map = new HashMap<>();
 		map.put("name", "小明");
-		byte[] conts = Encrypt.encrypt(GsonUtil.toJson(map).getBytes(charset), key);//用AES加密
+		byte[] conts = Encrypt.encrypt(JsonUtil.toJson(map).getBytes(charset), key);//用AES加密
 		String req = Base64.getEncoder().encodeToString(conts);//变成base64
 		StringEntity se = new StringEntity(req, charset);
 		Log.get("aes_sign").info("req:" + req);
 		
 		//生成sign，这个是需要sign的接口特有的
-		String sign = Encrypt.sign(GsonUtil.toJson(map).getBytes(charset));
+		String sign = Encrypt.sign(JsonUtil.toJson(map).getBytes(charset));
 		System.out.println("sign:" + sign);
 		
 		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);

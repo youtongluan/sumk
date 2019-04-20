@@ -13,8 +13,7 @@ public class DBNameResolvers {
 	}
 
 	public static void setResolver(DBNameResolver resolver) {
-		Objects.requireNonNull(resolver, "resolver cannot be null");
-		DBNameResolvers.nameResolver = resolver;
+		DBNameResolvers.nameResolver = Objects.requireNonNull(resolver, "resolver cannot be null");
 	}
 
 	private static class DBColumnNameResolverImpl implements DBNameResolver {

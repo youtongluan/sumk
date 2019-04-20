@@ -15,8 +15,7 @@ public class RpcLogHolder {
 	}
 
 	public static void setHandler(RpcLogHandler handler) {
-		Objects.requireNonNull(handler);
-		RpcLogHolder.handler = handler;
+		RpcLogHolder.handler = Objects.requireNonNull(handler);
 	}
 
 	public static void handle(Host url, Req req, RpcResult result, long receiveTime) {

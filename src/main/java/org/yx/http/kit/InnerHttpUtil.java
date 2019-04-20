@@ -36,8 +36,7 @@ public final class InnerHttpUtil {
 	}
 
 	public static void setKit(HttpKit kit) {
-		Objects.requireNonNull(kit);
-		InnerHttpUtil.kit = kit;
+		InnerHttpUtil.kit = Objects.requireNonNull(kit);
 	}
 
 	static final int MAXLENGTH = 1024 * 1024 * 100;

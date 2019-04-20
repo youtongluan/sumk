@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.db.ColumnType;
+import org.yx.common.ItemJoiner;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.kit.NumUtil;
 import org.yx.db.visit.SumkDbVisitor;

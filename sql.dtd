@@ -6,19 +6,21 @@ namespace CDATA #IMPLIED
 >
 
 <!-- nomally,it is used for update or insert or delete-->
-<!ELEMENT sql (#PCDATA | if | ifnot | foreach | forInMap )*>
+<!ELEMENT sql (#PCDATA | if | ifnot | foreach )*>
 <!ATTLIST sql
-id CDATA #REQUIRED
+id ID #REQUIRED
 >
 
 <!ELEMENT if (#PCDATA | foreach)*>
 <!ATTLIST if
 test CDATA #REQUIRED
+falseby (null|nokey|empty) #IMPLIED
 >
 
 <!ELEMENT ifnot (#PCDATA | foreach)*>
 <!ATTLIST ifnot
 test CDATA #REQUIRED
+falseby (null|nokey|empty) #IMPLIED
 >
 
 <!-- collection type must be collection -->
@@ -26,14 +28,7 @@ test CDATA #REQUIRED
 <!ATTLIST foreach
 collection CDATA #REQUIRED
 separator CDATA #REQUIRED
-prefix CDATA #IMPLIED
-subfix CDATA #IMPLIED
->
-
-<!ELEMENT forInMap (#PCDATA)*>
-<!ATTLIST forInMap
-map CDATA #REQUIRED
-separator CDATA #REQUIRED
-prefix CDATA #IMPLIED
-subfix CDATA #IMPLIED
+item CDATA #IMPLIED
+open CDATA #IMPLIED
+close CDATA #IMPLIED
 >

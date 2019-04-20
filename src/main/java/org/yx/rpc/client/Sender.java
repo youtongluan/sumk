@@ -36,7 +36,7 @@ import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
 import org.yx.util.Assert;
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 public final class Sender {
 
@@ -85,7 +85,7 @@ public final class Sender {
 	public Sender paramInArray(Object... args) {
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
-			params[i] = GsonUtil.toJson(args[i]);
+			params[i] = JsonUtil.toJson(args[i]);
 		}
 		this.params = params;
 		this.paramType = ParamType.JSONARRAY;
@@ -99,7 +99,7 @@ public final class Sender {
 	}
 
 	public Sender paramInMap(Map<String, ?> map) {
-		this.params = GsonUtil.toJson(map);
+		this.params = JsonUtil.toJson(map);
 		this.paramType = ParamType.JSON;
 		return this;
 	}

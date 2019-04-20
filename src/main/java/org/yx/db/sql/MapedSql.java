@@ -19,6 +19,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.common.ItemJoiner;
 import org.yx.db.DBGson;
 import org.yx.db.event.DBEvent;
 import org.yx.log.LogKits;
@@ -28,12 +29,10 @@ import com.google.gson.stream.JsonWriter;
 public class MapedSql {
 
 	public MapedSql() {
-		super();
 		this.paramters = new ArrayList<>();
 	}
 
 	public MapedSql(String sql, List<Object> paramters) {
-		super();
 		this.sql = sql;
 		this.paramters = paramters;
 	}
@@ -100,5 +99,14 @@ public class MapedSql {
 		writer.close();
 		return stringWriter.toString();
 
+	}
+
+	public static MapedSql merge(List<MapedSql> mapeds, ItemJoiner joiner) {
+		List<Object> params = new ArrayList<>();
+		for (MapedSql maped : mapeds) {
+			joiner.item().append(maped.sql);
+			params.addAll(maped.paramters);
+		}
+		return new MapedSql(joiner.toString(), params);
 	}
 }

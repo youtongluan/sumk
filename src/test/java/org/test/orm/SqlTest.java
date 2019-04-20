@@ -43,7 +43,7 @@ public class SqlTest extends BaseOrmTest{
 		Assert.assertEquals(id, map.get("id"));
 		Assert.assertEquals(age, map.get("AGE"));
 		
-		Map<String, Object> map2=dao.select2(id);
+		Map<String, Object> map2=dao.select(id);
 		Assert.assertEquals(map, map2);
 		
 		//mysql的Timestamp只支持到秒，毫秒会被四舍五入

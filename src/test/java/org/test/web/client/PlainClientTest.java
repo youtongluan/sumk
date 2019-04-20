@@ -26,7 +26,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.yx.demo.member.DemoUser;
 import org.yx.log.Log;
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 /*
  * 通过这个类，可以了解web的通讯。
@@ -60,7 +60,7 @@ public class PlainClientTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		StringEntity se = new StringEntity(GsonUtil.toJson(json), charset);
+		StringEntity se = new StringEntity(JsonUtil.toJson(json), charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
@@ -79,7 +79,7 @@ public class PlainClientTest {
 		String act = "plain_sign";
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "小明");
-		String req = GsonUtil.toJson(json);
+		String req = JsonUtil.toJson(json);
 		String sign = Encrypt.sign(req.getBytes(charset));
 		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);
 		StringEntity se = new StringEntity(req,charset);
@@ -103,7 +103,7 @@ public class PlainClientTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		String req = Base64.getEncoder().encodeToString(GsonUtil.toJson(json).replace("\"names\"", "names").getBytes(charset));
+		String req = Base64.getEncoder().encodeToString(JsonUtil.toJson(json).replace("\"names\"", "names").getBytes(charset));
 		System.out.println("req:" + req);
 		StringEntity se = new StringEntity(req, charset);
 		post.setEntity(se);
@@ -127,7 +127,7 @@ public class PlainClientTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("name", "张三");
 		json.put("age", 23);
-		String req = Base64.getEncoder().encodeToString(GsonUtil.toJson(json).getBytes(charset));
+		String req = Base64.getEncoder().encodeToString(JsonUtil.toJson(json).getBytes(charset));
 		System.out.println("req:" + req);
 
 		MultipartEntity reqEntity = new MultipartEntity();
@@ -162,7 +162,7 @@ public class PlainClientTest {
 		}
 		Map<String, Object> json = new HashMap<>();
 		json.put("users", list);
-		StringEntity se = new StringEntity(GsonUtil.toJson(json), charset);
+		StringEntity se = new StringEntity(JsonUtil.toJson(json), charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
@@ -190,7 +190,7 @@ public class PlainClientTest {
 		}
 		Map<String, Object> json = new HashMap<>();
 		json.put("users", list);
-		StringEntity se = new StringEntity(GsonUtil.toJson(json), charset);
+		StringEntity se = new StringEntity(JsonUtil.toJson(json), charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);
 		String line = resp.getStatusLine().toString();

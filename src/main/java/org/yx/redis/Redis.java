@@ -36,7 +36,6 @@ import redis.clients.jedis.MultiKeyCommands;
 import redis.clients.jedis.ScriptingCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
-import redis.clients.util.SafeEncoder;
 
 public abstract class Redis implements BinaryJedisCommands, JedisCommands, MultiKeyCommands, ScriptingCommands {
 
@@ -45,7 +44,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 	protected final int db;
 	protected final int tryCount;
 	protected final Pool<Jedis> pool;
-	private static final Charset UTF8 = StandardCharsets.UTF_8;
+	public static final Charset UTF8 = StandardCharsets.UTF_8;
 
 	protected JedisPoolConfig defaultPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
@@ -158,24 +157,6 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 	protected boolean isConnectException(Exception e) {
 		return JedisConnectionException.class.isInstance(e)
 				|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()));
-	}
-
-	public Long hset(String key, String field, byte[] value) {
-		return this.executeAndRetry(jedis -> {
-			return jedis.hset(SafeEncoder.encode(key), SafeEncoder.encode(field), value);
-		});
-	}
-
-	public String setex(String key, int seconds, byte[] value) {
-		return this.executeAndRetry(jedis -> {
-			return jedis.setex(key.getBytes(UTF8), seconds, value);
-		});
-	}
-
-	public byte[] hgetBinarry(String key, String field) {
-		return this.executeAndRetry(jedis -> {
-			return jedis.hget(SafeEncoder.encode(key), SafeEncoder.encode(field));
-		});
 	}
 
 	@Override

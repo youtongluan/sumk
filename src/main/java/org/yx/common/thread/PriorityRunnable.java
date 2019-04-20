@@ -26,9 +26,8 @@ public class PriorityRunnable implements Runnable {
 	private final int threshold;
 
 	public PriorityRunnable(Runnable target, int priority, int threshold) {
-		Objects.requireNonNull(target, "target is null");
+		this.target = Objects.requireNonNull(target, "target is null");
 		this.priority = priority;
-		this.target = target;
 		this.threshold = threshold;
 	}
 

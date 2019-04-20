@@ -33,8 +33,7 @@ public final class ClassScaner {
 	}
 
 	public static void setScaner(ClassNameScaner scaner) {
-		Objects.requireNonNull(scaner);
-		ClassScaner.scaner = scaner;
+		ClassScaner.scaner = Objects.requireNonNull(scaner);
 	}
 
 	public static <T> Collection<Class<? extends T>> listSubClassesInSamePackage(Class<T> baseClz)

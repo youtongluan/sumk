@@ -14,8 +14,7 @@ public class HttpLogHolder {
 	}
 
 	public static void setHandler(HttpLogHandler handler) {
-		Objects.requireNonNull(handler);
-		HttpLogHolder.handler = handler;
+		HttpLogHolder.handler = Objects.requireNonNull(handler);
 	}
 
 	public static void log(WebContext ctx) {

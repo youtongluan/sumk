@@ -32,7 +32,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 public class HttpPressTest {
 	@Test
@@ -44,7 +44,7 @@ public class HttpPressTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		StringEntity se = new StringEntity(GsonUtil.toJson(json), charset);
+		StringEntity se = new StringEntity(JsonUtil.toJson(json), charset);
 		post.setEntity(se);
 		System.out.println("开始压测，请耐心等待30秒左右。。。");
 		long begin=System.currentTimeMillis();

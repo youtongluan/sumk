@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Supplier;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.executor.SimpleExecutor;
@@ -31,6 +32,9 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.managed.ManagedTransaction;
 import org.yx.bean.IOC;
 import org.yx.common.SumkLogs;
+import org.yx.conf.AppInfo;
+import org.yx.conf.MultiResourceLoader;
+import org.yx.db.kit.LocalXmlFileLoader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -57,6 +61,17 @@ public class SqlSessionFactory {
 		}
 		sessionFactory.configuration = new Configuration();
 		return sessionFactory.sqlParse();
+	}
+
+	private static Supplier<MultiResourceLoader> resourceLoader = () -> new LocalXmlFileLoader(
+			AppInfo.get("sumk.db.mybatis.path", AppInfo.CLASSPATH_URL_PREFIX + "batis"));
+
+	public static void resourceLoader(Supplier<MultiResourceLoader> resourceLoader) {
+		SqlSessionFactory.resourceLoader = resourceLoader;
+	}
+
+	public static Supplier<MultiResourceLoader> resourceLoader() {
+		return resourceLoader;
 	}
 
 	public static SqlSessionFactory get(String dbName) {
@@ -107,7 +122,7 @@ public class SqlSessionFactory {
 	}
 
 	SqlSessionFactory sqlParse() throws Exception {
-		Map<String, byte[]> sqls = MybatisSqlXmlUtils.openInputs(db);
+		Map<String, byte[]> sqls = resourceLoader.get().openResources(db);
 		Set<Map.Entry<String, byte[]>> entries = sqls.entrySet();
 		for (Map.Entry<String, byte[]> entry : entries) {
 			byte[] bs = entry.getValue();

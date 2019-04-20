@@ -18,6 +18,7 @@ package org.yx.util;
 import org.yx.common.lock.Key;
 import org.yx.common.lock.Lock;
 import org.yx.common.lock.SLock;
+import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncry;
 import org.yx.util.secury.Encry;
 import org.yx.util.secury.MD5Utils;
@@ -92,4 +93,6 @@ public abstract class S {
 		}
 
 	}
+
+	public static BeanConverter beans = new BeanConverter();
 }

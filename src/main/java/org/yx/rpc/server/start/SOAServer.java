@@ -27,7 +27,7 @@ import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.yx.bean.IOC;
-import org.yx.bean.Plugin;
+import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
@@ -39,14 +39,14 @@ import org.yx.rpc.server.RequestHandler;
 import org.yx.util.CollectionUtil;
 import org.yx.util.ZkClientHelper;
 
-public class SOAServer implements Plugin, Runnable {
+public class SOAServer implements Lifecycle {
 
 	private volatile boolean started = false;
 	private final int port;
 	private MinaServer server;
 	private String zkUrl;
 	private String path;
-	private boolean enable = soaServerEnable();
+	private boolean enable;
 
 	private static boolean soaServerEnable() {
 		return AppInfo.getBoolean("soa.server.register", true);
@@ -74,13 +74,8 @@ public class SOAServer implements Plugin, Runnable {
 	private final Runnable zkUnRegister = new ZKUnResiter();
 
 	public SOAServer(int port) {
-		super();
 		this.port = port;
-	}
-
-	@Override
-	public void start() {
-		this.run();
+		this.init();
 	}
 
 	private void startServer(String ip, int port) throws Exception {
@@ -155,28 +150,11 @@ public class SOAServer implements Plugin, Runnable {
 	}
 
 	@Override
-	public synchronized void run() {
-		if (started) {
+	public synchronized void start() {
+		if (started || path == null) {
 			return;
 		}
 		try {
-			String ip = StartContext.soaHost();
-			startServer(ip, port);
-
-			String ip_zk = StartContext.soaHostInzk();
-			if (ip_zk == null) {
-				ip_zk = ip;
-			}
-			int port_zk = StartContext.soaPortInZk();
-			if (port_zk < 1) {
-				port_zk = port;
-			}
-
-			path = ZKConst.SOA_ROOT + "/" + ip_zk + ":" + port_zk;
-			zkUrl = AppInfo.getServerZKUrl();
-			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			ZkClientHelper.makeSure(client, ZKConst.SOA_ROOT);
-
 			if (this.enable) {
 				this.zkRegister.run();
 			} else {
@@ -210,6 +188,32 @@ public class SOAServer implements Plugin, Runnable {
 
 			});
 			started = true;
+		} catch (Exception e) {
+			Log.printStack(e);
+			System.exit(-1);
+		}
+
+	}
+
+	protected void init() {
+		try {
+			enable = soaServerEnable();
+			String ip = StartContext.soaHost();
+			startServer(ip, port);
+
+			String ip_zk = StartContext.soaHostInzk();
+			if (ip_zk == null) {
+				ip_zk = ip;
+			}
+			int port_zk = StartContext.soaPortInZk();
+			if (port_zk < 1) {
+				port_zk = port;
+			}
+
+			path = ZKConst.SOA_ROOT + "/" + ip_zk + ":" + port_zk;
+			zkUrl = AppInfo.getServerZKUrl();
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+			ZkClientHelper.makeSure(client, ZKConst.SOA_ROOT);
 		} catch (Exception e) {
 			Log.printStack(e);
 			System.exit(-1);

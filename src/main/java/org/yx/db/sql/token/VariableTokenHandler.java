@@ -15,9 +15,9 @@
  */
 package org.yx.db.sql.token;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 大小写不敏感
@@ -26,28 +26,24 @@ import java.util.Map;
  *
  */
 public class VariableTokenHandler implements MapedSqlTokenParser.TokenHandler {
-	private Map<String, Object> variables;
 
-	public VariableTokenHandler(Map<String, Object> map) {
-		this.variables = new HashMap<>();
-		if (map == null) {
-			return;
-		}
-		map.forEach((k, v) -> {
-			if (k == null) {
-				return;
-			}
-			this.variables.put(k.toLowerCase(), v);
-		});
+	private final Function<String, Object> valueHandler;
+
+	public static VariableTokenHandler createByMap(Map<String, Object> map) {
+		return new VariableTokenHandler(new MapValueHandler(map));
+	}
+
+	public static VariableTokenHandler create(Function<String, Object> valueHandler) {
+		return new VariableTokenHandler(valueHandler);
+	}
+
+	public VariableTokenHandler(Function<String, Object> valueHandler) {
+		this.valueHandler = valueHandler;
 	}
 
 	@Override
 	public String handleToken(String content, List<Object> paramters) {
-		content = content.toLowerCase();
-		if (variables != null && variables.containsKey(content)) {
-			paramters.add(variables.get(content));
-			return "?";
-		}
-		return null;
+		paramters.add(valueHandler.apply(content));
+		return "?";
 	}
 }

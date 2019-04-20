@@ -37,7 +37,7 @@ public class Validators implements Plugin {
 	}
 
 	@Override
-	public void start() {
+	public void startAsync() {
 
 		if (validators != null) {
 			return;

@@ -17,6 +17,7 @@ package org.yx.conf;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.HashMap;
@@ -49,19 +50,23 @@ public class FileMonitor {
 		long seconds = Integer.getInteger("sumk.fileMonitor.period", 60);
 		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
 			for (FileHandler h : handlers) {
-				handle(h, true);
+				try {
+					handle(h, true);
+				} catch (URISyntaxException e) {
+					Log.printStack(e);
+				}
 			}
 		}, seconds, seconds, TimeUnit.SECONDS);
 		started = true;
 	}
 
-	public synchronized void handle(FileHandler h, boolean showLog) {
+	public synchronized void handle(FileHandler h, boolean showLog) throws URISyntaxException {
 		URL[] urls = h.listFile();
 		if (urls == null) {
 			return;
 		}
 		for (URL url : urls) {
-			File f = new File(url.getPath());
+			File f = new File(url.toURI());
 			String p = f.getAbsolutePath();
 			if (!f.isFile() || !f.exists()) {
 				if (!lastModif.containsKey(p)) {

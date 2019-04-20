@@ -17,6 +17,7 @@ package org.yx.db.sql;
 
 import java.util.Map;
 
+import org.yx.common.ItemJoiner;
 import org.yx.db.event.DeleteEvent;
 
 abstract class InnerDelete {

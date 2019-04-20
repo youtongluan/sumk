@@ -25,7 +25,6 @@ import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodDesc;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
-import org.yx.common.SumkLogs;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
@@ -49,7 +48,7 @@ public class SoaAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		Log.get("sumk.soa").debug("matcher:{}", this.matcher);
+		Log.get("sumk.soa").debug("soa matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
@@ -88,7 +87,6 @@ public class SoaAnnotationResolver {
 						node.method.getDeclaringClass().getName(), node.method.getName(), classFullName, m.getName());
 				continue;
 			}
-			SumkLogs.RPC_LOG.debug("{}-{}", soaName, classFullName);
 
 			Method proxyedMethod = AsmUtils.getSameMethod(m, bean.getClass());
 			int argSize = m.getParameterTypes().length;

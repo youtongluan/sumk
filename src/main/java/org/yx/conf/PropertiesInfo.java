@@ -16,6 +16,7 @@
 package org.yx.conf;
 
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,7 +60,11 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 	}
 
 	public void start() {
-		FileMonitor.inst.handle(this, false);
+		try {
+			FileMonitor.inst.handle(this, false);
+		} catch (URISyntaxException e) {
+			Log.printStack(e);
+		}
 		FileMonitor.inst.start();
 	}
 

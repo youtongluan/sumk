@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<!DOCTYPE sdb SYSTEM "https://youtongluan.github.io/sumk/sql.dtd">
+<sdb namespace="demo">
+<sql id="insert">
+	insert into  demo_user (id,name,age,last_update) values (  #{id},#{name},#{age},#{lastUpdate}	  )
+</sql>
+<sql id="insertBatch">
+	insert demo_user (name,age,last_update,id) values
+		<foreach collection="list" item="item" separator=",">
+			(#{item.name},#{item.age},#{item.lastUpdate},#{item.id})
+		</foreach>
+</sql>
+<sql id="update">
+	UPDATE  demo_user       
+		   SET  
+				name  =   #{name}      ,
+				age  =   #{age}      ,
+				last_update=#{lastUpdate}
+		WHERE 
+		<if test="id">id = #{id}</if>
+</sql>
+<sql id="select">
+	select id,name,age,last_update as lastUpdate from ${table} where 1=1
+	<if test="id">and id = #{id}</if>
+	<if test="name" falseby="empty">and name= #{name}</if><!-- 空字符串会被过滤掉，不作为查询条件 -->
+	<if test="age">and age= #{age}</if>
+	<if test="lastUpdate">and last_update= #{lastUpdate}</if>
+</sql>
+<sql id="selectByIds">
+	select id,name,age,last_update as lastUpdate from demo_user where id in 
+	<foreach collection="ids" item="id" separator="," open="(" close=")">#{id}</foreach>
+</sql>
+</sdb>

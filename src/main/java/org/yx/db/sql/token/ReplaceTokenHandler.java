@@ -15,8 +15,8 @@
  */
 package org.yx.db.sql.token;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * 大小写不敏感
@@ -24,32 +24,29 @@ import java.util.Map;
  * @author 游夏
  *
  */
-public class ReplaceTokenHandler implements StringTokenParser.TokenHandler {
-	private Map<String, Object> variables;
+public final class ReplaceTokenHandler implements StringTokenParser.TokenHandler {
 
-	public ReplaceTokenHandler(Map<String, Object> map) {
-		this.variables = new HashMap<>();
-		if (map == null) {
-			return;
-		}
-		map.forEach((k, v) -> {
-			if (k == null) {
-				return;
-			}
-			this.variables.put(k.toLowerCase(), v);
-		});
+	private final Function<String, Object> valueHandler;
+
+	public static ReplaceTokenHandler createByMap(Map<String, Object> map) {
+		return new ReplaceTokenHandler(new MapValueHandler(map));
+	}
+
+	public static ReplaceTokenHandler create(Function<String, Object> valueHandler) {
+		return new ReplaceTokenHandler(valueHandler);
+	}
+
+	public ReplaceTokenHandler(Function<String, Object> valueHandler) {
+		this.valueHandler = valueHandler;
 	}
 
 	@Override
 	public String handleToken(String content) {
-		content = content.toLowerCase();
-		if (variables != null && variables.containsKey(content)) {
-			Object v = variables.get(content.toLowerCase());
-			if (v == null) {
-				return null;
-			}
-			return v.toString();
+		Object v = valueHandler.apply(content);
+		if (v == null) {
+			return null;
 		}
-		return null;
+		return v.toString();
 	}
+
 }

@@ -55,7 +55,7 @@ public class RemoteUserSession implements UserSession {
 	@Override
 	public void putKey(String sessionId, byte[] key, String userId, String type) {
 		String bigkey = bigKey(sessionId);
-		redis.hset(bigkey, AES_KEY, key);
+		redis.hset(bigkey.getBytes(Redis.UTF8), AES_KEY.getBytes(Redis.UTF8), key);
 		redis.expire(bigkey, HttpSettings.httpSessionTimeout(type));
 		if ((!WebSessions.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
 			return;
@@ -75,7 +75,7 @@ public class RemoteUserSession implements UserSession {
 		if (bigKey == null) {
 			return null;
 		}
-		return redis.hgetBinarry(bigKey, AES_KEY);
+		return redis.hget(bigKey.getBytes(Redis.UTF8), AES_KEY.getBytes(Redis.UTF8));
 	}
 
 	@Override

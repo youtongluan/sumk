@@ -19,7 +19,7 @@ import java.nio.charset.Charset;
 
 import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
-import org.yx.util.GsonUtil;
+import org.yx.util.JsonUtil;
 
 public class SimpleZkSerializer implements ZkSerializer {
 
@@ -40,7 +40,7 @@ public class SimpleZkSerializer implements ZkSerializer {
 		if (String.class.isInstance(data)) {
 			return ((String) data).getBytes(charset);
 		}
-		return GsonUtil.toJson(data).getBytes(charset);
+		return JsonUtil.toJson(data).getBytes(charset);
 	}
 
 	@Override

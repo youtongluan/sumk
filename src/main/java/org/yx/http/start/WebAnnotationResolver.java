@@ -48,7 +48,7 @@ public class WebAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		ConsoleLog.get("sumk.http").debug("matcher:{}", this.matcher);
+		ConsoleLog.get("sumk.http").debug("web matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
@@ -80,7 +80,6 @@ public class WebAnnotationResolver {
 			if (soaName == null) {
 				continue;
 			}
-			SumkLogs.HTTP_LOG.debug("http action-{}:{}", soaName, classFullName);
 			if (HttpActionHolder.getHttpInfo(soaName) != null) {
 				SumkLogs.HTTP_LOG.error(soaName + " already existed");
 				continue;

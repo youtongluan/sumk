@@ -22,7 +22,6 @@ import java.util.Set;
 import org.yx.db.conn.DataSourceWraper;
 import org.yx.log.Log;
 import org.yx.util.Assert;
-import org.yx.util.SimpleBeanUtil;
 import org.yx.util.secury.AESEncry;
 import org.yx.util.secury.Base64Util;
 

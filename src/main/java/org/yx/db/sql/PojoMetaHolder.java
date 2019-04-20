@@ -17,10 +17,10 @@ package org.yx.db.sql;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +30,7 @@ import org.yx.annotation.db.Column;
 import org.yx.annotation.db.Table;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.util.S;
 
 public class PojoMetaHolder {
 
@@ -72,7 +73,7 @@ public class PojoMetaHolder {
 		return temp != null ? temp : pm;
 	}
 
-	private static PojoMeta getPojoMeta(Class<?> clz) {
+	public static PojoMeta getPojoMeta(Class<?> clz) {
 		if (clz == null || clz.isInterface() || clz == Object.class) {
 			return null;
 		}
@@ -93,23 +94,16 @@ public class PojoMetaHolder {
 			return;
 		}
 
-		Map<String, Field> map = new LinkedHashMap<>();
-		Class<?> clz = pojoClz;
-		while (clz != Object.class) {
-			Field[] fields = clz.getDeclaredFields();
-			for (Field f : fields) {
-				int modify = f.getModifiers();
-				if (Modifier.isStatic(modify) || Modifier.isFinal(modify)) {
-					continue;
-				}
-				if (map.putIfAbsent(f.getName(), f) != null) {
-					continue;
-				}
+		Field[] fs = S.beans.getFields(pojoClz);
+		Map<String, Field> map = new HashMap<>();
+		for (Field f : fs) {
+			if (Modifier.isFinal(f.getModifiers())) {
+				continue;
 			}
-			clz = clz.getSuperclass();
+			map.putIfAbsent(f.getName(), f);
 		}
-		List<ColumnMeta> list = new LinkedList<>();
 		Collection<Field> set = map.values();
+		List<ColumnMeta> list = new ArrayList<>(set.size());
 		for (Field f : set) {
 			Column c = f.getAnnotation(Column.class);
 			f.setAccessible(true);

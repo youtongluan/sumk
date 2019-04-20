@@ -17,9 +17,7 @@ package org.yx.bean;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
-import java.net.URL;
 import java.util.Collection;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,7 +28,7 @@ import org.yx.asm.AsmUtils;
 import org.yx.bean.watcher.BeanCreate;
 import org.yx.bean.watcher.BeanWatcher;
 import org.yx.bean.watcher.IntfImplement;
-import org.yx.bean.watcher.LifeCycleHandler;
+import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.StartConstants;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
@@ -39,7 +37,6 @@ import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
-import org.yx.util.CollectionUtil;
 
 public final class BeanPublisher {
 
@@ -54,10 +51,6 @@ public final class BeanPublisher {
 		}
 		IntfImplement.beforeScan();
 		Collection<String> clzs = ClassScaner.parse(packageNames.toArray(new String[packageNames.size()]));
-		Collection<String> userBeans = fileConfigBeans();
-		if (userBeans != null && userBeans.size() > 0) {
-			clzs.addAll(userBeans);
-		}
 		for (String c : clzs) {
 			try {
 
@@ -80,28 +73,6 @@ public final class BeanPublisher {
 			Log.get("sumk.SYS").debug(IOC.info());
 		}
 		autoWiredAll();
-	}
-
-	private static Collection<String> fileConfigBeans() {
-		try {
-
-			Enumeration<URL> urls = Loader.getResources("beans.sumk");
-			if (urls == null) {
-				return null;
-			}
-			Set<String> userBeans = new HashSet<>();
-			while (urls.hasMoreElements()) {
-				List<String> list = CollectionUtil.loadList(urls.nextElement().openStream());
-				if (list == null || list.isEmpty()) {
-					continue;
-				}
-				userBeans.addAll(list);
-			}
-			return userBeans;
-		} catch (Exception e) {
-			Log.printStack(e);
-			return null;
-		}
 	}
 
 	private static Object getBean(Field f, Class<?> clz) {
@@ -146,15 +117,18 @@ public final class BeanPublisher {
 
 	private static void autoWiredAll() {
 		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
-
+		Log.get("sumk.ioc").trace("after beans create...");
 		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
+		Log.get("sumk.ioc").trace("inject beans properties...");
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
+		Log.get("sumk.ioc").trace("after beans installed...");
 		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
 			watcher.afterInstalled(beans);
 		});
-		LifeCycleHandler.instance.start();
+		Log.get("sumk.ioc").trace("plugins starting...");
+		PluginHandler.instance.start();
 	}
 
 	private static void injectProperties(Object bean) {
