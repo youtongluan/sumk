@@ -76,7 +76,7 @@ public class ResourcePlugin implements Plugin {
 			loadSql(loader);
 			startListen(loader);
 		} catch (Throwable e) {
-			SumkException.throwException(2351343,SumkLogs.SQL_ERROR, e);
+			SumkException.throwException(2351343, SumkLogs.SQL_ERROR, e);
 		}
 	}
 

@@ -21,6 +21,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -57,7 +58,7 @@ public class LocalXmlFileLoader implements MultiResourceLoader, Runnable {
 				return f;
 			}
 		}
-		throw new SumkException(356453426, "can not find path " + uri);
+		return null;
 	}
 
 	private File getRoot() throws Exception {
@@ -73,9 +74,13 @@ public class LocalXmlFileLoader implements MultiResourceLoader, Runnable {
 
 	@Override
 	public Map<String, byte[]> openResources(String db) throws Exception {
-		Map<String, byte[]> map = new HashMap<>();
 		List<File> files = new ArrayList<>();
-		FileUtil.listAllSubFiles(files, getRoot());
+		File root = getRoot();
+		if (root == null) {
+			return Collections.emptyMap();
+		}
+		Map<String, byte[]> map = new HashMap<>();
+		FileUtil.listAllSubFiles(files, root);
 		List<FileTime> timeList = new ArrayList<>(files.size());
 		for (int i = 0; i < files.size(); i++) {
 			File f = files.get(i);
