@@ -23,5 +23,5 @@ public abstract class StartConstants {
 	public static final String NOSOA = "nosoa";
 	public static final String NOSOA_ClIENT = "nosoaClient";
 	public static final String NOHTTP = "nohttp";
-	public static final String NOJETTY = "sumk.http.nojetty";
+	public static final String NOJETTY = "http.nojetty";
 }

@@ -28,7 +28,7 @@ public abstract class BizExcutor {
 			for (int i = 0; i < infos.length; i++) {
 				ParamInfo info = infos[i];
 				if (info != null) {
-					Validators.check(info, params[i]);
+					Validators.check(info, params == null ? null : params[i]);
 				}
 			}
 		}

@@ -17,13 +17,13 @@ package org.yx.db;
 
 import java.lang.reflect.Type;
 
-import org.yx.util.JsonUtil;
+import org.yx.common.GsonHelper;
 
 import com.google.gson.Gson;
 
 public class DBGson {
 
-	private static Gson gson = JsonUtil.gson("rpc");
+	private static Gson gson = GsonHelper.gson("db");
 
 	public static Gson getGson() {
 		return gson;

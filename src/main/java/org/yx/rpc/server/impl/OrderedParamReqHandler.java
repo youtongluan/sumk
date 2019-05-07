@@ -24,12 +24,12 @@ import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcErrorCode;
+import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
 import org.yx.rpc.server.impl.ProxyRpcVisitor.AbstractRpcVisitor;
-import org.yx.util.JsonUtil;
 
 @Bean
 public class OrderedParamReqHandler implements RequestHandler {
@@ -47,7 +47,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 				SumkException.throwException(123546, method + " is not a valid rpc interface");
 			}
 			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
-			resp.json(JsonUtil.toJson(ret));
+			resp.json(RpcGson.toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
 			resp.json(null);

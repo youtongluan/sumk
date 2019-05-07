@@ -19,7 +19,7 @@ import org.yx.exception.BizException;
 import org.yx.exception.CodeException;
 import org.yx.exception.SoaException;
 import org.yx.rpc.RpcErrorCode;
-import org.yx.util.JsonUtil;
+import org.yx.util.S;
 
 public final class RpcResult {
 	static RpcResult timeout(Req req) {
@@ -88,7 +88,7 @@ public final class RpcResult {
 		if (this.json == null) {
 			return null;
 		}
-		return JsonUtil.fromJson(json, clz);
+		return S.json.fromJson(json, clz);
 	}
 
 	@Override

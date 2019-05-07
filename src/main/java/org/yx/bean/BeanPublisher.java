@@ -46,9 +46,10 @@ public final class BeanPublisher {
 		if (packageNames.isEmpty()) {
 			Log.get("sumk.SYS").warn("property [sumk.ioc] is empty");
 		}
-		if (!packageNames.contains(StartConstants.INNER_PACKAGE)) {
-			packageNames.add(0, StartConstants.INNER_PACKAGE);
-		}
+
+		packageNames.remove(StartConstants.INNER_PACKAGE);
+		packageNames.add(0, StartConstants.INNER_PACKAGE);
+
 		IntfImplement.beforeScan();
 		Collection<String> clzs = ClassScaner.parse(packageNames.toArray(new String[packageNames.size()]));
 		for (String c : clzs) {

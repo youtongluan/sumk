@@ -77,10 +77,10 @@ public class BeanConverter {
 	 * 根据field转为map。不会对属性内部的字段再做解析
 	 * 
 	 * @param bean
-	 *            pojo对象。
-	 * @return map对象，不为null。
-	 * @throws IllegalAccessException
-	 * @throws IllegalArgumentException
+	 *            用于转化的pojo对象。
+	 * @return 返回map对象，不为null。
+	 * @throws Exception
+	 *             异常
 	 */
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> beanToMap(Object bean) throws Exception {
@@ -99,11 +99,14 @@ public class BeanConverter {
 	}
 
 	/**
-	 * 只转义第一层的key
+	 * 根据map的内容填充bean的属性。只转义第一层的key。
 	 * 
 	 * @param map
-	 * @return
+	 *            原始map
+	 * @param bean
+	 *            目标对象，它的属性会被填充进来
 	 * @throws Exception
+	 *             异常
 	 */
 	public void fillBean(Map<String, Object> map, Object bean) throws Exception {
 		if (map == null || bean == null) {

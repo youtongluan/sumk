@@ -16,29 +16,16 @@
 package org.yx.redis;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
 
 public class RedisPool {
-	private static final Map<String, Redis> map = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, Redis> map = new ConcurrentHashMap<>();
 
 	static Redis _defaultRedis;
-	static {
-		if (!SumkServer.isDestoryed()) {
-			try {
-				ConsoleLog.get("sumk.SYS").debug("redis pool init");
-				RedisLoader.init();
-			} catch (Exception e) {
-				Log.printStack(e);
-				System.exit(-1);
-			}
-		}
-	}
 
 	public static Redis get(String alias) {
 		if (alias == null) {

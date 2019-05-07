@@ -52,7 +52,7 @@ public class FileMonitor {
 			for (FileHandler h : handlers) {
 				try {
 					handle(h, true);
-				} catch (URISyntaxException e) {
+				} catch (Exception e) {
 					Log.printStack(e);
 				}
 			}
@@ -66,24 +66,25 @@ public class FileMonitor {
 			return;
 		}
 		for (URL url : urls) {
-			File f = new File(url.toURI());
-			String p = f.getAbsolutePath();
-			if (!f.isFile() || !f.exists()) {
-				if (!lastModif.containsKey(p)) {
-					lastModif.put(p, System.currentTimeMillis());
-					try (InputStream fin = url.openStream()) {
-						h.deal(fin);
-					} catch (Exception e) {
-						Log.printStack(e);
-					}
+			final String p = url.getPath();
+			if (!lastModif.containsKey(p)) {
+				lastModif.put(p, System.currentTimeMillis());
+				try (InputStream fin = url.openStream()) {
+					h.deal(fin);
+				} catch (Exception e) {
+					Log.printStack(e);
 				}
 				continue;
 			}
+			if (!"file".equals(url.getProtocol())) {
+				continue;
+			}
+			File f = new File(url.toURI());
 			Long modify = lastModif.get(p);
-			if (modify == null || f.lastModified() > modify) {
+			if (f.lastModified() > modify) {
 				lastModif.put(p, f.lastModified());
 				if (showLog) {
-					Log.get("sumk.SYS").info("##{} changed at {}", f, Instant.ofEpochMilli(lastModif.get(p)));
+					Log.get("sumk.SYS").info("##{} changed at {}", f.getName(), Instant.ofEpochMilli(lastModif.get(p)));
 				}
 				try (InputStream fin = url.openStream()) {
 					h.deal(fin);

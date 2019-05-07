@@ -15,6 +15,7 @@
  */
 package org.yx.util;
 
+import org.yx.common.GsonHelper;
 import org.yx.common.lock.Key;
 import org.yx.common.lock.Lock;
 import org.yx.common.lock.SLock;
@@ -23,14 +24,16 @@ import org.yx.util.secury.AESEncry;
 import org.yx.util.secury.Encry;
 import org.yx.util.secury.MD5Utils;
 
+import com.google.gson.Gson;
+
 public abstract class S {
 
 	/**
 	 * AES加解密
 	 */
-	public static Encry aes = new AESEncry();
+	public static final Encry aes = new AESEncry();
 
-	public static class MD5 {
+	public static final class MD5 {
 
 		public static String encrypt(byte[] data) throws Exception {
 			return MD5Utils.encrypt(data);
@@ -94,5 +97,7 @@ public abstract class S {
 
 	}
 
-	public static BeanConverter beans = new BeanConverter();
+	public static final BeanConverter beans = new BeanConverter();
+
+	public static final Gson json = GsonHelper.gson("sumk");
 }

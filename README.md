@@ -4,5 +4,6 @@
 * [详情说明请点击这里](https://www.oschina.net/p/sumk)
 * [入门教程参见这里](https://github.com/youtongluan/sumk-server-demo)
 * [这是日志工程](https://github.com/youtongluan/sumk-log)
+* [代码自动生成工具](https://github.com/youtongluan/sumk-codetool)
 
 ### 作者：游夏。QQ：3205207767

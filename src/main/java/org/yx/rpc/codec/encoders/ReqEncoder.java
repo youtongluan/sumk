@@ -17,11 +17,13 @@ package org.yx.rpc.codec.encoders;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.yx.annotation.Bean;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
 
+@Bean
 public class ReqEncoder implements SumkMinaEncoder {
 
 	@Override

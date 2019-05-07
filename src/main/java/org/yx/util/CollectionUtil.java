@@ -36,13 +36,6 @@ import org.yx.conf.AppInfo;
  */
 public class CollectionUtil {
 
-	/**
-	 * 生成一个java.util.ArrayList对象
-	 * 
-	 * @param a
-	 *            列表中的元素
-	 * @return java.util.ArrayList对象
-	 */
 	@SafeVarargs
 	public static <T> List<T> list(T... a) {
 		List<T> list = new ArrayList<>();
@@ -50,13 +43,6 @@ public class CollectionUtil {
 		return list;
 	}
 
-	/**
-	 * 生成一个java.util.HashSet对象
-	 * 
-	 * @param a
-	 *            set中的元素
-	 * @return java.util.HashSet对象
-	 */
 	@SafeVarargs
 	public static <T> Set<T> hashSet(T... a) {
 		Set<T> set = new HashSet<>();
@@ -221,13 +207,6 @@ public class CollectionUtil {
 		return ret;
 	}
 
-	/**
-	 * 不为null
-	 * 
-	 * @param source
-	 * @param prefix
-	 * @return
-	 */
 	public static <T> Map<String, T> subMap(Map<String, T> source, String prefix) {
 		int len = prefix.length();
 		Map<String, T> map = new HashMap<>();

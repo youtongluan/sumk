@@ -36,6 +36,7 @@ public class BeanFactory extends AbstractBeanListener {
 
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
+		this.valid = true;
 		this.cachedScan = AppInfo.getBoolean("sumk.ioc.cached.enable", true);
 		this.useRedisAsCache = AppInfo.getBoolean("sumk.dao.cache", true);
 		excludeMatcher = MatcherFactory.createWildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);

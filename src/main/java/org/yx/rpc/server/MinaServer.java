@@ -28,6 +28,7 @@ import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.slf4j.Logger;
+import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.rpc.SoaExcutors;
@@ -70,7 +71,7 @@ public class MinaServer implements Runnable {
 			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", false));
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
-			chain.addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+			chain.addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 
 			if (useExcutor) {
 

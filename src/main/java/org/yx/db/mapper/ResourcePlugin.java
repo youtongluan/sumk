@@ -21,7 +21,6 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
 import org.yx.common.SumkLogs;
@@ -50,7 +49,6 @@ public class ResourcePlugin implements Plugin {
 			return;
 		}
 		Map<String, SqlParser> sqlMap = new HashMap<>();
-		Logger logger = Log.get("sumk.db.sql");
 		try {
 			DocumentBuilderFactory dbf = SqlHolder.documentBuilderFactory().get();
 			for (Map.Entry<String, byte[]> entry : inputMap.entrySet()) {
@@ -59,11 +57,11 @@ public class ResourcePlugin implements Plugin {
 				if (bs == null || bs.length == 0) {
 					continue;
 				}
-				logger.debug("开始解析sql文件: {},文件长度:{}", fileName, bs.length);
+
 				SqlXmlParser.parseXml(sqlMap, dbf, fileName, new ByteArrayInputStream(bs));
 			}
 		} catch (Exception e) {
-			logger.error(e.toString(), e);
+			Log.get("sumk.db.sql").error(e.toString(), e);
 			return;
 		}
 		SqlHolder.setSQLS(sqlMap);

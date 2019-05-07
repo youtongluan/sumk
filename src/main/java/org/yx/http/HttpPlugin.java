@@ -23,6 +23,7 @@ import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
+import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.handler.HttpHandlerChain;
@@ -91,7 +92,7 @@ public class HttpPlugin implements Plugin {
 			if (port < 1) {
 				return;
 			}
-			String nojetty = "sumk.http.nojetty";
+			String nojetty = StartConstants.NOJETTY;
 			if (StartContext.inst.get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
 				return;
 			}

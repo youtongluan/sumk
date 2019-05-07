@@ -17,45 +17,25 @@ package org.yx.rpc.codec;
 
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-import org.yx.common.scaner.ClassScaner;
-import org.yx.conf.AppInfo;
+import org.yx.annotation.Bean;
+import org.yx.annotation.Inject;
 import org.yx.conf.Profile;
 import org.yx.log.Log;
 import org.yx.rpc.codec.decoders.SumkMinaDecoder;
 
+@Bean
 public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 
-	private Charset charset = Profile.CHARSET_DEFAULT;
+	private static final Charset charset = Profile.CHARSET_DEFAULT;
 
-	private SumkMinaDecoder[] decoders = new SumkMinaDecoder[0];
-
-	public SumkProtocolDecoder() {
-		try {
-			Collection<Class<? extends SumkMinaDecoder>> clzs = ClassScaner
-					.listSubClassesInSamePackage(SumkMinaDecoder.class);
-			List<SumkMinaDecoder> list = new ArrayList<>(clzs.size());
-			for (Class<? extends SumkMinaDecoder> clz : clzs) {
-				Log.get("sumk.rpc").trace("{} inited", clz.getName());
-				list.add(clz.newInstance());
-			}
-			this.decoders = list.toArray(new SumkMinaDecoder[list.size()]);
-		} catch (Exception e) {
-			Log.printStack("sumk.rpc", e);
-			if (AppInfo.getBoolean("rpc.exitOnError", true)) {
-				System.exit(-1);
-			}
-		}
-
-	}
+	@Inject
+	private SumkMinaDecoder[] decoders;
 
 	private Object deserialize(int protocol, String message) throws ProtocolDecoderException {
 		for (SumkMinaDecoder decoder : this.decoders) {

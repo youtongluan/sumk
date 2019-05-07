@@ -23,8 +23,8 @@ import java.util.function.Supplier;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.yx.conf.AppInfo;
+import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
-import org.yx.db.kit.LocalXmlFileLoader;
 import org.yx.exception.SumkException;
 
 public class SqlHolder {
@@ -43,7 +43,7 @@ public class SqlHolder {
 		return dbf;
 	};
 
-	private static Supplier<MultiResourceLoader> resourceLoader = () -> new LocalXmlFileLoader(
+	private static Supplier<MultiResourceLoader> resourceLoader = new LocalMultiResourceLoaderSupplier(
 			AppInfo.get("sumk.db.sql.path", AppInfo.CLASSPATH_URL_PREFIX + "sql"));
 
 	public static Supplier<MultiResourceLoader> resourceLoader() {

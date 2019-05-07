@@ -13,8 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.mapper;
+package org.yx.db.visit;
 
-public class XmlSql {
+import org.yx.db.sql.MapedSql;
+import org.yx.db.sql.MapedSql.JsonWriterVisitor;
 
+public interface SqlLog {
+	void log(MapedSql maped, JsonWriterVisitor visitor);
 }

@@ -48,6 +48,7 @@ public final class Rpc {
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Log.get("sumk.rpc").info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();
+			ReqSession.init();
 			strated = true;
 		} catch (Exception e) {
 			throw SumkException.create(e);

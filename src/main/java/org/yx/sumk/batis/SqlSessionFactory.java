@@ -33,8 +33,8 @@ import org.apache.ibatis.transaction.managed.ManagedTransaction;
 import org.yx.bean.IOC;
 import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
+import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
-import org.yx.db.kit.LocalXmlFileLoader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -63,7 +63,7 @@ public class SqlSessionFactory {
 		return sessionFactory.sqlParse();
 	}
 
-	private static Supplier<MultiResourceLoader> resourceLoader = () -> new LocalXmlFileLoader(
+	private static Supplier<MultiResourceLoader> resourceLoader = new LocalMultiResourceLoaderSupplier(
 			AppInfo.get("sumk.db.mybatis.path", AppInfo.CLASSPATH_URL_PREFIX + "batis"));
 
 	public static void resourceLoader(Supplier<MultiResourceLoader> resourceLoader) {

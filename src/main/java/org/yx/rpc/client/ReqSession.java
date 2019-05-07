@@ -25,6 +25,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.yx.bean.IOC;
 import org.yx.common.Host;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
@@ -42,12 +43,15 @@ public class ReqSession {
 	private final Lock lock = new ReentrantLock();
 	private static final int CONNECT_TIMEOUT = AppInfo.getInt("soa.connect.timeout", 5000);
 
-	static {
+	public synchronized static void init() {
+		if (connector != null) {
+			return;
+		}
 		try {
 			connector = new NioSocketConnector();
 			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
 			connector.setHandler(new ClientHandler());
-			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(SumkCodecFactory.factory()));
+			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 			connector.getFilterChain().addLast("exec", new ExecutorFilter(SoaExcutors.CLINET));
 		} catch (Exception e) {
 			Log.get("sumk.rpc").error(e.getMessage(), e);

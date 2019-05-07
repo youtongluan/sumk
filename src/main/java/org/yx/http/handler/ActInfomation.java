@@ -26,11 +26,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
+import org.yx.common.GsonHelper;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.rpc.RpcActionHolder;
-import org.yx.util.JsonUtil;
 import org.yx.util.StringUtil;
 import org.yx.util.secury.MD5Utils;
 
@@ -56,7 +56,7 @@ public class ActInfomation extends HttpServlet {
 			}
 		} catch (Exception e) {
 		}
-		GsonBuilder builder = JsonUtil.gsonBuilder("sumk.acts");
+		GsonBuilder builder = GsonHelper.builder("sumk.acts");
 		boolean pretty = false;
 		if ("1".equals(req.getParameter("pretty"))) {
 			builder.setPrettyPrinting();

@@ -17,7 +17,7 @@ package org.yx.util;
 
 import java.io.File;
 import java.net.URISyntaxException;
-import java.util.List;
+import java.util.Collection;
 
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
@@ -31,7 +31,7 @@ public class FileUtil {
 	 * @param parent
 	 *            目录
 	 */
-	public static void listAllSubFiles(List<File> filelist, File parent) {
+	public static void listAllSubFiles(Collection<File> filelist, File parent) {
 		File[] files = parent.listFiles();
 		if (files != null) {
 			for (File f : files) {

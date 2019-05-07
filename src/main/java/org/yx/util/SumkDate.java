@@ -673,11 +673,11 @@ public final class SumkDate implements Comparable<SumkDate> {
 		return of(this.toLocalDateTime().plus(mils, ChronoUnit.MILLIS));
 	}
 
-	public static String toString(Date d) {
+	public static String stringOf(Date d) {
 		return d == null ? "null" : of(d).toString();
 	}
 
-	public static String toString(LocalDateTime d) {
+	public static String stringOf(LocalDateTime d) {
 		return d == null ? "null" : of(d).toString();
 	}
 }

@@ -22,15 +22,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.yx.db.sql.MapedSql;
+import org.yx.db.sql.MapedSql.JsonWriterVisitor;
+import org.yx.exception.SumkException;
 import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
 
 public class SumkStatement {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
-	private static final Logger LOG_SQL_JSON = Log.get("sumk.sql.json");
+	private static SqlLog sqlLog = new SqlLogImpl();
 	private static CodeLineMarker marker = new CodeLineMarker("org.yx.db.");
 
 	public static CodeLineMarker getMarker() {
@@ -41,7 +44,11 @@ public class SumkStatement {
 		SumkStatement.marker = Objects.requireNonNull(marker);
 	}
 
-	private PreparedStatement statement;
+	public static void setSqlLog(SqlLog sqlLog) {
+		SumkStatement.sqlLog = Objects.requireNonNull(sqlLog);
+	}
+
+	private final AtomicReference<PreparedStatement> statement;
 	private final MapedSql maped;
 	private final long beginTime;
 	private int sqlTime;
@@ -56,13 +63,17 @@ public class SumkStatement {
 	}
 
 	private SumkStatement(PreparedStatement statement, MapedSql maped) throws Exception {
-		this.statement = statement;
+		this.statement = new AtomicReference<>(statement);
 		this.maped = maped;
 		beginTime = System.currentTimeMillis();
 		attachParams();
 	}
 
 	public int executeUpdate() throws SQLException {
+		PreparedStatement statement = this.statement.get();
+		if (statement == null) {
+			SumkException.throwException(234132, "连接已关闭");
+		}
 		modifyCount = 0;
 		try {
 			modifyCount = statement.executeUpdate();
@@ -76,6 +87,10 @@ public class SumkStatement {
 	}
 
 	public ResultSet executeQuery() throws Exception {
+		PreparedStatement statement = this.statement.get();
+		if (statement == null) {
+			SumkException.throwException(234132, "连接已关闭");
+		}
 		ResultSet ret = null;
 		try {
 			ret = statement.executeQuery();
@@ -89,25 +104,15 @@ public class SumkStatement {
 	}
 
 	private void close(Exception e) {
-		PreparedStatement statement = null;
-		synchronized (this) {
-			statement = this.statement;
-			if (statement == null) {
-				return;
-			}
-			this.statement = null;
-		}
-		if (Log.isON(LOG_SQL_JSON)) {
-			try {
-				LOG_SQL_JSON.trace(marker, maped.toJson(writer -> {
-					writer.name("sqlTime").value(sqlTime);
-					writer.name("error").value(e.getMessage());
-				}));
-			} catch (Exception e2) {
-				Log.get("sumk.db.error").error(e.getMessage(), e);
-			}
+		PreparedStatement statement = this.statement.getAndSet(null);
+		if (statement == null) {
+			return;
 		}
 		try {
+			sqlLog.log(maped, writer -> {
+				writer.name("sqlTime").value(sqlTime);
+				writer.name("error").value(e.getMessage());
+			});
 			statement.close();
 		} catch (SQLException e1) {
 			Log.get("sumk.db").error(e1.getMessage(), e1);
@@ -115,29 +120,19 @@ public class SumkStatement {
 	}
 
 	public synchronized void close() throws SQLException {
-		PreparedStatement statement = null;
-		synchronized (this) {
-			statement = this.statement;
-			if (statement == null) {
-				return;
-			}
-			this.statement = null;
+		PreparedStatement statement = this.statement.getAndSet(null);
+		if (statement == null) {
+			return;
 		}
-		if (Log.isON(LOG_SQL_JSON)) {
-			int totalTime = (int) (System.currentTimeMillis() - beginTime);
-			try {
-				LOG_SQL_JSON.trace(marker, maped.toJson(writer -> {
-					writer.name("sqlTime").value(sqlTime);
-					writer.name("totalTime").value(totalTime);
-					if (modifyCount > -1) {
-						writer.name("modifyCount").value(modifyCount);
-					}
-				}));
-			} catch (Exception e) {
-				Log.get("sumk.db.error").error(e.getMessage(), e);
-			}
-		}
+		int totalTime = (int) (System.currentTimeMillis() - beginTime);
 		try {
+			sqlLog.log(maped, writer -> {
+				writer.name("sqlTime").value(sqlTime);
+				writer.name("totalTime").value(totalTime);
+				if (modifyCount > -1) {
+					writer.name("modifyCount").value(modifyCount);
+				}
+			});
 			statement.close();
 		} catch (SQLException e1) {
 			Log.get("sumk.db").error(e1.getMessage(), e1);
@@ -145,9 +140,14 @@ public class SumkStatement {
 	}
 
 	private void attachParams() throws Exception {
+		PreparedStatement statement = this.statement.get();
+		if (statement == null) {
+			SumkException.throwException(234132, "连接已关闭");
+		}
 		List<Object> params = maped.getParamters();
-		if (params != null && params.size() > 0) {
-			for (int i = 0; i < params.size(); i++) {
+		int size = params.size();
+		if (params != null && size > 0) {
+			for (int i = 0; i < size; i++) {
 				statement.setObject(i + 1, params.get(i));
 			}
 		}
@@ -167,6 +167,27 @@ public class SumkStatement {
 	}
 
 	public ResultSet getGeneratedKeys() throws SQLException {
+		PreparedStatement statement = this.statement.get();
+		if (statement == null) {
+			SumkException.throwException(234132, "连接已关闭");
+		}
 		return statement.getGeneratedKeys();
+	}
+
+	private static class SqlLogImpl implements SqlLog {
+
+		private static final Logger LOG_SQL_JSON = Log.get("sumk.sql.json");
+
+		@Override
+		public void log(MapedSql maped, JsonWriterVisitor visitor) {
+			if (LOG_SQL_JSON.isTraceEnabled()) {
+				try {
+					LOG_SQL_JSON.trace(marker, maped.toJson(visitor));
+				} catch (Exception e2) {
+					Log.get("sumk.db.error").error(e2.getMessage(), e2);
+				}
+			}
+		}
+
 	}
 }

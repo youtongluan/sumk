@@ -30,7 +30,7 @@ import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Request;
-import org.yx.util.JsonUtil;
+import org.yx.util.S;
 
 public class ServerHandler extends IoHandlerAdapter {
 	private Logger log = Log.get("sumk.rpc.server");
@@ -94,7 +94,7 @@ public class ServerHandler extends IoHandlerAdapter {
 					Response ret = h.handle(req);
 					if (ret != null) {
 						if (log.isTraceEnabled()) {
-							log.trace("req:{}\nresp:{}", JsonUtil.toJson(message), JsonUtil.toJson(ret));
+							log.trace("req:{}\nresp:{}", S.json.toJson(message), S.json.toJson(ret));
 						}
 						session.write(ret);
 						return;

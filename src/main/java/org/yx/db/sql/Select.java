@@ -142,7 +142,7 @@ public final class Select extends SelectBuilder {
 	 *            字段名
 	 * @param value
 	 *            值，不会自动添加%
-	 * @return
+	 * @return 当前对象
 	 */
 	public Select like(String key, Object value) {
 		return setCompare(LIKE, key, value);

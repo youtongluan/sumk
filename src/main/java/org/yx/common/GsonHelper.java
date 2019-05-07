@@ -13,26 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util;
+package org.yx.common;
 
-import java.io.Reader;
-import java.lang.reflect.Type;
 import java.util.Date;
-import java.util.Objects;
 
 import org.yx.common.date.DateAdapters;
 import org.yx.common.date.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
 import org.yx.db.dao.Pojo;
 import org.yx.log.Log;
+import org.yx.util.StringUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.LongSerializationPolicy;
 
-public final class JsonUtil {
+public final class GsonHelper {
 
-	public static GsonBuilder gsonBuilder(String module) {
+	public static GsonBuilder builder(String module) {
 		if (module == null || module.isEmpty()) {
 			module = "sumk";
 		}
@@ -71,56 +69,11 @@ public final class JsonUtil {
 		return gb;
 	}
 
-	private static Gson createGson() {
-		return gsonBuilder(null).create();
-	}
-
 	public static Gson gson(String module) {
-		return gsonBuilder(module).create();
+		return builder(module).create();
 	}
 
-	private static Gson gson = createGson();
-
-	static void setGson(Gson json) {
-		JsonUtil.gson = Objects.requireNonNull(json);
-	}
-
-	public static Gson getGson() {
-		return gson;
-	}
-
-	public static String toJson(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	public static String toJson(Object obj, Type type) {
-		return gson.toJson(obj, type);
-	}
-
-	public static void toJson(Object obj, Type type, Appendable writer) {
-		gson.toJson(obj, type, writer);
-	}
-
-	public static <T> T fromJson(String json, Class<T> clz) {
-		return gson.fromJson(json, clz);
-	}
-
-	public static <T> T fromJson(String json, Type type) {
-		return gson.fromJson(json, type);
-	}
-
-	public static <T> T fromJson(Reader reader, Class<T> clz) {
-		return gson.fromJson(reader, clz);
-	}
-
-	/**
-	 * 不能用于集合、数组
-	 * 
-	 * @param source
-	 *            源
-	 * @return 结果
-	 */
-	public static Object copyObject(Object source) {
+	public static Object copyObject(Gson gson, Object source) {
 		if (source == null) {
 			return null;
 		}
@@ -133,8 +86,8 @@ public final class JsonUtil {
 				}
 			}
 		}
-		String json = toJson(source);
-		return fromJson(json, source.getClass());
+		String json = gson.toJson(source);
+		return gson.fromJson(json, source.getClass());
 	}
 
 }

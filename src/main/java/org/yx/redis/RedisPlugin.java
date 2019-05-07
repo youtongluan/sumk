@@ -13,32 +13,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.codec;
+package org.yx.redis;
 
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFactory;
-import org.apache.mina.filter.codec.ProtocolDecoder;
-import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.yx.annotation.Bean;
-import org.yx.annotation.Inject;
+import org.yx.bean.Plugin;
+import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
+import org.yx.log.Log;
 
 @Bean
-public class SumkCodecFactory implements ProtocolCodecFactory {
-
-	@Inject
-	private ProtocolEncoder encoder;
-
-	@Inject
-	private ProtocolDecoder decoder;
+public class RedisPlugin implements Plugin {
 
 	@Override
-	public ProtocolEncoder getEncoder(IoSession session) throws Exception {
-		return encoder;
+	public void startAsync() {
+		try {
+			if (AppInfo.subMap("s.redis.").isEmpty()) {
+				return;
+			}
+			Class.forName("redis.clients.jedis.Jedis");
+		} catch (Throwable e) {
+			Log.get("sumk.redis").warn("Jedis is not in use because of " + e.getMessage());
+			return;
+		}
+		try {
+			ConsoleLog.get("sumk.SYS").debug("redis pool init");
+			RedisLoader.init();
+		} catch (Exception e) {
+			Log.get("sumk.redis").error(e.getMessage(), e);
+			System.exit(-1);
+		}
 	}
 
 	@Override
-	public ProtocolDecoder getDecoder(IoSession session) throws Exception {
-		return decoder;
+	public void stop() {
+
 	}
 
 }

@@ -16,10 +16,12 @@
 package org.yx.rpc.codec.decoders;
 
 import org.apache.mina.filter.codec.ProtocolDecoderException;
+import org.yx.annotation.Bean;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 
+@Bean
 public class OrderedParamDecoder implements SumkMinaDecoder {
 
 	@Override

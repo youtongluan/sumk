@@ -56,14 +56,6 @@ public final class NamedExecutor {
 		return new InnerSqlBuilder(sql, map);
 	}
 
-	/**
-	 * 
-	 * @param sql
-	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
-	 * @param map
-	 *            参数
-	 * @return sql执行结果
-	 */
 	public static int execute(SqlParser sql, Map<String, Object> map) {
 		try {
 			return Visitors.modifyVisitor.visit(createSqlBuilder(sql, map));
@@ -80,14 +72,6 @@ public final class NamedExecutor {
 		}
 	}
 
-	/**
-	 * 
-	 * @param sql
-	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
-	 * @param map
-	 *            参数
-	 * @return 结果集
-	 */
 	public static List<Map<String, Object>> list(SqlParser sql, Map<String, Object> map) {
 		try {
 			return Visitors.queryVisitor.visit(createSqlBuilder(sql, map));
@@ -104,14 +88,6 @@ public final class NamedExecutor {
 		}
 	}
 
-	/**
-	 * 
-	 * @param sql
-	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
-	 * @param map
-	 *            参数
-	 * @return 结果集
-	 */
 	public static List<?> singleColumnList(SqlParser sql, Map<String, Object> map) {
 		try {
 			return Visitors.singleListQueryVisitor.visit(createSqlBuilder(sql, map));
@@ -120,13 +96,6 @@ public final class NamedExecutor {
 		}
 	}
 
-	/**
-	 * @param sql
-	 *            这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写
-	 * @param map
-	 *            参数
-	 * @return 记录数
-	 */
 	public static int count(SqlParser sql, Map<String, Object> map) {
 		try {
 			List<?> list = Visitors.singleListQueryVisitor.visit(createSqlBuilder(sql, map));

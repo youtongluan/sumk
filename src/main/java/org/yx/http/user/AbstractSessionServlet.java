@@ -32,7 +32,7 @@ import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 import org.yx.util.secury.Base64Util;
 
-public abstract class AbstractSessionFilter implements LoginServlet {
+public abstract class AbstractSessionServlet implements LoginServlet {
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -62,27 +62,7 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			}
 			outputKey(resp, key);
 			if (HttpSettings.isCookieEnable()) {
-				StringBuilder cookie = new StringBuilder();
-				String contextPath = req.getContextPath();
-
-				if (!contextPath.startsWith("/")) {
-					contextPath = "/" + contextPath;
-				}
-				StringBuilder attr = new StringBuilder().append(";Path=").append(contextPath);
-				cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
-
-				resp.addHeader("Set-Cookie", cookie.toString());
-				if (StringUtil.isNotEmpty(userToken)) {
-					cookie.setLength(0);
-					cookie.append(HttpHeader.TOKEN).append('=').append(userToken).append(attr);
-					resp.addHeader("Set-Cookie", cookie.toString());
-				}
-				String type = this.getType();
-				if (StringUtil.isNotEmpty(type)) {
-					cookie.setLength(0);
-					cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
-					resp.addHeader("Set-Cookie", cookie.toString());
-				}
+				setCookie(req, resp, sid, userToken);
 			}
 
 			resp.getOutputStream().write("\t\n".getBytes());
@@ -93,6 +73,30 @@ public abstract class AbstractSessionFilter implements LoginServlet {
 			Log.printStack(e);
 		}
 
+	}
+
+	protected void setCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String userToken) {
+		StringBuilder cookie = new StringBuilder();
+		String contextPath = req.getContextPath();
+
+		if (!contextPath.startsWith("/")) {
+			contextPath = "/" + contextPath;
+		}
+		StringBuilder attr = new StringBuilder().append(";Path=").append(contextPath);
+		cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
+
+		resp.addHeader("Set-Cookie", cookie.toString());
+		if (StringUtil.isNotEmpty(userToken)) {
+			cookie.setLength(0);
+			cookie.append(HttpHeader.TOKEN).append('=').append(userToken).append(attr);
+			resp.addHeader("Set-Cookie", cookie.toString());
+		}
+		String type = this.getType();
+		if (StringUtil.isNotEmpty(type)) {
+			cookie.setLength(0);
+			cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
+			resp.addHeader("Set-Cookie", cookie.toString());
+		}
 	}
 
 	protected void outputKey(HttpServletResponse resp, byte[] key) throws IOException {

@@ -18,16 +18,16 @@ package org.yx.util;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.user.WebSessions;
 import org.yx.http.user.SessionObject;
+import org.yx.http.user.WebSessions;
 
 public final class HttpUtil {
 	/**
 	 * 从session中获取对象
 	 * 
 	 * @param clz
-	 *            session中对象的class类型
-	 * @return session中存储的对象
+	 *            用户session中对象的class类型
+	 * @return 用户session中存储的对象
 	 */
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
 		return WebSessions.getUserObject(clz);

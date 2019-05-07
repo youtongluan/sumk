@@ -15,46 +15,35 @@
  */
 package org.yx.bean;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.yx.common.StartConstants;
 import org.yx.listener.Listener;
 import org.yx.listener.SumkEvent;
-import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
 public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 
-	protected List<String> packages = new ArrayList<String>(128);
-	protected boolean valid = false;
+	protected final String[] packages;
+	protected boolean valid;
 
 	public AbstractBeanListener(String packs) {
-		if (StringUtil.isEmpty(packs)) {
-			return;
-		}
-		String[] ps = StringUtil.toLatin(packs).split(",");
+		Set<String> pks = new HashSet<>();
+		String[] ps = packs == null ? new String[0] : StringUtil.toLatin(packs).split(",");
 		for (String p : ps) {
-			addPackage(p);
+			p = p.trim();
+			if (p.isEmpty()) {
+				continue;
+			}
+			if (!p.endsWith(".")) {
+				p += ".";
+			}
+			pks.add(p);
 		}
-		valid = this.packages.size() > 0;
-	}
-
-	public boolean addPackage(String p) {
-		p = p.trim();
-		if (p.isEmpty()) {
-			return false;
-		}
-		List<String> ps = this.packages;
-		ps = new ArrayList<>(ps);
-		String p2 = p + ".";
-		if (!ps.contains(p2)) {
-			ps.add(p2);
-			this.packages = ps;
-			Log.get("sumk.bean").trace("add package {}", p);
-			return true;
-		}
-		return false;
+		valid = pks.size() > 0;
+		pks.add(StartConstants.INNER_PACKAGE + ".");
+		this.packages = pks.toArray(new String[pks.size()]);
 	}
 
 	@Override
@@ -66,11 +55,7 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 			return false;
 		}
 		String clzName = ((BeanEvent) event).clz().getName();
-		if (clzName.startsWith(StartConstants.INNER_PACKAGE + ".")) {
-			return true;
-		}
-		List<String> packs = this.packages;
-		for (String pack : packs) {
+		for (String pack : packages) {
 			if (clzName.startsWith(pack)) {
 				return true;
 			}

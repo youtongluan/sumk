@@ -32,7 +32,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.yx.util.JsonUtil;
+import org.yx.util.S;
 
 public class HttpPressTest {
 	@Test
@@ -40,13 +40,13 @@ public class HttpPressTest {
 		String charset = "GBK";
 		HttpClient client = HttpClientBuilder.create().setMaxConnTotal(500).setMaxConnPerRoute(200).build();
 		ExecutorService executor=Executors.newFixedThreadPool(100);
-		HttpPost post = new HttpPost("http://localhost:8080/intf/webserver/demo?act=echo");
+		HttpPost post = new HttpPost("http://localhost:8080/rest/echo");
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		StringEntity se = new StringEntity(JsonUtil.toJson(json), charset);
+		StringEntity se = new StringEntity(S.json.toJson(json), charset);
 		post.setEntity(se);
-		System.out.println("开始压测，请耐心等待30秒左右。。。");
+		System.out.println("开始压测，请耐心等待10秒左右。。。");
 		long begin=System.currentTimeMillis();
 		int count=100000;
 		for(int i=0;i<count;i++){

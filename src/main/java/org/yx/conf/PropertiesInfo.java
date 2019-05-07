@@ -45,7 +45,7 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 	public URL[] listFile() {
 		URL url = PropertiesInfo.class.getClassLoader().getResource(fileName);
 		if (url == null) {
-			Log.get(PropertiesInfo.class).info("{} cannot found", fileName);
+			System.err.println(fileName + " cannot found");
 			return null;
 		}
 		return new URL[] { url };

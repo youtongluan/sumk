@@ -17,9 +17,9 @@ package org.yx.redis;
 
 public class Counter {
 
-	private volatile long visitCount = 0;
+	private long visitCount = 0;
 
-	private volatile long cacheCount = 0;
+	private long cacheCount = 0;
 
 	private int interval;
 

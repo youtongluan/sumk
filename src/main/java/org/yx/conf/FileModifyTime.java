@@ -13,37 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.conf;
 
-import java.lang.reflect.Type;
+class FileModifyTime {
 
-import org.yx.common.GsonHelper;
+	final String file;
+	long lastModify;
 
-import com.google.gson.Gson;
-
-public final class RpcGson {
-
-	private static Gson gson = GsonHelper.builder("rpc")
-
-			.create();
-
-	public static Gson getGson() {
-		return gson;
+	public FileModifyTime(String file, long lastModify) {
+		this.file = file;
+		this.lastModify = lastModify;
 	}
 
-	public static void setGson(Gson gson) {
-		RpcGson.gson = gson;
+	@Override
+	public String toString() {
+		return file + ":" + lastModify;
 	}
 
-	public static String toJson(Object obj) {
-		return gson.toJson(obj);
-	}
-
-	public static <T> T fromJson(String json, Class<T> clz) {
-		return gson.fromJson(json, clz);
-	}
-
-	public static <T> T fromJson(String json, Type type) {
-		return gson.fromJson(json, type);
-	}
 }

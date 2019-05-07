@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.yx.common.expression.Expressions;
 import org.yx.common.expression.ParamExpression;
+import org.yx.common.expression.SimpleExpression;
 import org.yx.exception.SumkException;
 import org.yx.util.StringUtil;
 
@@ -58,8 +59,9 @@ public final class SqlParsers {
 			if (s.isEmpty()) {
 				continue;
 			}
-			if (!list.contains(s)) {
-				list.add(Expressions.createSimpleExpression(s, matchType));
+			SimpleExpression exp = Expressions.createSimpleExpression(s, matchType);
+			if (!list.contains(exp)) {
+				list.add(exp);
 			}
 		}
 		return Expressions.booleanExpression(list, and);

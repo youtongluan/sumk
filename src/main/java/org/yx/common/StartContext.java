@@ -15,8 +15,8 @@
  */
 package org.yx.common;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
@@ -25,7 +25,7 @@ public class StartContext {
 
 	public static StartContext inst = new StartContext();
 
-	private Map<String, Object> map = new HashMap<>();
+	private Map<String, Object> map = new ConcurrentHashMap<>();
 
 	public void put(String key, Object obj) {
 		map.put(key, obj);
