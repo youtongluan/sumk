@@ -26,13 +26,14 @@ public class ReqToStringHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.data() == null) {
+		Object obj = ctx.data();
+		if (obj == null) {
 			return false;
 		}
-		if (!byte[].class.isInstance(ctx.data())) {
+		if (!byte[].class.isInstance(obj)) {
 			return false;
 		}
-		byte[] bs = (byte[]) ctx.data();
+		byte[] bs = (byte[]) obj;
 		String data = new String(bs, ctx.charset());
 		ctx.data(data);
 		return false;

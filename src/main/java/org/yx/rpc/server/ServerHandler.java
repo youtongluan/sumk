@@ -18,10 +18,12 @@ package org.yx.rpc.server;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.slf4j.Logger;
+import org.yx.bean.IOC;
 import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
@@ -29,20 +31,25 @@ import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
+import org.yx.rpc.codec.ProtocolDeserializer;
 import org.yx.rpc.codec.Request;
 import org.yx.util.S;
 
-public class ServerHandler extends IoHandlerAdapter {
+public class ServerHandler implements IoHandler {
+
+	private final ProtocolDeserializer deserializer;
+
 	private Logger log = Log.get("sumk.rpc.server");
-	private RequestHandler[] handlers;
+	private final RequestHandler[] handlers;
 
 	public ServerHandler(List<RequestHandler> handlers) {
 		this.handlers = handlers.toArray(new RequestHandler[0]);
+		deserializer = IOC.get(ProtocolDeserializer.class);
 	}
 
 	@Override
 	public void sessionCreated(IoSession session) {
-		Log.get("sumk.rpc.session").debug("create session:{}-{}", session.getServiceAddress(), session.getId());
+		log.debug("create session:{}-{}", session.getServiceAddress(), session.getId());
 	}
 
 	@Override
@@ -56,10 +63,11 @@ public class ServerHandler extends IoHandlerAdapter {
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
-		if (session.getIdleCount(status) > 10000) {
-			Log.get("sumk.rpc.session").debug("session:{}, idle:{},will close", session.getId(),
-					session.getIdleCount(status));
-			session.closeNow();
+		long time = System.currentTimeMillis() - session.getLastIoTime();
+		if (time > AppInfo.getLong(MinaServer.SOA_SESSION_IDLE, 60) * 1000) {
+			log.info("rpc session {} {} for {}ms,closed by this server", session.getId(), status,
+					session.getLastIoTime(), time);
+			session.closeOnFlush();
 		}
 	}
 
@@ -72,19 +80,23 @@ public class ServerHandler extends IoHandlerAdapter {
 		if (cause.getClass() == IOException.class && AppInfo.getBoolean("rpc.session.print_simple_error", true)) {
 			String msg = cause.getMessage();
 			if (msg != null && (msg.contains("连接") || msg.contains("connection"))) {
-				Log.get("sumk.rpc.session").debug("session:{},message:{}", session.getId(), cause.getMessage());
+				log.debug("session:{},message:{}", session.getId(), cause.getMessage());
 				return;
 			}
 		}
-		Log.get("sumk.rpc.session").error("session:" + session.getId() + ",message:" + cause.getMessage(), cause);
+		log.error(session + ",message:" + cause.getMessage(), cause);
 
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		try {
-			if (Request.class.isInstance(message)) {
-				final Request req = (Request) message;
+			Object obj = this.deserializer.deserialize(message);
+			if (obj == null) {
+				return;
+			}
+			if (Request.class.isInstance(obj)) {
+				final Request req = (Request) obj;
 				ThreadContext context = ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(),
 						ThreadContext.get().isTest());
 				context.userId(req.getUserId());
@@ -94,7 +106,7 @@ public class ServerHandler extends IoHandlerAdapter {
 					Response ret = h.handle(req);
 					if (ret != null) {
 						if (log.isTraceEnabled()) {
-							log.trace("req:{}\nresp:{}", S.json.toJson(message), S.json.toJson(ret));
+							log.trace("req:{}\nresp:{}", S.json.toJson(obj), S.json.toJson(ret));
 						}
 						session.write(ret);
 						return;
@@ -109,6 +121,20 @@ public class ServerHandler extends IoHandlerAdapter {
 				Log.printStack(e);
 			}
 		}
+
+	}
+
+	@Override
+	public void messageSent(IoSession session, Object message) throws Exception {
+	}
+
+	@Override
+	public void inputClosed(IoSession session) throws Exception {
+		session.closeNow();
+	}
+
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {
 
 	}
 }

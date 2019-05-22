@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.http.EncryUtil;
+import org.yx.http.HttpCiphers;
 
 public class AesDecodeHandler implements HttpHandler {
 
@@ -34,8 +34,7 @@ public class AesDecodeHandler implements HttpHandler {
 		if (bs == null) {
 			return false;
 		}
-		byte[] key = ctx.key();
-		byte[] data = EncryUtil.decrypt(bs, key);
+		byte[] data = HttpCiphers.getEncryptor().decrypt(bs, ctx);
 		ctx.data(data);
 		return false;
 	}

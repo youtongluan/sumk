@@ -21,6 +21,6 @@ import org.yx.main.SumkThreadPool;
 
 public class SoaExcutors {
 
-	public static final ExecutorService SERVER = SumkThreadPool.EXECUTOR;
-	public static final ExecutorService CLINET = SumkThreadPool.EXECUTOR;
+	public static ExecutorService SERVER = SumkThreadPool.EXECUTOR;
+	public static ExecutorService CLINET = SumkThreadPool.EXECUTOR;
 }

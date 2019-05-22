@@ -15,23 +15,38 @@
  */
 package org.yx.rpc.codec.decoders;
 
-import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.yx.annotation.Bean;
+import org.yx.conf.Profile;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
-import org.yx.rpc.server.Response;
+import org.yx.rpc.codec.Request;
 
 @Bean
-public class JsonResponseDecoder implements SumkMinaDecoder {
+public class OrderedParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public boolean accept(int protocol) {
-		return Protocols.hasFeature(protocol, Protocols.RESPONSE_JSON);
+		return Protocols.hasFeature(protocol, Protocols.REQ_PARAM_ORDER);
 	}
 
 	@Override
-	public Object decode(int protocol, String message) throws ProtocolDecoderException {
-		return RpcGson.fromJson(message, Response.class);
+	public Request decode(int protocol, byte[] data) {
+		String message = new String(data, Profile.UTF8);
+		String argLength = message.substring(0, 2);
+		message = message.substring(2);
+		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
+
+		Request req = RpcGson.fromJson(msgs[0], Request.class);
+		int len = Integer.parseInt(argLength);
+		if (len > 0) {
+			String[] params = new String[len];
+			for (int i = 0; i < len; i++) {
+				params[i] = msgs[i + 1];
+			}
+			req.setParamArray(params);
+		}
+		req.protocol(protocol);
+		return req;
 	}
 
 }

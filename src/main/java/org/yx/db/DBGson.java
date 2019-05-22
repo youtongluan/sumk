@@ -17,13 +17,15 @@ package org.yx.db;
 
 import java.lang.reflect.Type;
 
+import org.yx.common.ByteArrayTypeAdapter;
 import org.yx.common.GsonHelper;
 
 import com.google.gson.Gson;
 
 public class DBGson {
 
-	private static Gson gson = GsonHelper.gson("db");
+	private static Gson gson = GsonHelper.builder("db").registerTypeAdapter(byte[].class, ByteArrayTypeAdapter.inst)
+			.create();
 
 	public static Gson getGson() {
 		return gson;

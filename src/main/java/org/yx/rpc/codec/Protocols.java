@@ -39,14 +39,11 @@ public class Protocols {
 
 	public final static int MAX_LENGTH = 0x3FFFFFFF;
 
-	public final static int MAX_ONE = 0xF0;
-	public final static int MAX_TWO = 0xFF00;
+	public final static int MAX_ONE = 0xFF;
+	public final static int MAX_TWO = 0xFFFF;
 
 	public final static String LINE_SPLIT = "\n";
 
 	public final static int MAGIC = 0x8F000000;
 
-	public static void main(String[] args) {
-		System.out.println(Integer.toBinaryString(profile()));
-	}
 }

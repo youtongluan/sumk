@@ -42,6 +42,7 @@ import org.yx.common.date.SumkDateQuery;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
+import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
 public final class SumkDate implements Comparable<SumkDate> {
@@ -69,7 +70,7 @@ public final class SumkDate implements Comparable<SumkDate> {
 			for (Class<? extends SumkDateFormater> clz : clzs) {
 				Field f = clz.getField("inst");
 				if (f == null) {
-					Log.get(LOG_NAME).debug("{} has no inst field", clz.getName());
+					ConsoleLog.get(LOG_NAME).debug("{} has no inst field", clz.getName());
 					continue;
 				}
 				f.setAccessible(true);
@@ -77,16 +78,16 @@ public final class SumkDate implements Comparable<SumkDate> {
 			}
 			list.sort(null);
 			formaters = list.toArray(new SumkDateFormater[list.size()]);
-			if (Log.get(LOG_NAME).isDebugEnabled()) {
+			if (ConsoleLog.get(LOG_NAME).isDebugEnabled()) {
 				StringBuilder sb = new StringBuilder();
 				sb.append("formaters: ");
 				list.forEach(s -> {
 					sb.append(s.getClass().getSimpleName()).append("  ");
 				});
-				Log.get(LOG_NAME).debug(sb.toString());
+				ConsoleLog.get(LOG_NAME).debug(sb.toString());
 			}
 		} catch (Exception e) {
-			Log.printStack(LOG_NAME, e);
+			e.printStackTrace();
 			System.exit(-1);
 		}
 	}

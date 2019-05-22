@@ -5,18 +5,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.demo.member.Multikey;
-import org.yx.log.ConsoleLog;
-import org.yx.main.SumkServer;
 import org.yx.orm.MultikeyDao;
 
-public class MultiPrimaryTest {
+public class MultiPrimaryTest extends BaseOrmTest{
 
 	private MultikeyDao dao;
 
 	@Before
 	public void before() {
-		ConsoleLog.setDefaultLevel(ConsoleLog.DEBUG);
-		SumkServer.start("nosoa", "nohttp");
 		dao = IOC.get(MultikeyDao.class);
 	}
 

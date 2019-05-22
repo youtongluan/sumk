@@ -16,7 +16,6 @@
 package org.yx.rpc.codec;
 
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
@@ -25,16 +24,17 @@ import org.apache.mina.filter.codec.ProtocolEncoderException;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.yx.annotation.Bean;
 import org.yx.annotation.Inject;
+import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.rpc.codec.encoders.SumkMinaEncoder;
 
 @Bean
 public class SumkProtocolEncoder implements ProtocolEncoder {
 
-	private static final Charset charset = Profile.CHARSET_DEFAULT;
-
 	@Inject
 	private SumkMinaEncoder[] encoders;
+
+	private static int CHAR_BYTE = AppInfo.getInt("sumk.soa.charbyte", 3);
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
@@ -43,6 +43,7 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		}
 		if (String.class.isInstance(message)) {
 			encodeString(0, session, (String) message, out);
+			return;
 		}
 		Class<?> clz = message.getClass();
 		for (SumkMinaEncoder encoder : this.encoders) {
@@ -77,12 +78,13 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 			throws CharacterCodingException, ProtocolEncoderException {
 		code = code | Protocols.FORMAT_JSON;
 		int size = message.length();
-		int prefixLength = size <= (Protocols.MAX_ONE / 3) ? 1 : size <= (Protocols.MAX_TWO / 3) ? 2 : 4;
+		int prefixLength = size <= (Protocols.MAX_ONE / CHAR_BYTE) ? 1
+				: size <= (Protocols.MAX_TWO / CHAR_BYTE) ? 2 : 4;
 
-		IoBuffer buffer = IoBuffer.allocate((int) (size * 1.2) + 10).setAutoExpand(true);
+		IoBuffer buffer = IoBuffer.allocate((int) (size * 1.5) + 10).setAutoExpand(true);
 		putProtocol(code, buffer, prefixLength);
 
-		buffer.putPrefixedString(message, prefixLength, charset.newEncoder());
+		buffer.putPrefixedString(message, prefixLength, Profile.UTF8.newEncoder());
 		buffer.flip();
 
 		out.write(buffer);

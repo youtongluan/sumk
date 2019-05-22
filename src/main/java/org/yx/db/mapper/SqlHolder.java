@@ -20,8 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.yx.conf.AppInfo;
 import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
@@ -34,14 +32,7 @@ public class SqlHolder {
 		SQLS = sqls;
 	}
 
-	private static Supplier<DocumentBuilderFactory> documentBuilderFactory = () -> {
-		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-		dbf.setIgnoringComments(true);
-		dbf.setIgnoringElementContentWhitespace(true);
-		dbf.setExpandEntityReferences(false);
-		dbf.setCoalescing(true);
-		return dbf;
-	};
+	private static XmlBuilderFactory documentBuilderFactory = new XmlBuilderFactoryImpl();
 
 	private static Supplier<MultiResourceLoader> resourceLoader = new LocalMultiResourceLoaderSupplier(
 			AppInfo.get("sumk.db.sql.path", AppInfo.CLASSPATH_URL_PREFIX + "sql"));
@@ -54,11 +45,11 @@ public class SqlHolder {
 		SqlHolder.resourceLoader = Objects.requireNonNull(resourceLoader);
 	}
 
-	public static Supplier<DocumentBuilderFactory> documentBuilderFactory() {
+	public static XmlBuilderFactory documentBuilderFactory() {
 		return documentBuilderFactory;
 	}
 
-	public static void documentBuilderFactory(Supplier<DocumentBuilderFactory> documentBuilderFactory) {
+	public static void documentBuilderFactory(XmlBuilderFactory documentBuilderFactory) {
 		SqlHolder.documentBuilderFactory = Objects.requireNonNull(documentBuilderFactory);
 	}
 

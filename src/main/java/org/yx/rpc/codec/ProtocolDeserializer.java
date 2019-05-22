@@ -13,22 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.rpc.codec;
 
-import org.yx.util.secury.AESEncry;
-import org.yx.util.secury.Encry;
+public interface ProtocolDeserializer {
 
-public class EncryUtil {
-
-	private static Encry encry = new AESEncry();
-
-	public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return encry.encrypt(contentBytes, key);
-	}
-
-	public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return encry.decrypt(contentBytes, key);
-
-	}
-
+	Object deserialize(Object obj) throws Exception;
 }

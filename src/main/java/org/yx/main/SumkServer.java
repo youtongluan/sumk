@@ -55,7 +55,14 @@ public class SumkServer {
 	}
 
 	public static void main(String[] args) {
+		long begin = System.currentTimeMillis();
 		start(Arrays.asList(args));
+		Log.get("sumk.SYS").info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
+		try {
+			Thread.currentThread().join();
+		} catch (InterruptedException e) {
+			Log.printStack(e);
+		}
 	}
 
 	public static void start() {

@@ -22,7 +22,7 @@ import java.util.Set;
 import org.yx.db.conn.DataSourceWraper;
 import org.yx.log.Log;
 import org.yx.util.Assert;
-import org.yx.util.secury.AESEncry;
+import org.yx.util.S;
 import org.yx.util.secury.Base64Util;
 
 public class DBConfig {
@@ -79,8 +79,8 @@ public class DBConfig {
 
 				if (AppInfo.getBoolean("sumk.db.password.encry", false)) {
 					byte[] bs = Base64Util.decode(v.getBytes());
-					v = new String(new AESEncry().decrypt(bs, new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117,
-							97, 110, 64, 115, 117, 109, 107 }));
+					v = new String(S.encryptor.decrypt(bs, new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97,
+							110, 64, 115, 117, 109, 107 }));
 				}
 				properties.put(key, v);
 				break;

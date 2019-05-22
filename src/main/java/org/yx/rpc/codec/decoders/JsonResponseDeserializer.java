@@ -15,11 +15,24 @@
  */
 package org.yx.rpc.codec.decoders;
 
-import org.apache.mina.filter.codec.ProtocolDecoderException;
+import org.yx.annotation.Bean;
+import org.yx.conf.Profile;
+import org.yx.rpc.RpcGson;
+import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.server.Response;
 
-public interface SumkMinaDecoder {
+@Bean
+public class JsonResponseDeserializer implements SumkMinaDeserializer<Response> {
 
-	boolean accept(int protocol);
+	@Override
+	public boolean accept(int protocol) {
+		return Protocols.hasFeature(protocol, Protocols.RESPONSE_JSON);
+	}
 
-	public Object decode(int protocol, String message) throws ProtocolDecoderException;
+	@Override
+	public Response decode(int protocol, byte[] data) {
+		String message = new String(data, Profile.UTF8);
+		return RpcGson.fromJson(message, Response.class);
+	}
+
 }

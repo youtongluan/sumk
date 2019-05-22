@@ -13,26 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.rpc.codec.decoders;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+public interface SumkMinaDeserializer<T> {
 
-import org.yx.rpc.codec.Protocols;
+	boolean accept(int protocol);
 
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
-
-	public static long feature() {
-		long v = version;
-		v <<= 32;
-		v |= Protocols.profile();
-		return v;
-	}
-
-	public static String featureInHex() {
-		return Long.toHexString(feature());
-	}
-
+	public T decode(int protocol, byte[] data) throws Exception;
 }

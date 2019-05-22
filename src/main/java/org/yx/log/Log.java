@@ -19,24 +19,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yx.conf.AppInfo;
 
-public abstract class Log {
+public final class Log {
+	private static volatile LogType logType = LogType.slf4j;
+
+	private Log() {
+	}
+
 	static {
 		try {
-			parseLogType();
+			String type = AppInfo.get("sumk.log.type", null);
+			if (type != null && type.length() > 0) {
+				type = type.trim().toLowerCase();
+				Log.setLogType(LogType.valueOf(type));
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 
-	private static LogType logType = LogType.console;
-
 	public static void setLogType(LogType type) {
-		Log.logType = type;
-	}
-
-	static void parseLogType() {
-		String logType = AppInfo.get("sumk.log.type", LogType.console.name());
-		Log.setLogType(LogType.valueOf(logType.trim().toLowerCase()));
+		logType = type;
+		ConsoleLog.get("sumk.log").info("set logtype to {}", logType);
 	}
 
 	public static boolean isTraceEnable(String module) {

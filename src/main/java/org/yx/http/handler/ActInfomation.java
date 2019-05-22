@@ -16,6 +16,7 @@
 package org.yx.http.handler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +32,8 @@ import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.rpc.RpcActionHolder;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
-import org.yx.util.secury.MD5Utils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -51,7 +52,8 @@ public class ActInfomation extends HttpServlet {
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(MD5Utils.encrypt(sign.getBytes())) || StringUtil.isEmpty(mode)) {
+			if (sign == null || !md5.equals(S.hasher.digest(sign, StandardCharsets.UTF_8))
+					|| StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

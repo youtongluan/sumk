@@ -4,8 +4,8 @@ ReqTypeChecker
 UploadHandler
 Base64DecodeHandler
 AesDecodeHandler
-ReqToStringHandler
 ReqSignValidateHandler
+ReqToStringHandler
 InvokeHandler
 RespToStringHandler
 ToByteHandler

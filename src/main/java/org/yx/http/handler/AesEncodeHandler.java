@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.http.EncryUtil;
+import org.yx.http.HttpCiphers;
 
 public class AesEncodeHandler implements HttpHandler {
 
@@ -28,7 +28,7 @@ public class AesEncodeHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		byte[] bs = (byte[]) ctx.result();
-		byte[] data = EncryUtil.encrypt(bs, ctx.key());
+		byte[] data = HttpCiphers.getEncryptor().encrypt(bs, ctx);
 		ctx.result(data);
 		return false;
 	}

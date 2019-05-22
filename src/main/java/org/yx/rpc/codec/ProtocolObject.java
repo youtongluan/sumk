@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.rpc.codec;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+public class ProtocolObject {
+	private final int protocol;
+	private final byte[] data;
 
-import org.yx.rpc.codec.Protocols;
-
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
-
-	public static long feature() {
-		long v = version;
-		v <<= 32;
-		v |= Protocols.profile();
-		return v;
+	public ProtocolObject(int protocol, byte[] data) {
+		this.protocol = protocol;
+		this.data = data;
 	}
 
-	public static String featureInHex() {
-		return Long.toHexString(feature());
+	public int getProtocol() {
+		return protocol;
+	}
+
+	public byte[] getData() {
+		return data;
 	}
 
 }

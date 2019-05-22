@@ -15,16 +15,21 @@
  */
 package org.yx.util.secury;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.yx.conf.AppInfo;
 
-public class FastEncry implements Encry {
+public class AESEncryptor implements Encryptor {
 
-	private byte[] salt = "j33weut305mTUhgueot5x386fjsjowut03185".getBytes();
+	private String c = "AES/ECB/ISO10126Padding";
+	private String algorithm = "AES";
 
-	public FastEncry() {
-		String s = AppInfo.get("sumk.encry.fast.salt");
-		if (s != null && s.length() > 5) {
-			this.salt = s.getBytes();
+	public AESEncryptor() {
+		String s = AppInfo.get("sumk.encry.aes.cipher");
+		if (s != null && s.length() > 1) {
+			this.c = s;
+			this.algorithm = c.split("/")[0];
 		}
 	}
 
@@ -33,11 +38,11 @@ public class FastEncry implements Encry {
 		if (contentBytes == null || contentBytes.length == 0) {
 			return contentBytes;
 		}
-		byte[] ret = new byte[contentBytes.length];
-		for (int i = 0; i < contentBytes.length; i++) {
-			ret[i] = (byte) (contentBytes[i] ^ key[i % key.length] ^ salt[i % salt.length]);
-		}
-		return ret;
+		SecretKeySpec skeySpec = new SecretKeySpec(key, algorithm);
+		Cipher cipher = Cipher.getInstance(c);
+		cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
+		byte[] encryptResult = cipher.doFinal(contentBytes);
+		return encryptResult;
 	}
 
 	@Override
@@ -45,11 +50,11 @@ public class FastEncry implements Encry {
 		if (contentBytes == null || contentBytes.length == 0) {
 			return contentBytes;
 		}
-		byte[] ret = new byte[contentBytes.length];
-		for (int i = 0; i < ret.length; i++) {
-			ret[i] = (byte) (contentBytes[i] ^ salt[i % salt.length] ^ key[i % key.length]);
-		}
-		return ret;
+		SecretKeySpec skeySpec = new SecretKeySpec(key, algorithm);
+		Cipher cipher = Cipher.getInstance(c);
+		cipher.init(Cipher.DECRYPT_MODE, skeySpec);
+		return cipher.doFinal(contentBytes);
+
 	}
 
 }

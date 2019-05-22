@@ -9,19 +9,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.demo.member.DemoUser;
-import org.yx.log.ConsoleLog;
-import org.yx.main.SumkServer;
 import org.yx.orm.DemoUserDao;
 
 //单主键的测试
-public class SinglePrimaryTest {
+public class SinglePrimaryTest extends BaseOrmTest{
 
 	private DemoUserDao dao;
 
 	@Before
 	public void before() {
-		ConsoleLog.setDefaultLevel(ConsoleLog.DEBUG);
-		SumkServer.start("nosoa", "nohttp");
 		dao = IOC.get(DemoUserDao.class);
 	}
 

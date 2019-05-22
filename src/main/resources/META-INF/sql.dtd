@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!ELEMENT sdb (sql)+>
+<!ATTLIST sdb
+namespace CDATA #IMPLIED
+>
+
+<!-- nomally,it is used for update or insert or delete-->
+<!ELEMENT sql (#PCDATA | if | ifnot | foreach )*>
+<!ATTLIST sql
+id ID #REQUIRED
+>
+
+<!ELEMENT if (#PCDATA | foreach)*>
+<!ATTLIST if
+test CDATA #REQUIRED
+falseby (null|nokey|empty) #IMPLIED
+>
+
+<!ELEMENT ifnot (#PCDATA | foreach)*>
+<!ATTLIST ifnot
+test CDATA #REQUIRED
+falseby (null|nokey|empty) #IMPLIED
+>
+
+<!-- collection type must be collection -->
+<!ELEMENT foreach (#PCDATA)*>
+<!ATTLIST foreach
+collection CDATA #REQUIRED
+separator CDATA #REQUIRED
+item CDATA #IMPLIED
+open CDATA #IMPLIED
+close CDATA #IMPLIED
+>

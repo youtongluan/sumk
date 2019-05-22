@@ -15,14 +15,15 @@
  */
 package org.yx.rpc.codec.decoders;
 
-import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.yx.annotation.Bean;
+import org.yx.conf.Profile;
+import org.yx.exception.SumkException;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 
 @Bean
-public class JsonParamDecoder implements SumkMinaDecoder {
+public class JsonParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public boolean accept(int protocol) {
@@ -30,10 +31,11 @@ public class JsonParamDecoder implements SumkMinaDecoder {
 	}
 
 	@Override
-	public Request decode(int protocol, String message) throws ProtocolDecoderException {
+	public Request decode(int protocol, byte[] data) throws Exception {
+		String message = new String(data, Profile.UTF8);
 		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
 		if (msgs.length < 2) {
-			throw new ProtocolDecoderException("error jsoned param req");
+			SumkException.throwException(4353254, "error jsoned param req");
 		}
 		Request req = RpcGson.fromJson(msgs[0], Request.class);
 		req.setJsonedParam(msgs[1]);

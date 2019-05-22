@@ -107,6 +107,7 @@ public class MapedSql {
 			joiner.item().append(maped.sql);
 			params.addAll(maped.paramters);
 		}
-		return new MapedSql(joiner.toString(), params);
+
+		return new MapedSql(joiner.toCharSequence(true).toString(), params);
 	}
 }

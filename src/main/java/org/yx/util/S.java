@@ -20,30 +20,24 @@ import org.yx.common.lock.Key;
 import org.yx.common.lock.Lock;
 import org.yx.common.lock.SLock;
 import org.yx.util.kit.BeanConverter;
-import org.yx.util.secury.AESEncry;
-import org.yx.util.secury.Encry;
-import org.yx.util.secury.MD5Utils;
+import org.yx.util.secury.AESEncryptor;
+import org.yx.util.secury.Encryptor;
+import org.yx.util.secury.Hasher;
+import org.yx.util.secury.MD5;
 
 import com.google.gson.Gson;
 
 public abstract class S {
 
 	/**
-	 * AES加解密
+	 * 加密器，一般是AES对称加密
 	 */
-	public static final Encry aes = new AESEncry();
+	public static final Encryptor encryptor = new AESEncryptor();
 
-	public static final class MD5 {
-
-		public static String encrypt(byte[] data) throws Exception {
-			return MD5Utils.encrypt(data);
-		}
-
-		public static byte[] encryptByte(byte[] data) throws Exception {
-			return MD5Utils.encryptByte(data);
-		}
-
-	}
+	/**
+	 * hash工具，就是大家常说的md5
+	 */
+	public static final Hasher hasher = new MD5();
 
 	/**
 	 * 分布式锁

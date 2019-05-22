@@ -13,11 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.secury;
+package org.yx.http;
 
-public interface Encry {
+import org.yx.http.handler.WebContext;
 
-	public byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception;
+public interface HttpEncryptor {
+	byte[] encrypt(byte[] data, WebContext ctx) throws Exception;
 
-	public byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception;
+	byte[] decrypt(byte[] data, WebContext ctx) throws Exception;
+
 }

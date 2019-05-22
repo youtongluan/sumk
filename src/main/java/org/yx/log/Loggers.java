@@ -16,17 +16,20 @@
 package org.yx.log;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yx.conf.AppInfo;
 
 public class Loggers {
 	public static final String ROOT = "root";
-	private static LogLevel DEFAULT_LEVEL = LogLevel.INFO;
+	private LogLevel DEFAULT_LEVEL = LogLevel.INFO;
 	private static Map<String, LogLevel> levelMap = new HashMap<>();
 
 	private Map<String, SumkLogger> map = new ConcurrentHashMap<>();
+	private static final List<Loggers> INSTS = new CopyOnWriteArrayList<>();
 
 	private Loggers() {
 	}
@@ -35,7 +38,6 @@ public class Loggers {
 
 		AppInfo.addObserver((a, b) -> {
 			try {
-				Log.parseLogType();
 				String temp = AppInfo.get("sumk.log.level", "info");
 				String[] levelStrs = temp.replace('，', ',').split(",");
 				Map<String, LogLevel> newLevels = new HashMap<>();
@@ -53,10 +55,12 @@ public class Loggers {
 						newLevels.put(levelNamePair[0].trim(), LogLevel.valueOf(levelNamePair[1].trim().toUpperCase()));
 						break;
 					default:
-						ConsoleLog.get("sumk.log").error("{} is not valid name:level format", levelStr);
+						System.err.println(levelStr + " is not valid name:level format");
 					}
 				}
-				resetLevel(newLevels);
+				for (Loggers logger : INSTS) {
+					logger.resetLevel(newLevels);
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -64,7 +68,9 @@ public class Loggers {
 	}
 
 	public static synchronized Loggers create() {
-		return new Loggers();
+		Loggers l = new Loggers();
+		INSTS.add(l);
+		return l;
 	}
 
 	private LogLevel level(String logName) {
@@ -105,7 +111,7 @@ public class Loggers {
 		return level(name);
 	}
 
-	public static synchronized void resetLevel(Map<String, LogLevel> newLevels) {
+	public synchronized void resetLevel(Map<String, LogLevel> newLevels) {
 		LogLevel defaultLevel = newLevels.remove(ROOT);
 		if (defaultLevel != null) {
 			DEFAULT_LEVEL = defaultLevel;

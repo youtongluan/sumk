@@ -6,4 +6,7 @@
 * [这是日志工程](https://github.com/youtongluan/sumk-log)
 * [代码自动生成工具](https://github.com/youtongluan/sumk-codetool)
 
+
+test目录下有简单的压测工具类HttpPressTest和RpcPressTest。
+
 ### 作者：游夏。QQ：3205207767

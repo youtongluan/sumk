@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
@@ -40,9 +39,8 @@ public class SqlXmlParser {
 
 	private static final String ID = "id";
 
-	public static void parseXml(Map<String, SqlParser> map, DocumentBuilderFactory dbf, String fileName, InputStream in)
+	public static void parseXml(Map<String, SqlParser> map, DocumentBuilder dbd, String fileName, InputStream in)
 			throws Exception {
-		DocumentBuilder dbd = dbf.newDocumentBuilder();
 		Document doc = dbd.parse(in);
 		Element root = doc.getDocumentElement();
 		String namespace = root.getAttribute("namespace");

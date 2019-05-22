@@ -59,11 +59,11 @@ public class ItemJoiner {
 		return this.toCharSequence(false);
 	}
 
-	public CharSequence toCharSequence(boolean forceBorder) {
+	public CharSequence toCharSequence(boolean forcePreAndSubFix) {
 		if (sb == null || sb.length() == 0) {
 			return null;
 		}
-		if (!forceBorder && !hasDelimiter) {
+		if (!forcePreAndSubFix && !hasDelimiter) {
 			return sb;
 		}
 		StringBuilder ret = new StringBuilder();

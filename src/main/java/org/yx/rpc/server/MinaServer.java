@@ -36,20 +36,16 @@ import org.yx.rpc.codec.SumkCodecFactory;
 
 public class MinaServer implements Runnable {
 
+	public static final String SOA_SESSION_IDLE = "soa.session.idle";
 	private Logger logger = Log.get(this.getClass());
 	private int port;
 	private String host = null;
 	private IoHandler handler;
-	private boolean useExcutor = true;
 	private int acceptors = 0;
 	private SocketAcceptor acceptor;
 
 	public void setAcceptors(int acceptors) {
 		this.acceptors = acceptors;
-	}
-
-	public void setUseExcutor(boolean useExcutor) {
-		this.useExcutor = useExcutor;
 	}
 
 	public MinaServer(String host, int port, List<RequestHandler> handlers) {
@@ -73,14 +69,11 @@ public class MinaServer implements Runnable {
 
 			chain.addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 
-			if (useExcutor) {
-
-				chain.addLast("exec", new ExecutorFilter(SoaExcutors.SERVER));
-			}
+			chain.addLast("threadpool", new ExecutorFilter(SoaExcutors.SERVER));
 
 			acceptor.setHandler(handler);
 
-			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt("soa.session.idle", 60 * 5));
+			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(SOA_SESSION_IDLE, 600));
 			if (SocketSessionConfig.class.isInstance(acceptor.getSessionConfig())) {
 				SocketSessionConfig conf = (SocketSessionConfig) acceptor.getSessionConfig();
 				conf.setKeepAlive(true);

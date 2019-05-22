@@ -13,26 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.util.secury;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
-import org.yx.rpc.codec.Protocols;
+public interface Hasher {
 
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
+	String digest(String data, Charset charset) throws Exception;
 
-	public static long feature() {
-		long v = version;
-		v <<= 32;
-		v |= Protocols.profile();
-		return v;
-	}
+	byte[] digest(byte[] data) throws Exception;
 
-	public static String featureInHex() {
-		return Long.toHexString(feature());
-	}
-
+	String digestByteToString(byte[] data) throws Exception;
 }

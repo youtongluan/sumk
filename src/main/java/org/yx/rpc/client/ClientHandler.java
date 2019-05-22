@@ -19,11 +19,21 @@ import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
+import org.yx.bean.IOC;
+import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.rpc.codec.ProtocolDeserializer;
+import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.Response;
 
 public class ClientHandler implements IoHandler {
+
+	private final ProtocolDeserializer deserializer;
+
+	public ClientHandler() {
+		deserializer = IOC.get(ProtocolDeserializer.class);
+	}
 
 	@Override
 	public void sessionCreated(IoSession session) throws Exception {
@@ -42,26 +52,32 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-
+		long time = System.currentTimeMillis() - session.getLastIoTime();
+		if (time > AppInfo.getLong(MinaServer.SOA_SESSION_IDLE, 60) * 1000) {
+			Log.get("sumk.soa.client").info("rpc session {} {} for {}ms,closed by this client", session.getId(), status,
+					session.getLastIoTime(), time);
+			session.closeOnFlush();
+		}
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		Log.printStack(cause);
+		Log.get("sumk.soa.server").error(session + " throw exception", cause);
 
 	}
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		if (message == null) {
+		Object obj = this.deserializer.deserialize(message);
+		if (obj == null) {
 			return;
 		}
-		if (Response.class.isInstance(message)) {
-			Response resp = (Response) message;
+		if (Response.class.isInstance(obj)) {
+			Response resp = (Response) obj;
 			LockHolder.unLockAndSetResult(resp);
 			return;
 		}
-		SumkException.throwException(458223, message.getClass().getName() + " has not deserialized");
+		SumkException.throwException(458223, obj.getClass().getName() + " has not deserialized");
 	}
 
 	@Override
@@ -71,7 +87,7 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void inputClosed(IoSession session) throws Exception {
-
+		session.closeNow();
 	}
 
 	@Override

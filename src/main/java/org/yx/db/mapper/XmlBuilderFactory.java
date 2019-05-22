@@ -13,26 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.db.mapper;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+import javax.xml.parsers.DocumentBuilder;
 
-import org.yx.rpc.codec.Protocols;
-
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
-
-	public static long feature() {
-		long v = version;
-		v <<= 32;
-		v |= Protocols.profile();
-		return v;
-	}
-
-	public static String featureInHex() {
-		return Long.toHexString(feature());
-	}
-
+public interface XmlBuilderFactory {
+	DocumentBuilder create() throws Exception;
 }

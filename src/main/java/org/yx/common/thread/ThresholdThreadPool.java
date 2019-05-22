@@ -54,4 +54,8 @@ public class ThresholdThreadPool extends ThreadPoolExecutor implements SumkExecu
 		this.threshold = threshold;
 	}
 
+	@Override
+	public void setThreadFactory(ThreadFactory threadFactory) {
+	}
+
 }

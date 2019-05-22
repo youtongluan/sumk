@@ -22,7 +22,7 @@ public class ConsoleLog extends SumkLogger {
 
 	public static final LogLevel DEBUG = LogLevel.DEBUG;
 	public static final LogLevel TRACE = LogLevel.TRACE;
-	private static Loggers loggers = Loggers.create();
+	private static final Loggers loggers = Loggers.create();
 
 	public static void setDefaultLevel(LogLevel logLevel) {
 		if (logLevel != null) {

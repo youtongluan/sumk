@@ -15,6 +15,9 @@
  */
 package org.yx.http.start;
 
+import java.io.IOException;
+import java.net.BindException;
+import java.nio.channels.ServerSocketChannel;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.List;
@@ -62,7 +65,36 @@ public class JettyServer implements Lifecycle {
 
 		ServerConnector connector = new ServerConnector(server, null, null, null,
 				AppInfo.getInt("http.connector.acceptors", 0), AppInfo.getInt("http.connector.selectors", 5),
-				getConnectionFactorys());
+				getConnectionFactorys()) {
+			@Override
+			protected ServerSocketChannel openAcceptChannel() throws IOException {
+				IOException ex = null;
+				try {
+					return super.openAcceptChannel();
+				} catch (BindException e) {
+					ex = e;
+				}
+
+				for (int i = 0; i < AppInfo.getInt("http.bind.retry", 100); i++) {
+					try {
+						Thread.sleep(AppInfo.getLong("http.bind.sleepTime", 1000));
+					} catch (InterruptedException e1) {
+						Log.get("sumk.http").error("showdown because of InterruptedException");
+						System.exit(-1);
+					}
+					Log.get("sumk.http").warn("{} was occupied,begin retry {}", this.getPort(), i);
+					try {
+						return super.openAcceptChannel();
+					} catch (BindException e) {
+						if (isInheritChannel()) {
+							throw e;
+						}
+						ex = e;
+					}
+				}
+				throw ex;
+			}
+		};
 		connector.setReuseAddress(AppInfo.getBoolean("http.reuseAddr", false));
 		int backlog = AppInfo.getInt("http.backlog", 0);
 		if (backlog > 0) {

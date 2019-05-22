@@ -19,11 +19,11 @@ import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 
-public class Base64Util {
+public final class Base64Util {
 
-	private static Decoder decoder = Base64.getMimeDecoder();
+	private static final Decoder decoder = Base64.getMimeDecoder();
 
-	private static Encoder encoder = Base64.getEncoder();
+	private static final Encoder encoder = Base64.getEncoder();
 
 	/**
 	 * 解码，是否含有\r\n都能解码

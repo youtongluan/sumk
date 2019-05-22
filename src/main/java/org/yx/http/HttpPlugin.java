@@ -16,11 +16,9 @@
 package org.yx.http;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
-import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartConstants;
@@ -30,9 +28,6 @@ import org.yx.http.handler.HttpHandlerChain;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
-import org.yx.util.secury.AESEncry;
-import org.yx.util.secury.Encry;
-import org.yx.util.secury.FastEncry;
 
 @Bean
 public class HttpPlugin implements Plugin {
@@ -43,26 +38,6 @@ public class HttpPlugin implements Plugin {
 
 	private static final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
 	private static final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
-
-	public void buildEncry() throws Exception {
-		String cipher = AppInfo.get("http.encry.cipher");
-		if (cipher == null || cipher.length() == 0) {
-			return;
-		}
-		Encry en = null;
-		if ("fast".equalsIgnoreCase(cipher)) {
-			en = new FastEncry();
-		} else if ("AES".equalsIgnoreCase(cipher)) {
-			en = new AESEncry();
-		} else {
-			Class<?> clz = Loader.loadClass(cipher);
-			en = (Encry) clz.newInstance();
-		}
-		Field f = EncryUtil.class.getDeclaredField("encry");
-		f.setAccessible(true);
-		f.set(null, en);
-		Log.get("sumk.SYS").trace("encry:{}", en);
-	}
 
 	@Override
 	public void stop() {
@@ -83,7 +58,6 @@ public class HttpPlugin implements Plugin {
 			return;
 		}
 		try {
-			this.buildEncry();
 			HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
 			if (HttpSettings.isUploadEnable()) {
 				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());

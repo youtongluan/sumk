@@ -19,8 +19,6 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
 import org.yx.common.SumkLogs;
@@ -50,7 +48,6 @@ public class ResourcePlugin implements Plugin {
 		}
 		Map<String, SqlParser> sqlMap = new HashMap<>();
 		try {
-			DocumentBuilderFactory dbf = SqlHolder.documentBuilderFactory().get();
 			for (Map.Entry<String, byte[]> entry : inputMap.entrySet()) {
 				String fileName = entry.getKey();
 				byte[] bs = entry.getValue();
@@ -58,7 +55,8 @@ public class ResourcePlugin implements Plugin {
 					continue;
 				}
 
-				SqlXmlParser.parseXml(sqlMap, dbf, fileName, new ByteArrayInputStream(bs));
+				SqlXmlParser.parseXml(sqlMap, SqlHolder.documentBuilderFactory().create(), fileName,
+						new ByteArrayInputStream(bs));
 			}
 		} catch (Exception e) {
 			Log.get("sumk.db.sql").error(e.toString(), e);

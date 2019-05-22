@@ -15,48 +15,38 @@
  */
 package org.yx.rpc.client;
 
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.executor.ExecutorFilter;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.yx.bean.IOC;
+import org.apache.mina.transport.socket.SocketConnector;
 import org.yx.common.Host;
-import org.yx.common.StartContext;
-import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
-import org.yx.rpc.codec.SumkCodecFactory;
 
-public class ReqSession {
+public final class ReqSession {
 
 	protected volatile IoSession session;
 
-	private static NioSocketConnector connector;
+	private static Supplier<SocketConnector> connectorSupplier = new SocketConnectorSupplier();
 	private Host addr;
 	private final Lock lock = new ReentrantLock();
-	private static final int CONNECT_TIMEOUT = AppInfo.getInt("soa.connect.timeout", 5000);
 
-	public synchronized static void init() {
-		if (connector != null) {
-			return;
-		}
-		try {
-			connector = new NioSocketConnector();
-			connector.setConnectTimeoutMillis(CONNECT_TIMEOUT);
-			connector.setHandler(new ClientHandler());
-			connector.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
-			connector.getFilterChain().addLast("exec", new ExecutorFilter(SoaExcutors.CLINET));
-		} catch (Exception e) {
-			Log.get("sumk.rpc").error(e.getMessage(), e);
-			StartContext.startFail();
-		}
+	public static void setConnectorSupplier(Supplier<SocketConnector> connectorSupplier) {
+		ReqSession.connectorSupplier = Objects.requireNonNull(connectorSupplier);
+	}
+
+	public static Supplier<SocketConnector> getConnectorSupplier() {
+		return connectorSupplier;
+	}
+
+	public SocketConnector getConnector() {
+		return connectorSupplier.get();
 	}
 
 	private boolean ensureSession() {
@@ -64,12 +54,13 @@ public class ReqSession {
 			return true;
 		}
 		try {
-			if (lock.tryLock(CONNECT_TIMEOUT + 2000, TimeUnit.MILLISECONDS)) {
+			SocketConnector connector = this.getConnector();
+			if (lock.tryLock(connector.getConnectTimeoutMillis() + 2000, TimeUnit.MILLISECONDS)) {
 				try {
 					if (session != null && !session.isClosing()) {
 						return true;
 					}
-					connect();
+					connect(connector);
 				} finally {
 					lock.unlock();
 				}
@@ -85,13 +76,13 @@ public class ReqSession {
 		return true;
 	}
 
-	private void connect() throws InterruptedException {
+	private void connect(SocketConnector connector) throws InterruptedException {
 
 		if (session == null || session.isClosing()) {
 			Log.get("sumk.rpc").debug("create session for {}", addr);
 			ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
 
-			cf.await(CONNECT_TIMEOUT + 1);
+			cf.await(connector.getConnectTimeoutMillis() + 1);
 			IoSession se = cf.getSession();
 			if (se != null) {
 				this.session = se;
@@ -118,5 +109,9 @@ public class ReqSession {
 		if (s != null && s.isConnected()) {
 			this.session.closeNow();
 		}
+	}
+
+	public static void init() {
+		connectorSupplier.get();
 	}
 }

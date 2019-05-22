@@ -18,7 +18,6 @@ package org.yx.bean;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.yx.common.StartConstants;
 import org.yx.listener.Listener;
 import org.yx.listener.SumkEvent;
 import org.yx.util.StringUtil;
@@ -42,7 +41,7 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 			pks.add(p);
 		}
 		valid = pks.size() > 0;
-		pks.add(StartConstants.INNER_PACKAGE + ".");
+		pks.add("org.yx.");
 		this.packages = pks.toArray(new String[pks.size()]);
 	}
 

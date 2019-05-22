@@ -2,7 +2,7 @@ package org.test.orm;
 
 import java.util.Arrays;
 
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.yx.log.ConsoleLog;
 import org.yx.log.LogLevel;
 import org.yx.main.SumkServer;
@@ -15,10 +15,10 @@ import org.yx.main.SumkServer;
  */
 public class BaseOrmTest {
 
-	@Before
-	public void before() {
+	@BeforeClass
+	public static void beforeClass() {
 		SumkServer.start(Arrays.asList("nosoa", "nohttp"));
-		ConsoleLog.setDefaultLevel(LogLevel.TRACE);
+		ConsoleLog.setDefaultLevel(LogLevel.DEBUG);
 	}
 
 }

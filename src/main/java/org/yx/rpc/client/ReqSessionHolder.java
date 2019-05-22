@@ -16,13 +16,13 @@
 package org.yx.rpc.client;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.yx.common.Host;
 
 public class ReqSessionHolder {
-	private static Map<Host, Object> map = new ConcurrentHashMap<>();
+	private static ConcurrentMap<Host, Object> map = new ConcurrentHashMap<>();
 
 	public static void addClient(Host url, ReqSession s) {
 		map.putIfAbsent(url, s);

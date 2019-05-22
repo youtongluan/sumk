@@ -17,7 +17,7 @@ package org.test.web.client;
 
 import java.security.MessageDigest;
 
-import org.yx.http.EncryUtil;
+import org.yx.util.S;
 
 
 /**
@@ -26,11 +26,11 @@ import org.yx.http.EncryUtil;
 public class Encrypt {
 
 	public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return EncryUtil.encrypt(contentBytes, key);
+		return S.encryptor.encrypt(contentBytes, key);
 	}
 
 	public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return EncryUtil.decrypt(contentBytes, key);
+		return S.encryptor.decrypt(contentBytes, key);
 	}
 
 	/**

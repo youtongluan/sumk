@@ -16,6 +16,7 @@
 package org.yx.http.handler;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
@@ -32,9 +33,9 @@ import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
-import org.yx.util.secury.MD5Utils;
 
 @Bean
 @SumkServlet(value = { "/_sumk_statis" }, loadOnStartup = -1)
@@ -63,7 +64,8 @@ public class HttpStatis extends HttpServlet {
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(MD5Utils.encrypt(sign.getBytes())) || StringUtil.isEmpty(mode)) {
+			if (sign == null || !md5.equals(S.hasher.digest(sign, StandardCharsets.UTF_8))
+					|| StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

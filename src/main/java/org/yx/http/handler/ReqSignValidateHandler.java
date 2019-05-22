@@ -16,18 +16,14 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.bean.IOC;
-import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
-import org.yx.http.Signer;
+import org.yx.http.HttpCiphers;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
-import org.yx.util.secury.MD5Utils;
 
 public class ReqSignValidateHandler implements HttpHandler {
 
-	private Signer signer;
 	private byte[] salt;
 
 	public ReqSignValidateHandler() {
@@ -35,11 +31,6 @@ public class ReqSignValidateHandler implements HttpHandler {
 		String saltStr = AppInfo.get("sumk.sign.salt");
 		if (StringUtil.isNotEmpty(saltStr)) {
 			salt = saltStr.getBytes();
-		}
-
-		this.signer = IOC.get(Signer.class);
-		if (signer != null) {
-			SumkLogs.HTTP_LOG.info("use {} for http request sign", signer.getClass().getSimpleName());
 		}
 	}
 
@@ -64,7 +55,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 			System.arraycopy(salt, 0, temp, bs.length, salt.length);
 			bs = temp;
 		}
-		String sign1 = signer == null ? MD5Utils.encrypt(bs) : signer.sign(bs, ctx.httpRequest());
+		String sign1 = HttpCiphers.getSigner().sign(bs, ctx.httpRequest());
 		if (!sign.equals(sign1)) {
 			Log.get("sign").debug("client sign:{},computed is:{}", sign, sign1);
 			HttpException.throwException(this.getClass(), "签名验证错误");
