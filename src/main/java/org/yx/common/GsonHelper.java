@@ -20,8 +20,6 @@ import java.util.Date;
 import org.yx.common.date.DateAdapters;
 import org.yx.common.date.DateTimeTypeAdapter;
 import org.yx.conf.AppInfo;
-import org.yx.db.dao.Pojo;
-import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
 import com.google.gson.Gson;
@@ -71,23 +69,6 @@ public final class GsonHelper {
 
 	public static Gson gson(String module) {
 		return builder(module).create();
-	}
-
-	public static Object copyObject(Gson gson, Object source) {
-		if (source == null) {
-			return null;
-		}
-		if (Pojo.class.isInstance(source)) {
-			try {
-				return ((Pojo) source).clone();
-			} catch (CloneNotSupportedException e) {
-				if (Log.isTraceEnable("gson")) {
-					Log.printStack(e);
-				}
-			}
-		}
-		String json = gson.toJson(source);
-		return gson.fromJson(json, source.getClass());
 	}
 
 }

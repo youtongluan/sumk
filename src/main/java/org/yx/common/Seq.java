@@ -18,6 +18,7 @@ package org.yx.common;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerArray;
 
+import org.slf4j.Logger;
 import org.yx.log.Log;
 
 public final class Seq {
@@ -71,7 +72,12 @@ public final class Seq {
 			try {
 				return counter.count(name);
 			} catch (Exception e) {
-				Log.printStack(e);
+				Logger log = Log.get("sumk.seq");
+				if (log.isTraceEnabled()) {
+					log.trace(e.toString(), e);
+				} else {
+					log.debug(e.toString());
+				}
 			}
 		}
 		int sub = (ThreadLocalRandom.current().nextInt(0x100) << 16);

@@ -29,7 +29,7 @@ import org.yx.main.SumkThreadPool;
 
 public class HostChecker {
 
-	private static HostChecker holder = new HostChecker();
+	private static final HostChecker holder = new HostChecker();
 
 	private HostChecker() {
 		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(new Checker(), 5,

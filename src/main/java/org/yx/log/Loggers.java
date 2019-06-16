@@ -15,23 +15,29 @@
  */
 package org.yx.log;
 
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.yx.conf.AppInfo;
 
 public class Loggers {
 	public static final String ROOT = "root";
 	private LogLevel DEFAULT_LEVEL = LogLevel.INFO;
-	private static Map<String, LogLevel> levelMap = new HashMap<>();
+	private Map<String, LogLevel> levelMap = new HashMap<>();
 
 	private Map<String, SumkLogger> map = new ConcurrentHashMap<>();
-	private static final List<Loggers> INSTS = new CopyOnWriteArrayList<>();
+	private static Loggers[] INSTS = new Loggers[0];
+	private final String name;
 
-	private Loggers() {
+	private Loggers(String name) {
+		this.name = name;
+	}
+
+	@Override
+	public String toString() {
+		return "Loggers [name=" + name + "]";
 	}
 
 	static {
@@ -67,9 +73,13 @@ public class Loggers {
 		});
 	}
 
-	public static synchronized Loggers create() {
-		Loggers l = new Loggers();
-		INSTS.add(l);
+	public static synchronized Loggers create(String name) {
+		Loggers l = new Loggers(name);
+		Loggers[] rss = new Loggers[INSTS.length + 1];
+		System.arraycopy(INSTS, 0, rss, 0, INSTS.length);
+		rss[rss.length - 1] = l;
+		INSTS = rss;
+		System.out.println("loggers insts:" + Arrays.toString(INSTS));
 		return l;
 	}
 

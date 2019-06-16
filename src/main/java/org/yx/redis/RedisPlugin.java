@@ -15,11 +15,15 @@
  */
 package org.yx.redis;
 
+import java.util.concurrent.TimeUnit;
+
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
+import org.yx.main.SumkThreadPool;
+import org.yx.util.SeqUtil;
 
 @Bean
 public class RedisPlugin implements Plugin {
@@ -38,9 +42,26 @@ public class RedisPlugin implements Plugin {
 		try {
 			ConsoleLog.get("sumk.SYS").debug("redis pool init");
 			RedisLoader.init();
+			initSeqUtilCounter();
+			SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(RedisChecker.get(), 5,
+					AppInfo.getInt("sumk.redis.check.period", 5), TimeUnit.SECONDS);
 		} catch (Exception e) {
 			Log.get("sumk.redis").error(e.getMessage(), e);
 			System.exit(-1);
+		}
+	}
+
+	private static void initSeqUtilCounter() {
+		if (SeqUtil.getCounter() != null) {
+			return;
+		}
+		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
+		if (redis == null) {
+			redis = RedisPool.getRedisExactly("session");
+		}
+		if (redis != null) {
+			ConsoleLog.get("sumk.redis").debug("use redis counter");
+			SeqUtil.setCounter(new RedisCounter(redis));
 		}
 	}
 

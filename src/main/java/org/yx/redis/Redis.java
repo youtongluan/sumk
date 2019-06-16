@@ -39,21 +39,21 @@ import redis.clients.util.Pool;
 
 public abstract class Redis implements BinaryJedisCommands, JedisCommands, MultiKeyCommands, ScriptingCommands {
 
+	private static final SumkException DIS_CONNECTION_EXCEPTION = new SumkException(400, "redis is disConnected");
 	static final String LOG_NAME = "sumk.redis";
 	protected final List<Host> hosts;
 	protected final int db;
 	protected final int tryCount;
 	protected final Pool<Jedis> pool;
 	public static final Charset UTF8 = StandardCharsets.UTF_8;
+	boolean disConnected;
 
 	protected JedisPoolConfig defaultPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
 		config.setMinIdle(AppInfo.getInt("sumk.redis.minidle", 1));
 		config.setMaxIdle(AppInfo.getInt("sumk.redis.maxidle", 20));
 		config.setMaxTotal(AppInfo.getInt("sumk.redis.maxtotal", 100));
-		config.setTestWhileIdle(true);
-		config.setTimeBetweenEvictionRunsMillis(AppInfo.getInt("sumk.redis.timebetweenevictionrunsmillis", 5 * 60000));
-		config.setNumTestsPerEvictionRun(AppInfo.getInt("sumk.redis.numtestsperevictionrun", 3));
+		config.setTestWhileIdle(false);
 		return config;
 	}
 
@@ -71,6 +71,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 
 			this.pool = new JedisPool(config, host.ip(), host.port(), p.getTimeout(), p.getPassword(), p.getDb(),
 					AppInfo.appId("sumk"));
+			RedisChecker.get().addRedis(this);
 			return;
 		}
 
@@ -82,6 +83,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, p.getDb());
 		this.pool = new JedisSentinelPool(masterName, sentinels, config, p.getTimeout(), p.getTimeout(),
 				p.getPassword(), p.getDb(), AppInfo.appId("sumk"));
+		RedisChecker.get().addRedis(this);
 	}
 
 	/**
@@ -103,7 +105,14 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		return tryCount;
 	}
 
+	protected final void checkConnection() {
+		if (this.disConnected) {
+			throw DIS_CONNECTION_EXCEPTION;
+		}
+	}
+
 	public <T> T exec(RedisCallBack<T> callback) {
+		checkConnection();
 		Jedis jedis = null;
 		try {
 			jedis = this.jedis();
@@ -121,14 +130,14 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		Jedis jedis = null;
 		Exception e1 = null;
 		for (int i = 0; i < this.getTryCount(); i++) {
+			checkConnection();
 			try {
 				e1 = null;
 				jedis = this.jedis();
 				return callback.invoke(jedis);
 			} catch (Exception e) {
-				if (JedisConnectionException.class.isInstance(e)
-						|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()))) {
-					Log.get(Redis.LOG_NAME).error("redis连接错误！" + e.getMessage(), e);
+				if (isConnectException(e)) {
+					Log.get(Redis.LOG_NAME).warn("redis连接错误！" + e.getMessage());
 					if (jedis != null) {
 						jedis.close();
 						jedis = null;
@@ -136,7 +145,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 					e1 = e;
 					continue;
 				}
-				Log.get(Redis.LOG_NAME).error("redis执行错误！" + e.getMessage(), e);
+				Log.get(Redis.LOG_NAME).error("redis执行错误！" + e.getMessage());
 				if (jedis != null) {
 					jedis.close();
 					jedis = null;
@@ -154,7 +163,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		throw new SumkException(12342423, "未知redis异常");
 	}
 
-	protected boolean isConnectException(Exception e) {
+	protected static boolean isConnectException(Exception e) {
 		return JedisConnectionException.class.isInstance(e)
 				|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()));
 	}

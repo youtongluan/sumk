@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.yx.exception.SumkException;
+
 /**
  * 支持子类，但不支持属性的嵌套解析
  */
@@ -79,23 +81,33 @@ public class BeanConverter {
 	 * @param bean
 	 *            用于转化的pojo对象。
 	 * @return 返回map对象，不为null。
-	 * @throws Exception
-	 *             异常
 	 */
+	public Map<String, Object> beanToMap(Object bean) {
+		return this.beanToMap(bean, false);
+	}
+
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> beanToMap(Object bean) throws Exception {
+	public Map<String, Object> beanToMap(Object bean, boolean filterNull) {
 		if (bean == null) {
 			return Collections.emptyMap();
 		}
 		if (Map.class.isInstance(bean)) {
 			return (Map<String, Object>) bean;
 		}
-		Field[] fields = getFields(bean.getClass());
-		Map<String, Object> map = new HashMap<>();
-		for (Field f : fields) {
-			map.putIfAbsent(f.getName(), f.get(bean));
+		try {
+			Field[] fields = getFields(bean.getClass());
+			Map<String, Object> map = new HashMap<>();
+			for (Field f : fields) {
+				Object v = f.get(bean);
+				if (filterNull && v == null) {
+					continue;
+				}
+				map.putIfAbsent(f.getName(), v);
+			}
+			return map;
+		} catch (Exception e) {
+			throw new SumkException(35432540, "beanToMap to map failed, because of " + e.getMessage(), e);
 		}
-		return map;
 	}
 
 	/**
@@ -105,10 +117,8 @@ public class BeanConverter {
 	 *            原始map
 	 * @param bean
 	 *            目标对象，它的属性会被填充进来
-	 * @throws Exception
-	 *             异常
 	 */
-	public void fillBean(Map<String, Object> map, Object bean) throws Exception {
+	public void fillBean(Map<String, Object> map, Object bean) {
 		if (map == null || bean == null) {
 			return;
 		}
@@ -116,14 +126,53 @@ public class BeanConverter {
 			return;
 		}
 		Field[] fields = getFields(bean.getClass());
-		for (Field f : fields) {
-			if (Modifier.isFinal(f.getModifiers())) {
-				continue;
+		try {
+			for (Field f : fields) {
+				if (Modifier.isFinal(f.getModifiers())) {
+					continue;
+				}
+				if (map.containsKey(f.getName())) {
+					f.set(bean, map.get(f.getName()));
+				}
 			}
-			if (map.containsKey(f.getName())) {
-				f.set(bean, map.get(f.getName()));
-			}
+		} catch (Exception e) {
+			throw new SumkException(35432541, "fillBean failed, because of " + e.getMessage(), e);
 		}
+	}
+
+	public void copyFields(Object src, Object dest) {
+		if (src == null || dest == null) {
+			return;
+		}
+		Class<?> srcClz = src.getClass();
+		if (!srcClz.isInstance(dest)) {
+			throw new SumkException(35432543, dest.getClass().getName() + " cannot convert to " + srcClz.getName());
+		}
+		Field[] fields = getFields(srcClz);
+		try {
+			for (Field f : fields) {
+				if (Modifier.isFinal(f.getModifiers())) {
+					continue;
+				}
+				f.set(dest, f.get(src));
+			}
+		} catch (Exception e) {
+			throw new SumkException(35432542, "copyFields failed, because of " + e.getMessage(), e);
+		}
+	}
+
+	public Object clone(Object src) {
+		if (src == null) {
+			return null;
+		}
+		Object dest;
+		try {
+			dest = src.getClass().newInstance();
+		} catch (Exception e) {
+			throw new SumkException(35432545, "clone failed, because of " + e.getMessage(), e);
+		}
+		this.copyFields(src, dest);
+		return dest;
 	}
 
 	ConcurrentMap<Class<?>, Field[]> getCache() {

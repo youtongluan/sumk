@@ -2,8 +2,12 @@ v2.3.1
 1、将JsonUtil改为S.json
 2、sdb和mybatis的配置文件可以打包到jar中
 
-v2.3.3
+v2.3.2
 1、增加jetty端口被占用时的重试功能，默认重试将近2分钟。通过http.bind.retry=0可以关闭重试功能。
 2、sdb的xml配置文件中，dtd不再通过网络获取。
 3、去掉MD5Util和S.md5，增加S.hasher
 4、去掉EncryUtil，增加S.encryptor
+
+v.2.3.3
+1、增加redis的存活检测，在redis无法连接的时候，快速失败。
+2、增加工具类S.beans的方法

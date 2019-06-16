@@ -28,7 +28,9 @@ import org.yx.util.S;
 public class AesClientTest {
 
 	private String getUrl(String act) {
-		return "http://localhost:8080/rest/" + act;
+		String url = "http://localhost:8080/rest/" + act;
+		System.out.println("本次请求的url: "+url);
+		return url;
 	}
 
 

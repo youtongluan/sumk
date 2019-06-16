@@ -22,13 +22,6 @@ import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
 
 public final class HttpUtil {
-	/**
-	 * 从session中获取对象
-	 * 
-	 * @param clz
-	 *            用户session中对象的class类型
-	 * @return 用户session中存储的对象
-	 */
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
 		return WebSessions.getUserObject(clz);
 	}

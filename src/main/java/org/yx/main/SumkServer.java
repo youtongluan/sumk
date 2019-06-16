@@ -69,6 +69,10 @@ public class SumkServer {
 		start(Collections.emptyList());
 	}
 
+	public static void startAsToll() {
+		start(StartConstants.NOHTTP, StartConstants.NOSOA, StartConstants.NOSOA_ClIENT);
+	}
+
 	public static void start(String... args) {
 		Set<String> argSet = new HashSet<>();
 		if (args != null && args.length > 0) {

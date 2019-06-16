@@ -26,7 +26,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
@@ -41,7 +40,7 @@ public final class AsmUtils {
 	private static String[] blanks = new String[] { "getClass", "wait", "equals", "notify", "notifyAll", "toString",
 			"hashCode" };
 
-	private static Map<String, Class<?>> clzMap;
+	private static ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
 	private static Method defineClass;
 
 	static {
@@ -166,9 +165,6 @@ public final class AsmUtils {
 			}
 		}
 
-		if (clzMap == null) {
-			clzMap = new ConcurrentHashMap<>();
-		}
 		Class<?> clz = clzMap.get(fullName);
 		if (clz != null) {
 			return clz;

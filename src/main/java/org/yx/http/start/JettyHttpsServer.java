@@ -55,10 +55,7 @@ public class JettyHttpsServer extends JettyServer {
 			sslContextFactory.setKeyStoreType(v);
 		}
 
-		v = AppInfo.get("http.ssl.trustAll", null);
-		if (v != null) {
-			sslContextFactory.setTrustAll("1".equals(v) || v.equalsIgnoreCase(v));
-		}
+		sslContextFactory.setTrustAll(AppInfo.getBoolean("http.ssl.trustAll", false));
 
 		Log.get("sumk.http").info("using https");
 		return new ConnectionFactory[] { new SslConnectionFactory(sslContextFactory, "http/1.1"),
