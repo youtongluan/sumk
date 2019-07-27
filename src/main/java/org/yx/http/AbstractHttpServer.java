@@ -41,7 +41,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 
 	static {
 
-		AppInfo.addObserver((a, b) -> {
+		AppInfo.addObserver(info -> {
 			String fusing = AppInfo.get("http.fusing", null);
 			if (fusing == null) {
 				FUSING = Collections.emptySet();

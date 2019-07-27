@@ -101,7 +101,7 @@ public class RedisLoader {
 				if (StringUtil.isEmpty(v)) {
 					continue;
 				}
-				if (RedisConstants.DEFAULT.equals(key)) {
+				if (RedisConfig.DEFAULT.equals(key)) {
 					RedisPool._defaultRedis = redis;
 					Log.get("sumk.redis").debug("set default redis to {}", redis);
 				} else {

@@ -13,9 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.sequence;
 
-public interface SeqCounter {
+public final class SeqImpl extends AbstractSeq {
 
-	int count(String name) throws Exception;
+	public SeqImpl() {
+		super();
+	}
+
+	public SeqImpl(long from) {
+		super(from);
+	}
+
+	public long next(String name) {
+		long num = shortNowMills();
+		num &= 0xFFFFFFFFFFL;
+		num <<= 24;
+		int sub = subNumber(name) & 0xFFFFFF;
+		return num | sub;
+	}
+
+	public long getDate(long seq) {
+		long num = seq & 0xFFFFFFFFFF000000L;
+		num >>>= 24;
+		return fullTime(num);
+	}
+
 }

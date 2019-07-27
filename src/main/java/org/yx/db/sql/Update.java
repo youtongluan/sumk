@@ -29,7 +29,7 @@ import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
 
-public final class Update extends AbstractSqlBuilder<Integer> implements Executable {
+public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
 	private ColumnType _byType;
 

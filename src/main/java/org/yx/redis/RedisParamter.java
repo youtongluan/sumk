@@ -25,8 +25,8 @@ import org.yx.util.Assert;
 import redis.clients.jedis.Protocol;
 
 public class RedisParamter {
-	final static int DEFAULT_TRY_COUNT = 2;
-	final static int DEFAULT_TIMEOUT = 3000;
+	static final int DEFAULT_TRY_COUNT = 3;
+	static final int DEFAULT_TIMEOUT = 3000;
 
 	public static RedisParamter create(String host) {
 		return new RedisParamter(host);
@@ -54,7 +54,7 @@ public class RedisParamter {
 			if (addr.isEmpty()) {
 				continue;
 			}
-			if (!host.contains(":")) {
+			if (!addr.contains(":")) {
 				hosts.add(Host.create(addr, Protocol.DEFAULT_PORT));
 				continue;
 			}

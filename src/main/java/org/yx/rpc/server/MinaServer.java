@@ -18,6 +18,7 @@ package org.yx.rpc.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
@@ -27,9 +28,9 @@ import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
 import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-import org.slf4j.Logger;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
@@ -37,11 +38,10 @@ import org.yx.rpc.codec.SumkCodecFactory;
 public class MinaServer implements Runnable {
 
 	public static final String SOA_SESSION_IDLE = "soa.session.idle";
-	private Logger logger = Log.get(this.getClass());
+	private final String host;
 	private int port;
-	private String host = null;
 	private IoHandler handler;
-	private int acceptors = 0;
+	private int acceptors;
 	private SocketAcceptor acceptor;
 
 	public void setAcceptors(int acceptors) {
@@ -49,19 +49,32 @@ public class MinaServer implements Runnable {
 	}
 
 	public MinaServer(String host, int port, List<RequestHandler> handlers) {
-		super();
 		this.port = port;
 		this.host = host;
 		this.handler = new ServerHandler(handlers);
 	}
 
 	public MinaServer(int port, List<RequestHandler> handlers) {
-		super();
+		this.host = null;
 		this.port = port;
 		this.handler = new ServerHandler(handlers);
 	}
 
-	public void run() {
+	protected InetSocketAddress listenAddr(boolean randomPort) {
+		if (randomPort) {
+			port = 5000 + (new Random()).nextInt(5000);
+		}
+		if (host == null || host.trim().length() == 0) {
+			return new InetSocketAddress(port);
+		}
+		return new InetSocketAddress(host, port);
+
+	}
+
+	public synchronized void run() {
+		if (acceptor != null) {
+			return;
+		}
 		try {
 			acceptor = acceptors > 0 ? new NioSocketAcceptor(acceptors) : new NioSocketAcceptor();
 			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", false));
@@ -69,7 +82,7 @@ public class MinaServer implements Runnable {
 
 			chain.addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 
-			chain.addLast("threadpool", new ExecutorFilter(SoaExcutors.SERVER));
+			chain.addLast("threadpool", new ExecutorFilter(SoaExcutors.getServerThreadPool()));
 
 			acceptor.setHandler(handler);
 
@@ -81,29 +94,33 @@ public class MinaServer implements Runnable {
 				conf.setSendBufferSize(8192);
 
 			}
-			InetSocketAddress addr = null;
-			if (host == null || host.trim().length() == 0) {
-				addr = new InetSocketAddress(port);
-			} else {
-				addr = new InetSocketAddress(host, port);
-			}
-			for (int i = 0; i < 12; i++) {
+			boolean randomPort = this.port < 1;
+			for (int i = 0; i < 50; i++) {
 				try {
+					InetSocketAddress addr = listenAddr(randomPort);
 					acceptor.bind(addr);
+					Log.get("sumk.rpc").info("rpc listening on " + addr);
 					break;
 				} catch (IOException e) {
+					if (randomPort) {
+						continue;
+					}
 					Log.get("sumk.rpc").debug("waiting for listening to {}.{}", port, e.getMessage());
-					int time = AppInfo.getInt("soa.server.starting.sleep", 10000);
+					int time = AppInfo.getInt("soa.server.starting.sleep", 5000);
 					Thread.sleep(time);
 				}
 			}
-			logger.info("rpc listening on " + addr);
 
 		} catch (Exception e) {
-			logger.error(e.getMessage(), e);
-			System.exit(-1);
+			Log.get("sumk.rpc").debug(e.getMessage(), e);
+			acceptor = null;
+			SumkException.throwException(38057306, "start mina server failed", e);
 		}
 
+	}
+
+	public int getPort() {
+		return port;
 	}
 
 	public void stop() throws IOException {
@@ -112,6 +129,6 @@ public class MinaServer implements Runnable {
 		}
 
 		this.acceptor.dispose(false);
+		this.acceptor = null;
 	}
-
 }

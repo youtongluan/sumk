@@ -21,7 +21,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.util.Arrays;
 import java.util.EventListener;
 import java.util.List;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletContextListener;
 
@@ -42,7 +41,6 @@ import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkLoaderListener;
-import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -105,7 +103,7 @@ public class JettyServer implements Lifecycle {
 
 	protected synchronized void init() {
 		try {
-			server = new Server(new ExecutorThreadPool((ThreadPoolExecutor) SumkThreadPool.EXECUTOR));
+			server = new Server(new ExecutorThreadPool(HttpExcutors.getThreadPool()));
 			ServerConnector connector = this.createConnector();
 			Log.get("sumk.http").info("listen port: {}", port);
 			String host = StartContext.httpHost();

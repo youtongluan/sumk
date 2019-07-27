@@ -44,6 +44,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
+import org.yx.log.SimpleLoggerHolder;
 
 public final class SumkDate implements Comparable<SumkDate> {
 	private static final String LOG_NAME = "sumk.date";
@@ -87,7 +88,7 @@ public final class SumkDate implements Comparable<SumkDate> {
 				ConsoleLog.get(LOG_NAME).debug(sb.toString());
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.error(LOG_NAME, e);
 			System.exit(-1);
 		}
 	}

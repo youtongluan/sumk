@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.SumkLogs;
+import org.yx.common.ThreadContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.rpc.RpcActionHolder;
@@ -37,6 +38,8 @@ import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
 import org.yx.util.Assert;
 import org.yx.util.S;
+
+import com.google.gson.JsonElement;
 
 public final class Sender {
 
@@ -162,12 +165,12 @@ public final class Sender {
 		}
 		if (url == null) {
 
-			RpcFuture future = this.tryLocalHandler(req, locker);
+			RpcRoute route = Routes.getRoute(api);
+			RpcFuture future = this.tryLocalHandler(req, locker, route);
 			if (future != null) {
 				return future;
 			}
 
-			RpcRoute route = Routes.getRoute(api);
 			if (route == null) {
 				SoaException ex = new SoaException(RpcErrorCode.NO_ROUTE, "can not find route for " + api,
 						(String) null);
@@ -197,17 +200,29 @@ public final class Sender {
 		return new RpcFutureImpl(locker);
 	}
 
-	private RpcFuture tryLocalHandler(Req req, RpcLocker locker) {
+	private RpcFuture tryLocalHandler(Req req, RpcLocker locker, RpcRoute route) {
 		RpcActionNode node = RpcActionHolder.getActionNode(api);
-		if (node == null || AppInfo.getBoolean("rpc.localroute.disable", false)) {
+		if (node == null) {
 			return null;
 		}
-		locker.url(LOCAL);
-		String json = RpcGson.toJson(req);
+
+		if (AppInfo.getBoolean("soa.localroute.disable", false) && route != null) {
+			return null;
+		}
+
+		JsonElement json = RpcGson.getGson().toJsonTree(req);
+		Request request = RpcGson.getGson().fromJson(json, Request.class);
 		req = null;
-		Request request = RpcGson.fromJson(json, Request.class);
-		Response resp = LocalRequestHandler.inst.handler(request, node);
-		locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
+
+		ThreadContext context = ThreadContext.get();
+		try {
+			ThreadContext.rpcContext(request, context.isTest());
+			locker.url(LOCAL);
+			Response resp = LocalRequestHandler.inst.handler(request, node);
+			locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
+		} finally {
+			ThreadContext.recover(context);
+		}
 		return new RpcFutureImpl(locker);
 	}
 

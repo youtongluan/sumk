@@ -18,19 +18,12 @@ package org.yx.rpc;
 import java.util.Map;
 
 public interface Attachable {
-	Map<String, String> getAttachments();
 
 	void setAttachments(Map<String, String> attachments);
 
 	void setAttachment(String key, String value);
 
-	void setAttachmentIfAbsent(String key, String value);
-
-	void addAttachments(Map<String, String> attachments);
-
-	void addAttachmentsIfAbsent(Map<String, String> attachments);
-
 	String getAttachment(String key);
 
-	String getAttachment(String key, String defaultValue);
+	Map<String, String> attachmentView();
 }

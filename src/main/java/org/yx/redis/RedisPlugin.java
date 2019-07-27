@@ -19,11 +19,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
+import org.yx.common.lock.SLock;
+import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
-import org.yx.util.SeqUtil;
 
 @Bean
 public class RedisPlugin implements Plugin {
@@ -49,19 +50,21 @@ public class RedisPlugin implements Plugin {
 			Log.get("sumk.redis").error(e.getMessage(), e);
 			System.exit(-1);
 		}
+
+		SLock.init();
 	}
 
 	private static void initSeqUtilCounter() {
-		if (SeqUtil.getCounter() != null) {
+		if (SeqHolder.inst().getCounter() != null) {
 			return;
 		}
-		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", "counter"));
+		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", RedisConfig.COUNTER));
 		if (redis == null) {
 			redis = RedisPool.getRedisExactly("session");
 		}
 		if (redis != null) {
 			ConsoleLog.get("sumk.redis").debug("use redis counter");
-			SeqUtil.setCounter(new RedisCounter(redis));
+			SeqHolder.inst().setCounter(new RedisCounter(redis));
 		}
 	}
 

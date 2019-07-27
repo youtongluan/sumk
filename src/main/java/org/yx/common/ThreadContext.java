@@ -15,14 +15,16 @@
  */
 package org.yx.common;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.conf.AppInfo;
 import org.yx.rpc.Attachable;
+import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
-public class ThreadContext implements Attachable {
+public final class ThreadContext implements Attachable {
 
 	private static final String TEST = "sumk.test";
 
@@ -32,33 +34,28 @@ public class ThreadContext implements Attachable {
 
 	private final ActionType type;
 
-	private final String act;
+	private volatile LogContext logContext;
 
-	private String rootSn;
-
-	private String contextSn;
-
-	private String userId;
-
-	private boolean test;
-
-	private Map<String, String> attachments;
+	/**
+	 * 用来做自增长的
+	 */
+	private int spanSeed;
 
 	public boolean isTest() {
-		return test;
+		return logContext.test;
 	}
 
-	public void setTest(boolean isTest) {
-		String t = AppInfo.get(TEST);
-		if (t != null && t.length() > 0) {
-			this.test = isTest;
+	private boolean parseTest(boolean isTest) {
+		if (!isTest) {
+			return false;
 		}
+		return AppInfo.getBoolean(TEST, false);
 	}
 
-	private ThreadContext(ActionType type, String act, boolean isTest) {
+	private ThreadContext(ActionType type, String act, String traceId, String spanId, String userId, boolean isTest,
+			Map<String, String> attachments) {
 		this.type = type;
-		this.act = act;
-		this.setTest(isTest);
+		this.logContext = new LogContext(act, traceId, spanId, userId, this.parseTest(isTest), attachments);
 	}
 
 	public ActionType type() {
@@ -66,11 +63,15 @@ public class ThreadContext implements Attachable {
 	}
 
 	public String act() {
-		return act;
+		return logContext.act;
 	}
 
-	public String contextSn() {
-		return this.contextSn;
+	public String traceId() {
+		return logContext.traceId;
+	}
+
+	public String spanId() {
+		return logContext.spanId;
 	}
 
 	private static final ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
@@ -78,7 +79,7 @@ public class ThreadContext implements Attachable {
 		@Override
 		protected ThreadContext initialValue() {
 
-			return new ThreadContext(ActionType.OTHER, null, false);
+			return new ThreadContext(ActionType.OTHER, null, null, null, null, false, null);
 		}
 
 	};
@@ -88,15 +89,15 @@ public class ThreadContext implements Attachable {
 		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
 			test = true;
 		}
-		ThreadContext c = new ThreadContext(ActionType.HTTP, act, test);
+		ThreadContext c = new ThreadContext(ActionType.HTTP, act, null, null, null, test, null);
 		holder.set(c);
 		return c;
 	}
 
-	public static ThreadContext rpcContext(String act, String rootSn, String contextSn, boolean isTest) {
-		ThreadContext c = new ThreadContext(ActionType.RPC, act, isTest);
-		c.rootSn = rootSn;
-		c.contextSn = contextSn;
+	public static ThreadContext rpcContext(Req req, boolean isTest) {
+		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
+		ThreadContext c = new ThreadContext(ActionType.RPC, req.getApi(), traceId, req.getSpanId(), req.getUserId(),
+				isTest, req.getAttachments());
 		holder.set(c);
 		return c;
 	}
@@ -109,93 +110,113 @@ public class ThreadContext implements Attachable {
 		holder.remove();
 	}
 
-	public String rootSn() {
-		return rootSn;
-	}
-
-	public void setRootSnIfAbsent(String sn) {
-		if (this.rootSn == null) {
-			this.rootSn = sn;
+	public void setTraceIdIfAbsent(String traceId) {
+		LogContext lc = this.logContext;
+		if (lc.traceId != null) {
+			return;
 		}
+		this.logContext = new LogContext(lc.act, traceId, lc.spanId, lc.userId, lc.test, lc.attachments);
 	}
 
 	public String userId() {
-		return userId;
+		return logContext.userId;
 	}
 
 	public void userId(String userId) {
-		this.userId = userId;
-	}
-
-	public String userIdOrContextSN() {
-		String sn = userId;
-		if (StringUtil.isEmpty(sn)) {
-			sn = contextSn;
-		}
-		return sn;
+		LogContext lc = this.logContext;
+		this.logContext = new LogContext(lc.act, lc.traceId, lc.spanId, userId, lc.test, lc.attachments);
 	}
 
 	@Override
-	public Map<String, String> getAttachments() {
-		return attachments;
+	public Map<String, String> attachmentView() {
+		return logContext.attachments;
 	}
 
 	@Override
 	public void setAttachments(Map<String, String> attachments) {
-		this.attachments = attachments;
+		this.logContext = new LogContext(this.logContext, attachments);
 	}
 
 	@Override
 	public void setAttachment(String key, String value) {
-		if (attachments == null) {
-			attachments = new HashMap<>();
-		}
+		Map<String, String> attachments = this.logContext.attachments;
+		attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
 		attachments.put(key, value);
-	}
-
-	@Override
-	public void setAttachmentIfAbsent(String key, String value) {
-		if (attachments == null) {
-			attachments = new HashMap<>();
-		}
-		attachments.putIfAbsent(key, value);
-	}
-
-	@Override
-	public void addAttachments(Map<String, String> attachments) {
-		if (attachments == null) {
-			return;
-		}
-		if (this.attachments == null) {
-			this.attachments = new HashMap<>();
-		}
-		this.attachments.putAll(attachments);
-	}
-
-	@Override
-	public void addAttachmentsIfAbsent(Map<String, String> attachments) {
-		if (attachments == null) {
-			return;
-		}
-		for (Map.Entry<String, String> entry : attachments.entrySet()) {
-			setAttachmentIfAbsent(entry.getKey(), entry.getValue());
-		}
+		this.logContext = new LogContext(this.logContext, attachments);
 	}
 
 	@Override
 	public String getAttachment(String key) {
+		Map<String, String> attachments = this.logContext.attachments;
 		if (attachments == null) {
 			return null;
 		}
 		return attachments.get(key);
 	}
 
-	@Override
-	public String getAttachment(String key, String defaultValue) {
-		if (attachments == null) {
-			return defaultValue;
+	public String nextSpanId() {
+		LogContext lc = this.logContext;
+		if (lc.traceId == null) {
+			return "1";
 		}
-		return attachments.getOrDefault(key, defaultValue);
+		int seed;
+		synchronized (this) {
+			seed = ++this.spanSeed;
+		}
+		String sp = lc.spanId;
+		if (sp == null) {
+			return String.valueOf(seed);
+		}
+		return new StringBuilder().append(lc.spanId).append('.').append(seed).toString();
 	}
 
+	public static void recover(ThreadContext context) {
+		holder.set(context);
+	}
+
+	public static final class LogContext {
+
+		public final String act;
+
+		public final String traceId;
+
+		public final String spanId;
+
+		public final String userId;
+
+		public final boolean test;
+
+		private final Map<String, String> attachments;
+
+		public LogContext(String act, String traceId, String spanId, String userId, boolean test,
+				Map<String, String> attachments) {
+			this.act = act;
+			this.traceId = StringUtil.isEmpty(traceId) ? null : traceId;
+			this.spanId = spanId;
+			this.userId = userId;
+			this.test = test;
+			this.attachments = attachments;
+		}
+
+		public LogContext(LogContext lc, Map<String, String> attachments) {
+			this.act = lc.act;
+			this.traceId = lc.traceId;
+			this.spanId = lc.spanId;
+			this.userId = lc.userId;
+			this.test = lc.test;
+			this.attachments = attachments == null || attachments.isEmpty() ? null
+					: Collections.unmodifiableMap(attachments);
+		}
+
+		/**
+		 * @return
+		 */
+		public Map<String, String> unmodifyAttachs() {
+			return this.attachments;
+		}
+	}
+
+	public LogContext logContext() {
+		return this.logContext;
+	}
 }

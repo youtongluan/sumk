@@ -13,26 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.http.start;
 
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Objects;
+import java.util.concurrent.ThreadPoolExecutor;
 
-import org.yx.common.SeqCounter;
+import org.yx.main.SumkThreadPool;
 
-public class SnowflakeCounter implements SeqCounter {
+public class HttpExcutors {
 
-	private final int snow;
-	private final AtomicInteger seq;
+	private static ThreadPoolExecutor threadPool = (ThreadPoolExecutor) SumkThreadPool.EXECUTOR;
 
-	@Override
-	public int count(String name) throws Exception {
-		return snow | (seq.incrementAndGet() & 0xFFFF);
+	public static ThreadPoolExecutor getThreadPool() {
+		return threadPool;
 	}
 
-	public SnowflakeCounter(int snow) {
-		this.snow = (snow & 0xFF) << 16;
-		seq = new AtomicInteger(ThreadLocalRandom.current().nextInt());
+	public static void setServerThreadPool(ThreadPoolExecutor threadPool) {
+		HttpExcutors.threadPool = Objects.requireNonNull(threadPool);
 	}
-
 }

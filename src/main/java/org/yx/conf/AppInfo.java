@@ -22,10 +22,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observer;
+import java.util.function.Consumer;
 
 import org.yx.bean.Loader;
 import org.yx.log.Log;
+import org.yx.log.SimpleLoggerHolder;
 import org.yx.rpc.LocalhostUtil;
 import org.yx.util.StringUtil;
 
@@ -33,7 +34,7 @@ public final class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
-	private static final List<Observer> observers = new ArrayList<>(4);
+	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>(4);
 	private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	private static SystemConfig info;
@@ -45,7 +46,7 @@ public final class AppInfo {
 			String temp = ManagementFactory.getRuntimeMXBean().getName();
 			pid = temp.substring(0, temp.indexOf("@"));
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.error("sumk.conf", e);
 			pid = "UNKNOW";
 		}
 		init();
@@ -57,7 +58,7 @@ public final class AppInfo {
 				return;
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.error("sumk.conf", e);
 			System.exit(-1);
 		}
 
@@ -68,14 +69,14 @@ public final class AppInfo {
 				Class<?> clz = Loader.loadClass(clzName);
 				Object obj = clz.newInstance();
 				if (SystemConfig.class.isInstance(obj)) {
-					System.out.println("use " + clzName + " for appInfo");
+					SimpleLoggerHolder.inst().info("sumk.conf", "use " + clzName + " for appInfo");
 					info = (SystemConfig) obj;
 					info.initAppInfo();
 				}
 			}
 		} catch (Throwable e) {
-			System.out.println("#AppInfo#error for sumk.appinfo.class:");
-			e.printStackTrace();
+			SimpleLoggerHolder.inst().info("sumk.SYS", "#AppInfo#error for sumk.appinfo.class:");
+			SimpleLoggerHolder.error("sumk.conf", e);
 		}
 		try {
 			if (info == null) {
@@ -83,7 +84,7 @@ public final class AppInfo {
 			}
 			info.initAppInfo();
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.error("sumk.conf", e);
 			System.exit(-1);
 		}
 	}
@@ -101,14 +102,6 @@ public final class AppInfo {
 		info.initAppInfo();
 		notifyUpdate();
 		return true;
-	}
-
-	public static synchronized void addObserver(Observer ob) {
-		if (observers.contains(ob)) {
-			return;
-		}
-		observers.add(ob);
-		ob.update(null, null);
 	}
 
 	public static String getServerZKUrl() {
@@ -252,12 +245,29 @@ public final class AppInfo {
 		return map;
 	}
 
-	public static void notifyUpdate() {
-		localIp = info.get("sumk.ip");
+	public static void addObserver(Consumer<SystemConfig> ob) {
+		synchronized (observers) {
+			if (observers.contains(ob)) {
+				return;
+			}
+			observers.add(ob);
+		}
+		ob.accept(info);
+	}
 
-		AppInfo.observers.forEach(ob -> {
-			ob.update(null, info);
-		});
+	static synchronized void notifyUpdate() {
+		localIp = info.get("sumk.ip");
+		List<Consumer<SystemConfig>> consumers;
+		synchronized (observers) {
+			consumers = new ArrayList<>(observers);
+		}
+		for (Consumer<SystemConfig> consumer : consumers) {
+			try {
+				consumer.accept(info);
+			} catch (Exception e) {
+				SimpleLoggerHolder.error("sumk.conf", e);
+			}
+		}
 	}
 
 }

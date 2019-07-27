@@ -13,23 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.common.sequence;
 
-public final class LockedKey implements Key {
-	public static final LockedKey key = new LockedKey();
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 
-	private LockedKey() {
+public class SnowflakeCounter implements SeqCounter {
 
-	}
-
-	@Override
-	public String getId() {
-		return "LockedKey";
-	}
+	private final int snow;
+	private final AtomicInteger seq;
 
 	@Override
-	public void close() {
+	public int count(String name) throws Exception {
+		int random = seq.incrementAndGet() & 0xFFFF;
+		random <<= 8;
+		return snow | random;
+	}
 
+	public SnowflakeCounter(int snow) {
+		this.snow = snow & 0xFF;
+		seq = new AtomicInteger(ThreadLocalRandom.current().nextInt());
 	}
 
 }

@@ -62,13 +62,13 @@ public final class Rpc {
 			req.setTest(true);
 		}
 		req.setStart(System.currentTimeMillis());
-		String sn = UUIDSeed.random();
-		req.setFullSn(sn, context.rootSn(), context.contextSn());
+		String sn = UUIDSeed.seq18();
+		req.setFullSn(sn, context.traceId(), context.nextSpanId());
 		req.setUserId(context.userId());
 		req.setApi(method);
 		req.setSrc(appId);
 
-		req.setAttachments(context.getAttachments());
+		req.setAttachments(context.attachmentView());
 		return req;
 	}
 

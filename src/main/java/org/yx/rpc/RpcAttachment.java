@@ -43,8 +43,8 @@ public class RpcAttachment implements Attachable, AutoCloseable {
 	}
 
 	@Override
-	public Map<String, String> getAttachments() {
-		return ThreadContext.get().getAttachments();
+	public Map<String, String> attachmentView() {
+		return ThreadContext.get().attachmentView();
 	}
 
 	@Override
@@ -58,28 +58,8 @@ public class RpcAttachment implements Attachable, AutoCloseable {
 	}
 
 	@Override
-	public void setAttachmentIfAbsent(String key, String value) {
-		ThreadContext.get().setAttachmentIfAbsent(key, value);
-	}
-
-	@Override
-	public void addAttachments(Map<String, String> attachments) {
-		ThreadContext.get().addAttachments(attachments);
-	}
-
-	@Override
-	public void addAttachmentsIfAbsent(Map<String, String> attachments) {
-		ThreadContext.get().addAttachmentsIfAbsent(attachments);
-	}
-
-	@Override
 	public String getAttachment(String key) {
 		return ThreadContext.get().getAttachment(key);
-	}
-
-	@Override
-	public String getAttachment(String key, String defaultValue) {
-		return ThreadContext.get().getAttachment(key, defaultValue);
 	}
 
 }

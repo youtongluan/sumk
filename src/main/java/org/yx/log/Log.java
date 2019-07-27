@@ -66,7 +66,6 @@ public final class Log {
 		if (module == null || module.isEmpty()) {
 			module = "root";
 		}
-
 		if (logType == LogType.slf4j) {
 			return LoggerFactory.getLogger(module);
 		}

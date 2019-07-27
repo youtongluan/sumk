@@ -13,23 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.common.sequence;
 
-public final class LockedKey implements Key {
-	public static final LockedKey key = new LockedKey();
+public interface SeqCounter {
 
-	private LockedKey() {
-
-	}
-
-	@Override
-	public String getId() {
-		return "LockedKey";
-	}
-
-	@Override
-	public void close() {
-
-	}
-
+	int count(String name) throws Exception;
 }

@@ -42,7 +42,7 @@ public class Loggers {
 
 	static {
 
-		AppInfo.addObserver((a, b) -> {
+		AppInfo.addObserver(info -> {
 			try {
 				String temp = AppInfo.get("sumk.log.level", "info");
 				String[] levelStrs = temp.replace('，', ',').split(",");

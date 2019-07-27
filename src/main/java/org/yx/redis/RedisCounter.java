@@ -15,14 +15,14 @@
  */
 package org.yx.redis;
 
-import org.yx.common.SeqCounter;
+import org.yx.common.sequence.SeqCounter;
 
 public final class RedisCounter implements SeqCounter {
 
 	private final Redis redis;
 
 	@Override
-	public int count(String name) throws Exception {
+	public int count(String name) {
 		return redis.incr("SEQ_GLOBAL_FOR_ALL").intValue();
 	}
 

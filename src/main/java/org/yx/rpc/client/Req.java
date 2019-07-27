@@ -16,6 +16,7 @@
 package org.yx.rpc.client;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 import org.yx.rpc.ReqProtocol;
@@ -33,9 +34,9 @@ public class Req {
 
 	private transient String sn;
 
-	private transient String rootSn;
+	private transient String spanId;
 
-	private transient String fatherSn;
+	private transient String traceId;
 
 	private String j;
 
@@ -62,24 +63,18 @@ public class Req {
 		}
 		String[] ss = n.split(",", 3);
 		this.sn = ss[0];
-		this.rootSn = ss.length < 2 ? this.sn : ss[1];
-		this.fatherSn = ss.length < 3 ? this.rootSn : ss[2];
-		;
+		this.traceId = ss.length < 2 ? this.sn : ss[1];
+		this.spanId = ss.length < 3 ? "#" : ss[2];
+		if (this.traceId == null || this.traceId.length() == 0) {
+			this.traceId = sn;
+		}
 	}
 
-	public void setFullSn(String sn, String rootSn, String fatherSn) {
+	public void setFullSn(String sn, String traceId, String spanId) {
 		StringJoiner joiner = new StringJoiner(",");
-		joiner.add(sn);
-		if (rootSn == null || rootSn.isEmpty()) {
-			this.n = joiner.toString();
-			return;
-		}
-		joiner.add(rootSn);
-		if (fatherSn == null || fatherSn.isEmpty()) {
-			this.n = joiner.toString();
-			return;
-		}
-		joiner.add(fatherSn);
+		joiner.add(Objects.requireNonNull(sn));
+		joiner.add(traceId == null ? "" : traceId);
+		joiner.add(Objects.requireNonNull(spanId));
 		this.n = joiner.toString();
 	}
 
@@ -114,18 +109,18 @@ public class Req {
 		return sn;
 	}
 
-	public String getRootSn() {
+	public String getTraceId() {
 		if (sn == null) {
 			parseSn();
 		}
-		return rootSn;
+		return this.traceId;
 	}
 
-	public String getFatherSn() {
+	public String getSpanId() {
 		if (sn == null) {
 			parseSn();
 		}
-		return fatherSn;
+		return this.spanId;
 	}
 
 	public String getApi() {

@@ -15,12 +15,29 @@
  */
 package org.yx.rpc;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 
 import org.yx.main.SumkThreadPool;
 
-public class SoaExcutors {
+public final class SoaExcutors {
 
-	public static ExecutorService SERVER = SumkThreadPool.EXECUTOR;
-	public static ExecutorService CLINET = SumkThreadPool.EXECUTOR;
+	private static ExecutorService serverThreadPool = SumkThreadPool.EXECUTOR;
+	private static ExecutorService clientThreadPool = SumkThreadPool.EXECUTOR;
+
+	public static ExecutorService getServerThreadPool() {
+		return serverThreadPool;
+	}
+
+	public static void setServerThreadPool(ExecutorService serverThreadPool) {
+		SoaExcutors.serverThreadPool = Objects.requireNonNull(serverThreadPool);
+	}
+
+	public static ExecutorService getClientThreadPool() {
+		return clientThreadPool;
+	}
+
+	public static void setClientThreadPool(ExecutorService clientThreadPool) {
+		SoaExcutors.clientThreadPool = Objects.requireNonNull(clientThreadPool);
+	}
 }

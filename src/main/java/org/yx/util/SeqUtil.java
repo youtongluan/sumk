@@ -15,29 +15,16 @@
  */
 package org.yx.util;
 
-import org.yx.common.Seq;
-import org.yx.common.SeqCounter;
-import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
-import org.yx.redis.SnowflakeCounter;
+import org.yx.common.sequence.SeqHolder;
 
 public class SeqUtil {
-	static Seq inst = new Seq();
-	static {
-		String snowKey = "sumk.counter.snow";
-		int snow = AppInfo.getInt(snowKey, Integer.getInteger(snowKey, Integer.MIN_VALUE));
-		if (snow != Integer.MIN_VALUE) {
-			inst.setCounter(new SnowflakeCounter(snow));
-			ConsoleLog.get("sumk.SYS").debug("use snow counter");
-		}
-	}
 
 	public static long next() {
-		return inst.next();
+		return SeqHolder.inst().next();
 	}
 
 	public static long next(String name) {
-		return inst.next(name);
+		return SeqHolder.inst().next(name);
 	}
 
 	public static String nextString() {
@@ -49,14 +36,7 @@ public class SeqUtil {
 	}
 
 	public static long getDate(long seq) {
-		return Seq.getDate(seq);
+		return SeqHolder.inst().getDate(seq);
 	}
 
-	public static void setCounter(SeqCounter counter) {
-		inst.setCounter(counter);
-	}
-
-	public static SeqCounter getCounter() {
-		return inst.getCounter();
-	}
 }

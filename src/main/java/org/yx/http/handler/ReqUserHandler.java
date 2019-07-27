@@ -21,8 +21,8 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeadersHolder;
-import org.yx.http.user.WebSessions;
 import org.yx.http.user.UserSession;
+import org.yx.http.user.WebSessions;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
@@ -60,7 +60,7 @@ public class ReqUserHandler implements HttpHandler {
 		ctx.key(key);
 		session.flushSession();
 		ThreadContext.get().userId(session.getUserId());
-		ThreadContext.get().setRootSnIfAbsent(UUIDSeed.seq18());
+		ThreadContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
 		return false;
 	}
 

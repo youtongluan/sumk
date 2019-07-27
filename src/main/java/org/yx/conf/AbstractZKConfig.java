@@ -21,6 +21,7 @@ import java.util.Collection;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.yx.log.ConsoleLog;
+import org.yx.log.SimpleLoggerHolder;
 
 public abstract class AbstractZKConfig implements SystemConfig {
 
@@ -49,7 +50,7 @@ public abstract class AbstractZKConfig implements SystemConfig {
 					AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
 					AppInfo.notifyUpdate();
 				} catch (Exception e) {
-					e.printStackTrace();
+					SimpleLoggerHolder.error("sumk.conf", e);
 				}
 			}
 

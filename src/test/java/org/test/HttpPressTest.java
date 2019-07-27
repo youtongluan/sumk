@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -49,11 +50,14 @@ public class HttpPressTest {
 		System.out.println("开始压测，请耐心等待10秒左右。。。");
 		long begin=System.currentTimeMillis();
 		int count=100000;
+		AtomicLong totalRT=new AtomicLong();
 		for(int i=0;i<count;i++){
 			executor.execute(()->{
 				try {
+					long b2=System.currentTimeMillis();
 					HttpResponse resp = client.execute(post);
 					HttpEntity resEntity = resp.getEntity();
+					totalRT.addAndGet(System.currentTimeMillis()-b2);
 					String ret = EntityUtils.toString(resEntity, charset);
 					Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 				} catch (Exception e) {
@@ -66,5 +70,6 @@ public class HttpPressTest {
 		executor.awaitTermination(1, TimeUnit.DAYS);
 		long time=System.currentTimeMillis()-begin;
 		System.out.println(count+"次http请求总耗时:"+time+"ms,平均每秒请求数:"+(count*1000d/time));
+		System.out.println("平均每个请求耗时："+totalRT.get()/count+"ms");
 	}
 }

@@ -27,7 +27,7 @@ class OrmSettings {
 	static ColumnType modifyByColumnType = ColumnType.ID_DB;
 
 	static void register() {
-		AppInfo.addObserver((a, b) -> {
+		AppInfo.addObserver(info -> {
 			try {
 				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.sql.failIfPropertyNotMapped", true);
 				FROM_CACHE = AppInfo.getBoolean("sumk.sql.fromCache", true);

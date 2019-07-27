@@ -22,6 +22,7 @@ import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
 
 public final class HttpUtil {
+
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
 		return WebSessions.getUserObject(clz);
 	}

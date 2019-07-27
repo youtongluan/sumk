@@ -69,13 +69,13 @@ public final class Lock implements Key {
 
 	Lock lock(long maxWaitTime) {
 		long begin = System.currentTimeMillis();
-		while (System.currentTimeMillis() - begin < maxWaitTime) {
+		do {
 			if (tryLock()) {
 				return this;
 			}
 			logger.debug("locked failed: {}={}", id, value);
 			LockSupport.parkNanos(this.intervalTime * 1000, 000L);
-		}
+		} while (System.currentTimeMillis() - begin < maxWaitTime);
 		return null;
 	}
 
@@ -86,6 +86,6 @@ public final class Lock implements Key {
 
 	@Override
 	public void close() {
-		SLock.unlock(this);
+		SLock.inst.unlock(this);
 	}
 }

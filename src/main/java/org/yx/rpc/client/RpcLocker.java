@@ -86,7 +86,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		if (future.getException() == null) {
 			return;
 		}
-		SoaExcutors.CLINET.execute(() -> {
+		SoaExcutors.getClientThreadPool().execute(() -> {
 			if (LockHolder.remove(req.getSn()) == null) {
 				return;
 			}

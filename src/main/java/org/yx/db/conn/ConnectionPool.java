@@ -90,13 +90,13 @@ public final class ConnectionPool implements AutoCloseable {
 			return;
 		}
 		try {
-			Log.get("DBConnectionContext").error("###connection leak:" + list.size());
+			LOG_CONN.error("###connection leak:" + list.size());
 			while (list.size() > 0) {
 				list.get(0).close();
 			}
 			connectionHolder.remove();
 		} catch (Exception e) {
-			e.printStackTrace();
+			LOG_CONN.error(e.getMessage(), e);
 		}
 		EventLane.removeALL();
 	}

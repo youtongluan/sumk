@@ -13,10 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.log;
 
-public interface RedisConstants {
+public interface SimpleLogger {
+	void debug(String module, String msg);
 
-	String DEFAULT = "default";
-	String SESSION = "session";
+	void info(String module, String msg);
+
+	void error(String module, String msg, Throwable e);
 }

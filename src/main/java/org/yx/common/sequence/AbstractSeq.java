@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.sequence;
 
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicIntegerArray;
@@ -21,53 +21,45 @@ import java.util.concurrent.atomic.AtomicIntegerArray;
 import org.slf4j.Logger;
 import org.yx.log.Log;
 
-public final class Seq {
-
+public abstract class AbstractSeq implements Seq {
 	private static final long FROMMILS = 1420041600000L;
 	private static final int LOCAL_SEQ_INDEX = 64;
-
 	private AtomicIntegerArray localSeqs = new AtomicIntegerArray(LOCAL_SEQ_INDEX + 1);
-	private SeqCounter counter;
+	protected final long fromMils;
+	protected SeqCounter counter;
 
-	public Seq() {
+	public AbstractSeq() {
+		this(FROMMILS);
+	}
+
+	public AbstractSeq(long from) {
+		this.fromMils = from;
 		try {
 			for (int i = 0; i < localSeqs.length(); i++) {
 				localSeqs.set(i, ThreadLocalRandom.current().nextInt(256));
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.get("sumk.seq").error(e.toString(), e);
 		}
 	}
 
-	public void setCounter(SeqCounter counter) {
-		this.counter = counter;
-	}
-
-	public SeqCounter getCounter() {
-		return this.counter;
-	}
-
-	private int localHashIndex(String name) {
+	protected int localHashIndex(String name) {
 		if (name == null || name.isEmpty()) {
 			return LOCAL_SEQ_INDEX;
 		}
 		return name.hashCode() & (LOCAL_SEQ_INDEX - 1);
 	}
 
-	private int localSeq(String name) {
+	protected int localSeq(String name) {
 		int hash = localHashIndex(name);
 		int num = localSeqs.incrementAndGet(hash);
-		if (num > 50000000) {
-			localSeqs.weakCompareAndSet(hash, num, ThreadLocalRandom.current().nextInt(100));
+		if (num > 0x3FFFFFFF) {
+			localSeqs.compareAndSet(hash, num, ThreadLocalRandom.current().nextInt(100));
 		}
 		return num;
 	}
 
-	private static long shortNowMills() {
-		return System.currentTimeMillis() - FROMMILS;
-	}
-
-	int subNumber(String name) {
+	protected int subNumber(String name) {
 		if (counter != null) {
 			try {
 				return counter.count(name);
@@ -86,32 +78,23 @@ public final class Seq {
 
 	}
 
-	public long next(String name) {
-		if (name != null) {
-			name = name.trim();
-			if (name.isEmpty()) {
-				name = null;
-			}
-		}
-		long num = shortNowMills();
-		num &= 0x7FFFFFFFFFL;
-		num <<= 24;
-		int sub = subNumber(name) & 0xFFFFFF;
-		return num | sub;
+	public void setCounter(SeqCounter counter) {
+		this.counter = counter;
+	}
+
+	public SeqCounter getCounter() {
+		return this.counter;
+	}
+
+	protected long shortNowMills() {
+		return System.currentTimeMillis() - fromMils;
+	}
+
+	protected long fullTime(long time) {
+		return time + fromMils;
 	}
 
 	public long next() {
 		return next(null);
 	}
-
-	private static long fullTime(long time) {
-		return time + FROMMILS;
-	}
-
-	public static long getDate(long seq) {
-		long num = seq & 0x7FFFFFFFFF000000L;
-		num >>= 24;
-		return fullTime(num);
-	}
-
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
 
+import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
@@ -33,7 +34,7 @@ public final class SLock {
 	private static final int REDIS_LEN = 16;
 	private static final String[] nodeKey = new String[REDIS_LEN];
 
-	static {
+	public static void init() {
 		try {
 			for (int i = 0; i < REDIS_LEN; i++) {
 				nodeKey[i] = "lock_" + i;
@@ -49,9 +50,18 @@ public final class SLock {
 			}
 		} catch (Exception e) {
 			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
-			Log.printStack(e);
+			Log.printStack("sumk.lock", e);
+			if (AppInfo.getBoolean("sumk.shutdown.if.lock", false)) {
+				System.exit(-1);
+			}
 		}
 	}
+
+	private SLock() {
+
+	}
+
+	public static final SLock inst = new SLock();
 
 	static Redis redis(String id) {
 		int index = id.hashCode() & (REDIS_LEN - 1);
@@ -84,7 +94,7 @@ public final class SLock {
 		return null;
 	}
 
-	public static void unlock() {
+	public void releaseLocalLocks() {
 		List<Lock> list = locks.get();
 		for (Lock lock : list) {
 			lock.unlock();
@@ -97,7 +107,7 @@ public final class SLock {
 	 * @param key
 	 *            为null的话，将不发生任何事情
 	 */
-	public static void unlock(Key key) {
+	public void unlock(Key key) {
 		List<Lock> list = locks.get();
 		if (list == null || list.isEmpty() || key == null || key == LockedKey.key) {
 			return;
@@ -119,14 +129,29 @@ public final class SLock {
 	 *            要被锁的对象
 	 * @param maxWaitTime
 	 *            获取锁的最大时间，单位ms
+	 * @param maxLockTime
+	 *            最大的锁住时间，单位秒
+	 * @return Key对象,或者null
+	 */
+	public Key tryLock(String name, long maxWaitTime, int maxLockTime) {
+		Lock lock = Lock.create(name, maxLockTime);
+		return tryLock(lock, maxWaitTime);
+	}
+
+	/**
+	 * 
+	 * @param name
+	 *            要被锁的对象
+	 * @param maxWaitTime
+	 *            获取锁的最大时间，单位ms
 	 * @return 锁的钥匙
 	 */
-	public static Key tryLock(String name, long maxWaitTime) {
+	public Key tryLock(String name, long maxWaitTime) {
 		Lock lock = Lock.create(name);
 		return tryLock(lock, maxWaitTime);
 	}
 
-	public static Key lock(String name) {
+	public Key lock(String name) {
 		return tryLock(name, Integer.MAX_VALUE);
 	}
 
@@ -136,10 +161,10 @@ public final class SLock {
 	 * @param lock
 	 *            锁对象
 	 * @param maxWaitTime
-	 *            获取锁的最大时间，单位ms
-	 * @return 锁
+	 *            获取锁的最大时间，单位ms。无论值为多少，都至少会尝试一次
+	 * @return Key对象,或者null
 	 */
-	public static Key tryLock(Lock lock, long maxWaitTime) {
+	public Key tryLock(Lock lock, long maxWaitTime) {
 		if (getLock(lock) != null) {
 			return LockedKey.key;
 		}

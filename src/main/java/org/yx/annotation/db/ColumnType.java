@@ -50,5 +50,4 @@ public enum ColumnType {
 		this.value = v;
 		this.order = order;
 	}
-
 }

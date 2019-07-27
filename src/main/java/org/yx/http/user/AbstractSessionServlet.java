@@ -37,7 +37,7 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String user = req.getParameter(userName());
-		final String sid = createSessionId();
+		final String sid = createSessionId(req);
 
 		try {
 			LoginObject obj = login(sid, user, req);
@@ -65,12 +65,12 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 				setCookie(req, resp, sid, userToken);
 			}
 
-			resp.getOutputStream().write("\t\n".getBytes());
+			resp.getOutputStream().write(new byte[] { '\t', '\n' });
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.get("sumk.http.login").error(e.toString(), e);
 		}
 
 	}
@@ -114,7 +114,7 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 
 	private UserSession session;
 
-	protected String createSessionId() {
+	protected String createSessionId(HttpServletRequest req) {
 		return UUIDSeed.random();
 	}
 

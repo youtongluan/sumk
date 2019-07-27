@@ -54,7 +54,9 @@ public class SocketConnectorSupplier implements Supplier<SocketConnector> {
 			con.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(MinaServer.SOA_SESSION_IDLE, 600));
 			con.setHandler(new ClientHandler());
 			con.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
-			con.getFilterChain().addLast("threadpool", new ExecutorFilter(SoaExcutors.CLINET));
+			if (AppInfo.getBoolean("soa.client.threadpool.enable", true)) {
+				con.getFilterChain().addLast("threadpool", new ExecutorFilter(SoaExcutors.getClientThreadPool()));
+			}
 			this.connector = con;
 			return con;
 		} catch (Exception e) {

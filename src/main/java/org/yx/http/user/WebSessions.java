@@ -21,7 +21,7 @@ import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Log;
 import org.yx.redis.Redis;
-import org.yx.redis.RedisConstants;
+import org.yx.redis.RedisConfig;
 import org.yx.redis.RedisPool;
 
 public class WebSessions {
@@ -39,7 +39,7 @@ public class WebSessions {
 			initSession();
 		}
 		if (session == null) {
-			Log.get("session").info("session has not created");
+			Log.get("sumk.session").info("session has not created");
 			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆.");
 		}
 		return session;
@@ -52,7 +52,7 @@ public class WebSessions {
 	public static void remove() {
 		userSession();
 		if (session == null) {
-			Log.get("session").debug("has removed");
+			Log.get("sumk.session").debug("has removed");
 			return;
 		}
 		session.removeSession();
@@ -74,14 +74,14 @@ public class WebSessions {
 		if (session != null) {
 			return;
 		}
-		Redis redis = RedisPool.getRedisExactly(RedisConstants.SESSION);
+		Redis redis = RedisPool.getRedisExactly(RedisConfig.SESSION);
 		HttpSessionFactory factory = IOC.get(HttpSessionFactory.class);
 		if (factory == null) {
 			factory = () -> redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
 		}
 		session = factory.create();
 		if (LocalUserSession.class.isInstance(session)) {
-			Log.get("loginAction").info("use local session.");
+			Log.get("sumk.loginAction").info("use local session.");
 		}
 	}
 }

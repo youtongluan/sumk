@@ -87,6 +87,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	 *            已组装出来的sql
 	 */
 	protected void buildLimit(StringBuilder sql) {
+
 		sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
 	}
 

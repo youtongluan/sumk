@@ -97,11 +97,7 @@ public class ServerHandler implements IoHandler {
 			}
 			if (Request.class.isInstance(obj)) {
 				final Request req = (Request) obj;
-				ThreadContext context = ThreadContext.rpcContext(req.getApi(), req.getRootSn(), req.getSn(),
-						ThreadContext.get().isTest());
-				context.userId(req.getUserId());
-				context.setAttachments(req.getAttachments());
-
+				ThreadContext.rpcContext(req, ThreadContext.get().isTest());
 				for (RequestHandler h : handlers) {
 					Response ret = h.handle(req);
 					if (ret != null) {

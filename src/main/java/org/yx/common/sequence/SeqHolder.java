@@ -13,23 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.common.sequence;
 
-public final class LockedKey implements Key {
-	public static final LockedKey key = new LockedKey();
+import java.util.Objects;
 
-	private LockedKey() {
+import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 
+public class SeqHolder {
+	private static Seq inst = new SeqImpl();
+	static {
+		String snowKey = "sumk.counter.snow";
+		int snow = AppInfo.getInt(snowKey, Integer.getInteger(snowKey, Integer.MIN_VALUE));
+		if (snow != Integer.MIN_VALUE) {
+			inst.setCounter(new SnowflakeCounter(snow));
+			ConsoleLog.get("sumk.seq").debug("use snow counter");
+		}
 	}
 
-	@Override
-	public String getId() {
-		return "LockedKey";
+	public static Seq inst() {
+		return inst;
 	}
 
-	@Override
-	public void close() {
-
+	public static void setSeq(Seq seq) {
+		SeqHolder.inst = Objects.requireNonNull(seq);
 	}
 
 }

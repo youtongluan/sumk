@@ -13,16 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.common.sequence;
 
-import org.yx.common.ThreadContext;
+public final class LongTermSeqImpl extends AbstractSeq {
 
-public class Status {
-	public static boolean isTest() {
-		return ThreadContext.get().isTest();
+	public LongTermSeqImpl() {
+		super();
 	}
 
-	public static void setTest(boolean test) {
-		ThreadContext.get().setTest(test);
+	public LongTermSeqImpl(long from) {
+		super(from);
 	}
+
+	public long next(String name) {
+		long num = shortNowMills();
+		num &= 0x1FFFFFFFFFFL;
+		num <<= 23;
+		int sub = subNumber(name) & 0x7FFFFF;
+		return num | sub;
+	}
+
+	public long getDate(long seq) {
+		long num = seq & 0xFFFFFFFFFF800000L;
+		num >>>= 23;
+		return fullTime(num);
+	}
+
 }

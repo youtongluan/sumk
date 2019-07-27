@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.Enumeration;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.SimpleLoggerHolder;
 
 public class Loader {
 
@@ -36,7 +37,7 @@ public class Loader {
 			try {
 				return (T) Loader.newInstance(daoClz);
 			} catch (Throwable e) {
-				e.printStackTrace();
+				SimpleLoggerHolder.inst().error("sumk.bean", e.getMessage(), e);
 				return null;
 			}
 		}
@@ -44,7 +45,7 @@ public class Loader {
 	}
 
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
-		if (!clz.startsWith("org") && !clz.startsWith("com") && !clz.startsWith("net")) {
+		if (!clz.startsWith("org.") && !clz.startsWith("com.") && !clz.startsWith("net.") && !clz.startsWith("io.")) {
 			try {
 				return Loader.class.getClassLoader().loadClass("org.yx.".concat(clz));
 			} catch (Throwable e) {

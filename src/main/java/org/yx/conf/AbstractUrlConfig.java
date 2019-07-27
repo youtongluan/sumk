@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.yx.log.ConsoleLog;
+import org.yx.log.SimpleLoggerHolder;
 import org.yx.main.SumkServer;
 import org.yx.util.StreamUtil;
 
@@ -95,7 +96,7 @@ public abstract class AbstractUrlConfig {
 			handleData(data);
 			this.rawData = data;
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.error("sumk.conf", e);
 			return false;
 		} finally {
 			if (conn != null) {

@@ -21,6 +21,7 @@ import org.yx.db.conn.ConnectionPool;
 import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
 import org.yx.db.sql.Select;
+import org.yx.db.sql.SelectFactory;
 import org.yx.db.sql.Update;
 import org.yx.db.visit.Visitors;
 
@@ -31,7 +32,7 @@ import org.yx.db.visit.Visitors;
  * @author 游夏
  *
  */
-public class DB {
+public final class DB {
 	/**
 	 * 进行插入，如果主键是单主键，并且主键是Long类型。 可以不用显示设置主键，系统会自动生成主键<BR>
 	 * 要执行execute方法才能生效
@@ -104,7 +105,7 @@ public class DB {
 	}
 
 	public static Select select() {
-		return new Select(Visitors.queryVisitorForORM);
+		return SelectFactory.create();
 	}
 
 	public static Select select(Object pojo) {
