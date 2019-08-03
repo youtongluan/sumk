@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.db.sql;
 
-/**
- * 分布式锁的钥匙
- * 
- * @author 游夏
- *
- */
-public interface Key extends AutoCloseable {
-	/**
-	 * @return 钥匙的Id，肯定不为空
-	 */
-	String getId();
+public interface DBSupplier {
+	Insert insert();
 
-	@Override
-	void close();
+	Update update();
 
+	Select select();
+
+	Delete delete();
 }

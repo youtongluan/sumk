@@ -13,23 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.db.sql;
 
-public final class LockedKey implements Key {
-	public static final LockedKey key = new LockedKey();
+import java.util.Objects;
 
-	private LockedKey() {
+public final class DBFactory {
+	private static DBSupplier supplier = new DBSupplierImpl();
 
+	public static void setSupplier(DBSupplier supplier) {
+		DBFactory.supplier = Objects.requireNonNull(supplier);
 	}
 
-	@Override
-	public String getId() {
-		return "LockedKey";
+	public static Select select() {
+		return supplier.select();
 	}
 
-	@Override
-	public void close() {
+	public static Insert insert() {
+		return supplier.insert();
+	}
 
+	public static Update update() {
+		return supplier.update();
+	}
+
+	public static Delete delete() {
+		return supplier.delete();
 	}
 
 }

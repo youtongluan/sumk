@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
-import org.yx.common.lock.SLock;
+import org.yx.common.lock.Locker;
 import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
 import org.yx.log.ConsoleLog;
@@ -51,7 +51,7 @@ public class RedisPlugin implements Plugin {
 			System.exit(-1);
 		}
 
-		SLock.init();
+		Locker.init();
 	}
 
 	private static void initSeqUtilCounter() {

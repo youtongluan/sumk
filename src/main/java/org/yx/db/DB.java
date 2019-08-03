@@ -18,12 +18,11 @@ package org.yx.db;
 import java.sql.SQLException;
 
 import org.yx.db.conn.ConnectionPool;
+import org.yx.db.sql.DBFactory;
 import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
 import org.yx.db.sql.Select;
-import org.yx.db.sql.SelectFactory;
 import org.yx.db.sql.Update;
-import org.yx.db.visit.Visitors;
 
 /**
  * ORM的入口。 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
@@ -40,7 +39,7 @@ public final class DB {
 	 * @return Insert对象
 	 */
 	public static Insert insert() {
-		return new Insert(Visitors.modifyVisitor);
+		return DBFactory.insert();
 	}
 
 	/**
@@ -66,7 +65,7 @@ public final class DB {
 	 * @return Update对象
 	 */
 	public static Update update() {
-		return new Update(Visitors.modifyVisitor);
+		return DBFactory.update();
 	}
 
 	/**
@@ -86,7 +85,7 @@ public final class DB {
 	}
 
 	public static Delete delete() {
-		return new Delete(Visitors.modifyVisitor);
+		return DBFactory.delete();
 	}
 
 	/**
@@ -105,7 +104,7 @@ public final class DB {
 	}
 
 	public static Select select() {
-		return SelectFactory.create();
+		return DBFactory.select();
 	}
 
 	public static Select select(Object pojo) {

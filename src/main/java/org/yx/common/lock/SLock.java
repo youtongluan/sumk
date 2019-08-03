@@ -15,164 +15,76 @@
  */
 package org.yx.common.lock;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.concurrent.locks.LockSupport;
 
+import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
-import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
-import org.yx.redis.Redis;
-import org.yx.redis.RedisPool;
-import org.yx.util.StringUtil;
+import org.yx.util.Assert;
+import org.yx.util.UUIDSeed;
 
-public final class SLock {
-	private static final int REDIS_LEN = 16;
-	private static final String[] nodeKey = new String[REDIS_LEN];
+public final class SLock implements Lock {
+	static final Logger logger = Log.get("sumk.lock");
+	final static String sha = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
+	private final String id;
+	private final String value;
+	private final int maxLockTime;
 
-	public static void init() {
-		try {
-			for (int i = 0; i < REDIS_LEN; i++) {
-				nodeKey[i] = "lock_" + i;
+	int intervalTime;
+
+	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
+		Assert.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
+		Assert.isTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
+				"lock param is not valid");
+		this.id = keyId;
+		this.value = value;
+		this.maxLockTime = maxLockTime;
+		this.intervalTime = intervalTime;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public static SLock create(String name, int maxLockTime, int intervalTime) {
+		return new SLock(name, UUIDSeed.seq(), maxLockTime, intervalTime);
+	}
+
+	public static SLock create(String name) {
+		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 300));
+	}
+
+	public static SLock create(String name, int maxLockTime) {
+		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 10));
+	}
+
+	boolean tryLock() {
+		String ret = Locker.redis(id).set(id, value, "NX", "EX", maxLockTime);
+		if (ret == null) {
+			return false;
+		}
+		return ret.equalsIgnoreCase("OK") || ret.equals("1");
+	}
+
+	boolean lock(long maxWaitTime) {
+		long begin = System.currentTimeMillis();
+		do {
+			if (tryLock()) {
+				return true;
 			}
-			String script = StringUtil.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
-			Set<Redis> set = new HashSet<>();
-			for (String key : nodeKey) {
-				Redis redis = RedisPool.get(key);
-				if (redis == null || !set.add(redis)) {
-					continue;
-				}
-				redis.scriptLoad(script);
-			}
-		} catch (Exception e) {
-			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
-			Log.printStack("sumk.lock", e);
-			if (AppInfo.getBoolean("sumk.shutdown.if.lock", false)) {
-				System.exit(-1);
-			}
-		}
+			logger.debug("locked failed: {}={}", id, value);
+			LockSupport.parkNanos(this.intervalTime * 1000, 000L);
+		} while (System.currentTimeMillis() - begin < maxWaitTime);
+		return false;
 	}
 
-	private SLock() {
-
+	void unlock0() {
+		Locker.redis(id).evalsha(sha, 1, id, value);
+		logger.debug("unlock: {}={}", id, value);
 	}
 
-	public static final SLock inst = new SLock();
-
-	static Redis redis(String id) {
-		int index = id.hashCode() & (REDIS_LEN - 1);
-		Redis redis = RedisPool.get(nodeKey[index]);
-		if (redis == null) {
-			SumkException.throwException(8295462, "SLock must use in redis environment");
-		}
-		return redis;
+	@Override
+	public void unlock() {
+		Locker.inst.unlock(this);
 	}
-
-	private static final ThreadLocal<List<Lock>> locks = new ThreadLocal<List<Lock>>() {
-		@Override
-		protected List<Lock> initialValue() {
-			return new ArrayList<>(2);
-		}
-	};
-
-	private static Lock getLock(Key key) {
-		List<Lock> list = locks.get();
-		if (list == null || list.isEmpty() || key == null) {
-			return null;
-		}
-		Iterator<Lock> it = list.iterator();
-		while (it.hasNext()) {
-			Lock lock = it.next();
-			if (lock.getId().equals(key.getId())) {
-				return lock;
-			}
-		}
-		return null;
-	}
-
-	public void releaseLocalLocks() {
-		List<Lock> list = locks.get();
-		for (Lock lock : list) {
-			lock.unlock();
-		}
-		locks.remove();
-	}
-
-	/**
-	 * 
-	 * @param key
-	 *            为null的话，将不发生任何事情
-	 */
-	public void unlock(Key key) {
-		List<Lock> list = locks.get();
-		if (list == null || list.isEmpty() || key == null || key == LockedKey.key) {
-			return;
-		}
-		ListIterator<Lock> it = list.listIterator(list.size());
-		while (it.hasPrevious()) {
-			Lock lock = it.previous();
-			if (lock.getId().equals(key.getId())) {
-				lock.unlock();
-				it.remove();
-				return;
-			}
-		}
-	}
-
-	/**
-	 * 
-	 * @param name
-	 *            要被锁的对象
-	 * @param maxWaitTime
-	 *            获取锁的最大时间，单位ms
-	 * @param maxLockTime
-	 *            最大的锁住时间，单位秒
-	 * @return Key对象,或者null
-	 */
-	public Key tryLock(String name, long maxWaitTime, int maxLockTime) {
-		Lock lock = Lock.create(name, maxLockTime);
-		return tryLock(lock, maxWaitTime);
-	}
-
-	/**
-	 * 
-	 * @param name
-	 *            要被锁的对象
-	 * @param maxWaitTime
-	 *            获取锁的最大时间，单位ms
-	 * @return 锁的钥匙
-	 */
-	public Key tryLock(String name, long maxWaitTime) {
-		Lock lock = Lock.create(name);
-		return tryLock(lock, maxWaitTime);
-	}
-
-	public Key lock(String name) {
-		return tryLock(name, Integer.MAX_VALUE);
-	}
-
-	/**
-	 * 尝试加锁，如果锁定失败，就返回null
-	 * 
-	 * @param lock
-	 *            锁对象
-	 * @param maxWaitTime
-	 *            获取锁的最大时间，单位ms。无论值为多少，都至少会尝试一次
-	 * @return Key对象,或者null
-	 */
-	public Key tryLock(Lock lock, long maxWaitTime) {
-		if (getLock(lock) != null) {
-			return LockedKey.key;
-		}
-		lock = lock.lock(maxWaitTime);
-		if (lock != null) {
-			locks.get().add(lock);
-		}
-		return lock;
-	}
-
 }

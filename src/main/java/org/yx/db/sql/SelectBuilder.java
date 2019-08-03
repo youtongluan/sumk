@@ -74,21 +74,24 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (StringUtil.isNotEmpty(order)) {
 			sql.append(" ORDER BY ").append(order);
 		}
-		if (this.offset >= 0 && this.limit > 0) {
-			buildLimit(sql);
+		if (this.limit > 0) {
+			buildLimitAndOffset(sql);
 		}
 		return new MapedSql(sql.toString(), paramters);
 	}
 
 	/**
-	 * 组装offset和limit
+	 * 组装分页，也就是offset和limit
 	 * 
 	 * @param sql
 	 *            已组装出来的sql
 	 */
-	protected void buildLimit(StringBuilder sql) {
+	protected void buildLimitAndOffset(StringBuilder sql) {
 
-		sql.append(" LIMIT ").append(this.offset).append(',').append(this.limit);
+		sql.append(" LIMIT ").append(this.limit);
+		if (offset > 0) {
+			sql.append(" OFFSET ").append(this.offset);
+		}
 	}
 
 	protected CharSequence buildOrder() {

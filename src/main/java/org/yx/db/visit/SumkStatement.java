@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -148,7 +149,16 @@ public class SumkStatement {
 		int size = params.size();
 		if (params != null && size > 0) {
 			for (int i = 0; i < size; i++) {
-				statement.setObject(i + 1, params.get(i));
+				Object parameterObj = params.get(i);
+				if (parameterObj == null) {
+					statement.setNull(i + 1, java.sql.Types.OTHER);
+					continue;
+				}
+				if (parameterObj.getClass() == java.util.Date.class) {
+					statement.setTimestamp(i + 1, new Timestamp(((java.util.Date) parameterObj).getTime()));
+					continue;
+				}
+				statement.setObject(i + 1, parameterObj);
 			}
 		}
 		if (LOG.isDebugEnabled()) {

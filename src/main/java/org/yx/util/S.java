@@ -16,7 +16,7 @@
 package org.yx.util;
 
 import org.yx.common.GsonHelper;
-import org.yx.common.lock.SLock;
+import org.yx.common.lock.Locker;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
 import org.yx.util.secury.Encryptor;
@@ -40,7 +40,7 @@ public abstract class S {
 	/**
 	 * 分布式锁
 	 */
-	public static final SLock lock = SLock.inst;
+	public static final Locker lock = Locker.inst;
 
 	public static final BeanConverter beans = new BeanConverter();
 

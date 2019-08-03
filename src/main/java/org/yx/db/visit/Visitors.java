@@ -17,7 +17,6 @@ package org.yx.db.visit;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -73,17 +72,11 @@ public final class Visitors {
 		SumkStatement statement = SumkStatement.createAutoGenerateKeyStatement(conn, maped);
 		int count = statement.executeUpdate();
 		ResultSet rs = statement.getGeneratedKeys();
-		ResultSetMetaData md = rs.getMetaData();
-		int columnCount = md.getColumnCount();
-		List<long[]> keys = new ArrayList<>();
+		List<Long> keys = new ArrayList<>();
 		InsertResult result = new InsertResult(count, keys);
-		if (rs != null) {
-			while (rs.next()) {
-				long[] row = new long[columnCount];
-				keys.add(row);
-				for (int i = 1; i <= columnCount; i++) {
-					row[i - 1] = rs.getLong(i);
-				}
+		if (rs != null && rs.getMetaData().getColumnCount() > 0) {
+			if (rs.next()) {
+				keys.add(rs.getLong(1));
 			}
 		}
 		rs.close();

@@ -223,6 +223,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
+		Assert.isTrue(offset >= 0, "offset must bigger or equal than 0");
 		this.offset = offset;
 		return this;
 	}
@@ -234,6 +235,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
+		Assert.isTrue(limit >= 0, "limit must bigger or equal than 0");
 		this.limit = limit;
 		return this;
 	}

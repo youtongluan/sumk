@@ -13,25 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.lock;
+package org.yx.db.sql;
 
-/**
- * 分布式锁的钥匙
- * 
- * @author 游夏
- *
- */
-public interface Lock extends AutoCloseable {
-	/**
-	 * @return 钥匙的Id，肯定不为空
-	 */
-	String getId();
+import org.yx.db.visit.Visitors;
 
-	void unlock();
+public class DBSupplierImpl implements DBSupplier {
 
 	@Override
-	default void close() {
-		this.unlock();
+	public Insert insert() {
+		return new Insert(Visitors.modifyVisitor);
 	}
 
+	@Override
+	public Update update() {
+		return new Update(Visitors.modifyVisitor);
+	}
+
+	@Override
+	public Delete delete() {
+		return new Delete(Visitors.modifyVisitor);
+	}
+
+	@Override
+	public Select select() {
+		return new Select(Visitors.queryVisitorForORM);
+	}
 }
