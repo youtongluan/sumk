@@ -121,6 +121,7 @@ public class ConnectionWrapper implements Connection {
 	@Override
 	public void close() throws SQLException {
 		inner.close();
+		EventLane.remove(this);
 		this.inner = null;
 	}
 

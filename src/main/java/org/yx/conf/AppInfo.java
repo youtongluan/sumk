@@ -75,7 +75,7 @@ public final class AppInfo {
 				}
 			}
 		} catch (Throwable e) {
-			SimpleLoggerHolder.inst().info("sumk.SYS", "#AppInfo#error for sumk.appinfo.class:");
+			SimpleLoggerHolder.inst().info("sumk.conf", "#AppInfo#error for sumk.appinfo.class:");
 			SimpleLoggerHolder.error("sumk.conf", e);
 		}
 		try {

@@ -63,7 +63,7 @@ public final class Locker {
 
 	public static final Locker inst = new Locker();
 
-	static Redis redis(String id) {
+	public static Redis redis(String id) {
 		int index = id.hashCode() & (REDIS_LEN - 1);
 		Redis redis = RedisPool.get(nodeKey[index]);
 		if (redis == null) {

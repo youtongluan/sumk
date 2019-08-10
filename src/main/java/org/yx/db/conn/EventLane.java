@@ -33,7 +33,7 @@ public class EventLane {
 		}
 
 	};
-	private List<DBEvent> events = new ArrayList<DBEvent>(16);
+	private final List<DBEvent> events = new ArrayList<DBEvent>(16);
 
 	public EventLane() {
 	}
@@ -66,6 +66,7 @@ public class EventLane {
 		for (DBEvent event : pool.events) {
 			DBEventPublisher.publish(event);
 		}
+		pool.events.clear();
 	}
 
 	public static void remove(Connection conn) {

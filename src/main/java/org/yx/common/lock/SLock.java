@@ -15,8 +15,6 @@
  */
 package org.yx.common.lock;
 
-import java.util.concurrent.locks.LockSupport;
-
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
@@ -30,7 +28,7 @@ public final class SLock implements Lock {
 	private final String value;
 	private final int maxLockTime;
 
-	int intervalTime;
+	private final int intervalTime;
 
 	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
 		Assert.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
@@ -55,7 +53,7 @@ public final class SLock implements Lock {
 	}
 
 	public static SLock create(String name, int maxLockTime) {
-		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 10));
+		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 5));
 	}
 
 	boolean tryLock() {
@@ -73,7 +71,11 @@ public final class SLock implements Lock {
 				return true;
 			}
 			logger.debug("locked failed: {}={}", id, value);
-			LockSupport.parkNanos(this.intervalTime * 1000, 000L);
+			try {
+				Thread.sleep(this.intervalTime);
+			} catch (InterruptedException e) {
+				return false;
+			}
 		} while (System.currentTimeMillis() - begin < maxWaitTime);
 		return false;
 	}
