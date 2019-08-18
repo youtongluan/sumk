@@ -16,7 +16,6 @@
 package org.yx.common.matcher;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -27,12 +26,6 @@ public class MatcherFactory {
 	public static final String WILDCARD = "*";
 
 	private static final Logger log = ConsoleLog.get("sumk.common.matcher");
-
-	private Set<String> exacts;
-
-	private List<String> matchStarts;
-
-	private List<String> matchEnds;
 
 	public static TextMatcher createWildcardMatcher(String patterns, int minPatternLength) {
 
@@ -78,38 +71,6 @@ public class MatcherFactory {
 		String[] matchStarts = start.size() > 0 ? start.toArray(new String[start.size()]) : null;
 		String[] matchEnds = end.size() > 0 ? end.toArray(new String[end.size()]) : null;
 		return new WildcardMatcher(exacts, matchStarts, matchEnds);
-	}
-
-	public boolean match(String text) {
-
-		if (this.exacts != null && this.exacts.contains(text)) {
-
-			return true;
-		}
-
-		if (this.matchStarts != null) {
-			for (String start : this.matchStarts) {
-				if (text.startsWith(start)) {
-
-					return true;
-				}
-			}
-		}
-
-		if (this.matchEnds != null) {
-			for (String end : this.matchEnds) {
-				if (text.endsWith(end)) {
-
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-
-	@Override
-	public String toString() {
-		return "[exacts=" + exacts + ", matchStarts=" + matchStarts + ", matchEnds=" + matchEnds + "]";
 	}
 
 }

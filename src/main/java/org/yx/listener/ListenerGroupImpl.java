@@ -48,7 +48,7 @@ public class ListenerGroupImpl<T extends SumkEvent> implements ListenerGroup<T> 
 		if (!lis.contains(listener)) {
 			lis.add(listener);
 			this.listeners = lis;
-			Log.get(this.getClass()).trace("add listener {}", listener.toString());
+			Log.get("sumk.SYS").trace("add listener {}", listener.toString());
 			return true;
 		}
 		return false;

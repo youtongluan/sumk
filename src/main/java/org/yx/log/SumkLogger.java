@@ -27,7 +27,7 @@ import org.yx.conf.AppInfo;
 
 public abstract class SumkLogger implements Logger {
 
-	protected String name;
+	protected final String name;
 
 	public String getName() {
 		return name;
@@ -408,6 +408,11 @@ public abstract class SumkLogger implements Logger {
 	@Override
 	public void error(Marker marker, String msg, Throwable t) {
 		this.log(marker, ERROR, msg, t);
+	}
+
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName() + "[" + name + "]";
 	}
 
 }

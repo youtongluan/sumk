@@ -23,7 +23,7 @@ import java.util.function.Consumer;
 import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.SumkLogs;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.rpc.RpcActionHolder;
@@ -214,14 +214,14 @@ public final class Sender {
 		Request request = RpcGson.getGson().fromJson(json, Request.class);
 		req = null;
 
-		ThreadContext context = ThreadContext.get();
+		ActionContext context = ActionContext.get();
 		try {
-			ThreadContext.rpcContext(request, context.isTest());
+			ActionContext.rpcContext(request, context.isTest());
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
 			locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
 		} finally {
-			ThreadContext.recover(context);
+			ActionContext.recover(context);
 		}
 		return new RpcFutureImpl(locker);
 	}

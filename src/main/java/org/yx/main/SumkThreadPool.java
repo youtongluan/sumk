@@ -54,7 +54,16 @@ public class SumkThreadPool {
 	public static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
 
 	public static final BizException THREAD_THRESHOLD_OVER = new BizException(ErrorCode.THREAD_THRESHOLD_OVER,
-			"系统限流降级");
+			"系统限流降级") {
+
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Throwable fillInStackTrace() {
+			return this;
+		}
+
+	};
 	private static List<Thread> deamonThreads = new ArrayList<>();
 	static {
 		scheduledExecutor.scheduleAtFixedRate(() -> {

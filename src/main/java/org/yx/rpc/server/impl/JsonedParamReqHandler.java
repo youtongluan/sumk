@@ -17,7 +17,7 @@ package org.yx.rpc.server.impl;
 
 import org.yx.annotation.Bean;
 import org.yx.common.CalleeNode;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionHolder;
@@ -51,7 +51,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {
-			ThreadContext.remove();
+			ActionContext.remove();
 		}
 		resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
 		return resp;

@@ -13,9 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.context;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,7 +23,7 @@ import org.yx.rpc.Attachable;
 import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
-public final class ThreadContext implements Attachable {
+public final class ActionContext implements Attachable {
 
 	private static final String TEST = "sumk.test";
 
@@ -52,10 +51,15 @@ public final class ThreadContext implements Attachable {
 		return AppInfo.getBoolean(TEST, false);
 	}
 
-	private ThreadContext(ActionType type, String act, String traceId, String spanId, String userId, boolean isTest,
+	private ActionContext(ActionType type, String act, String traceId, String spanId, String userId, boolean isTest,
 			Map<String, String> attachments) {
 		this.type = type;
-		this.logContext = new LogContext(act, traceId, spanId, userId, this.parseTest(isTest), attachments);
+		this.logContext = LogContext.create(act, traceId, spanId, userId, this.parseTest(isTest), attachments);
+	}
+
+	private ActionContext(ActionType type, LogContext logContext) {
+		this.type = type;
+		this.logContext = logContext;
 	}
 
 	public ActionType type() {
@@ -74,35 +78,35 @@ public final class ThreadContext implements Attachable {
 		return logContext.spanId;
 	}
 
-	private static final ThreadLocal<ThreadContext> holder = new ThreadLocal<ThreadContext>() {
+	private static final ThreadLocal<ActionContext> holder = new ThreadLocal<ActionContext>() {
 
 		@Override
-		protected ThreadContext initialValue() {
+		protected ActionContext initialValue() {
 
-			return new ThreadContext(ActionType.OTHER, null, null, null, null, false, null);
+			return new ActionContext(ActionType.OTHER, LogContext.EMPTY);
 		}
 
 	};
 
-	public static ThreadContext httpContext(String act, String thisIsTest) {
+	public static ActionContext httpContext(String act, String thisIsTest) {
 		boolean test = false;
 		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
 			test = true;
 		}
-		ThreadContext c = new ThreadContext(ActionType.HTTP, act, null, null, null, test, null);
+		ActionContext c = new ActionContext(ActionType.HTTP, act, null, null, null, test, null);
 		holder.set(c);
 		return c;
 	}
 
-	public static ThreadContext rpcContext(Req req, boolean isTest) {
+	public static ActionContext rpcContext(Req req, boolean isTest) {
 		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
-		ThreadContext c = new ThreadContext(ActionType.RPC, req.getApi(), traceId, req.getSpanId(), req.getUserId(),
+		ActionContext c = new ActionContext(ActionType.RPC, req.getApi(), traceId, req.getSpanId(), req.getUserId(),
 				isTest, req.getAttachments());
 		holder.set(c);
 		return c;
 	}
 
-	public static ThreadContext get() {
+	public static ActionContext get() {
 		return holder.get();
 	}
 
@@ -115,7 +119,7 @@ public final class ThreadContext implements Attachable {
 		if (lc.traceId != null) {
 			return;
 		}
-		this.logContext = new LogContext(lc.act, traceId, lc.spanId, lc.userId, lc.test, lc.attachments);
+		this.logContext = LogContext.create(lc.act, traceId, lc.spanId, lc.userId, lc.test, lc.attachments);
 	}
 
 	public String userId() {
@@ -124,7 +128,7 @@ public final class ThreadContext implements Attachable {
 
 	public void userId(String userId) {
 		LogContext lc = this.logContext;
-		this.logContext = new LogContext(lc.act, lc.traceId, lc.spanId, userId, lc.test, lc.attachments);
+		this.logContext = LogContext.create(lc.act, lc.traceId, lc.spanId, userId, lc.test, lc.attachments);
 	}
 
 	@Override
@@ -134,7 +138,7 @@ public final class ThreadContext implements Attachable {
 
 	@Override
 	public void setAttachments(Map<String, String> attachments) {
-		this.logContext = new LogContext(this.logContext, attachments);
+		this.logContext = LogContext.create(this.logContext, attachments);
 	}
 
 	@Override
@@ -142,7 +146,7 @@ public final class ThreadContext implements Attachable {
 		Map<String, String> attachments = this.logContext.attachments;
 		attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
 		attachments.put(key, value);
-		this.logContext = new LogContext(this.logContext, attachments);
+		this.logContext = LogContext.create(this.logContext, attachments);
 	}
 
 	@Override
@@ -170,50 +174,8 @@ public final class ThreadContext implements Attachable {
 		return new StringBuilder().append(lc.spanId).append('.').append(seed).toString();
 	}
 
-	public static void recover(ThreadContext context) {
+	public static void recover(ActionContext context) {
 		holder.set(context);
-	}
-
-	public static final class LogContext {
-
-		public final String act;
-
-		public final String traceId;
-
-		public final String spanId;
-
-		public final String userId;
-
-		public final boolean test;
-
-		private final Map<String, String> attachments;
-
-		public LogContext(String act, String traceId, String spanId, String userId, boolean test,
-				Map<String, String> attachments) {
-			this.act = act;
-			this.traceId = StringUtil.isEmpty(traceId) ? null : traceId;
-			this.spanId = spanId;
-			this.userId = userId;
-			this.test = test;
-			this.attachments = attachments;
-		}
-
-		public LogContext(LogContext lc, Map<String, String> attachments) {
-			this.act = lc.act;
-			this.traceId = lc.traceId;
-			this.spanId = lc.spanId;
-			this.userId = lc.userId;
-			this.test = lc.test;
-			this.attachments = attachments == null || attachments.isEmpty() ? null
-					: Collections.unmodifiableMap(attachments);
-		}
-
-		/**
-		 * @return
-		 */
-		public Map<String, String> unmodifyAttachs() {
-			return this.attachments;
-		}
 	}
 
 	public LogContext logContext() {

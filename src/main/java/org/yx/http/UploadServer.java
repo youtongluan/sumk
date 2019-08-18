@@ -46,12 +46,12 @@ public class UploadServer extends AbstractHttpServer {
 			return;
 		}
 		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
-			Log.get(this.getClass()).error("the MIME of act is " + MULTI + ",not " + req.getContentType());
+			Log.get("sumk.http").error("the MIME of act is " + MULTI + ",not " + req.getContentType());
 			return;
 		}
 		if (info.upload == null) {
 
-			Log.get(this.getClass()).error(act + " has error type, it must be have @Upload");
+			Log.get("sumk.http").error(act + " has error type, it must be have @Upload");
 			return;
 		}
 		WebContext wc = new WebContext(act, info, req, resp);

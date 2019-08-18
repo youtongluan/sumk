@@ -15,16 +15,16 @@
  */
 package org.yx.main;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 
 public class SumkThread {
 
 	public static String userId() {
-		return ThreadContext.get().userId();
+		return ActionContext.get().userId();
 	}
 
 	public void userId(String userId) {
-		ThreadContext.get().userId(userId);
+		ActionContext.get().userId(userId);
 	}
 
 }

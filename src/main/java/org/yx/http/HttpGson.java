@@ -15,13 +15,9 @@
  */
 package org.yx.http;
 
-import java.util.Date;
-
-import org.yx.common.date.DateTimeTypeAdapter;
+import org.yx.common.GsonHelper;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.StringUtil;
-import org.yx.util.SumkDate;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,31 +35,9 @@ public final class HttpGson {
 	}
 
 	private static GsonBuilder gsonBuilder() {
-		String module = "http";
+		GsonBuilder gb = GsonHelper.builder("http");
 
-		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
-		String format = AppInfo.get(module + ".json.date.format", SumkDate.yyyy_MM_dd_HH_mm_ss_SSS);
-		if (StringUtil.isNotEmpty(format)) {
-			da.setDateFormat(format);
-		}
-		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
-		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", true)) {
-			gb.disableHtmlEscaping();
-		}
-		if (AppInfo.getBoolean(module + ".json.shownull", false)) {
-			gb.serializeNulls();
-		}
-		if (AppInfo.getBoolean(module + ".json.disableInnerClassSerialization", false)) {
-			gb.disableInnerClassSerialization();
-		}
-		if (AppInfo.getBoolean(module + ".json.generateNonExecutableJson", false)) {
-			gb.generateNonExecutableJson();
-		}
-		if (AppInfo.getBoolean(module + ".json.serializeSpecialFloatingPointValues", false)) {
-			gb.serializeSpecialFloatingPointValues();
-		}
-
-		if (AppInfo.getBoolean(module + ".json.longSerialize2String", true)) {
+		if (AppInfo.getBoolean("http.json.long2String", true)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
 		return gb;

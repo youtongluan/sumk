@@ -48,8 +48,7 @@ public class DataSourceWraper extends BasicDataSource {
 		case "any":
 			return DBType.ANY;
 		default:
-			SumkException.throwException(2342312, type + " is not correct db type");
-			return null;
+			throw new SumkException(2342312, type + " is not correct db type");
 		}
 	}
 
@@ -74,7 +73,7 @@ public class DataSourceWraper extends BasicDataSource {
 				&& ((ConnectionWrapper) write).getDataSource() == this) {
 			Connection c = SlaveConnectionWrapper.create((ConnectionWrapper) write);
 			if (c != null) {
-				Log.get("db").trace("use write connection for read");
+				Log.get("sumk.db.ds").trace("use write connection for read");
 				return c;
 			}
 		}

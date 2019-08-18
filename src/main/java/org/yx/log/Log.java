@@ -15,6 +15,8 @@
  */
 package org.yx.log;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yx.conf.AppInfo;
@@ -37,8 +39,25 @@ public final class Log {
 		}
 	}
 
+	static LogType logType() {
+		return logType;
+	}
+
+	public static LogType updateLogType() {
+		try {
+			String type = AppInfo.get("sumk.log.type", null);
+			if (type != null && type.length() > 0) {
+				type = type.trim().toLowerCase();
+				Log.setLogType(LogType.valueOf(type));
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return logType;
+	}
+
 	public static void setLogType(LogType type) {
-		logType = type;
+		logType = Objects.requireNonNull(type);
 		ConsoleLog.get("sumk.log").info("set logtype to {}", logType);
 	}
 
@@ -47,19 +66,7 @@ public final class Log {
 	}
 
 	public static Logger get(Class<?> clz) {
-		String name = clz.getName();
-		if (name.startsWith("org.yx.")) {
-			name = "sumk" + name.substring(6);
-		}
-		return get(name);
-	}
-
-	public static Logger get(Class<?> clz, Object id) {
-		String name = clz.getName();
-		if (name.startsWith("org.yx.")) {
-			name = "sumk" + name.substring(6);
-		}
-		return get(name + "." + String.valueOf(id));
+		return get(clz.getName());
 	}
 
 	public static Logger get(String module) {
@@ -69,7 +76,7 @@ public final class Log {
 		if (logType == LogType.slf4j) {
 			return LoggerFactory.getLogger(module);
 		}
-		return ConsoleLog.getLogger(module);
+		return DelegateLogger.get(module);
 	}
 
 	/**

@@ -37,7 +37,7 @@ import org.yx.redis.RedisPool;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtil;
 
-public class SumkServer {
+public final class SumkServer {
 	private static volatile boolean started;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
@@ -161,10 +161,10 @@ public class SumkServer {
 
 	private volatile static boolean destoryed = false;
 
-	/**
-	 * 
-	 * @return true表示应用已经停止了
-	 */
+	public static boolean isStarted() {
+		return started;
+	}
+
 	public static boolean isDestoryed() {
 		return destoryed;
 	}

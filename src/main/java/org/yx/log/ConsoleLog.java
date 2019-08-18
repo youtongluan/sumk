@@ -30,7 +30,7 @@ public class ConsoleLog extends SumkLogger {
 		}
 	}
 
-	public static SumkLogger getLogger(String name) {
+	public static SumkLogger get(String name) {
 		SumkLogger log = loggers.get(name);
 		if (log != null) {
 			return log;
@@ -38,10 +38,6 @@ public class ConsoleLog extends SumkLogger {
 		log = new ConsoleLog(name);
 		SumkLogger oldInstance = loggers.putIfAbsent(name, log);
 		return oldInstance == null ? log : oldInstance;
-	}
-
-	public static SumkLogger get(String name) {
-		return getLogger(name);
 	}
 
 	private ConsoleLog(String module) {

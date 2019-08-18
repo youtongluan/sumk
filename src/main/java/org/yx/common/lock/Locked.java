@@ -16,7 +16,7 @@
 package org.yx.common.lock;
 
 public final class Locked implements Lock {
-	public static final Locked key = new Locked();
+	public static final Locked inst = new Locked();
 
 	private Locked() {
 

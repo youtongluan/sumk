@@ -16,15 +16,13 @@
 package org.yx.common.lock;
 
 /**
- * 分布式锁的钥匙
+ * 分布式锁的钥匙。lock方法要从S.lock进入
  * 
  * @author 游夏
  *
  */
 public interface Lock extends AutoCloseable {
-	/**
-	 * @return 钥匙的Id，肯定不为空
-	 */
+
 	String getId();
 
 	void unlock();

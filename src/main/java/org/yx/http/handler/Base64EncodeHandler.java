@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.util.secury.Base64Util;
+import org.yx.util.S;
 
 public class Base64EncodeHandler implements HttpHandler {
 
@@ -28,7 +28,7 @@ public class Base64EncodeHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		byte[] bs = (byte[]) ctx.result();
-		byte[] data = Base64Util.encode(bs);
+		byte[] data = S.base64.encode(bs);
 		ctx.result(data);
 		return false;
 	}

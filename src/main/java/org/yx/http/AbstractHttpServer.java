@@ -20,13 +20,14 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.yx.common.SumkLogs;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.handler.HttpActionNode;
@@ -59,7 +60,16 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	protected Logger log = SumkLogs.HTTP_LOG;
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		this.handle(req, resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		this.handle(req, resp);
+	}
+
+	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
 		try {
 			setRespHeader(req, resp);
 
@@ -81,7 +91,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", req);
 				return;
 			}
-			ThreadContext.httpContext(act, req.getParameter("thisIsTest"));
+			ActionContext.httpContext(act, req.getParameter("thisIsTest"));
 			handle(act, info, req, resp);
 
 		} catch (Exception e) {
@@ -96,7 +106,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				log.error(e.toString(), e);
 			}
 		} finally {
-			ThreadContext.remove();
+			ActionContext.remove();
 		}
 	}
 

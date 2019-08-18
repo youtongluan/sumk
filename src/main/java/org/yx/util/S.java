@@ -15,10 +15,14 @@
  */
 package org.yx.util;
 
+import java.util.concurrent.ExecutorService;
+
 import org.yx.common.GsonHelper;
 import org.yx.common.lock.Locker;
+import org.yx.main.SumkThreadPool;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
+import org.yx.util.secury.Base64;
 import org.yx.util.secury.Encryptor;
 import org.yx.util.secury.Hasher;
 import org.yx.util.secury.MD5;
@@ -28,21 +32,32 @@ import com.google.gson.Gson;
 public abstract class S {
 
 	/**
-	 * 加密器，一般是AES对称加密
+	 * 加密器，默认是AES对称加密
 	 */
-	public static final Encryptor encryptor = new AESEncryptor();
+	public static final Encryptor cipher = new AESEncryptor();
 
 	/**
 	 * hash工具，就是大家常说的md5
 	 */
-	public static final Hasher hasher = new MD5();
+	public static final Hasher hash = new MD5();
 
 	/**
 	 * 分布式锁
 	 */
 	public static final Locker lock = Locker.inst;
-
-	public static final BeanConverter beans = new BeanConverter();
-
+	/**
+	 * bean和map的转换，以及属性复制。 只支持第一级field
+	 */
+	public static final BeanConverter bean = new BeanConverter();
+	/**
+	 * json工具
+	 */
 	public static final Gson json = GsonHelper.gson("sumk");
+
+	/**
+	 * 系统共用的线程池
+	 */
+	public static final ExecutorService executor = SumkThreadPool.EXECUTOR;
+
+	public static final Base64 base64 = Base64.inst;
 }

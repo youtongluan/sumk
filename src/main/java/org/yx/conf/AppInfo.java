@@ -255,7 +255,7 @@ public final class AppInfo {
 		ob.accept(info);
 	}
 
-	static synchronized void notifyUpdate() {
+	public static synchronized void notifyUpdate() {
 		localIp = info.get("sumk.ip");
 		List<Consumer<SystemConfig>> consumers;
 		synchronized (observers) {

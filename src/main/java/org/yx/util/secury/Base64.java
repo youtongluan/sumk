@@ -15,15 +15,19 @@
  */
 package org.yx.util.secury;
 
-import java.util.Base64;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 
-public final class Base64Util {
+public final class Base64 {
 
-	private static final Decoder decoder = Base64.getMimeDecoder();
+	private Base64() {
 
-	private static final Encoder encoder = Base64.getEncoder();
+	}
+
+	public static final Base64 inst = new Base64();
+	private final Decoder decoder = java.util.Base64.getMimeDecoder();
+
+	private final Encoder encoder = java.util.Base64.getEncoder();
 
 	/**
 	 * 解码，是否含有\r\n都能解码
@@ -32,11 +36,11 @@ public final class Base64Util {
 	 *            数据源
 	 * @return 明文
 	 */
-	public static byte[] decode(byte[] src) {
+	public byte[] decode(byte[] src) {
 		return decoder.decode(src);
 	}
 
-	public static byte[] encode(byte[] src) {
+	public byte[] encode(byte[] src) {
 		return encoder.encode(src);
 	}
 }

@@ -34,12 +34,12 @@ public class SimpleBeanUtil {
 	public static void setProperty(Object bean, Method m, String value)
 			throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if (value == null) {
-			Log.get(SimpleBeanUtil.class, "setProperty").debug("{} was ignored because value is null", m.getName());
+			Log.get("sumk.bean").debug("{} was ignored because value is null", m.getName());
 			return;
 		}
 		value = value.trim();
 		if (value.isEmpty()) {
-			Log.get(SimpleBeanUtil.class, "setProperty").debug("{} was ignored because value is empty", m.getName());
+			Log.get("sumk.bean").debug("{} was ignored because value is empty", m.getName());
 			return;
 		}
 		Class<?> ptype = m.getParameterTypes()[0];
@@ -59,7 +59,7 @@ public class SimpleBeanUtil {
 		} else if (ptype == String.class) {
 			v = value;
 		} else {
-			Log.get(SimpleBeanUtil.class, "setProperty").debug("{}因为类型不支持，被过滤掉", m.getName());
+			Log.get("sumk.bean").debug("{}因为类型不支持，被过滤掉", m.getName());
 			return;
 		}
 		m.invoke(bean, v);
@@ -71,7 +71,7 @@ public class SimpleBeanUtil {
 		for (String key : set) {
 			Method m = getMethod(ms, key);
 			if (m == null) {
-				Log.get(SimpleBeanUtil.class, "setProperties").debug("{}在{}中不存在", key, bean.getClass().getSimpleName());
+				Log.get("sumk.bean").debug("{}在{}中不存在", key, bean.getClass().getSimpleName());
 				continue;
 			}
 			setProperty(bean, m, map.get(key));

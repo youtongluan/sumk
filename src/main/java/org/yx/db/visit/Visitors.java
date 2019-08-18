@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
-import org.yx.db.conn.EventLane;
+import org.yx.db.event.EventLane;
 import org.yx.db.sql.InsertResult;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;

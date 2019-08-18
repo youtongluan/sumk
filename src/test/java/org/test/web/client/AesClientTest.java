@@ -58,14 +58,14 @@ public class AesClientTest {
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_base64").info(line);
+		Log.get( "aes_base64").info(line);
 		Assert.assertEquals("HTTP/1.1 200 OK", line);
 		HttpEntity resEntity = resp.getEntity();
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		byte[] contentBytes = Base64.getMimeDecoder().decode(raw);
 		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
+		Log.get( "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
 		/*
@@ -77,14 +77,14 @@ public class AesClientTest {
 		post.setEntity(se);
 		resp = client.execute(post);
 		line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_base64").info(line);
+		Log.get( "aes_base64").info(line);
 		Assert.assertEquals("HTTP/1.1 200 OK", line);
 		resEntity = resp.getEntity();
 		raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		contentBytes = Base64.getMimeDecoder().decode(raw);
 		ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
+		Log.get( "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
 
 		post = new HttpPost(getUrl("bizError"));
@@ -129,14 +129,14 @@ public class AesClientTest {
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();
-		Log.get(this.getClass(), "aes_sign").info(line);
+		Log.get( "aes_sign").info(line);
 
 		HttpEntity resEntity = resp.getEntity();
 		String raw = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", raw);
 		byte[] contentBytes = Base64.getMimeDecoder().decode(raw);
 		String ret = new String(Encrypt.decrypt(contentBytes, key), charset);
-		Log.get(this.getClass(), "aes_base64").info("服务器返回：" + ret);
+		Log.get( "aes_base64").info("服务器返回：" + ret);
 		Assert.assertEquals("hello 小明", ret);
 	}
 

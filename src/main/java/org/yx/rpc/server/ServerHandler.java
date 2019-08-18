@@ -24,7 +24,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.slf4j.Logger;
 import org.yx.bean.IOC;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
@@ -97,7 +97,7 @@ public class ServerHandler implements IoHandler {
 			}
 			if (Request.class.isInstance(obj)) {
 				final Request req = (Request) obj;
-				ThreadContext.rpcContext(req, ThreadContext.get().isTest());
+				ActionContext.rpcContext(req, ActionContext.get().isTest());
 				for (RequestHandler h : handlers) {
 					Response ret = h.handle(req);
 					if (ret != null) {

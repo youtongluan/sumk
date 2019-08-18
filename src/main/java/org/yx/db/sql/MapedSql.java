@@ -18,6 +18,7 @@ package org.yx.db.sql;
 import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.yx.common.ItemJoiner;
 import org.yx.db.DBGson;
@@ -34,7 +35,7 @@ public class MapedSql {
 
 	public MapedSql(String sql, List<Object> paramters) {
 		this.sql = sql;
-		this.paramters = paramters;
+		this.paramters = Objects.requireNonNull(paramters);
 	}
 
 	String sql;

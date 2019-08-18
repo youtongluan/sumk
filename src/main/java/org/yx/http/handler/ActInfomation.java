@@ -52,8 +52,7 @@ public class ActInfomation extends HttpServlet {
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(S.hasher.digest(sign, StandardCharsets.UTF_8))
-					|| StringUtil.isEmpty(mode)) {
+			if (sign == null || !md5.equals(S.hash.digest(sign, StandardCharsets.UTF_8)) || StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

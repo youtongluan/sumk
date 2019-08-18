@@ -39,7 +39,15 @@ import redis.clients.util.Pool;
 
 public abstract class Redis implements BinaryJedisCommands, JedisCommands, MultiKeyCommands, ScriptingCommands {
 
-	private static final SumkException DIS_CONNECTION_EXCEPTION = new SumkException(400, "redis is disConnected");
+	private static final SumkException DIS_CONNECTION_EXCEPTION = new SumkException(400, "redis is disConnected") {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		public Throwable fillInStackTrace() {
+			return this;
+		}
+
+	};
 	static final String LOG_NAME = "sumk.redis";
 	protected final List<Host> hosts;
 	protected final int db;

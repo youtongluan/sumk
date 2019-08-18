@@ -20,7 +20,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import org.yx.conf.AppInfo;
 import org.yx.util.SumkDate;
 
 import com.google.gson.GsonBuilder;
@@ -29,20 +28,17 @@ import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import com.google.gson.stream.JsonWriter;
 
-public class DateAdapters {
+public final class DateAdapters {
 
-	public static void register(GsonBuilder builder, String module) {
-		if (AppInfo.getBoolean(module + ".date.adaper.disable", false)) {
-			return;
-		}
-		builder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeAdapter());
-		builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-		builder.registerTypeAdapter(LocalTime.class, new LocalTimeAdapter());
-		builder.registerTypeAdapter(SumkDate.class, new SumkDateAdapter());
-		builder.registerTypeAdapter(java.sql.Date.class, new SqlDateAdapter());
+	public static void registerAll(GsonBuilder builder) {
+		builder.registerTypeAdapter(LocalDateTime.class, localDateTimeAdapter);
+		builder.registerTypeAdapter(LocalDate.class, localDateAdapter);
+		builder.registerTypeAdapter(LocalTime.class, localTimeAdapter);
+		builder.registerTypeAdapter(SumkDate.class, sumkDateAdapter);
+		builder.registerTypeAdapter(java.sql.Date.class, sqlDateAdapter);
 	}
 
-	public static class LocalDateTimeAdapter extends TypeAdapter<LocalDateTime> {
+	public static final TypeAdapter<LocalDateTime> localDateTimeAdapter = new TypeAdapter<LocalDateTime>() {
 
 		@Override
 		public void write(JsonWriter out, LocalDateTime value) throws IOException {
@@ -62,10 +58,9 @@ public class DateAdapters {
 			String v = in.nextString();
 			return SumkDate.of(v).toLocalDateTime();
 		}
+	};
 
-	}
-
-	public static class LocalDateAdapter extends TypeAdapter<LocalDate> {
+	public static final TypeAdapter<LocalDate> localDateAdapter = new TypeAdapter<LocalDate>() {
 
 		@Override
 		public void write(JsonWriter out, LocalDate value) throws IOException {
@@ -85,10 +80,9 @@ public class DateAdapters {
 			String v = in.nextString();
 			return SumkDate.of(v, SumkDate.yyyy_MM_dd).toLocalDate();
 		}
+	};
 
-	}
-
-	public static class LocalTimeAdapter extends TypeAdapter<LocalTime> {
+	public static final TypeAdapter<LocalTime> localTimeAdapter = new TypeAdapter<LocalTime>() {
 
 		@Override
 		public void write(JsonWriter out, LocalTime value) throws IOException {
@@ -108,10 +102,9 @@ public class DateAdapters {
 			String v = in.nextString();
 			return SumkDate.of(v, SumkDate.HH_mm_ss_SSS).toLocalTime();
 		}
+	};
 
-	}
-
-	public static class SumkDateAdapter extends TypeAdapter<SumkDate> {
+	public static final TypeAdapter<SumkDate> sumkDateAdapter = new TypeAdapter<SumkDate>() {
 
 		@Override
 		public void write(JsonWriter out, SumkDate sd) throws IOException {
@@ -131,10 +124,9 @@ public class DateAdapters {
 			String v = in.nextString();
 			return SumkDate.of(v);
 		}
+	};
 
-	}
-
-	public static class SqlDateAdapter extends TypeAdapter<java.sql.Date> {
+	public static final TypeAdapter<java.sql.Date> sqlDateAdapter = new TypeAdapter<java.sql.Date>() {
 
 		@Override
 		public void write(JsonWriter out, java.sql.Date d) throws IOException {
@@ -154,6 +146,5 @@ public class DateAdapters {
 			String v = in.nextString();
 			return TimeUtil.toType(SumkDate.of(v, SumkDate.yyyy_MM_dd), java.sql.Date.class, true);
 		}
-
-	}
+	};
 }

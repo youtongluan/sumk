@@ -28,9 +28,9 @@ import org.yx.http.HttpHeader;
 import org.yx.http.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
-import org.yx.util.secury.Base64Util;
 
 public abstract class AbstractSessionServlet implements LoginServlet {
 
@@ -100,7 +100,7 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 	}
 
 	protected void outputKey(HttpServletResponse resp, byte[] key) throws IOException {
-		resp.getOutputStream().write(Base64Util.encode(key));
+		resp.getOutputStream().write(S.base64.encode(key));
 	}
 
 	protected byte[] createEncryptKey(HttpServletRequest req) {

@@ -15,21 +15,21 @@
  */
 package org.yx.util;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.rpc.RpcAttachment;
 
 public final class RpcUtil {
 
 	public static String userId() {
-		return ThreadContext.get().userId();
+		return ActionContext.get().userId();
 	}
 
 	public static void setUserId(String userId) {
-		ThreadContext.get().userId(userId);
+		ActionContext.get().userId(userId);
 	}
 
 	public static boolean setUserIdIfEmpty(String userId) {
-		ThreadContext tc = ThreadContext.get();
+		ActionContext tc = ActionContext.get();
 		if (tc.userId() == null) {
 			tc.userId(userId);
 			return true;

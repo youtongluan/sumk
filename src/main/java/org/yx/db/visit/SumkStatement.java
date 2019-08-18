@@ -147,7 +147,7 @@ public class SumkStatement {
 		}
 		List<Object> params = maped.getParamters();
 		int size = params.size();
-		if (params != null && size > 0) {
+		if (size > 0) {
 			for (int i = 0; i < size; i++) {
 				Object parameterObj = params.get(i);
 				if (parameterObj == null) {

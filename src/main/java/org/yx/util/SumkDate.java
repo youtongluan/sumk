@@ -300,6 +300,10 @@ public final class SumkDate implements Comparable<SumkDate> {
 		return of(date).toLocalDateTime();
 	}
 
+	public static long takeUpTimeInMils(SumkDate from, SumkDate to) {
+		return to.getTimeInMils() - from.getTimeInMils();
+	}
+
 	final int year;
 
 	final byte month;
@@ -430,6 +434,10 @@ public final class SumkDate implements Comparable<SumkDate> {
 
 	public Date toDate() {
 		return toCalendar().getTime();
+	}
+
+	public long getTimeInMils() {
+		return toCalendar().getTimeInMillis();
 	}
 
 	public LocalDate toLocalDate() {

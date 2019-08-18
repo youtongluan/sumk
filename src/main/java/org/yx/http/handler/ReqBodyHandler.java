@@ -33,7 +33,7 @@ public class ReqBodyHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		if (ctx.data() != null) {
-			Log.get(ReqBodyHandler.class).debug("data is not null");
+			Log.get("sumk.http").debug("data is not null");
 			return false;
 		}
 		if (ctx.httpNode().argClz == null) {

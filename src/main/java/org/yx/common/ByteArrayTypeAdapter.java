@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import org.yx.util.secury.Base64Util;
+import org.yx.util.S;
 
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
@@ -58,7 +58,7 @@ public class ByteArrayTypeAdapter extends TypeAdapter<byte[]> {
 			if (s.isEmpty()) {
 				return new byte[0];
 			}
-			return Base64Util.decode(s.getBytes(StandardCharsets.UTF_8));
+			return S.base64.decode(s.getBytes(StandardCharsets.UTF_8));
 		}
 		if (token == JsonToken.BEGIN_ARRAY) {
 			return rawRead(in);

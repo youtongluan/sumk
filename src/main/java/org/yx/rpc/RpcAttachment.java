@@ -17,7 +17,7 @@ package org.yx.rpc;
 
 import java.util.Map;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 
 public class RpcAttachment implements Attachable, AutoCloseable {
 
@@ -31,7 +31,7 @@ public class RpcAttachment implements Attachable, AutoCloseable {
 	}
 
 	public static void remove() {
-		ThreadContext.remove();
+		ActionContext.remove();
 	}
 
 	/**
@@ -44,22 +44,22 @@ public class RpcAttachment implements Attachable, AutoCloseable {
 
 	@Override
 	public Map<String, String> attachmentView() {
-		return ThreadContext.get().attachmentView();
+		return ActionContext.get().attachmentView();
 	}
 
 	@Override
 	public void setAttachments(Map<String, String> attachments) {
-		ThreadContext.get().setAttachments(attachments);
+		ActionContext.get().setAttachments(attachments);
 	}
 
 	@Override
 	public void setAttachment(String key, String value) {
-		ThreadContext.get().setAttachment(key, value);
+		ActionContext.get().setAttachment(key, value);
 	}
 
 	@Override
 	public String getAttachment(String key) {
-		return ThreadContext.get().getAttachment(key);
+		return ActionContext.get().getAttachment(key);
 	}
 
 }

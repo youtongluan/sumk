@@ -137,7 +137,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 			if (SumkException.class.isInstance(e)) {
 				throw (SumkException) e;
 			}
-			throw new SumkException(435, e.getMessage(), e);
+			throw new SumkException(-53172189, e.getMessage(), e);
 		}
 	}
 

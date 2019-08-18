@@ -17,7 +17,7 @@ package org.yx.rpc.client;
 
 import java.util.Map;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -57,7 +57,7 @@ public final class Rpc {
 
 	static Req req(String method) {
 		Req req = new Req();
-		ThreadContext context = ThreadContext.get();
+		ActionContext context = ActionContext.get();
 		if (context.isTest()) {
 			req.setTest(true);
 		}

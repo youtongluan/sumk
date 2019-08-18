@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.conn;
+package org.yx.db.event;
 
 import java.sql.Connection;
 import java.util.ArrayList;
@@ -21,19 +21,15 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.db.event.DBEvent;
-import org.yx.db.event.DBEventPublisher;
-import org.yx.db.event.ModifyEvent;
-
-public class EventLane {
-	private static ThreadLocal<Map<Connection, EventLane>> POOL = new ThreadLocal<Map<Connection, EventLane>>() {
+public final class EventLane {
+	private static final ThreadLocal<Map<Connection, EventLane>> POOL = new ThreadLocal<Map<Connection, EventLane>>() {
 		@Override
 		protected Map<Connection, EventLane> initialValue() {
-			return new HashMap<Connection, EventLane>();
+			return new HashMap<Connection, EventLane>(4);
 		}
 
 	};
-	private final List<DBEvent> events = new ArrayList<DBEvent>(16);
+	private final List<DBEvent> events = new ArrayList<DBEvent>(8);
 
 	public EventLane() {
 	}
@@ -43,22 +39,22 @@ public class EventLane {
 	}
 
 	public static void pubuish(Connection conn, DBEvent event) {
-		if (event == null) {
-			return;
-		}
-		EventLane pool = pool(conn);
-		if (pool == null) {
-			pool = new EventLane();
-			POOL.get().put(conn, pool);
-		}
 		if (ModifyEvent.class.isInstance(event)) {
+			if (event == null) {
+				return;
+			}
+			EventLane pool = pool(conn);
+			if (pool == null) {
+				pool = new EventLane();
+				POOL.get().put(conn, pool);
+			}
 			pool.events.add(event);
 		} else {
 			DBEventPublisher.publish(event);
 		}
 	}
 
-	static void realPubuish(Connection conn) {
+	public static void realPubuish(Connection conn) {
 		EventLane pool = pool(conn);
 		if (pool == null) {
 			return;

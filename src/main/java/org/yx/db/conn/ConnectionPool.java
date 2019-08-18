@@ -22,8 +22,9 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.common.SumkLogs;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.db.DBType;
+import org.yx.db.event.EventLane;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
@@ -50,7 +51,7 @@ public final class ConnectionPool implements AutoCloseable {
 	private Connection writeConn;
 
 	public static ConnectionPool create(String dbName, DBType dbType) {
-		if (ThreadContext.get().isTest()) {
+		if (ActionContext.get().isTest()) {
 			if (connectionHolder.get().size() > 0) {
 				return null;
 			}
@@ -102,7 +103,7 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	public Connection connection(DBType type) {
-		if (ThreadContext.get().isTest()) {
+		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
 		switch (this.dbType) {
@@ -124,7 +125,7 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	private Connection connectionByUser(DBType type) {
-		if (ThreadContext.get().isTest()) {
+		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
 		if (type == DBType.ANY) {

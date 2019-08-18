@@ -33,7 +33,7 @@ public class ThreadPools {
 	}
 
 	public static SumkExecutorService create(String type, String configPrefix, int core, int max) {
-		return create(type, configPrefix, core, max, 3000);
+		return create(type, configPrefix, core, max, 30000);
 	}
 
 	public static SumkExecutorService create(String type, String configPrefix, int core, int max, int aliveTime) {

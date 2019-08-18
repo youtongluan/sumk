@@ -25,6 +25,7 @@ import java.util.Set;
 import javax.sql.DataSource;
 
 import org.apache.commons.dbcp2.BasicDataSource;
+import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -56,7 +57,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 		Map<String, Map<String, Integer>> statusMap = new HashMap<>();
 		for (DataSource datasource : set) {
 			if (!BasicDataSource.class.isInstance(datasource)) {
-				Log.get(this.getClass(), 25345).info("ds.class({}) is not instance form BasicDataSource",
+				Log.get("sumk.db").info("ds.class({}) is not instance form BasicDataSource",
 						datasource.getClass().getName());
 				continue;
 			}
@@ -79,7 +80,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 
 	private void parseDatasource() throws Exception {
 		if (this.write != null || this.read != null) {
-			Log.get(this.getClass(), 34534543).info("{} has init datasource", this.db);
+			Log.get("sumk.db").info("{} has init datasource", this.db);
 			return;
 		}
 		Map<DBType, WeightedDataSourceRoute> map = DataSourceFactory.create(this.db);
@@ -91,11 +92,12 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 		if (!type.isWritable()) {
 			try {
 				DataSource ds = this.read.datasource();
-				if (writeConn != null && DataSourceWraper.class.isInstance(ds)) {
+				if (writeConn != null && AppInfo.getBoolean("sumk.db.slave.enable", true)
+						&& DataSourceWraper.class.isInstance(ds)) {
 					@SuppressWarnings("resource")
 					DataSourceWraper wrapper = (DataSourceWraper) ds;
 
-					wrapper.readConnection(writeConn);
+					return wrapper.readConnection(writeConn);
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {

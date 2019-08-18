@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
@@ -59,8 +59,8 @@ public class ReqUserHandler implements HttpHandler {
 		}
 		ctx.key(key);
 		session.flushSession();
-		ThreadContext.get().userId(session.getUserId());
-		ThreadContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
+		ActionContext.get().userId(session.getUserId());
+		ActionContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
 		return false;
 	}
 

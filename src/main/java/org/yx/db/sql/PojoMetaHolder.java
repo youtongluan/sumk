@@ -94,7 +94,7 @@ public class PojoMetaHolder {
 			return;
 		}
 
-		Field[] fs = S.beans.getFields(pojoClz);
+		Field[] fs = S.bean.getFields(pojoClz);
 		Map<String, Field> map = new HashMap<>();
 		for (Field f : fs) {
 			if (Modifier.isFinal(f.getModifiers())) {

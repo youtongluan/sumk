@@ -33,7 +33,7 @@ public class WebServer extends AbstractHttpServer {
 	protected void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
 		if (info.upload != null) {
-			Log.get(this.getClass()).error(act + " type error.It is not uploader");
+			Log.get("sumk.http").error(act + " type error.It is not uploader");
 			return;
 		}
 

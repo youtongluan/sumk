@@ -24,11 +24,13 @@ import org.yx.util.UUIDSeed;
 public final class SLock implements Lock {
 	static final Logger logger = Log.get("sumk.lock");
 	final static String sha = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
+	private static final long CLOSED = -1;
 	private final String id;
 	private final String value;
 	private final int maxLockTime;
-
 	private final int intervalTime;
+
+	private long endTime;
 
 	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
 		Assert.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
@@ -49,44 +51,66 @@ public final class SLock implements Lock {
 	}
 
 	public static SLock create(String name) {
-		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 300));
+		return create(name, AppInfo.getInt("sumk.lock.maxLockTime", 60000));
 	}
 
 	public static SLock create(String name, int maxLockTime) {
-		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 5));
+		return create(name, maxLockTime, AppInfo.getInt("sumk.lock.intervalTime", 50));
 	}
 
 	boolean tryLock() {
-		String ret = Locker.redis(id).set(id, value, "NX", "EX", maxLockTime);
+		String ret = Locker.redis(id).set(id, value, "NX", "PX", maxLockTime);
 		if (ret == null) {
 			return false;
 		}
 		return ret.equalsIgnoreCase("OK") || ret.equals("1");
 	}
 
-	boolean lock(long maxWaitTime) {
-		long begin = System.currentTimeMillis();
-		do {
+	boolean lock(final int maxWaitTime) {
+		long now = System.currentTimeMillis();
+		this.endTime = now + this.maxLockTime;
+		if (this.endTime < 1) {
+			this.endTime = 1;
+		}
+		long waitEndTime = now + maxWaitTime;
+		for (;;) {
 			if (tryLock()) {
 				return true;
 			}
-			logger.debug("locked failed: {}={}", id, value);
+			long left = waitEndTime - System.currentTimeMillis();
+			if (left <= 0) {
+				return false;
+			}
+
+			long sleepTime = Math.min(left, (long) this.intervalTime);
 			try {
-				Thread.sleep(this.intervalTime);
+				logger.debug("locked failed: {}={},sleep {}ms", id, value, sleepTime);
+				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
 				return false;
 			}
-		} while (System.currentTimeMillis() - begin < maxWaitTime);
-		return false;
+		}
 	}
 
-	void unlock0() {
-		Locker.redis(id).evalsha(sha, 1, id, value);
-		logger.debug("unlock: {}={}", id, value);
+	boolean isEnable() {
+		long end = this.endTime;
+		return end > 0 && System.currentTimeMillis() < end;
 	}
 
 	@Override
 	public void unlock() {
-		Locker.inst.unlock(this);
+		if (this.endTime == CLOSED) {
+			return;
+		}
+		Locker.redis(id).evalsha(sha, 1, id, value);
+		this.endTime = CLOSED;
+		Locker.inst.remove(this);
+		logger.debug("unlock: {}={}", id, value);
 	}
+
+	@Override
+	public String toString() {
+		return id + "=" + value + " : " + this.endTime;
+	}
+
 }

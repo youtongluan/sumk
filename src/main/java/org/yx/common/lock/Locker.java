@@ -17,7 +17,6 @@ package org.yx.common.lock;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
@@ -79,14 +78,18 @@ public final class Locker {
 		}
 	};
 
-	private static SLock getLock(Lock key) {
+	private static SLock getLock(final Lock key) {
 		List<SLock> list = locks.get();
 		if (list == null || list.isEmpty() || key == null) {
 			return null;
 		}
-		Iterator<SLock> it = list.iterator();
-		while (it.hasNext()) {
-			SLock lock = it.next();
+		list = new ArrayList<>(list);
+		for (SLock lock : list) {
+			if (!lock.isEnable()) {
+				Log.get("sumk.lock").warn("remove unable lock: {}", lock);
+				lock.unlock();
+				continue;
+			}
 			if (lock.getId().equals(key.getId())) {
 				return lock;
 			}
@@ -94,21 +97,18 @@ public final class Locker {
 		return null;
 	}
 
-	public void releaseLocalLocks() {
+	public int releaseLocalLocks() {
 		List<SLock> list = locks.get();
+		list = new ArrayList<>(list);
 		for (SLock lock : list) {
 			lock.unlock();
 		}
 		locks.remove();
+		return list.size();
 	}
 
-	/**
-	 * 
-	 * @param key
-	 *            为null的话，将不发生任何事情
-	 */
-	public void unlock(Lock key) {
-		if (key == null || key == Locked.key) {
+	void remove(final Lock lock) {
+		if (lock == null || lock == Locked.inst) {
 			return;
 		}
 		List<SLock> list = locks.get();
@@ -117,11 +117,9 @@ public final class Locker {
 		}
 		ListIterator<SLock> it = list.listIterator(list.size());
 		while (it.hasPrevious()) {
-			SLock lock = it.previous();
-			if (lock.getId().equals(key.getId())) {
-				lock.unlock0();
+			SLock lock2 = it.previous();
+			if (lock2.getId().equals(lock.getId())) {
 				it.remove();
-				return;
 			}
 		}
 	}
@@ -133,10 +131,10 @@ public final class Locker {
 	 * @param maxWaitTime
 	 *            获取锁的最大时间，单位ms
 	 * @param maxLockTime
-	 *            最大的锁住时间，单位秒
+	 *            最大的锁住时间，单位ms
 	 * @return Key对象,或者null
 	 */
-	public Lock tryLock(String name, long maxWaitTime, int maxLockTime) {
+	public Lock tryLock(String name, int maxWaitTime, int maxLockTime) {
 		SLock lock = SLock.create(name, maxLockTime);
 		return tryLock(lock, maxWaitTime);
 	}
@@ -149,7 +147,7 @@ public final class Locker {
 	 *            获取锁的最大时间，单位ms
 	 * @return 锁的钥匙
 	 */
-	public Lock tryLock(String name, long maxWaitTime) {
+	public Lock tryLock(String name, int maxWaitTime) {
 		SLock lock = SLock.create(name);
 		return tryLock(lock, maxWaitTime);
 	}
@@ -167,9 +165,9 @@ public final class Locker {
 	 *            获取锁的最大时间，单位ms。无论值为多少，都至少会尝试一次
 	 * @return Key对象,或者null
 	 */
-	public Lock tryLock(SLock lock, long maxWaitTime) {
+	public Lock tryLock(SLock lock, int maxWaitTime) {
 		if (getLock(lock) != null) {
-			return Locked.key;
+			return Locked.inst;
 		}
 		if (lock.lock(maxWaitTime)) {
 			locks.get().add(lock);

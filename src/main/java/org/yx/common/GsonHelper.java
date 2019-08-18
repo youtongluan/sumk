@@ -40,7 +40,8 @@ public final class GsonHelper {
 		}
 
 		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
-		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", true)) {
+
+		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", false)) {
 			gb.disableHtmlEscaping();
 		}
 		if (AppInfo.getBoolean(module + ".json.shownull", false)) {
@@ -63,7 +64,9 @@ public final class GsonHelper {
 		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
 			gb.setPrettyPrinting();
 		}
-		DateAdapters.register(gb, module);
+		if (AppInfo.getBoolean(module + ".date.adaper", true)) {
+			DateAdapters.registerAll(gb);
+		}
 		return gb;
 	}
 

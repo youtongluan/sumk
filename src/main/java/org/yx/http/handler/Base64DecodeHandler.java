@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.http.Web;
-import org.yx.util.secury.Base64Util;
+import org.yx.util.S;
 
 public class Base64DecodeHandler implements HttpHandler {
 
@@ -35,7 +35,7 @@ public class Base64DecodeHandler implements HttpHandler {
 		if (bs == null) {
 			return false;
 		}
-		byte[] data = Base64Util.decode(bs);
+		byte[] data = S.base64.decode(bs);
 		ctx.data(data);
 		return false;
 	}

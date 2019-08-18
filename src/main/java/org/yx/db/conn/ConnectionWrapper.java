@@ -34,13 +34,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import org.yx.common.ThreadContext;
+import org.yx.common.context.ActionContext;
+import org.yx.db.event.EventLane;
 
 public class ConnectionWrapper implements Connection {
 
-	private Connection inner;
+	protected Connection inner;
 
-	private DataSourceWraper dataSource;
+	protected final DataSourceWraper dataSource;
 
 	@Override
 	public boolean isReadOnly() {
@@ -101,7 +102,7 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public void commit() throws SQLException {
-		if (ThreadContext.get().isTest()) {
+		if (ActionContext.get().isTest()) {
 			this.rollback();
 			return;
 		}
@@ -120,23 +121,9 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public void close() throws SQLException {
-		inner.close();
 		EventLane.remove(this);
+		inner.close();
 		this.inner = null;
-	}
-
-	@Override
-	public int hashCode() {
-		return inner.hashCode();
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (obj == null || !this.getClass().isInstance(obj)) {
-			return false;
-		}
-		ConnectionWrapper w = (ConnectionWrapper) obj;
-		return this.inner.equals(w.inner);
 	}
 
 	@Override
@@ -367,7 +354,7 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public String toString() {
-		return String.valueOf(inner);
+		return "wrapper:" + String.valueOf(inner);
 	}
 
 }

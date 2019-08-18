@@ -27,12 +27,12 @@ public class HttpCiphers {
 	private static HttpEncryptor encryptor = new HttpEncryptor() {
 		@Override
 		public byte[] encrypt(byte[] data, WebContext ctx) throws Exception {
-			return S.encryptor.encrypt(data, ctx.key());
+			return S.cipher.encrypt(data, ctx.key());
 		}
 
 		@Override
 		public byte[] decrypt(byte[] data, WebContext ctx) throws Exception {
-			return S.encryptor.decrypt(data, ctx.key());
+			return S.cipher.decrypt(data, ctx.key());
 		}
 	};
 
@@ -48,7 +48,7 @@ public class HttpCiphers {
 
 		@Override
 		public String sign(byte[] bs, HttpServletRequest httpServletRequest) throws Exception {
-			return S.hasher.digestByteToString(bs);
+			return S.hash.digestByteToString(bs);
 		}
 
 	};

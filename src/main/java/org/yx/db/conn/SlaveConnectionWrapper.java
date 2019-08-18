@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Savepoint;
 
 import org.yx.conf.AppInfo;
+import org.yx.db.event.EventLane;
 import org.yx.util.StringUtil;
 
 public class SlaveConnectionWrapper extends ConnectionWrapper {
@@ -44,15 +45,25 @@ public class SlaveConnectionWrapper extends ConnectionWrapper {
 
 	@Override
 	public void rollback() throws SQLException {
+		EventLane.remove(this);
 	}
 
 	@Override
 	public void close() throws SQLException {
-		super.close();
+		if (this.inner == null) {
+			return;
+		}
+		EventLane.remove(this);
+		this.inner = null;
 	}
 
 	@Override
 	public void rollback(Savepoint savepoint) throws SQLException {
+		EventLane.remove(this);
 	}
 
+	@Override
+	public String toString() {
+		return "slaveWrapper:" + String.valueOf(inner);
+	}
 }
