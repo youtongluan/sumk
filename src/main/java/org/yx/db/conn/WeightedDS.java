@@ -15,22 +15,19 @@
  */
 package org.yx.db.conn;
 
-import javax.sql.DataSource;
-
 import org.yx.common.route.WeightedServer;
 import org.yx.exception.SumkException;
 
 class WeightedDS implements WeightedServer {
 
-	public WeightedDS(DataSource ds) {
-		super();
+	public WeightedDS(SumkDataSource ds) {
 		this.ds = ds;
 	}
 
-	private DataSource ds;
+	private SumkDataSource ds;
 	private int weight;
 
-	public DataSource getDs() {
+	public SumkDataSource getDs() {
 		return ds;
 	}
 

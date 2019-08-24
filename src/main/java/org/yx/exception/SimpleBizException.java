@@ -13,25 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.conn;
+package org.yx.exception;
 
-import java.sql.Connection;
+public class SimpleBizException extends BizException {
 
-import javax.sql.DataSource;
+	private static final long serialVersionUID = 1L;
 
-import org.yx.db.DBType;
+	public SimpleBizException(int code, String msg) {
+		super(code, msg);
+	}
 
-public interface ConnectionFactory {
+	@Override
+	public Throwable fillInStackTrace() {
+		return this;
+	}
 
-	Connection getConnection(DBType type, Connection writeConn);
-
-	void destroy();
-
-	/**
-	 * 
-	 * @return null表示不支持
-	 */
-	String status();
-
-	DataSource defaultDataSource();
 }

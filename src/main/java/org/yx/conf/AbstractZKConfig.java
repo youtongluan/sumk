@@ -20,13 +20,35 @@ import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 
 import org.I0Itec.zkclient.IZkDataListener;
+import org.I0Itec.zkclient.ZkClient;
 import org.yx.log.ConsoleLog;
 import org.yx.log.SimpleLoggerHolder;
+import org.yx.util.ZkClientHelper;
 
 public abstract class AbstractZKConfig implements SystemConfig {
 
 	protected NamePairs zkInfo = new NamePairs((String) null);
 	private Charset charset = StandardCharsets.UTF_8;
+	private IZkDataListener listener = new IZkDataListener() {
+
+		@Override
+		public void handleDataChange(String dataPath, Object data) throws Exception {
+			try {
+				ConsoleLog.get("sumk.zk.data").debug("data in zk path {} changed", dataPath);
+				AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
+				AppInfo.notifyUpdate();
+			} catch (Exception e) {
+				SimpleLoggerHolder.error("sumk.conf", e);
+			}
+		}
+
+		@Override
+		public void handleDataDeleted(String dataPath) throws Exception {
+			AbstractZKConfig.this.setZkInfo(new NamePairs((String) null));
+			AppInfo.notifyUpdate();
+		}
+
+	};
 
 	private void setZkInfo(NamePairs info) {
 		zkInfo = info == null ? new NamePairs((String) null) : info;
@@ -40,33 +62,20 @@ public abstract class AbstractZKConfig implements SystemConfig {
 		this.charset = charset;
 	}
 
-	public void initAppInfo() {
-		NamePairs info = fromZK(new IZkDataListener() {
-
-			@Override
-			public void handleDataChange(String dataPath, Object data) throws Exception {
-				try {
-					ConsoleLog.get("sumk.zk.data").debug("data in zk path {} changed", dataPath);
-					AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
-					AppInfo.notifyUpdate();
-				} catch (Exception e) {
-					SimpleLoggerHolder.error("sumk.conf", e);
-				}
-			}
-
-			@Override
-			public void handleDataDeleted(String dataPath) throws Exception {
-				AbstractZKConfig.this.setZkInfo(new NamePairs((String) null));
-				AppInfo.notifyUpdate();
-			}
-
-		});
+	public void start() {
+		String zkUrl = getZkUrl();
+		NamePairs info = ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
 		this.setZkInfo(info);
 	}
 
-	protected NamePairs fromZK(IZkDataListener listener) {
-		String zkUrl = getZkUrl();
-		return ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
+	public void stop() {
+		try {
+			String zkUrl = getZkUrl();
+			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+			client.unsubscribeDataChanges(getDataPath(), listener);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	protected abstract String getDataPath();

@@ -33,3 +33,8 @@ v2.3.7
 1、限制rest接口只支持get和post，其中get方法仅用于测试，它有可能使用浏览器缓存
 2、将Base64Util改为S.base64，并且修改了工具类S中许多工具的名称
 3、ThreadContext改名为ActionContext
+
+v2.3.8
+1、去掉对dbcp2连接池的硬编码依赖
+2、几个名称微调
+3、将日志的代码行参数默认值改为true

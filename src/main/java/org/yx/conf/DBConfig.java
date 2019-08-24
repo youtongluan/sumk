@@ -19,14 +19,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import org.yx.db.conn.DataSourceWraper;
+import org.yx.db.DBType;
+import org.yx.db.conn.DSFactory;
+import org.yx.db.conn.SumkDataSource;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 import org.yx.util.S;
 
 public class DBConfig {
 
-	String type = "";
+	DBType type = DBType.ANY;
 	int weight = 0;
 	int read_weight = 0;
 	Map<String, String> properties;
@@ -63,13 +66,13 @@ public class DBConfig {
 		Set<String> set = p.keySet();
 		for (String key : set) {
 			String v = p.get(key);
-			if (v == null) {
-				Log.get("sumk.db.config").debug("{} key的值是null，被忽略掉", key);
+			if (v == null || v.isEmpty()) {
+				Log.get("sumk.db.config").debug("db config {}={} isempty,ignore it.", key, v);
 				continue;
 			}
 			switch (key) {
 			case "type":
-				this.type = v.toLowerCase();
+				this.type = parseFromConfigFile(v);
 				break;
 			case "weight":
 				this.weight = Integer.parseInt(v);
@@ -94,12 +97,9 @@ public class DBConfig {
 		}
 	}
 
-	public DataSourceWraper createDS(String name) throws Exception {
+	public SumkDataSource createDS(String name) throws Exception {
 		Assert.isTrue(this.valid(), "url,username,password,type should not be null");
-		Assert.isTrue(type.matches("^(wr|read|write)$"), "db type should be one of(wr,read,write)");
-		DataSourceWraper ds = new DataSourceWraper(name, type);
-		SimpleBeanUtil.copyProperties(ds, this.properties);
-		return ds;
+		return DSFactory.create(name, type, properties);
 	}
 
 	public boolean valid() {
@@ -107,11 +107,11 @@ public class DBConfig {
 				&& properties.get("password") != null;
 	}
 
-	public String getType() {
+	public DBType getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public void setType(DBType type) {
 		this.type = type;
 	}
 
@@ -135,6 +135,25 @@ public class DBConfig {
 	public String toString() {
 		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + read_weight + ", properties="
 				+ properties + "]";
+	}
+
+	private static DBType parseFromConfigFile(String type) {
+		String type2 = type.toLowerCase();
+		switch (type2) {
+		case "w":
+		case "write":
+			return DBType.WRITE;
+		case "r":
+		case "read":
+		case "readonly":
+			return DBType.READ;
+		case "wr":
+		case "rw":
+		case "any":
+			return DBType.ANY;
+		default:
+			throw new SumkException(2342312, type + " is not correct db type");
+		}
 	}
 
 }

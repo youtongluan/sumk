@@ -27,7 +27,7 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	protected NamePairs pairs = NamePairs.createByString(null);
 
 	@Override
-	public void initAppInfo() {
+	public void start() {
 		this.init();
 
 	}
@@ -50,6 +50,11 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	@Override
 	protected void notifyUpdate() {
 		AppInfo.notifyUpdate();
+	}
+
+	@Override
+	public void stop() {
+
 	}
 
 }

@@ -20,11 +20,11 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
@@ -36,16 +36,16 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 	private WeightedDataSourceRoute read;
 	private WeightedDataSourceRoute write;
 
-	private String db;
+	private final String db;
 
 	public ConnectionFactoryImpl(String dbName) throws Exception {
-		this.db = dbName;
+		this.db = Objects.requireNonNull(dbName);
 		this.parseDatasource();
 	}
 
 	public ConnectionFactoryImpl(String dbName, WeightedDataSourceRoute write, WeightedDataSourceRoute read)
 			throws Exception {
-		this.db = dbName;
+		this.db = Objects.requireNonNull(dbName);
 		this.write = write;
 		this.read = read;
 	}
@@ -56,20 +56,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 		set.addAll(this.write.allDataSource());
 		Map<String, Map<String, Integer>> statusMap = new HashMap<>();
 		for (DataSource datasource : set) {
-			if (!BasicDataSource.class.isInstance(datasource)) {
-				Log.get("sumk.db").info("ds.class({}) is not instance form BasicDataSource",
-						datasource.getClass().getName());
-				continue;
-			}
-			@SuppressWarnings("resource")
-			BasicDataSource ds = (BasicDataSource) datasource;
-			Map<String, Integer> map = new HashMap<>();
-			map.put("active", ds.getNumActive());
-			map.put("idle", ds.getNumIdle());
-			map.put("minIdle", ds.getMinIdle());
-			map.put("maxIdle", ds.getMaxIdle());
-			map.put("maxTotal", ds.getMaxTotal());
-			statusMap.put(ds.toString(), map);
+			statusMap.put(datasource.toString(), DSFactory.manager().status(datasource));
 		}
 		return S.json.toJson(statusMap);
 	}
@@ -83,7 +70,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 			Log.get("sumk.db").info("{} has init datasource", this.db);
 			return;
 		}
-		Map<DBType, WeightedDataSourceRoute> map = DataSourceFactory.create(this.db);
+		Map<DBType, WeightedDataSourceRoute> map = DSRouteFactory.create(this.db);
 		this.write = map.get(DBType.WRITE);
 		this.read = map.get(DBType.READ);
 	}
@@ -91,13 +78,11 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 	public Connection getConnection(DBType type, Connection writeConn) {
 		if (!type.isWritable()) {
 			try {
-				DataSource ds = this.read.datasource();
+				SumkDataSource ds = this.read.datasource();
 				if (writeConn != null && AppInfo.getBoolean("sumk.db.slave.enable", true)
-						&& DataSourceWraper.class.isInstance(ds)) {
-					@SuppressWarnings("resource")
-					DataSourceWraper wrapper = (DataSourceWraper) ds;
+						&& SumkDataSource.class.isInstance(ds)) {
 
-					return wrapper.readConnection(writeConn);
+					return ds.readConnection(writeConn);
 				}
 				return ds.getConnection();
 			} catch (SQLException e) {
@@ -115,6 +100,18 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 	@Override
 	public String toString() {
 		return "datasource[" + db + "] write=" + write + " ,read=" + read;
+	}
+
+	@Override
+	public DataSource defaultDataSource() {
+		WeightedDataSourceRoute ws = this.write;
+		if (ws == null) {
+			ws = this.read;
+		}
+		if (ws == null) {
+			return null;
+		}
+		return ws.datasource();
 	}
 
 }

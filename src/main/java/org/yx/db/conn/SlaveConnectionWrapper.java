@@ -32,7 +32,7 @@ public class SlaveConnectionWrapper extends ConnectionWrapper {
 		return new SlaveConnectionWrapper(write, write.getDataSource());
 	}
 
-	public SlaveConnectionWrapper(Connection write, DataSourceWraper ds) {
+	public SlaveConnectionWrapper(Connection write, SumkDataSource ds) {
 		super(write, ds);
 	}
 

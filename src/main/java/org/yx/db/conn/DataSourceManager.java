@@ -15,23 +15,12 @@
  */
 package org.yx.db.conn;
 
-import java.sql.Connection;
+import java.util.Map;
 
 import javax.sql.DataSource;
 
-import org.yx.db.DBType;
+public interface DataSourceManager {
+	DataSource create(Map<String, String> properties);
 
-public interface ConnectionFactory {
-
-	Connection getConnection(DBType type, Connection writeConn);
-
-	void destroy();
-
-	/**
-	 * 
-	 * @return null表示不支持
-	 */
-	String status();
-
-	DataSource defaultDataSource();
+	Map<String, Integer> status(DataSource datasource);
 }

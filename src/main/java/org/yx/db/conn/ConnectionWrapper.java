@@ -41,19 +41,19 @@ public class ConnectionWrapper implements Connection {
 
 	protected Connection inner;
 
-	protected final DataSourceWraper dataSource;
+	protected final SumkDataSource dataSource;
 
 	@Override
 	public boolean isReadOnly() {
 		return !this.dataSource.getType().isWritable();
 	}
 
-	public ConnectionWrapper(Connection inner, DataSourceWraper ds) {
+	public ConnectionWrapper(Connection inner, SumkDataSource ds) {
 		this.inner = inner;
 		this.dataSource = ds;
 	}
 
-	public DataSourceWraper getDataSource() {
+	public SumkDataSource getDataSource() {
 		return dataSource;
 	}
 

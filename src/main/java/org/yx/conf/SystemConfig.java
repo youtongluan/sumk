@@ -17,16 +17,10 @@ package org.yx.conf;
 
 import java.util.Collection;
 
-/**
- * 实现类要有定期刷新或监听变更的功能。<BR>
- * 如果发生变更，要调用AppInfo.notifyUpdate()进行通知<BR>
- * 参见SystemConfigHolder.setSystemConfig()
- */
+import org.yx.common.Lifecycle;
 
-public interface SystemConfig {
+public interface SystemConfig extends Lifecycle {
 	String get(String key);
 
 	Collection<String> keys();
-
-	void initAppInfo();
 }

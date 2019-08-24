@@ -44,6 +44,12 @@ public abstract class AbstractUrlConfig {
 
 	private volatile boolean threadStarted;
 
+	protected volatile boolean stoped;
+
+	public void stop() {
+		this.stoped = true;
+	}
+
 	/**
 	 * 初始化
 	 */
@@ -59,7 +65,7 @@ public abstract class AbstractUrlConfig {
 				}
 				threadStarted = true;
 			}
-			while (!SumkServer.isDestoryed()) {
+			while (!SumkServer.isDestoryed() && !stoped) {
 				try {
 					Thread.sleep(period);
 				} catch (InterruptedException e) {

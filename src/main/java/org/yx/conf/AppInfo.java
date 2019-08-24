@@ -35,7 +35,7 @@ public final class AppInfo {
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
 	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>(4);
-	private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
+	public static final Charset UTF8 = StandardCharsets.UTF_8;
 
 	private static SystemConfig info;
 	private static String pid;
@@ -71,7 +71,6 @@ public final class AppInfo {
 				if (SystemConfig.class.isInstance(obj)) {
 					SimpleLoggerHolder.inst().info("sumk.conf", "use " + clzName + " for appInfo");
 					info = (SystemConfig) obj;
-					info.initAppInfo();
 				}
 			}
 		} catch (Throwable e) {
@@ -82,11 +81,11 @@ public final class AppInfo {
 			if (info == null) {
 				info = new AppPropertiesInfo();
 			}
-			info.initAppInfo();
 		} catch (Exception e) {
 			SimpleLoggerHolder.error("sumk.conf", e);
 			System.exit(-1);
 		}
+		info.start();
 	}
 
 	public static String pid() {
@@ -98,9 +97,13 @@ public final class AppInfo {
 		if (info == config || config == null) {
 			return false;
 		}
+		SystemConfig old = info;
 		info = config;
-		info.initAppInfo();
+		info.start();
 		notifyUpdate();
+		if (old != null) {
+			old.stop();
+		}
 		return true;
 	}
 
@@ -215,12 +218,12 @@ public final class AppInfo {
 	public static Charset systemCharset() {
 
 		String charsetName = info == null ? null : info.get("sumk.charset");
-		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(DEFAULT_CHARSET.name())) {
-			return DEFAULT_CHARSET;
+		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(UTF8.name())) {
+			return UTF8;
 		}
 		if (!Charset.isSupported(charsetName)) {
 			Log.get("sumk.SYS").error("charset '{}' is not supported", charsetName);
-			return DEFAULT_CHARSET;
+			return UTF8;
 		}
 		return Charset.forName(charsetName);
 	}

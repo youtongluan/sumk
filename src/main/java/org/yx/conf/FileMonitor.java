@@ -21,35 +21,43 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.Instant;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
+import java.util.function.IntFunction;
 
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
+import org.yx.util.helper.ArrayHelper;
 
 public class FileMonitor {
 
 	public final static FileMonitor inst = new FileMonitor();
 	private volatile boolean started;
-	private List<FileHandler> handlers = new CopyOnWriteArrayList<>();
+	private FileHandler[] handlers;
 	private Map<String, Long> lastModif = new HashMap<String, Long>();
 
 	private FileMonitor() {
 	}
 
-	public void addHandle(FileHandler h) {
-		this.handlers.add(h);
+	public synchronized void addHandle(FileHandler h) {
+		this.handlers = new ArrayHelper().add(handlers, h, new FileHandlerArrayFactory());
 	}
 
-	public void start() {
+	public synchronized void remove(FileHandler h) {
+		this.handlers = new ArrayHelper().remove(handlers, h, new FileHandlerArrayFactory());
+	}
+
+	public synchronized void start() {
 		if (started) {
 			return;
 		}
 		long seconds = Integer.getInteger("sumk.fileMonitor.period", 60);
 		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
-			for (FileHandler h : handlers) {
+			FileHandler[] hs = handlers;
+			if (hs == null || hs.length == 0) {
+				return;
+			}
+			for (FileHandler h : hs) {
 				try {
 					handle(h, true);
 				} catch (Exception e) {
@@ -93,6 +101,15 @@ public class FileMonitor {
 				}
 			}
 		}
+	}
+
+	private static class FileHandlerArrayFactory implements IntFunction<FileHandler[]> {
+
+		@Override
+		public FileHandler[] apply(int length) {
+			return new FileHandler[length];
+		}
+
 	}
 
 }

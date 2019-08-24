@@ -28,7 +28,7 @@ import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
-public class DataSourceFactory {
+public class DSRouteFactory {
 
 	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
 		Map<String, DBConfig> configs = getConfigs(db);
@@ -37,9 +37,8 @@ public class DataSourceFactory {
 
 		for (String key : configs.keySet()) {
 			DBConfig dc = configs.get(key);
-			DataSourceWraper ds = dc.createDS(key);
+			SumkDataSource ds = dc.createDS(key);
 			if (ds.getType().isWritable()) {
-				ds.setDefaultReadOnly(false);
 				WeightedDS w = new WeightedDS(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
 				writeDSList.add(w);
@@ -49,7 +48,6 @@ public class DataSourceFactory {
 					readDSList.add(r);
 				}
 			} else if (ds.getType().isReadable()) {
-				ds.setDefaultReadOnly(true);
 				WeightedDS r = new WeightedDS(ds);
 				int w = dc.getRead_weight() > 0 ? dc.getRead_weight() : dc.getWeight();
 				r.setWeight(w > 0 ? w : 1);

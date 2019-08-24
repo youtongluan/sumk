@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import org.yx.common.GsonHelper;
 import org.yx.common.lock.Locker;
 import org.yx.main.SumkThreadPool;
+import org.yx.util.helper.ArrayHelper;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
 import org.yx.util.secury.Base64;
@@ -29,7 +30,20 @@ import org.yx.util.secury.MD5;
 
 import com.google.gson.Gson;
 
-public abstract class S {
+public final class S {
+	public static final ArrayHelper array = new ArrayHelper();
+
+	/**
+	 * json工具
+	 */
+	public static final Gson json = GsonHelper.gson("sumk");
+
+	/**
+	 * 系统共用的线程池
+	 */
+	public static final ExecutorService executor = SumkThreadPool.EXECUTOR;
+
+	public static final Base64 base64 = Base64.inst;
 
 	/**
 	 * 加密器，默认是AES对称加密
@@ -49,15 +63,5 @@ public abstract class S {
 	 * bean和map的转换，以及属性复制。 只支持第一级field
 	 */
 	public static final BeanConverter bean = new BeanConverter();
-	/**
-	 * json工具
-	 */
-	public static final Gson json = GsonHelper.gson("sumk");
 
-	/**
-	 * 系统共用的线程池
-	 */
-	public static final ExecutorService executor = SumkThreadPool.EXECUTOR;
-
-	public static final Base64 base64 = Base64.inst;
 }

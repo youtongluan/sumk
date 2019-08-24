@@ -15,32 +15,46 @@
  */
 package org.yx.conf;
 
-import java.io.InputStream;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-public class AppPropertiesInfo extends PropertiesInfo {
-	private volatile boolean started;
+public class MapConfig implements SystemConfig {
 
-	AppPropertiesInfo() {
-		super(System.getProperty("appinfo", "app.properties"));
+	public static MapConfig create() {
+		return new MapConfig();
+	}
+
+	public final Map<String, String> map = new ConcurrentHashMap<>();
+
+	@Override
+	public String get(String key) {
+		return map.get(key);
 	}
 
 	@Override
-	public void deal(InputStream in) throws Exception {
-		super.deal(in);
-		AppInfo.notifyUpdate();
+	public Collection<String> keys() {
+		return map.keySet();
+	}
+
+	public MapConfig put(String k, String v) {
+		map.put(k, v);
+		return this;
+	}
+
+	public MapConfig putKV(String kv) {
+		map.put(kv.split("=")[0].trim(), kv.split("=")[1].trim());
+		return this;
 	}
 
 	@Override
-	public synchronized void start() {
-		if (started) {
-			return;
-		}
-		super.start();
-		started = true;
+	public void start() {
+
 	}
 
 	@Override
 	public void stop() {
 
 	}
+
 }

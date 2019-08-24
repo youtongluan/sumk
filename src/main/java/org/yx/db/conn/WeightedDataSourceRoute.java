@@ -37,7 +37,7 @@ class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
 		return list;
 	}
 
-	public DataSource datasource() {
+	public SumkDataSource datasource() {
 		WeightedDS sm = this.getServer();
 		if (sm == null) {
 			return null;

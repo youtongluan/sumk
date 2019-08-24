@@ -15,6 +15,8 @@
  */
 package org.yx.conf;
 
+import java.util.Objects;
+
 public class SystemConfigHolder {
 	static SystemConfig config;
 
@@ -26,7 +28,7 @@ public class SystemConfigHolder {
 	 * @return true表示设置被更新，如果config跟原来是同一个对象，也会返回false
 	 */
 	public static boolean setSystemConfig(SystemConfig config) {
-		SystemConfigHolder.config = config;
+		SystemConfigHolder.config = Objects.requireNonNull(config);
 		return AppInfo.refreshConfig();
 	}
 }
