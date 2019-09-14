@@ -17,9 +17,9 @@ package org.yx.db.sql;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.yx.db.mapper.RawExecutor;
-import org.yx.util.Assert;
 import org.yx.util.StringUtil;
 
 /**
@@ -37,7 +37,7 @@ public class Count {
 	public int execute() {
 		List<Object> paramters = new ArrayList<>(8);
 		select.pojoMeta = select.parsePojoMeta(true);
-		Assert.notNull(select.pojoMeta, "pojo meta cannot be null");
+		Objects.requireNonNull(select.pojoMeta, "pojo meta cannot be null");
 		StringBuilder sql = new StringBuilder();
 		sql.append("SELECT count(*) FROM ").append(select.pojoMeta.getTableName());
 		CharSequence where = select.buildWhere(paramters);

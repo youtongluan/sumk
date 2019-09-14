@@ -31,12 +31,12 @@ public @interface Box {
 		/**
 		 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
 		 */
-		NORMAL,
+		REQUIRED,
 
 		/**
-		 * 内嵌事务，相当于spring的NESTED
+		 * 新事务
 		 */
-		EMBED,
+		REQUIRES_NEW,
 		/**
 		 * 没有事务
 		 */
@@ -47,5 +47,5 @@ public @interface Box {
 
 	DBType dbType() default DBType.ANY;
 
-	Transaction transaction() default Transaction.NORMAL;
+	Transaction transaction() default Transaction.REQUIRED;
 }

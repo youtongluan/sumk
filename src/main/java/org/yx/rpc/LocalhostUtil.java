@@ -47,7 +47,7 @@ public class LocalhostUtil {
 				localIp = ip;
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 	}
 
@@ -93,7 +93,7 @@ public class LocalhostUtil {
 				}
 			}
 		} catch (SocketException e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 		return ipList;
 	}

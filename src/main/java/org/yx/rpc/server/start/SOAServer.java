@@ -176,12 +176,12 @@ public class SOAServer implements Lifecycle {
 					}
 					enable = serverEnable;
 				} catch (Exception e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			});
 			started = true;
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 

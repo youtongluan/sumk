@@ -16,7 +16,7 @@ public class Main {
 			System.out.println("启动完成,除zookeeper服务器外耗时："+(System.currentTimeMillis()-begin)+"毫秒");
 			Thread.currentThread().join();
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("main",e);
 		}
 	}
 

@@ -110,7 +110,7 @@ public class PojoMetaHolder {
 			list.add(new ColumnMeta(f, c));
 		}
 		if (list.isEmpty()) {
-			Log.get("pojo").debug("{}'s column is empty", pojoClz.getName());
+			Log.get("sumk.db").debug("{}'s column is empty", pojoClz.getName());
 			return;
 		}
 		Collections.sort(list);

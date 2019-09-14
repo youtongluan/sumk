@@ -44,12 +44,12 @@ public class DSRouteFactory {
 				writeDSList.add(w);
 				if (ds.getType() == DBType.ANY) {
 					WeightedDS r = new WeightedDS(ds);
-					r.setWeight(dc.getRead_weight() > 0 ? dc.getRead_weight() : 1);
+					r.setWeight(dc.getReadWeight() > 0 ? dc.getReadWeight() : 1);
 					readDSList.add(r);
 				}
 			} else if (ds.getType().isReadable()) {
 				WeightedDS r = new WeightedDS(ds);
-				int w = dc.getRead_weight() > 0 ? dc.getRead_weight() : dc.getWeight();
+				int w = dc.getReadWeight() > 0 ? dc.getReadWeight() : dc.getWeight();
 				r.setWeight(w > 0 ? w : 1);
 				readDSList.add(r);
 			}

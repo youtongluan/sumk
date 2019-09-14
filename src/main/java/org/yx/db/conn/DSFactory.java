@@ -28,8 +28,9 @@ public final class DSFactory {
 	private static DataSourceManager manager;
 	static {
 		try {
+
 			manager = new DBCPDataSourceManager();
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			Logger log = Log.get("sumk.db.factory");
 			if (log.isInfoEnabled()) {
 				log.error("cannot create dbcp2 factory," + e, e);

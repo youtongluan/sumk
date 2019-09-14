@@ -70,7 +70,7 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements List
 			}
 			Class<?> clz = this.getClass().getClassLoader().loadClass(listener);
 			if (!acceptClass().isAssignableFrom(clz)) {
-				Log.get("sumk.ClassLoaderFactorysBean").debug("{} is not a Listener", listener);
+				Log.get("sumk.SYS").debug("{} is not a Listener", listener);
 				continue;
 			}
 			beans.add((T) clz.newInstance());

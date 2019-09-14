@@ -61,7 +61,7 @@ public class FileMonitor {
 				try {
 					handle(h, true);
 				} catch (Exception e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			}
 		}, seconds, seconds, TimeUnit.SECONDS);
@@ -80,7 +80,7 @@ public class FileMonitor {
 				try (InputStream fin = url.openStream()) {
 					h.deal(fin);
 				} catch (Exception e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 				continue;
 			}
@@ -97,7 +97,7 @@ public class FileMonitor {
 				try (InputStream fin = url.openStream()) {
 					h.deal(fin);
 				} catch (Exception e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			}
 		}

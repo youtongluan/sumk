@@ -31,7 +31,7 @@ public class AopExcutorFactory {
 					Box b = (Box) a;
 					DBTransaction trans = null;
 					if (b.dbName().length() > 0 && b.transaction() != Transaction.NONE) {
-						trans = new DBTransaction(b.dbName(), b.dbType(), b.transaction() == Transaction.EMBED);
+						trans = new DBTransaction(b.dbName(), b.dbType(), b.transaction() == Transaction.REQUIRES_NEW);
 					}
 					return new AopExcutor(trans);
 				}

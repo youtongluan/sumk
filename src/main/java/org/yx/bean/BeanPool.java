@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +33,6 @@ import org.yx.asm.ProxyClassFactory;
 import org.yx.common.Ordered;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
 import org.yx.util.StringUtil;
 
 public final class BeanPool {
@@ -48,7 +48,7 @@ public final class BeanPool {
 	}
 
 	static Set<String> resloveBeanNames(Class<?> clazz) {
-		Assert.notNull(clazz, "Class must not be null");
+		Objects.requireNonNull(clazz, "Class must not be null");
 		Set<Class<?>> interfaces = new HashSet<>();
 		resloveSuperClassAndInterface(clazz, interfaces);
 		Set<String> names = new HashSet<>();
@@ -120,7 +120,7 @@ public final class BeanPool {
 	}
 
 	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
-		Assert.notNull(clz);
+		Objects.requireNonNull(clz);
 		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
 				: Collections.singleton(beanName);
 		if (names == null || names.isEmpty()) {
@@ -136,7 +136,7 @@ public final class BeanPool {
 	}
 
 	public <T> T putBean(String beanName, T bean) {
-		Assert.notNull(bean);
+		Objects.requireNonNull(bean);
 		Class<?> clz = bean.getClass();
 		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
 				: Collections.singleton(beanName);

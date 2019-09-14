@@ -114,7 +114,7 @@ public class ServerHandler implements IoHandler {
 			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(RpcGson.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
-				Log.printStack(e);
+				Log.printStack("sumk.error", e);
 			}
 		}
 

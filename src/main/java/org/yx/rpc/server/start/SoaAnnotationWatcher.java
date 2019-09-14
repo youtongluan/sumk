@@ -36,7 +36,7 @@ public class SoaAnnotationWatcher implements BeanWatcher {
 				factory.resolve(bean);
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 	}
 

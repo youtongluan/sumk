@@ -94,7 +94,7 @@ public class SumkThreadPool {
 						Thread.interrupted();
 						continue;
 					}
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			}
 			try {

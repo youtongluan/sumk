@@ -48,7 +48,7 @@ public class SoaAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		Log.get("sumk.soa").debug("soa matcher:{}", this.matcher);
+		Log.get("sumk.rpc").debug("soa matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {

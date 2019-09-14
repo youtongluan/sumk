@@ -56,7 +56,7 @@ public class InsertListener implements DBListener<InsertEvent> {
 				RecordReq.set(pm, id, DBGson.toJson(map));
 			}
 		} catch (Exception e) {
-			Log.printStack("db-listener", e);
+			Log.printStack("sumk.db.listener", e);
 		}
 	}
 

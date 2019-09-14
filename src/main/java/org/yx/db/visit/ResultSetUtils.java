@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
@@ -57,7 +58,7 @@ public class ResultSetUtils {
 			rowData = new HashMap<>(columnCount * 2);
 			for (int i = 1; i <= columnCount; i++) {
 				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
-				Assert.notNull(cm, md.getColumnName(i) + " has no mapper");
+				Objects.requireNonNull(cm, md.getColumnName(i) + " has no mapper");
 				rowData.put(cm.getFieldName(), rs.getObject(i));
 			}
 			list.add(rowData);

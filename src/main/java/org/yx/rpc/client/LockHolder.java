@@ -44,7 +44,7 @@ public final class LockHolder {
 	static void unLockAndSetResult(Response resp) {
 		RpcLocker r = locks.remove(resp.sn());
 		if (r == null) {
-			Log.get("sumk.soa.client").debug("{} has been removed.maybe is timeout.result:{}", resp.sn(), resp.json());
+			Log.get("sumk.rpc.client").debug("{} has been removed.maybe is timeout.result:{}", resp.sn(), resp.json());
 			return;
 		}
 		RpcResult result = new RpcResult(resp.json(), resp.exception());
@@ -78,7 +78,7 @@ public final class LockHolder {
 					}
 				}
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack("sumk.error", e);
 				return;
 			}
 

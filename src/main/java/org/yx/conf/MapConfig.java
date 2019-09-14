@@ -25,7 +25,11 @@ public class MapConfig implements SystemConfig {
 		return new MapConfig();
 	}
 
-	public final Map<String, String> map = new ConcurrentHashMap<>();
+	private final Map<String, String> map = new ConcurrentHashMap<>();
+
+	public Map<String, String> map() {
+		return map;
+	}
 
 	@Override
 	public String get(String key) {

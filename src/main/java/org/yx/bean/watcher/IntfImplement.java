@@ -51,7 +51,7 @@ public class IntfImplement {
 				InnerIOC.putClassByInterface(intfClz, implClz);
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 

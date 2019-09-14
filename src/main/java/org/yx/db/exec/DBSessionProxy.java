@@ -66,7 +66,7 @@ public class DBSessionProxy implements DBAction {
 			context.param = container.getParam();
 			context.action = this;
 			dbCtx = ConnectionPool.create(container.getDb(), dbType);
-			Connection conn = dbCtx.getDefaultconnection();
+			Connection conn = dbCtx.getDefaultConnection();
 			conn.setAutoCommit(true);
 			executor.exec(context);
 			this.container.result = context.getResult();

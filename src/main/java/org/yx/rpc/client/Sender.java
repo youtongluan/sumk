@@ -17,6 +17,7 @@ package org.yx.rpc.client;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -115,7 +116,7 @@ public final class Sender {
 	 */
 	public RpcFuture execute() {
 		Assert.notEmpty(api, "api cannot be empty");
-		Assert.notNull(this.paramType, "param have not been set");
+		Objects.requireNonNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
 		Req req = Rpc.req(this.api);
 		if (this.paramType == ParamType.JSONARRAY) {

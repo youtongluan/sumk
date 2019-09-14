@@ -29,7 +29,7 @@ public final class HttpGson {
 		try {
 			gson = gsonBuilder().create();
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 	}

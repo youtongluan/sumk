@@ -51,7 +51,7 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			}
 
 		} catch (Exception e) {
-			Log.printStack("sumk.db-listener", e);
+			Log.printStack("sumk.db.listener", e);
 		}
 	}
 

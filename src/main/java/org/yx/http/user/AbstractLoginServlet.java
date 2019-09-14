@@ -32,7 +32,10 @@ import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
-public abstract class AbstractSessionServlet implements LoginServlet {
+public abstract class AbstractLoginServlet implements LoginServlet {
+
+	private UserSession session;
+	protected String type = "";
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -54,15 +57,23 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			String userToken = obj.getUserId();
-			session.putKey(sid, key, userToken, this.getType());
+			String userId = obj.getUserId();
+			session.putKey(sid, key, userId, this.getType(req));
 			resp.setHeader(HttpHeader.SESSIONID, sid);
-			if (StringUtil.isNotEmpty(userToken)) {
-				resp.setHeader(HttpHeader.TOKEN, userToken);
+			if (StringUtil.isNotEmpty(userId)) {
+				resp.setHeader(HttpHeader.TOKEN, userId);
 			}
 			outputKey(resp, key);
 			if (HttpSettings.isCookieEnable()) {
-				setCookie(req, resp, sid, userToken);
+				String contextPath = req.getContextPath();
+
+				if (!contextPath.startsWith("/")) {
+					contextPath = "/" + contextPath;
+				}
+				String attr = ";Path=".concat(contextPath);
+				setSessionCookie(req, resp, sid, attr);
+				setTokenCookie(req, resp, userId, attr);
+				setTypeCookie(req, resp, attr);
 			}
 
 			resp.getOutputStream().write(new byte[] { '\t', '\n' });
@@ -75,26 +86,18 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 
 	}
 
-	protected void setCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String userToken) {
+	protected void setSessionCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String attr) {
 		StringBuilder cookie = new StringBuilder();
-		String contextPath = req.getContextPath();
 
-		if (!contextPath.startsWith("/")) {
-			contextPath = "/" + contextPath;
-		}
-		StringBuilder attr = new StringBuilder().append(";Path=").append(contextPath);
 		cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
 
 		resp.addHeader("Set-Cookie", cookie.toString());
-		if (StringUtil.isNotEmpty(userToken)) {
-			cookie.setLength(0);
-			cookie.append(HttpHeader.TOKEN).append('=').append(userToken).append(attr);
-			resp.addHeader("Set-Cookie", cookie.toString());
-		}
-		String type = this.getType();
-		if (StringUtil.isNotEmpty(type)) {
-			cookie.setLength(0);
-			cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
+	}
+
+	protected void setTokenCookie(HttpServletRequest req, HttpServletResponse resp, String userId, String attr) {
+		if (WebSessions.isSingleLogin(this.getType(req)) && StringUtil.isNotEmpty(userId)) {
+			StringBuilder cookie = new StringBuilder();
+			cookie.append(HttpHeader.TOKEN).append('=').append(userId).append(attr);
 			resp.addHeader("Set-Cookie", cookie.toString());
 		}
 	}
@@ -111,8 +114,6 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 	protected String userName() {
 		return "username";
 	}
-
-	private UserSession session;
 
 	protected String createSessionId(HttpServletRequest req) {
 		return UUIDSeed.random();
@@ -139,8 +140,25 @@ public abstract class AbstractSessionServlet implements LoginServlet {
 	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
 
 	@Override
-	public String getType() {
-		return "";
+	public String getType(HttpServletRequest req) {
+		return type;
+	}
+
+	protected void setTypeCookie(HttpServletRequest req, HttpServletResponse resp, String attr) {
+		StringBuilder cookie = new StringBuilder();
+		String type = this.getType(req);
+		if (StringUtil.isNotEmpty(type)) {
+			cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
+			resp.addHeader("Set-Cookie", cookie.toString());
+		}
+	}
+
+	@Override
+	public boolean acceptType(String type) {
+		if (StringUtil.isEmpty(type)) {
+			return StringUtil.isEmpty(this.type);
+		}
+		return type.equals(this.type);
 	}
 
 }

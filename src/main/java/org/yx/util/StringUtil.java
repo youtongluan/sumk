@@ -45,7 +45,8 @@ public class StringUtil {
 		if (v == null || v.isEmpty()) {
 			return v;
 		}
-		return v.replace('，', ',').replace('；', ';').replace('　', ' ').replace('：', ':').replace("。", ".");
+		return v.replace('，', ',').replace('；', ';').replace('　', ' ').replace('：', ':').replace('。', '.').replace('？',
+				'?');
 	}
 
 	public static String capitalize(String str) {

@@ -50,7 +50,7 @@ public class DeleteListener implements DBListener<DeleteEvent> {
 				RecordReq.del(pm, id);
 			}
 		} catch (Exception e) {
-			Log.printStack("db-listener", e);
+			Log.printStack("sumk.db.listener", e);
 		}
 	}
 

@@ -61,7 +61,7 @@ public final class SumkServer {
 		try {
 			Thread.currentThread().join();
 		} catch (InterruptedException e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 	}
 
@@ -113,7 +113,7 @@ public final class SumkServer {
 			}
 
 		} catch (Throwable e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
@@ -184,7 +184,7 @@ public final class SumkServer {
 				try {
 					b.stop();
 				} catch (Exception e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			});
 		}

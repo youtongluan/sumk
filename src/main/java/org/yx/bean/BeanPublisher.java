@@ -62,7 +62,7 @@ public final class BeanPublisher {
 				}
 				publish(new BeanEvent(clz));
 			} catch (Exception e) {
-				Log.printStack(e);
+				Log.printStack("sumk.error", e);
 			} catch (NoClassDefFoundError e) {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
@@ -112,7 +112,7 @@ public final class BeanPublisher {
 		try {
 			f.set(bean, target);
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 	}
 
@@ -146,7 +146,7 @@ public final class BeanPublisher {
 						try {
 							target = InjectParser.get(f, inject, bean);
 						} catch (Exception e) {
-							Log.printStack(e);
+							Log.printStack("sumk.error", e);
 							SumkException.throwException(-235435628, bean.getClass().getName() + "." + f.getName()
 									+ " cannot injected with " + inject.handler());
 						}

@@ -131,7 +131,7 @@ public final class AppInfo {
 		try {
 			return LocalhostUtil.getLocalIP();
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 		return "0.0.0.0";
 	}

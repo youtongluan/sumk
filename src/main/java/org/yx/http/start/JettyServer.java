@@ -211,7 +211,7 @@ public class JettyServer implements Lifecycle {
 				server.stop();
 				this.started = false;
 			} catch (Exception e) {
-				Log.printStack("http", e);
+				Log.printStack("sumk.http", e);
 			}
 		}
 	}

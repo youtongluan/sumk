@@ -54,7 +54,7 @@ public class ClientHandler implements IoHandler {
 	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
 		long time = System.currentTimeMillis() - session.getLastIoTime();
 		if (time > AppInfo.getLong(MinaServer.SOA_SESSION_IDLE, 60) * 1000) {
-			Log.get("sumk.soa.client").info("rpc session {} {} for {}ms,closed by this client", session.getId(), status,
+			Log.get("sumk.rpc.client").info("rpc session {} {} for {}ms,closed by this client", session.getId(), status,
 					session.getLastIoTime(), time);
 			session.closeOnFlush();
 		}
@@ -62,7 +62,7 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		Log.get("sumk.soa.server").error(session + " throw exception", cause);
+		Log.get("sumk.rpc.server").error(session + " throw exception", cause);
 
 	}
 

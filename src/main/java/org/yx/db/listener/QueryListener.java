@@ -77,7 +77,7 @@ public class QueryListener implements DBListener<QueryEvent> {
 			}
 			RecordReq.set(pm, id, DBGson.toJson(list.get(0)));
 		} catch (Exception e) {
-			Log.printStack("db-listener", e);
+			Log.printStack("sumk.db.listener", e);
 		}
 	}
 

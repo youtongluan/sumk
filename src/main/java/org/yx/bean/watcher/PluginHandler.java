@@ -51,7 +51,7 @@ public class PluginHandler {
 					latch.countDown();
 					Log.get("sumk.SYS").debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 					System.exit(-1);
 				}
 			});

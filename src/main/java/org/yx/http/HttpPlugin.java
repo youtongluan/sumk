@@ -80,7 +80,7 @@ public class HttpPlugin implements Plugin {
 			Constructor<?> c = httpClz.getConstructor(int.class);
 			server = (Lifecycle) c.newInstance(port);
 		} catch (Throwable e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 	}

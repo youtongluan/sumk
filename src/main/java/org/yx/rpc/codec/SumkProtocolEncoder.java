@@ -34,7 +34,7 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 	@Inject
 	private SumkMinaEncoder[] encoders;
 
-	private static int CHAR_BYTE = AppInfo.getInt("sumk.soa.charbyte", 3);
+	private static int CHAR_BYTE = AppInfo.getInt("soa.charbyte", 3);
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {

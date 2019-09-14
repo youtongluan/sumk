@@ -38,3 +38,9 @@ v2.3.8
 1、去掉对dbcp2连接池的硬编码依赖
 2、几个名称微调
 3、将日志的代码行参数默认值改为true
+
+v2.3.9
+1、AbstractSessionServlet改名为AbstractLoginServlet，并且添加了一个方法
+2、整理日志的模块名
+3、去掉Log.printStack(Throwable e)方法
+4、Transaction的NORMAL改名为REQUIRED，EMBED改名为REQUIRES_NEW

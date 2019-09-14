@@ -84,6 +84,11 @@ public final class ConnectionPool implements AutoCloseable {
 		return context;
 	}
 
+	public static int localPoolSize() {
+		List<ConnectionPool> list = connectionHolder.get();
+		return list.size();
+	}
+
 	public static void clossLeakConnection() {
 		List<ConnectionPool> list = connectionHolder.get();
 		if (list.isEmpty()) {
@@ -164,7 +169,7 @@ public final class ConnectionPool implements AutoCloseable {
 		return conn;
 	}
 
-	public Connection getDefaultconnection() {
+	public Connection getDefaultConnection() {
 		return this.connectionByUser(this.dbType);
 	}
 

@@ -6,12 +6,12 @@ import org.yx.annotation.Bean;
 import org.yx.annotation.Box;
 import org.yx.db.DB;
 import org.yx.demo.member.DemoUser;
-import org.yx.http.user.AbstractSessionServlet;
+import org.yx.http.user.AbstractLoginServlet;
 import org.yx.http.user.LoginObject;
 import org.yx.util.SeqUtil;
 
 @Bean
-public class MyLoginServlet extends AbstractSessionServlet {
+public class MyLoginServlet extends AbstractLoginServlet {
 
 	@Box
 	protected LoginObject login(String token, String user, HttpServletRequest req) {

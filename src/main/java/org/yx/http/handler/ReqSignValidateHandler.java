@@ -57,7 +57,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		}
 		String sign1 = HttpCiphers.getSigner().sign(bs, ctx.httpRequest());
 		if (!sign.equals(sign1)) {
-			Log.get("sign").debug("client sign:{},computed is:{}", sign, sign1);
+			Log.get("sumk.http").debug("client sign:{},computed is:{}", sign, sign1);
 			HttpException.throwException(this.getClass(), "签名验证错误");
 		}
 		return false;

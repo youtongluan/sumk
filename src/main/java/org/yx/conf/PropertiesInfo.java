@@ -30,9 +30,7 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 	protected String fileName;
 
 	public PropertiesInfo(String fileName) {
-		super();
 		this.fileName = fileName;
-		FileMonitor.inst.addHandle(this);
 	}
 
 	protected Map<String, String> map = new HashMap<>();
@@ -61,9 +59,10 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 
 	public void start() {
 		try {
+			FileMonitor.inst.addHandle(this);
 			FileMonitor.inst.handle(this, false);
 		} catch (URISyntaxException e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 		}
 		FileMonitor.inst.start();
 	}
@@ -71,6 +70,11 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 	@Override
 	public Collection<String> keys() {
 		return map.keySet();
+	}
+
+	@Override
+	public void stop() {
+		FileMonitor.inst.remove(this);
 	}
 
 }

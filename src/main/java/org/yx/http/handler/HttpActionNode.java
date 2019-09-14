@@ -25,6 +25,7 @@ import org.yx.asm.ArgPojo;
 import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpSettings;
+import org.yx.http.kit.HttpTypePredicate;
 
 public final class HttpActionNode extends CalleeNode {
 
@@ -35,18 +36,7 @@ public final class HttpActionNode extends CalleeNode {
 	public final ErrorHandler errorHandler;
 
 	public boolean acceptType(String type) {
-		if (type == null) {
-			type = "";
-		}
-		if (types == null) {
-			return type.isEmpty();
-		}
-		for (String t : types) {
-			if (type.equals(t)) {
-				return true;
-			}
-		}
-		return false;
+		return HttpTypePredicate.test(types, type);
 	}
 
 	public HttpActionNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,

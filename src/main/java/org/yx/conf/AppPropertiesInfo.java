@@ -38,9 +38,4 @@ public class AppPropertiesInfo extends PropertiesInfo {
 		super.start();
 		started = true;
 	}
-
-	@Override
-	public void stop() {
-
-	}
 }

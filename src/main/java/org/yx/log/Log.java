@@ -79,16 +79,6 @@ public final class Log {
 		return DelegateLogger.get(module);
 	}
 
-	/**
-	 * 这个方法是框架专用，开发人员不要调用
-	 * 
-	 * @param e
-	 *            异常
-	 */
-	public static void printStack(Throwable e) {
-		get("sumk.error").error(e.toString(), e);
-	}
-
 	public static void printStack(String module, Throwable e) {
 		get(module).error(e.toString(), e);
 	}

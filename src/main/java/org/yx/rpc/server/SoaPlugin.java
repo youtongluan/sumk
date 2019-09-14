@@ -44,7 +44,7 @@ public class SoaPlugin implements Plugin {
 				server = (Lifecycle) c.newInstance(port);
 			}
 		} catch (Throwable e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 

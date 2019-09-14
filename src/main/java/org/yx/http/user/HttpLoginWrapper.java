@@ -16,9 +16,7 @@
 package org.yx.http.user;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -34,14 +32,15 @@ public class HttpLoginWrapper extends HttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private Map<String, LoginServlet> servs = new HashMap<>();
+	private LoginServlet[] servs = new LoginServlet[0];
 
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String type = InnerHttpUtil.getType(req);
-		LoginServlet s = servs.get(type);
-		if (s != null) {
-			s.service(req, resp);
-			return;
+		for (LoginServlet s : this.servs) {
+			if (s.acceptType(type)) {
+				s.service(req, resp);
+				return;
+			}
 		}
 	}
 
@@ -50,20 +49,16 @@ public class HttpLoginWrapper extends HttpServlet {
 		super.init(config);
 		try {
 			List<LoginServlet> ss = IOC.getBeans(LoginServlet.class);
-			if (ss == null) {
+			if (ss == null || ss.isEmpty()) {
 				Log.get("sumk.http").info("there is no LoginServlet");
 				return;
 			}
+			this.servs = ss.toArray(new LoginServlet[ss.size()]);
 			for (LoginServlet serv : ss) {
-				String type = serv.getType();
-				if (type == null) {
-					type = "";
-				}
-				servs.put(type, serv);
 				serv.init(config);
 			}
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.get("sumk.http.login").error(e.toString(), e);
 		}
 	}
 

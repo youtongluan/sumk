@@ -37,17 +37,17 @@ public class RedisPlugin implements Plugin {
 			}
 			Class.forName("redis.clients.jedis.Jedis");
 		} catch (Throwable e) {
-			Log.get("sumk.redis").warn("Jedis is not in use because of " + e.getMessage());
+			Log.get(Redis.LOG_NAME).warn("Jedis is not in use because of " + e.getMessage());
 			return;
 		}
 		try {
-			ConsoleLog.get("sumk.SYS").debug("redis pool init");
+			ConsoleLog.get(Redis.LOG_NAME).debug("redis pool init");
 			RedisLoader.init();
 			initSeqUtilCounter();
 			SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(RedisChecker.get(), 5,
 					AppInfo.getInt("sumk.redis.check.period", 5), TimeUnit.SECONDS);
 		} catch (Exception e) {
-			Log.get("sumk.redis").error(e.getMessage(), e);
+			Log.get(Redis.LOG_NAME).error(e.getMessage(), e);
 			System.exit(-1);
 		}
 
@@ -63,7 +63,7 @@ public class RedisPlugin implements Plugin {
 			redis = RedisPool.getRedisExactly("session");
 		}
 		if (redis != null) {
-			ConsoleLog.get("sumk.redis").debug("use redis counter");
+			ConsoleLog.get(Redis.LOG_NAME).debug("use redis counter");
 			SeqHolder.inst().setCounter(new RedisCounter(redis));
 		}
 	}

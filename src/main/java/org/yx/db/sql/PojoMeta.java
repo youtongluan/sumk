@@ -272,7 +272,8 @@ public class PojoMeta implements Cloneable {
 		}
 		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
-			Log.get("event").debug("{} is not instance of {}", source.getClass().getName(), this.pojoClz.getName());
+			Log.get("sumk.event").debug("{} is not instance of {}", source.getClass().getName(),
+					this.pojoClz.getName());
 			return map;
 		}
 		for (ColumnMeta m : this.fieldMetas) {

@@ -17,12 +17,12 @@ package org.yx.redis;
 
 import java.lang.reflect.Constructor;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
 
 import redis.clients.jedis.JedisPoolConfig;
 
@@ -63,7 +63,7 @@ public class RedisFactory {
 	}
 
 	public static Redis get(JedisPoolConfig config, RedisParamter p) {
-		Assert.notNull(p, "redis paramter cannot be null");
+		Objects.requireNonNull(p, "redis paramter cannot be null");
 		if (p.getTryCount() < 1 || p.getTryCount() > 100) {
 			throw new SumkException(54354354, "tryCount必须介于0和100之间");
 		}

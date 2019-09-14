@@ -49,7 +49,7 @@ public final class AsmUtils {
 					new Class<?>[] { String.class, byte[].class, int.class, int.class });
 			defineClass.setAccessible(true);
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			System.exit(-1);
 		}
 	}
@@ -160,7 +160,7 @@ public final class AsmUtils {
 				fos.close();
 			} catch (Exception e) {
 				if (Log.isTraceEnable("proxy")) {
-					Log.printStack(e);
+					Log.printStack("sumk.error", e);
 				}
 			}
 		}

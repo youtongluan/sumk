@@ -24,39 +24,14 @@ import org.yx.db.conn.DSFactory;
 import org.yx.db.conn.SumkDataSource;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
 import org.yx.util.S;
 
 public class DBConfig {
 
 	DBType type = DBType.ANY;
 	int weight = 0;
-	int read_weight = 0;
-	Map<String, String> properties;
-
-	public DBConfig() {
-		properties = new HashMap<>();
-		properties.put("driverClassName", "com.mysql.jdbc.Driver");
-
-		properties.put("maxTotal", "30");
-		properties.put("minIdle", "2");
-		properties.put("maxIdle", "10");
-		properties.put("maxWaitMillis", "10000");
-		properties.put("testOnBorrow", "false");
-		properties.put("testOnReturn", "false");
-		properties.put("testWhileIdle", "true");
-		properties.put("removeAbandonedOnBorrow", "false");
-		properties.put("removeAbandonedOnMaintenance", "true");
-		properties.put("removeAbandonedTimeout", "30");
-		properties.put("logAbandoned", "true");
-		properties.put("timeBetweenEvictionRunsMillis", "30000");
-		properties.put("softMinEvictableIdleTimeMillis", "60000");
-
-		properties.put("logExpiredConnections", "false");
-		properties.put("poolPreparedStatements", "false");
-		properties.put("defaultAutoCommit", "false");
-
-	}
+	int readWeight = 0;
+	final Map<String, String> properties = new HashMap<>();
 
 	public String getProperty(String name) {
 		return this.properties.get(name);
@@ -70,7 +45,7 @@ public class DBConfig {
 				Log.get("sumk.db.config").debug("db config {}={} isempty,ignore it.", key, v);
 				continue;
 			}
-			switch (key) {
+			switch (key.toLowerCase()) {
 			case "type":
 				this.type = parseFromConfigFile(v);
 				break;
@@ -87,7 +62,8 @@ public class DBConfig {
 				properties.put(key, v);
 				break;
 			case "read_weight":
-				this.read_weight = Integer.parseInt(v);
+			case "readweight":
+				this.readWeight = Integer.parseInt(v);
 				break;
 			default:
 				properties.put(key, v);
@@ -98,13 +74,7 @@ public class DBConfig {
 	}
 
 	public SumkDataSource createDS(String name) throws Exception {
-		Assert.isTrue(this.valid(), "url,username,password,type should not be null");
 		return DSFactory.create(name, type, properties);
-	}
-
-	public boolean valid() {
-		return this.type != null && properties.get("url") != null && properties.get("username") != null
-				&& properties.get("password") != null;
 	}
 
 	public DBType getType() {
@@ -123,17 +93,17 @@ public class DBConfig {
 		this.weight = weight;
 	}
 
-	public int getRead_weight() {
-		return read_weight;
+	public int getReadWeight() {
+		return readWeight;
 	}
 
-	public void setRead_weight(int read_weight) {
-		this.read_weight = read_weight;
+	public void setReadWeight(int readWeight) {
+		this.readWeight = readWeight;
 	}
 
 	@Override
 	public String toString() {
-		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + read_weight + ", properties="
+		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + readWeight + ", properties="
 				+ properties + "]";
 	}
 
@@ -150,6 +120,7 @@ public class DBConfig {
 		case "wr":
 		case "rw":
 		case "any":
+		case "writeread":
 			return DBType.ANY;
 		default:
 			throw new SumkException(2342312, type + " is not correct db type");

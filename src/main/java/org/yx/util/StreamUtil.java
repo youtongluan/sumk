@@ -33,17 +33,20 @@ public class StreamUtil {
 		if (in == null) {
 			return 0;
 		}
-		int n = 0;
-		int count = 0;
-		byte[] temp = new byte[1024 * 4];
-		while (-1 != (n = in.read(temp))) {
-			output.write(temp, 0, n);
-			count += n;
+		try {
+			int n = 0;
+			int count = 0;
+			byte[] temp = new byte[1024 * 4];
+			while (-1 != (n = in.read(temp))) {
+				output.write(temp, 0, n);
+				count += n;
+			}
+			output.flush();
+			return count;
+		} finally {
+			if (closeInput) {
+				in.close();
+			}
 		}
-		output.flush();
-		if (closeInput) {
-			in.close();
-		}
-		return count;
 	}
 }

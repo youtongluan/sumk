@@ -95,6 +95,9 @@ public class SumkDataSource implements DataSource {
 
 	@Override
 	public <T> T unwrap(Class<T> iface) throws SQLException {
+		if (iface == this.getClass()) {
+			return iface.cast(this);
+		}
 		if (iface.isInstance(proxy)) {
 			return iface.cast(proxy);
 		}

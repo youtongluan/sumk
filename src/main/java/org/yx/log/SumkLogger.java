@@ -33,10 +33,8 @@ public abstract class SumkLogger implements Logger {
 		return name;
 	}
 
-	protected int maxLogNameLength = AppInfo.getInt("sumk.log.maxLogNameLength", 32);
-
 	public int maxLogNameLength() {
-		return this.maxLogNameLength;
+		return AppInfo.getInt("sumk.log.maxLogNameLength", 32);
 	}
 
 	protected abstract Loggers loggers();

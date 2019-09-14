@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.client;
 
+import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
@@ -29,7 +30,6 @@ import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.log.RpcLogHolder;
-import org.yx.util.Assert;
 
 public final class RpcLocker implements IoFutureListener<WriteFuture> {
 
@@ -60,7 +60,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 
 	public void wakeup(RpcResult result) {
 		long receiveTime = System.currentTimeMillis();
-		Assert.notNull(result, "result cannot be null");
+		Objects.requireNonNull(result, "result cannot be null");
 		if (this.isWaked()) {
 			return;
 		}
@@ -75,7 +75,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 			try {
 				callback.accept(result);
 			} catch (Throwable e) {
-				Log.printStack(e);
+				Log.printStack("sumk.error", e);
 			}
 		}
 		RpcLogHolder.handle(this.url, this.req, result, receiveTime);

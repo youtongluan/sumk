@@ -92,7 +92,7 @@ public class HostChecker {
 						downUrls.remove(url);
 					}
 				} catch (UnknownHostException e) {
-					Log.get("sumk.SYS").error(e.getMessage(), e);
+					Log.get("sumk.rpc").error(e.getMessage(), e);
 				} catch (Exception e) {
 				}
 			}

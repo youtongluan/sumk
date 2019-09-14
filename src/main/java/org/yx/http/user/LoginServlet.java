@@ -22,12 +22,16 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-public interface LoginServlet {
+import org.yx.common.Ordered;
+
+public interface LoginServlet extends Ordered {
 
 	void init(ServletConfig config);
 
 	void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException;
 
-	String getType();
+	String getType(HttpServletRequest req);
+
+	boolean acceptType(String type);
 
 }

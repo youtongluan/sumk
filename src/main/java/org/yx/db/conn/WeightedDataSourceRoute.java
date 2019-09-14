@@ -23,7 +23,7 @@ import javax.sql.DataSource;
 
 import org.yx.common.route.WeightedRoute;
 
-class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
+public class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
 
 	public WeightedDataSourceRoute(Collection<WeightedDS> servers) {
 		super(servers.toArray(new WeightedDS[servers.size()]));

@@ -146,7 +146,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			InputStream in = Loader.getResourceAsStream("META-INF/http.listeners");
 			addListener(context, CollectionUtil.loadList(in));
 		} catch (Exception e) {
-			Log.printStack(e);
+			Log.printStack("sumk.error", e);
 			return;
 		}
 	}
