@@ -48,10 +48,10 @@ public class ZkRouteParser {
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
-		String temp = AppInfo.getLatin("soa.server.includes");
+		String temp = AppInfo.getLatin("sumk.rpc.server.includes");
 		includes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
 
-		temp = AppInfo.getLatin("soa.server.excludes");
+		temp = AppInfo.getLatin("sumk.rpc.server.excludes");
 		excludes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
 	}
 

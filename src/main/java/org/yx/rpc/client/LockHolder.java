@@ -30,7 +30,7 @@ public final class LockHolder {
 
 	static final LockTimeoutMonitor monitor = new LockTimeoutMonitor();
 	static {
-		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(monitor, 1000, 500, TimeUnit.MILLISECONDS);
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(monitor, 1000, 500, TimeUnit.MILLISECONDS);
 	}
 
 	static void register(RpcLocker r, long endTime) {

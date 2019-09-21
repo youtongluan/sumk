@@ -17,8 +17,6 @@ package org.yx.http;
 
 import java.util.Objects;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.yx.http.handler.WebContext;
 import org.yx.util.S;
 
@@ -44,14 +42,7 @@ public class HttpCiphers {
 		HttpCiphers.encryptor = Objects.requireNonNull(encryptor);
 	}
 
-	private static Signer signer = new Signer() {
-
-		@Override
-		public String sign(byte[] bs, HttpServletRequest httpServletRequest) throws Exception {
-			return S.hash.digestByteToString(bs);
-		}
-
-	};
+	private static Signer signer = (bs, httpServletRequest) -> S.hash.digestByteToString(bs);
 
 	public static Signer getSigner() {
 		return signer;

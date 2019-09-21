@@ -19,7 +19,7 @@ import org.yx.conf.AppInfo;
 
 public interface ZKConst {
 
-	public static String SOA_ROOT = AppInfo.get("soa.zk.route", "/sumk_soa");
+	public static String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "/sumk_soa");
 
 	public static final String METHODS = "methods";
 	public static final String METHOD_SPLIT = "#";

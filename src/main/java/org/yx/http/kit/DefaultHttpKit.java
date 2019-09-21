@@ -41,7 +41,7 @@ public class DefaultHttpKit implements HttpKit {
 	}
 
 	public Charset charset(HttpServletRequest req) {
-		String charsetName = AppInfo.get("http.charset");
+		String charsetName = AppInfo.get("sumk.http.charset");
 		if (StringUtil.isEmpty(charsetName)) {
 			charsetName = req.getCharacterEncoding();
 		}

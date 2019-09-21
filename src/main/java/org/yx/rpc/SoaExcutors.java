@@ -22,8 +22,8 @@ import org.yx.main.SumkThreadPool;
 
 public final class SoaExcutors {
 
-	private static ExecutorService serverThreadPool = SumkThreadPool.EXECUTOR;
-	private static ExecutorService clientThreadPool = SumkThreadPool.EXECUTOR;
+	private static ExecutorService serverThreadPool = SumkThreadPool.executor();
+	private static ExecutorService clientThreadPool = SumkThreadPool.executor();
 
 	public static ExecutorService getServerThreadPool() {
 		return serverThreadPool;

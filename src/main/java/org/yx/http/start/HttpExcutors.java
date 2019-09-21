@@ -22,7 +22,7 @@ import org.yx.main.SumkThreadPool;
 
 public class HttpExcutors {
 
-	private static ThreadPoolExecutor threadPool = (ThreadPoolExecutor) SumkThreadPool.EXECUTOR;
+	private static ThreadPoolExecutor threadPool = (ThreadPoolExecutor) SumkThreadPool.executor();
 
 	public static ThreadPoolExecutor getThreadPool() {
 		return threadPool;

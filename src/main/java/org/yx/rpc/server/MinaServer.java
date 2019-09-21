@@ -37,7 +37,7 @@ import org.yx.rpc.codec.SumkCodecFactory;
 
 public class MinaServer implements Runnable {
 
-	public static final String SOA_SESSION_IDLE = "soa.session.idle";
+	public static final String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
 	private final String host;
 	private int port;
 	private IoHandler handler;
@@ -77,7 +77,7 @@ public class MinaServer implements Runnable {
 		}
 		try {
 			acceptor = acceptors > 0 ? new NioSocketAcceptor(acceptors) : new NioSocketAcceptor();
-			acceptor.setReuseAddress(AppInfo.getBoolean("soa.port.reuse", false));
+			acceptor.setReuseAddress(AppInfo.getBoolean("sumk.rpc.port.reuse", false));
 			DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
 			chain.addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
@@ -106,7 +106,7 @@ public class MinaServer implements Runnable {
 						continue;
 					}
 					Log.get("sumk.rpc").debug("waiting for listening to {}.{}", port, e.getMessage());
-					int time = AppInfo.getInt("soa.server.starting.sleep", 5000);
+					int time = AppInfo.getInt("sumk.rpc.server.starting.sleep", 5000);
 					Thread.sleep(time);
 				}
 			}

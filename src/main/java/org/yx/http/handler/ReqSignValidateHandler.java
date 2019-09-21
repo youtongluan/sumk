@@ -28,7 +28,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 
 	public ReqSignValidateHandler() {
 
-		String saltStr = AppInfo.get("sumk.sign.salt");
+		String saltStr = AppInfo.get("sumk.http.sign.salt");
 		if (StringUtil.isNotEmpty(saltStr)) {
 			salt = saltStr.getBytes();
 		}

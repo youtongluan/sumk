@@ -44,7 +44,7 @@ public final class Rpc {
 		}
 		try {
 			appId = AppInfo.appId("sumk");
-			DEFAULT_TIMEOUT = AppInfo.getInt("soa.timeout", 30000);
+			DEFAULT_TIMEOUT = AppInfo.getInt("sumk.rpc.timeout", 30000);
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Log.get("sumk.rpc").info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();

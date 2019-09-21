@@ -67,7 +67,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			addFilters(context);
 			addServlets(context);
 
-			String path = AppInfo.get("http.login.path", "/login");
+			String path = AppInfo.get("sumk.http.login.path", "/login");
 			if (IOC.getBeans(LoginServlet.class).size() > 0) {
 				String loginPath = path;
 				if (!loginPath.startsWith("/")) {
@@ -101,7 +101,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			String[] values = sumk.value();
 			String value = null;
 			if (StringUtil.isNotEmpty(sumk.appKey())
-					&& (value = AppInfo.get("http.servlet." + sumk.appKey())) != null) {
+					&& (value = AppInfo.get("sumk.http.servlet." + sumk.appKey())) != null) {
 				values = StringUtil.toLatin(value).split(",");
 			}
 			dynamic.addMapping(values);

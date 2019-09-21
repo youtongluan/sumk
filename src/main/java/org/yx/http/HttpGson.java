@@ -35,9 +35,9 @@ public final class HttpGson {
 	}
 
 	private static GsonBuilder gsonBuilder() {
-		GsonBuilder gb = GsonHelper.builder("http");
+		GsonBuilder gb = GsonHelper.builder("sumk.http");
 
-		if (AppInfo.getBoolean("http.json.long2String", true)) {
+		if (AppInfo.getBoolean("sumk.http.json.long2String", true)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
 		return gb;

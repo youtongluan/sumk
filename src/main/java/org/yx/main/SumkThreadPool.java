@@ -34,9 +34,9 @@ import org.yx.exception.SimpleBizException;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
-public class SumkThreadPool {
+public final class SumkThreadPool {
 
-	public static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
+	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
 			AppInfo.getInt("sumk.schedule.thread", 2), new ThreadFactory() {
 				private final AtomicInteger threadNumber = new AtomicInteger(1);
 
@@ -52,7 +52,15 @@ public class SumkThreadPool {
 				}
 			});
 
-	public static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
+	private static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
+
+	public static ScheduledThreadPoolExecutor scheduledExecutor() {
+		return scheduledExecutor;
+	}
+
+	public static final SumkExecutorService executor() {
+		return EXECUTOR;
+	}
 
 	public static final BizException THREAD_THRESHOLD_OVER = new SimpleBizException(ErrorCode.THREAD_THRESHOLD_OVER,
 			"系统限流降级");

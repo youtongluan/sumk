@@ -34,7 +34,7 @@ public class HttpPlugin implements Plugin {
 
 	private Lifecycle server;
 
-	public static final String KEY_STORE_PATH = "http.ssl.keyStore";
+	public static final String KEY_STORE_PATH = "sumk.http.ssl.keyStore";
 
 	private static final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
 	private static final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
@@ -72,7 +72,7 @@ public class HttpPlugin implements Plugin {
 			}
 			String httpServerClass = StringUtil.isEmpty(AppInfo.get(KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
 					: HTTPS_SERVER_CLASS;
-			String hs = AppInfo.get("http.starter.class", httpServerClass);
+			String hs = AppInfo.get("sumk.http.starter.class", httpServerClass);
 			if (!hs.contains(".")) {
 				return;
 			}

@@ -13,7 +13,7 @@ import com.google.gson.stream.JsonWriter;
 
 public class DefaultHttpLogHandler implements HttpLogHandler {
 	private Logger LOG_REQ = Log.get("sumk.http.log.json");
-	private int maxLen = AppInfo.getInt("http.log.resp.maxlength", 100000);
+	private int maxLen = AppInfo.getInt("sumk.http.log.resp.maxlength", 100000);
 
 	public void log(WebContext ctx) {
 		if (LOG_REQ.isDebugEnabled() && ctx.dataInString() != null) {

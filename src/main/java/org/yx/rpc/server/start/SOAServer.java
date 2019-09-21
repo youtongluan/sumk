@@ -46,7 +46,7 @@ public class SOAServer implements Lifecycle {
 	private boolean enable;
 
 	private static boolean soaServerEnable() {
-		return AppInfo.getBoolean("soa.server.register", true);
+		return AppInfo.getBoolean("sumk.rpc.server.register", true);
 	}
 
 	private final IZkStateListener stateListener = new IZkStateListener() {
@@ -87,13 +87,13 @@ public class SOAServer implements Lifecycle {
 		final Map<String, String> map = new HashMap<>();
 		if (methods.length > 0) {
 			for (String method : methods) {
-				map.put(ZKConst.METHODS + "." + method, AppInfo.get("soa.methods." + method));
+				map.put(ZKConst.METHODS + "." + method, AppInfo.get("sumk.rpc.methods." + method));
 			}
 		}
 		map.put(ZKConst.FEATURE, Profile.featureInHex());
 		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));
-		map.put(ZKConst.WEIGHT, AppInfo.get("soa.weight", "100"));
-		map.put(ZKConst.CLIENT_COUNT, AppInfo.get("soa.client.count", "1000"));
+		map.put(ZKConst.WEIGHT, AppInfo.get("sumk.rpc.weight", "100"));
+		map.put(ZKConst.CLIENT_COUNT, AppInfo.get("sumk.rpc.client.count", "1000"));
 
 		String zkData = CollectionUtil.saveMapToText(map, "\n", "=");
 		return zkData;

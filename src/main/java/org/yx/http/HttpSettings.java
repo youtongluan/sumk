@@ -23,29 +23,29 @@ import org.yx.conf.AppInfo;
 public class HttpSettings {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-	public static final int ERROR_HTTP_STATUS = AppInfo.getInt("http.errorcode", 499);
+	public static final int ERROR_HTTP_STATUS = AppInfo.getInt("sumk.http.errorcode", 499);
 
 	public static boolean isCookieEnable() {
-		return AppInfo.getBoolean("http.header.usecookie", true);
+		return AppInfo.getBoolean("sumk.http.header.usecookie", true);
 	}
 
 	public static int httpSessionTimeout(String type) {
-		int timeout = AppInfo.getInt("http.session.timeout", 3600);
+		int timeout = AppInfo.getInt("sumk.http.session.timeout", 3600);
 		if (type == null || type.isEmpty()) {
 			return timeout;
 		}
-		return AppInfo.getInt("http.session.timeout." + type, timeout);
+		return AppInfo.getInt("sumk.http.session.timeout." + type, timeout);
 	}
 
 	public static int singleSessionTimeout(String type) {
-		int timeout = AppInfo.getInt("http.session.single.timeout", 3600 * 24);
+		int timeout = AppInfo.getInt("sumk.http.session.single.timeout", 3600 * 24);
 		if (type == null || type.isEmpty()) {
 			return timeout;
 		}
-		return AppInfo.getInt("http.session.single.timeout." + type, timeout);
+		return AppInfo.getInt("sumk.http.session.single.timeout." + type, timeout);
 	}
 
 	public static boolean isUploadEnable() {
-		return AppInfo.getBoolean("http.upload.enable", true);
+		return AppInfo.getBoolean("sumk.http.upload.enable", true);
 	}
 }

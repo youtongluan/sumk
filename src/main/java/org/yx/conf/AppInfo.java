@@ -108,7 +108,7 @@ public final class AppInfo {
 	}
 
 	public static String getServerZKUrl() {
-		String url = info.get("soa.zk.server");
+		String url = info.get("sumk.rpc.zk.server");
 		if (url != null && url.length() > 0) {
 			return url;
 		}
@@ -116,7 +116,7 @@ public final class AppInfo {
 	}
 
 	public static String getClinetZKUrl() {
-		String url = info.get("soa.zk.client");
+		String url = info.get("sumk.rpc.zk.client");
 		if (url != null && url.length() > 0) {
 			return url;
 		}

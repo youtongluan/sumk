@@ -48,11 +48,12 @@ public class ActInfomation extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		InnerHttpUtil.noCache(resp);
 		resp.setContentType("text/html;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.acts.md5", "61C72B1CE5858D83C90BA7B5B1096697");
+		String md5 = AppInfo.get("sumk.acts.md5", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(S.hash.digest(sign, StandardCharsets.UTF_8)) || StringUtil.isEmpty(mode)) {
+			if (sign == null || !md5.equalsIgnoreCase(S.hash.digest(sign, StandardCharsets.UTF_8))
+					|| StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

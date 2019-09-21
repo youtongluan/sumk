@@ -32,8 +32,8 @@ public class HostChecker {
 	private static final HostChecker holder = new HostChecker();
 
 	private HostChecker() {
-		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(new Checker(), 5,
-				AppInfo.getInt("soa.hosts.check.period", 3), TimeUnit.SECONDS);
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(new Checker(), 5,
+				AppInfo.getInt("sumk.rpc.hosts.check.period", 3), TimeUnit.SECONDS);
 	}
 
 	public static HostChecker get() {
@@ -66,13 +66,13 @@ public class HostChecker {
 
 		private int getTimeOut(int urlSize) {
 			if (urlSize == 1) {
-				return AppInfo.getInt("soa.socket.connecttimeout.1", 3000);
+				return AppInfo.getInt("sumk.rpc.socket.connecttimeout.1", 3000);
 			} else if (urlSize == 2) {
-				return AppInfo.getInt("soa.socket.connecttimeout.2", 2500);
+				return AppInfo.getInt("sumk.rpc.socket.connecttimeout.2", 2500);
 			} else if (urlSize > 5) {
-				return AppInfo.getInt("soa.socket.connecttimeout.5", 1000);
+				return AppInfo.getInt("sumk.rpc.socket.connecttimeout.5", 1000);
 			}
-			return AppInfo.getInt("soa.socket.connecttimeout.3", 2000);
+			return AppInfo.getInt("sumk.rpc.socket.connecttimeout.3", 2000);
 		}
 
 		@Override

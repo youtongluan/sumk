@@ -40,11 +40,11 @@ public class WebAnnotationResolver {
 	private TextMatcher matcher = BooleanMatcher.TRUE;
 
 	public WebAnnotationResolver() {
-		nameResolver = Loader.newInstanceFromAppKey("http.name.resolver");
+		nameResolver = Loader.newInstanceFromAppKey("sumk.http.name.resolver");
 		if (nameResolver == null) {
 			nameResolver = new WebNameResolverImpl();
 		}
-		String patterns = AppInfo.get("http", null);
+		String patterns = AppInfo.get("sumk.http.pattern", null);
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}

@@ -305,4 +305,7 @@ public final class BeanPool {
 		return map.get(name);
 	}
 
+	void clear() {
+		map.clear();
+	}
 }

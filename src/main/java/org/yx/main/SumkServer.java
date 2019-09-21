@@ -25,6 +25,7 @@ import java.util.Set;
 
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
+import org.yx.bean.InnerIOC;
 import org.yx.bean.Plugin;
 import org.yx.bean.ScanerFactorysBean;
 import org.yx.common.StartConstants;
@@ -39,6 +40,7 @@ import org.yx.util.StringUtil;
 
 public final class SumkServer {
 	private static volatile boolean started;
+	private static volatile boolean destoryed = false;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
 
@@ -92,6 +94,7 @@ public final class SumkServer {
 				return;
 			}
 			started = true;
+			destoryed = false;
 		}
 		try {
 			handleSystemArgs();
@@ -108,7 +111,7 @@ public final class SumkServer {
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
 			if (StartContext.inst.get(StartConstants.NOSOA_ClIENT) == null
-					&& AppInfo.getBoolean("soa.client.start", false)) {
+					&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
 				Rpc.init();
 			}
 
@@ -159,8 +162,6 @@ public final class SumkServer {
 		return list;
 	}
 
-	private volatile static boolean destoryed = false;
-
 	public static boolean isStarted() {
 		return started;
 	}
@@ -175,6 +176,7 @@ public final class SumkServer {
 				return;
 			}
 			destoryed = true;
+			started = false;
 		}
 		SumkThreadPool.shutdown();
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
@@ -192,6 +194,7 @@ public final class SumkServer {
 			RedisPool.shutdown();
 		} catch (Throwable e2) {
 		}
+		InnerIOC.clear();
 		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 }

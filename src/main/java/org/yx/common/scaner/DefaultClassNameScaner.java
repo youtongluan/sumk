@@ -24,17 +24,18 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
-public final class DefaultClassNameScaner implements ClassNameScaner {
+public final class DefaultClassNameScaner implements Function<String[], Collection<String>> {
 	private static final String DOT_CLASS = ".class";
 
 	@Override
-	public Collection<String> parse(final String... packageNames) {
+	public Collection<String> apply(final String[] packageNames) {
 		Set<String> classNameList = new HashSet<>(240);
 		if (packageNames == null) {
 			return classNameList;

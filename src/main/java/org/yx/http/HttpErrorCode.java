@@ -52,12 +52,12 @@ public interface HttpErrorCode extends ErrorCode {
 	/**
 	 * 参数验证错误
 	 */
-	int VALIDATE_ERROR = AppInfo.getInt("http.errorcode.validate", 910);
+	int VALIDATE_ERROR = AppInfo.getInt("sumk.http.errorcode.validate", 910);
 
 	/**
 	 * type类型错误
 	 */
-	int TYPE_ERROR = AppInfo.getInt("http.errorcode.type", 920);
+	int TYPE_ERROR = AppInfo.getInt("sumk.http.errorcode.type", 920);
 
 	/**
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用

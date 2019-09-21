@@ -23,7 +23,7 @@ import com.google.gson.Gson;
 
 public final class RpcGson {
 
-	private static Gson gson = GsonHelper.builder("rpc")
+	private static Gson gson = GsonHelper.builder("sumk.rpc")
 
 			.create();
 

@@ -51,4 +51,8 @@ public final class InnerIOC {
 	public static Collection<Object> beans() {
 		return pool.beans();
 	}
+
+	public static void clear() {
+		pool.clear();
+	}
 }

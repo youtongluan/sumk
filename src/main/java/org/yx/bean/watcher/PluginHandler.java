@@ -45,7 +45,7 @@ public class PluginHandler {
 		}
 		CountDownLatch latch = new CountDownLatch(plugins.size());
 		for (Plugin plugin : plugins) {
-			SumkThreadPool.EXECUTOR.execute(() -> {
+			SumkThreadPool.executor().execute(() -> {
 				try {
 					plugin.startAsync();
 					latch.countDown();

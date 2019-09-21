@@ -57,9 +57,9 @@ public class Encrypt {
 			if (hex.length() == 1) {
 				hex = '0' + hex;
 			}
-			sb.append(hex.toUpperCase());
+			sb.append(hex);
 		}
-		return sb.toString();
+		return sb.toString().toLowerCase();
 	}
 
 }

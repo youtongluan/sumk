@@ -43,7 +43,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	static {
 
 		AppInfo.addObserver(info -> {
-			String fusing = AppInfo.get("http.fusing", null);
+			String fusing = AppInfo.get("sumk.http.fusing", null);
 			if (fusing == null) {
 				FUSING = Collections.emptySet();
 			} else {
@@ -82,7 +82,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			}
 			if (FUSING.contains(act)) {
 				log.error("{} is in fusing", act);
-				errorAndLog(resp, HttpErrorCode.FUSING, AppInfo.get("http.errorcode.fusing", "请求出错"), req);
+				errorAndLog(resp, HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"), req);
 				return;
 			}
 			HttpActionNode info = HttpActionHolder.getHttpInfo(act);

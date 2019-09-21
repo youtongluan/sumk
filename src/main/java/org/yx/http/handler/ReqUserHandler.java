@@ -47,8 +47,8 @@ public class ReqUserHandler implements HttpHandler {
 				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId, type)) {
-						int code = AppInfo.getInt("http.session.single.code", HttpErrorCode.LOGIN_AGAIN);
-						String msg = AppInfo.get("http.session.single.msg", "您已在其他地方登录！");
+						int code = AppInfo.getInt("sumk.http.session.single.code", HttpErrorCode.LOGIN_AGAIN);
+						String msg = AppInfo.get("sumk.http.session.single.msg", "您已在其他地方登录！");
 						Log.get("sumk.http").info("session:{}, login by other", sessionID);
 						BizException.throwException(code, msg);
 					}

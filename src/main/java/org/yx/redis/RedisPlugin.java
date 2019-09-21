@@ -44,7 +44,7 @@ public class RedisPlugin implements Plugin {
 			ConsoleLog.get(Redis.LOG_NAME).debug("redis pool init");
 			RedisLoader.init();
 			initSeqUtilCounter();
-			SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(RedisChecker.get(), 5,
+			SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(RedisChecker.get(), 5,
 					AppInfo.getInt("sumk.redis.check.period", 5), TimeUnit.SECONDS);
 		} catch (Exception e) {
 			Log.get(Redis.LOG_NAME).error(e.getMessage(), e);

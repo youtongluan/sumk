@@ -19,13 +19,13 @@ import org.yx.conf.AppInfo;
 
 public interface HttpHeader {
 
-	String SESSIONID = AppInfo.get("http.header.sid", "sid");
+	String SESSIONID = AppInfo.get("sumk.http.header.sid", "sid");
 
-	String TOKEN = AppInfo.get("http.header.stoken", "stoken");
+	String TOKEN = AppInfo.get("sumk.http.header.stoken", "stoken");
 
-	String TYPE = AppInfo.get("http.header.stype", "stype");
+	String TYPE = AppInfo.get("sumk.http.header.stype", "stype");
 
-	String CLIENT = AppInfo.get("http.header.sclient", "sclient");
+	String CLIENT = AppInfo.get("sumk.http.header.sclient", "sclient");
 
-	String CLIENT_PC = AppInfo.get("http.header.sclient.pc", "PC");
+	String CLIENT_PC = AppInfo.get("sumk.http.header.sclient.pc", "PC");
 }

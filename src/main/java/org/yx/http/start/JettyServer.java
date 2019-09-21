@@ -62,7 +62,7 @@ public class JettyServer implements Lifecycle {
 	protected ServerConnector createConnector() throws Exception {
 
 		ServerConnector connector = new ServerConnector(server, null, null, null,
-				AppInfo.getInt("http.connector.acceptors", 0), AppInfo.getInt("http.connector.selectors", 5),
+				AppInfo.getInt("sumk.http.connector.acceptors", 0), AppInfo.getInt("sumk.http.connector.selectors", 5),
 				getConnectionFactorys()) {
 			@Override
 			protected ServerSocketChannel openAcceptChannel() throws IOException {
@@ -73,9 +73,9 @@ public class JettyServer implements Lifecycle {
 					ex = e;
 				}
 
-				for (int i = 0; i < AppInfo.getInt("http.bind.retry", 100); i++) {
+				for (int i = 0; i < AppInfo.getInt("sumk.http.bind.retry", 100); i++) {
 					try {
-						Thread.sleep(AppInfo.getLong("http.bind.sleepTime", 1000));
+						Thread.sleep(AppInfo.getLong("sumk.http.bind.sleepTime", 1000));
 					} catch (InterruptedException e1) {
 						Log.get("sumk.http").error("showdown because of InterruptedException");
 						System.exit(-1);
@@ -93,8 +93,8 @@ public class JettyServer implements Lifecycle {
 				throw ex;
 			}
 		};
-		connector.setReuseAddress(AppInfo.getBoolean("http.reuseAddr", false));
-		int backlog = AppInfo.getInt("http.backlog", 0);
+		connector.setReuseAddress(AppInfo.getBoolean("sumk.http.reuseAddr", false));
+		int backlog = AppInfo.getInt("sumk.http.backlog", 0);
 		if (backlog > 0) {
 			connector.setAcceptQueueSize(backlog);
 		}
@@ -114,17 +114,17 @@ public class JettyServer implements Lifecycle {
 
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = createServletContextHandler();
-			context.setContextPath(AppInfo.get("http.jetty.web.root", "/"));
+			context.setContextPath(AppInfo.get("sumk.http.jetty.web.root", "/"));
 			context.addEventListener(new SumkLoaderListener());
 			addUserListener(context, Arrays.asList(ServletContextListener.class, ContextScopeListener.class));
-			String resourcePath = AppInfo.get("http.jetty.resource");
+			String resourcePath = AppInfo.get("sumk.http.jetty.resource");
 			if (StringUtil.isNotEmpty(resourcePath)) {
 				ResourceHandler resourceHandler = createResourceHandler();
 				resourceHandler.setResourceBase(resourcePath);
 				context.insertHandler(resourceHandler);
 			}
 
-			if (AppInfo.getBoolean("http.jetty.session.enable", false)) {
+			if (AppInfo.getBoolean("sumk.http.jetty.session.enable", false)) {
 				SessionHandler h = createSessionHandler();
 				context.insertHandler(h);
 			}
@@ -160,7 +160,7 @@ public class JettyServer implements Lifecycle {
 			return handler;
 		}
 		handler = new ServletContextHandler();
-		String welcomes = AppInfo.get("http.jetty.welcomes");
+		String welcomes = AppInfo.get("sumk.http.jetty.welcomes");
 		if (welcomes != null && welcomes.length() > 0) {
 			handler.setWelcomeFiles(welcomes.replace('，', ',').split(","));
 		}
@@ -177,7 +177,7 @@ public class JettyServer implements Lifecycle {
 			return handler;
 		}
 		handler = new ResourceHandler();
-		String welcomes = AppInfo.get("http.jetty.resource.welcomes");
+		String welcomes = AppInfo.get("sumk.http.jetty.resource.welcomes");
 		if (welcomes != null && welcomes.length() > 0) {
 			handler.setWelcomeFiles(welcomes.replace('，', ',').split(","));
 		}

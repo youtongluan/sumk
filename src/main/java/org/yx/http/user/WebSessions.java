@@ -63,11 +63,11 @@ public class WebSessions {
 	}
 
 	public static boolean isSingleLogin(String type) {
-		boolean single = AppInfo.getBoolean("http.session.single", false);
+		boolean single = AppInfo.getBoolean("sumk.http.session.single", false);
 		if (type == null || type.isEmpty()) {
 			return single;
 		}
-		return AppInfo.getBoolean("http.session.single." + type, single);
+		return AppInfo.getBoolean("sumk.http.session.single." + type, single);
 	}
 
 	private static synchronized void initSession() {

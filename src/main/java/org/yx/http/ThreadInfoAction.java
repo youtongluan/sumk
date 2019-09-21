@@ -36,7 +36,7 @@ public class ThreadInfoAction extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		ThreadPoolExecutor pool = (ThreadPoolExecutor) SumkThreadPool.EXECUTOR;
+		ThreadPoolExecutor pool = (ThreadPoolExecutor) SumkThreadPool.executor();
 		String line = req.getParameter("line");
 		if (line == null || line.isEmpty()) {
 			line = "\n";

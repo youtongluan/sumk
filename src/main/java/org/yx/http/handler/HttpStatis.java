@@ -60,11 +60,12 @@ public class HttpStatis extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.setCharacterEncoding("UTF-8");
 		InnerHttpUtil.noCache(resp);
-		String md5 = AppInfo.get("http.monitor", "61C72B1CE5858D83C90BA7B5B1096697");
+		String md5 = AppInfo.get("sumk.http.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equals(S.hash.digest(sign, StandardCharsets.UTF_8)) || StringUtil.isEmpty(mode)) {
+			if (sign == null || !md5.equalsIgnoreCase(S.hash.digest(sign, StandardCharsets.UTF_8))
+					|| StringUtil.isEmpty(mode)) {
 				return;
 			}
 		} catch (Exception e) {

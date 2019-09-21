@@ -33,7 +33,7 @@ public final class RpcActionNode extends CalleeNode {
 	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
 			Class<?>[] argTypes, Param[] params, Soa action) {
 		super(obj, method, argClz, argNames, argTypes, params,
-				action.priority() > 0 ? action.priority() : AppInfo.getInt("soa.thread.priority.default", 100000));
+				action.priority() > 0 ? action.priority() : AppInfo.getInt("sumk.rpc.thread.priority.default", 100000));
 		this.action = action;
 	}
 

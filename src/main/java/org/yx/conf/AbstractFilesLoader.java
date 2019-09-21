@@ -39,7 +39,7 @@ public abstract class AbstractFilesLoader implements MultiResourceLoader, Runnab
 			return false;
 		}
 		this.consumer = consumer;
-		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(this, 60, AppInfo.getLong("sumk.db.sdb.delay", 60),
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(this, 60, AppInfo.getLong("sumk.db.sdb.delay", 60),
 				TimeUnit.SECONDS);
 		return true;
 	}

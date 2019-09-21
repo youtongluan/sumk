@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
@@ -119,12 +120,12 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		}
 	}
 
-	public <T> T exec(RedisCallBack<T> callback) {
+	public <T> T exec(Function<Jedis, T> callback) {
 		checkConnection();
 		Jedis jedis = null;
 		try {
 			jedis = this.jedis();
-			return callback.invoke(jedis);
+			return callback.apply(jedis);
 		} catch (Exception e) {
 			throw new SumkException(12342410, e.getMessage(), e);
 		} finally {
@@ -134,7 +135,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		}
 	}
 
-	public <T> T executeAndRetry(RedisCallBack<T> callback) {
+	public <T> T executeAndRetry(Function<Jedis, T> callback) {
 		Jedis jedis = null;
 		Exception e1 = null;
 		for (int i = 0; i < this.getTryCount(); i++) {
@@ -142,7 +143,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 			try {
 				e1 = null;
 				jedis = this.jedis();
-				return callback.invoke(jedis);
+				return callback.apply(jedis);
 			} catch (Exception e) {
 				if (isConnectException(e)) {
 					Log.get(Redis.LOG_NAME).warn("redis连接错误！" + e.getMessage());

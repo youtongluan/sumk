@@ -68,27 +68,27 @@ public class StartContext {
 	}
 
 	public static String soaHostInzk() {
-		return get("soa.zk.host", null);
+		return get("sumk.rpc.zk.host", null);
 	}
 
 	public static String soaHost() {
-		return get("soa.host", AppInfo.getIp());
+		return get("sumk.rpc.host", AppInfo.getIp());
 	}
 
 	public static int soaPort() {
-		return getInt("soa.port", -1);
+		return getInt("sumk.rpc.port", -1);
 	}
 
 	public static int soaPortInZk() {
-		return getInt("soa.zk.port", -1);
+		return getInt("sumk.rpc.zk.port", -1);
 	}
 
 	public static String httpHost() {
-		return get("http.host", AppInfo.get("http.host"));
+		return get("sumk.http.host", AppInfo.get("sumk.http.host"));
 	}
 
 	public static int httpPort() {
-		return getInt("http.port", -1);
+		return getInt("sumk.http.port", -1);
 	}
 
 	private static int getInt(String name, int defaultValue) {

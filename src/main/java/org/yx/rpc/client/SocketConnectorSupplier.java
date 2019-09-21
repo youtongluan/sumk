@@ -49,12 +49,12 @@ public class SocketConnectorSupplier implements Supplier<SocketConnector> {
 		}
 		try {
 			NioSocketConnector con = new NioSocketConnector(
-					AppInfo.getInt("soa.client.poolsize", Runtime.getRuntime().availableProcessors() + 1));
-			con.setConnectTimeoutMillis(AppInfo.getInt("soa.connect.timeout", 5000));
+					AppInfo.getInt("sumk.rpc.client.poolsize", Runtime.getRuntime().availableProcessors() + 1));
+			con.setConnectTimeoutMillis(AppInfo.getInt("sumk.rpc.connect.timeout", 5000));
 			con.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(MinaServer.SOA_SESSION_IDLE, 600));
 			con.setHandler(new ClientHandler());
 			con.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
-			if (AppInfo.getBoolean("soa.client.threadpool.enable", true)) {
+			if (AppInfo.getBoolean("sumk.rpc.client.threadpool.enable", true)) {
 				con.getFilterChain().addLast("threadpool", new ExecutorFilter(SoaExcutors.getClientThreadPool()));
 			}
 			this.connector = con;

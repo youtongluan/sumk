@@ -39,12 +39,12 @@ public class SoaAnnotationResolver {
 	private TextMatcher matcher = BooleanMatcher.TRUE;
 
 	public SoaAnnotationResolver() {
-		nameResolver = Loader.newInstanceFromAppKey("soa.name.resolver");
+		nameResolver = Loader.newInstanceFromAppKey("sumk.rpc.name.resolver");
 		if (nameResolver == null) {
 			nameResolver = new SoaNameResolverImpl();
 		}
 
-		String patterns = AppInfo.get("soa", null);
+		String patterns = AppInfo.get("sumk.rpc.pattern", null);
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}

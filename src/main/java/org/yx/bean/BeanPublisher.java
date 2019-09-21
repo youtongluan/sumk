@@ -51,7 +51,7 @@ public final class BeanPublisher {
 		packageNames.add(0, StartConstants.INNER_PACKAGE);
 
 		IntfImplement.beforeScan();
-		Collection<String> clzs = ClassScaner.parse(packageNames.toArray(new String[packageNames.size()]));
+		Collection<String> clzs = ClassScaner.listClasses(packageNames.toArray(new String[packageNames.size()]));
 		for (String c : clzs) {
 			try {
 

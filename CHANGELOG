@@ -44,3 +44,8 @@ v2.3.9
 2、整理日志的模块名
 3、去掉Log.printStack(Throwable e)方法
 4、Transaction的NORMAL改名为REQUIRED，EMBED改名为REQUIRES_NEW
+
+v2.4.0
+1、在配置文件中，soa开头的改为sumk.rpc开头。http开头的改为sumk.http开头
+2、将RedisCallBack等单方法的接口改为java自带的接口
+3、md5的结果从原来的大写方式改为小写方式

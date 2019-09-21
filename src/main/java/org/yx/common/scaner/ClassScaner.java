@@ -21,18 +21,19 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.yx.bean.Loader;
 
 public final class ClassScaner {
 
-	private static ClassNameScaner scaner = new DefaultClassNameScaner();
+	private static Function<String[], Collection<String>> scaner = new DefaultClassNameScaner();
 
-	public static ClassNameScaner getScaner() {
+	public static Function<String[], Collection<String>> getScaner() {
 		return scaner;
 	}
 
-	public static void setScaner(ClassNameScaner scaner) {
+	public static void setScaner(Function<String[], Collection<String>> scaner) {
 		ClassScaner.scaner = Objects.requireNonNull(scaner);
 	}
 
@@ -44,7 +45,7 @@ public final class ClassScaner {
 	@SuppressWarnings("unchecked")
 	public static <T> Collection<Class<? extends T>> list(String packageName, Class<T> baseClz)
 			throws ClassNotFoundException {
-		Collection<String> clzNames = parse(packageName);
+		Collection<String> clzNames = listClasses(packageName);
 		if (clzNames == null || clzNames.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -60,7 +61,7 @@ public final class ClassScaner {
 		return set;
 	}
 
-	public static Collection<String> parse(String... packageNames) {
-		return scaner.parse(packageNames);
+	public static Collection<String> listClasses(String... packageNames) {
+		return scaner.apply(packageNames);
 	}
 }

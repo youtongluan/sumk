@@ -41,7 +41,7 @@ public final class S {
 	/**
 	 * 系统共用的线程池
 	 */
-	public static final ExecutorService executor = SumkThreadPool.EXECUTOR;
+	public static final ExecutorService executor = SumkThreadPool.executor();
 
 	public static final Base64 base64 = Base64.inst;
 

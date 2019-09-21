@@ -39,10 +39,10 @@ public final class EventLane {
 	}
 
 	public static void pubuish(Connection conn, DBEvent event) {
+		if (event == null) {
+			return;
+		}
 		if (ModifyEvent.class.isInstance(event)) {
-			if (event == null) {
-				return;
-			}
 			EventLane pool = pool(conn);
 			if (pool == null) {
 				pool = new EventLane();

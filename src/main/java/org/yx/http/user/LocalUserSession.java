@@ -59,8 +59,8 @@ public class LocalUserSession implements UserSession {
 
 	public LocalUserSession() {
 		Log.get("sumk.http").info("use local user session");
-		long seconds = AppInfo.getInt("http.localsession.period", 60);
-		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
+		long seconds = AppInfo.getInt("sumk.http.localsession.period", 60);
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
 			Set<String> set = map.keySet();
 			long now = System.currentTimeMillis();
 			for (String key : set) {

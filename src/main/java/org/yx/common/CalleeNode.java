@@ -74,13 +74,13 @@ public abstract class CalleeNode {
 	}
 
 	public Object accept(Visitor visitor) throws Throwable {
-		if (this.priority < SumkThreadPool.EXECUTOR.threshold()) {
+		if (this.priority < SumkThreadPool.executor().threshold()) {
 			if (Log.get("sumk.thread").isDebugEnabled()) {
 				String msg = new StringBuilder().append("[")
 						.append(this.getClass().getSimpleName().replace("ActionNode", "")).append("] ")
 						.append(this.method.getDeclaringClass().getSimpleName()).append(".")
 						.append(this.method.getName()).append("() - priority=").append(priority)
-						.append(" ,  threshold=").append(SumkThreadPool.EXECUTOR.threshold()).toString();
+						.append(" ,  threshold=").append(SumkThreadPool.executor().threshold()).toString();
 				Log.get("sumk.thread").debug(msg);
 			}
 			throw SumkThreadPool.THREAD_THRESHOLD_OVER;

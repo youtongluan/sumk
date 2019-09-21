@@ -24,8 +24,8 @@ import com.google.gson.Gson;
 
 public class DBGson {
 
-	private static Gson gson = GsonHelper.builder("db").registerTypeAdapter(byte[].class, ByteArrayTypeAdapter.inst)
-			.create();
+	private static Gson gson = GsonHelper.builder("sumk.db")
+			.registerTypeAdapter(byte[].class, ByteArrayTypeAdapter.inst).create();
 
 	public static Gson getGson() {
 		return gson;

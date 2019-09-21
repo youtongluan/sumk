@@ -34,37 +34,37 @@ public final class GsonHelper {
 		}
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
-		String format = AppInfo.get(module + ".json.date.format");
+		String format = AppInfo.get(module + ".gson.date.format");
 		if (StringUtil.isNotEmpty(format)) {
 			da.setDateFormat(format);
 		}
 
 		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
 
-		if (AppInfo.getBoolean(module + ".json.disableHtmlEscaping", false)) {
+		if (AppInfo.getBoolean(module + ".gson.disableHtmlEscaping", false)) {
 			gb.disableHtmlEscaping();
 		}
-		if (AppInfo.getBoolean(module + ".json.shownull", false)) {
+		if (AppInfo.getBoolean(module + ".gson.shownull", false)) {
 			gb.serializeNulls();
 		}
-		if (AppInfo.getBoolean(module + ".json.disableInnerClassSerialization", false)) {
+		if (AppInfo.getBoolean(module + ".gson.disableInnerClassSerialization", false)) {
 			gb.disableInnerClassSerialization();
 		}
-		if (AppInfo.getBoolean(module + ".json.generateNonExecutableJson", false)) {
+		if (AppInfo.getBoolean(module + ".gson.generateNonExecutableJson", false)) {
 			gb.generateNonExecutableJson();
 		}
-		if (AppInfo.getBoolean(module + ".json.serializeSpecialFloatingPointValues", false)) {
+		if (AppInfo.getBoolean(module + ".gson.serializeSpecialFloatingPointValues", false)) {
 			gb.serializeSpecialFloatingPointValues();
 		}
 
-		if (AppInfo.getBoolean(module + ".json.longSerialize2String", false)) {
+		if (AppInfo.getBoolean(module + ".gson.longSerialize2String", false)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
 
-		if (AppInfo.getBoolean(module + ".json.prettyPrinting", false)) {
+		if (AppInfo.getBoolean(module + ".gson.prettyPrinting", false)) {
 			gb.setPrettyPrinting();
 		}
-		if (AppInfo.getBoolean(module + ".date.adaper", true)) {
+		if (AppInfo.getBoolean(module + ".gson.date.adaper", true)) {
 			DateAdapters.registerAll(gb);
 		}
 		return gb;

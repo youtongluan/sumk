@@ -54,7 +54,7 @@ public class SoaException extends CodeException {
 		if (e == null) {
 			return null;
 		}
-		if (AppInfo.getBoolean("soa.detailError", false)) {
+		if (AppInfo.getBoolean("sumk.rpc.detailError", false)) {
 			StringWriter sw = new StringWriter();
 			PrintWriter w = new PrintWriter(sw);
 			e.printStackTrace(w);
@@ -68,7 +68,7 @@ public class SoaException extends CodeException {
 
 	@Override
 	public void printStackTrace(PrintStream s) {
-		if (AppInfo.getBoolean("soa.printRawStackTrace", false)) {
+		if (AppInfo.getBoolean("sumk.rpc.printRawStackTrace", false)) {
 			super.printStackTrace(s);
 			return;
 		}

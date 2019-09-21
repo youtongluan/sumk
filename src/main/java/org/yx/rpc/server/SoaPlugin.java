@@ -38,7 +38,7 @@ public class SoaPlugin implements Plugin {
 			}
 			int port = StartContext.soaPort();
 			if (port > -1) {
-				String clzName = AppInfo.get("soa.starter.class", "org.yx.rpc.server.start.SOAServer");
+				String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SOAServer");
 				Class<?> clz = Class.forName(clzName);
 				Constructor<?> c = clz.getConstructor(int.class);
 				server = (Lifecycle) c.newInstance(port);

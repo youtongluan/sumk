@@ -125,7 +125,7 @@ public final class Sender {
 			req.setJsonedParam((String) this.params);
 		}
 		if (this.totalTimeout < 1) {
-			this.totalTimeout = AppInfo.getInt("soa.timeout", 30000);
+			this.totalTimeout = AppInfo.getInt("sumk.rpc.timeout", 30000);
 		}
 		RpcFuture f = sendAsync(req, this.totalStart + this.totalTimeout);
 		if (f.getClass() == ErrorRpcFuture.class) {
@@ -207,7 +207,7 @@ public final class Sender {
 			return null;
 		}
 
-		if (AppInfo.getBoolean("soa.localroute.disable", false) && route != null) {
+		if (AppInfo.getBoolean("sumk.rpc.localroute.disable", false) && route != null) {
 			return null;
 		}
 

@@ -52,7 +52,7 @@ public class FileMonitor {
 			return;
 		}
 		long seconds = Integer.getInteger("sumk.fileMonitor.period", 60);
-		SumkThreadPool.scheduledExecutor.scheduleWithFixedDelay(() -> {
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
 			FileHandler[] hs = handlers;
 			if (hs == null || hs.length == 0) {
 				return;

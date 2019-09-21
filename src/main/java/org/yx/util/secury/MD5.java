@@ -34,16 +34,16 @@ public class MD5 implements Hasher {
 		return md.digest();
 	}
 
-	protected String parseByte2HexStr(byte buf[]) {
+	public String parseByte2HexStr(byte buf[]) {
 		StringBuilder sb = new StringBuilder(32);
 		for (int i = 0; i < buf.length; i++) {
 			String hex = Integer.toHexString(buf[i] & 0xFF);
 			if (hex.length() == 1) {
 				hex = '0' + hex;
 			}
-			sb.append(hex.toUpperCase());
+			sb.append(hex);
 		}
-		return sb.toString();
+		return sb.toString().toLowerCase();
 	}
 
 	@Override

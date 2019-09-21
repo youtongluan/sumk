@@ -17,6 +17,7 @@ package org.yx.http;
 
 import javax.servlet.http.HttpServletRequest;
 
+@FunctionalInterface
 public interface Signer {
 
 	String sign(byte[] bs, HttpServletRequest httpServletRequest) throws Exception;
