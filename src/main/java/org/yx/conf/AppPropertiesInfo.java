@@ -20,7 +20,7 @@ import java.io.InputStream;
 public class AppPropertiesInfo extends PropertiesInfo {
 	private volatile boolean started;
 
-	AppPropertiesInfo() {
+	public AppPropertiesInfo() {
 		super(System.getProperty("appinfo", "app.properties"));
 	}
 
