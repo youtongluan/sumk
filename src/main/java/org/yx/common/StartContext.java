@@ -23,7 +23,11 @@ import org.yx.util.StringUtil;
 
 public class StartContext {
 
-	public static StartContext inst = new StartContext();
+	private static StartContext inst = new StartContext();
+
+	public static StartContext inst() {
+		return inst;
+	}
 
 	private Map<String, Object> map = new ConcurrentHashMap<>();
 

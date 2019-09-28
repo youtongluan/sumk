@@ -17,6 +17,7 @@ package org.yx.bean;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.Enumeration;
 
@@ -25,9 +26,15 @@ import org.yx.log.SimpleLoggerHolder;
 
 public class Loader {
 
-	public static Object newInstance(String clz) throws Throwable {
-		Class<?> daoClass = Loader.loadClass(clz);
-		return daoClass.newInstance();
+	public static <T> T newInstance(Class<T> clz) throws Exception {
+		Constructor<T> c = clz.getDeclaredConstructor();
+		c.setAccessible(true);
+		return c.newInstance();
+	}
+
+	public static Object newInstance(String clz) throws Exception {
+		Class<?> clazz = Loader.loadClass(clz);
+		return newInstance(clazz);
 	}
 
 	@SuppressWarnings("unchecked")

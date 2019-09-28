@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
 
 /**
@@ -167,7 +168,7 @@ public class BeanConverter {
 		}
 		Object dest;
 		try {
-			dest = src.getClass().newInstance();
+			dest = Loader.newInstance(src.getClass());
 		} catch (Exception e) {
 			throw new SumkException(35432545, "clone failed, because of " + e.getMessage(), e);
 		}

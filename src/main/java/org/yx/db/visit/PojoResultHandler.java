@@ -28,7 +28,7 @@ import org.yx.util.StringUtil;
 
 public class PojoResultHandler implements ResultHandler {
 
-	public static PojoResultHandler handler = new PojoResultHandler();
+	public static final PojoResultHandler handler = new PojoResultHandler();
 
 	@SuppressWarnings("unchecked")
 	@Override

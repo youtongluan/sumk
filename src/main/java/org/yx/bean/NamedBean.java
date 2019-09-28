@@ -17,7 +17,7 @@ package org.yx.bean;
 
 import java.util.Objects;
 
-import org.yx.exception.SumkException;
+import org.yx.exception.SimpleSumkException;
 
 public class NamedBean {
 	private final String beanName;
@@ -35,10 +35,10 @@ public class NamedBean {
 	public NamedBean(String beanName, Object bean) {
 		beanName = Objects.requireNonNull(beanName, "beanName cannot be null").trim();
 		if (beanName.isEmpty()) {
-			SumkException.throwException(233654645, "bean name can not be empty");
+			throw new SimpleSumkException(233654645, "bean name can not be empty");
 		}
 		if (NamedBean.class.isInstance(bean)) {
-			SumkException.throwException(233654645, "bean can not be a NamedBean object");
+			throw new SimpleSumkException(233654645, "bean can not be a NamedBean object");
 		}
 		this.beanName = beanName;
 		this.bean = Objects.requireNonNull(bean, bean + " cannot be null");

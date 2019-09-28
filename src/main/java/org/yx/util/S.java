@@ -31,7 +31,6 @@ import org.yx.util.secury.MD5;
 import com.google.gson.Gson;
 
 public final class S {
-	public static final ArrayHelper array = new ArrayHelper();
 
 	/**
 	 * json工具
@@ -63,5 +62,7 @@ public final class S {
 	 * bean和map的转换，以及属性复制。 只支持第一级field
 	 */
 	public static final BeanConverter bean = new BeanConverter();
+
+	public static final ArrayHelper array = new ArrayHelper();
 
 }

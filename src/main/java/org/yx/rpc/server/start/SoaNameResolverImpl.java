@@ -16,9 +16,12 @@
 package org.yx.rpc.server.start;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.yx.annotation.rpc.Soa;
 import org.yx.conf.AppInfo;
+import org.yx.util.StringUtil;
 
 public class SoaNameResolverImpl implements SoaNameResolver {
 
@@ -31,11 +34,31 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 	}
 
 	@Override
-	public String solve(Class<?> clz, Method m, Soa soa) {
+	public List<String> solve(Class<?> clz, Method m, Soa soa) {
 		String soaName = soa.value();
 		if (soaName == null || soaName.isEmpty()) {
 			soaName = m.getName();
 		}
+		String[] names = StringUtil.toLatin(soaName).split(",");
+		List<String> list = new ArrayList<String>(names.length);
+		for (String name : names) {
+			name = name.trim();
+			if (name.isEmpty()) {
+				continue;
+			}
+			list.add(name);
+		}
+		if (list.isEmpty()) {
+			list.add(m.getName());
+		}
+		List<String> ret = new ArrayList<String>(list.size());
+		for (String name : list) {
+			ret.add(solve(name, soa));
+		}
+		return ret;
+	}
+
+	public String solve(String soaName, Soa soa) {
 		StringBuilder sb = new StringBuilder();
 		if (soa.groupPrefix() && this.groupId != null) {
 			sb.append(this.groupId).append('.');

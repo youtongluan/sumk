@@ -81,7 +81,7 @@ public final class DBConfigUtils {
 		Class<?> factoryClz = Loader.loadClass(resourceFactory);
 		Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
 				resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
-		SingleResourceLoader factory = (SingleResourceLoader) factoryClz.newInstance();
+		SingleResourceLoader factory = (SingleResourceLoader) Loader.newInstance(factoryClz);
 		return factory.readResource(db);
 	}
 

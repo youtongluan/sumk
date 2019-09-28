@@ -16,6 +16,7 @@
 package org.yx.http.handler;
 
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import org.yx.annotation.ErrorHandler;
 import org.yx.annotation.Param;
@@ -41,8 +42,8 @@ public final class HttpActionNode extends CalleeNode {
 
 	public HttpActionNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
 			Class<?>[] argTypes, Param[] params, Method m, Web action) {
-		super(obj, proxyMethod, argClz, argNames, argTypes, params, action.priority() > 0 ? action.priority()
-				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
+		super(obj, proxyMethod, argClz, argNames, argTypes, params, Objects.requireNonNull(action).priority() > 0
+				? action.priority() : AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.action = action;
 		if (HttpSettings.isUploadEnable()) {
 			this.upload = m.getAnnotation(Upload.class);
@@ -51,7 +52,7 @@ public final class HttpActionNode extends CalleeNode {
 		}
 		this.errorHandler = m.getAnnotation(ErrorHandler.class);
 
-		String[] _types = action != null ? action.type() : upload.type();
+		String[] _types = action.type();
 		this.types = _types.length == 0 || (_types.length == 1 && _types[0].isEmpty()) ? null : _types;
 	}
 

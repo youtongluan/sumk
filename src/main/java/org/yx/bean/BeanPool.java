@@ -127,7 +127,7 @@ public final class BeanPool {
 			names = Collections.singleton(resloveBeanName(clz));
 		}
 		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
-		Object bean = proxyClz.newInstance();
+		Object bean = Loader.newInstance(proxyClz);
 		BeanWrapper w = new BeanWrapper(bean);
 		for (String name : names) {
 			put(name, w);
@@ -236,9 +236,6 @@ public final class BeanPool {
 		List<T> list = new ArrayList<>(4);
 		if (name == null || name.length() == 0) {
 			name = resloveBeanName(clz);
-		}
-		if (clz == Object.class) {
-			clz = null;
 		}
 		Object bw = map.get(name);
 		if (bw == null) {

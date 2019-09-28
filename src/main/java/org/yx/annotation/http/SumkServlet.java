@@ -35,12 +35,6 @@ public @interface SumkServlet {
 	 */
 	String[] value();
 
-	/**
-	 * 负数或没有指定，表示该servlet使用时才被加载。<BR>
-	 * 当值为0或者大于0时，表示容器在应用启动时就加载这个servlet； 正数的值越小，启动该servlet的优先级越高。
-	 * 
-	 * @return 优先级
-	 */
 	int loadOnStartup() default -1;
 
 	boolean asyncSupported() default false;

@@ -27,7 +27,7 @@ import org.yx.util.StringUtil;
 
 public class MapResultHandler implements ResultHandler {
 
-	public static MapResultHandler handler = new MapResultHandler();
+	public static final MapResultHandler handler = new MapResultHandler();
 
 	private MapResultHandler() {
 

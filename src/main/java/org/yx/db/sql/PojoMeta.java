@@ -28,6 +28,7 @@ import org.yx.annotation.db.CacheType;
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
 import org.yx.bean.IOC;
+import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -215,11 +216,11 @@ public class PojoMeta implements Cloneable {
 		return this.redisIDs;
 	}
 
-	public Object buildFromDBColumn(Map<String, Object> map) throws InstantiationException, IllegalAccessException {
+	public Object buildFromDBColumn(Map<String, Object> map) throws Exception {
 		if (map == null) {
 			return null;
 		}
-		Object ret = this.pojoClz.newInstance();
+		Object ret = Loader.newInstance(this.pojoClz);
 		Set<Entry<String, Object>> set = map.entrySet();
 		for (Entry<String, Object> en : set) {
 			String key = en.getKey();
@@ -251,9 +252,8 @@ public class PojoMeta implements Cloneable {
 		return map;
 	}
 
-	public Object buildPojo(Map<String, Object> map)
-			throws IllegalArgumentException, IllegalAccessException, InstantiationException {
-		Object obj = this.pojoClz.newInstance();
+	public Object buildPojo(Map<String, Object> map) throws Exception {
+		Object obj = Loader.newInstance(this.pojoClz);
 		for (ColumnMeta m : this.fieldMetas) {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {

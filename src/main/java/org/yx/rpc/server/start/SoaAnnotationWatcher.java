@@ -17,7 +17,7 @@ package org.yx.rpc.server.start;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.watcher.BeanWatcher;
-import org.yx.log.Log;
+import org.yx.exception.SumkException;
 import org.yx.main.SumkServer;
 
 @Bean
@@ -36,7 +36,7 @@ public class SoaAnnotationWatcher implements BeanWatcher {
 				factory.resolve(bean);
 			}
 		} catch (Exception e) {
-			Log.printStack("sumk.error", e);
+			throw SumkException.create(e);
 		}
 	}
 

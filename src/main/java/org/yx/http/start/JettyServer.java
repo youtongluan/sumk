@@ -62,8 +62,8 @@ public class JettyServer implements Lifecycle {
 	protected ServerConnector createConnector() throws Exception {
 
 		ServerConnector connector = new ServerConnector(server, null, null, null,
-				AppInfo.getInt("sumk.http.connector.acceptors", 0), AppInfo.getInt("sumk.http.connector.selectors", 5),
-				getConnectionFactorys()) {
+				AppInfo.getInt("sumk.jetty.connector.acceptors", 0),
+				AppInfo.getInt("sumk.jetty.connector.selectors", 5), getConnectionFactorys()) {
 			@Override
 			protected ServerSocketChannel openAcceptChannel() throws IOException {
 				IOException ex = null;
@@ -73,9 +73,9 @@ public class JettyServer implements Lifecycle {
 					ex = e;
 				}
 
-				for (int i = 0; i < AppInfo.getInt("sumk.http.bind.retry", 100); i++) {
+				for (int i = 0; i < AppInfo.getInt("sumk.jetty.bind.retry", 100); i++) {
 					try {
-						Thread.sleep(AppInfo.getLong("sumk.http.bind.sleepTime", 1000));
+						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 1000));
 					} catch (InterruptedException e1) {
 						Log.get("sumk.http").error("showdown because of InterruptedException");
 						System.exit(-1);
@@ -93,8 +93,8 @@ public class JettyServer implements Lifecycle {
 				throw ex;
 			}
 		};
-		connector.setReuseAddress(AppInfo.getBoolean("sumk.http.reuseAddr", false));
-		int backlog = AppInfo.getInt("sumk.http.backlog", 0);
+		connector.setReuseAddress(AppInfo.getBoolean("sumk.jetty.reuseAddr", false));
+		int backlog = AppInfo.getInt("sumk.jetty.backlog", 0);
 		if (backlog > 0) {
 			connector.setAcceptQueueSize(backlog);
 		}
@@ -114,19 +114,23 @@ public class JettyServer implements Lifecycle {
 
 			server.setConnectors(new Connector[] { connector });
 			ServletContextHandler context = createServletContextHandler();
-			context.setContextPath(AppInfo.get("sumk.http.jetty.web.root", "/"));
+			context.setContextPath(AppInfo.get("sumk.jetty.web.root", "/"));
 			context.addEventListener(new SumkLoaderListener());
 			addUserListener(context, Arrays.asList(ServletContextListener.class, ContextScopeListener.class));
-			String resourcePath = AppInfo.get("sumk.http.jetty.resource");
+			String resourcePath = AppInfo.get("sumk.jetty.resource");
 			if (StringUtil.isNotEmpty(resourcePath)) {
-				ResourceHandler resourceHandler = createResourceHandler();
-				resourceHandler.setResourceBase(resourcePath);
-				context.insertHandler(resourceHandler);
+				ResourceHandler resourceHandler = JettyHandlerSupplier.resourceHandlerSupplier().get();
+				if (resourceHandler != null) {
+					resourceHandler.setResourceBase(resourcePath);
+					context.insertHandler(resourceHandler);
+				}
 			}
 
-			if (AppInfo.getBoolean("sumk.http.jetty.session.enable", false)) {
-				SessionHandler h = createSessionHandler();
-				context.insertHandler(h);
+			if (AppInfo.getBoolean("sumk.jetty.session.enable", false)) {
+				SessionHandler h = JettyHandlerSupplier.sessionHandlerSupplier().get();
+				if (h != null) {
+					context.insertHandler(h);
+				}
 			}
 			server.setHandler(context);
 		} catch (Throwable e) {
@@ -160,36 +164,14 @@ public class JettyServer implements Lifecycle {
 			return handler;
 		}
 		handler = new ServletContextHandler();
-		String welcomes = AppInfo.get("sumk.http.jetty.welcomes");
+		String welcomes = AppInfo.get("sumk.jetty.welcomes");
 		if (welcomes != null && welcomes.length() > 0) {
 			handler.setWelcomeFiles(welcomes.replace('，', ',').split(","));
 		}
-		GzipHandler gzipHandler = IOC.get(GzipHandler.class);
+		GzipHandler gzipHandler = JettyHandlerSupplier.gzipHandlerSupplier().get();
 		if (gzipHandler != null) {
 			handler.setGzipHandler(gzipHandler);
 		}
-		return handler;
-	}
-
-	private ResourceHandler createResourceHandler() {
-		ResourceHandler handler = IOC.get(ResourceHandler.class);
-		if (handler != null) {
-			return handler;
-		}
-		handler = new ResourceHandler();
-		String welcomes = AppInfo.get("sumk.http.jetty.resource.welcomes");
-		if (welcomes != null && welcomes.length() > 0) {
-			handler.setWelcomeFiles(welcomes.replace('，', ',').split(","));
-		}
-		return handler;
-	}
-
-	private SessionHandler createSessionHandler() {
-		SessionHandler handler = IOC.get(SessionHandler.class);
-		if (handler != null) {
-			return handler;
-		}
-		handler = new SessionHandler();
 		return handler;
 	}
 

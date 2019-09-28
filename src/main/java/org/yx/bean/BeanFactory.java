@@ -25,6 +25,7 @@ import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.db.Cachable;
+import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 
 public class BeanFactory extends AbstractBeanListener {
@@ -56,7 +57,7 @@ public class BeanFactory extends AbstractBeanListener {
 			Bean b = clz.getAnnotation(Bean.class);
 			if (b != null) {
 				if (FactoryBean.class.isAssignableFrom(clz)) {
-					FactoryBean factory = (FactoryBean) clz.newInstance();
+					FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
 					Collection<?> beans = factory.beans();
 					putFactoryBean(beans);
 				} else {
@@ -71,7 +72,7 @@ public class BeanFactory extends AbstractBeanListener {
 			if (c != null) {
 				Object bean = InnerIOC.putClass(Cachable.PRE + BeanPool.resloveBeanName(clz), clz);
 				if (!Cachable.class.isInstance(bean)) {
-					SumkException.throwException(35423543, clz.getName() + " is not instance of Cachable");
+					throw new SimpleSumkException(35423543, clz.getName() + " is not instance of Cachable");
 				}
 				if (this.useRedisAsCache) {
 					Cachable cache = (Cachable) bean;

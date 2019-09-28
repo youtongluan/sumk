@@ -29,6 +29,7 @@ import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
+import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
@@ -77,28 +78,35 @@ public class SoaAnnotationResolver {
 		String classFullName = clz.getName();
 		for (final Method m : actMethods) {
 			Soa act = m.getAnnotation(Soa.class);
-			String soaName = nameResolver.solve(clz, m, act);
-			if (soaName == null) {
-				continue;
-			}
-			if (RpcActionHolder.getActionNode(soaName) != null) {
-				RpcActionNode node = RpcActionHolder.getActionNode(soaName);
-				Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
-						node.method.getDeclaringClass().getName(), node.method.getName(), classFullName, m.getName());
+			List<String> soaNames = nameResolver.solve(clz, m, act);
+			if (soaNames == null || soaNames.isEmpty()) {
 				continue;
 			}
 
 			Method proxyedMethod = AsmUtils.getSameMethod(m, bean.getClass());
+			RpcActionNode node;
 			int argSize = m.getParameterTypes().length;
 			if (argSize == 0) {
-				RpcActionHolder.putActNode(soaName,
-						new RpcActionNode(bean, proxyedMethod, null, null, null, null, act));
-				continue;
+				node = new RpcActionNode(bean, proxyedMethod, null, null, null, null, act);
+			} else {
+				MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
+				node = new RpcActionNode(bean, proxyedMethod, ArgPojos.create(classFullName, mInfo),
+						mInfo.getArgNames(), m.getParameterTypes(), ParamFactory.create(m), act);
 			}
-			MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-			RpcActionHolder.putActNode(soaName,
-					new RpcActionNode(bean, proxyedMethod, ArgPojos.create(classFullName, mInfo), mInfo.getArgNames(),
-							m.getParameterTypes(), ParamFactory.create(m), act));
+
+			for (String soaName : soaNames) {
+				if (soaName == null || soaName.isEmpty()) {
+					continue;
+				}
+				if (RpcActionHolder.getActionNode(soaName) != null) {
+					RpcActionNode node0 = RpcActionHolder.getActionNode(soaName);
+					Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
+							node0.method.getDeclaringClass().getName(), node0.method.getName(), classFullName,
+							m.getName());
+					throw new SimpleSumkException(1242436, soaName + " already existed");
+				}
+				RpcActionHolder.putActNode(soaName, node);
+			}
 		}
 
 	}

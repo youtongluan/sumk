@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc;
+package org.yx.exception;
 
-public class RpcThreadContext {
-	public String sn0;
-	public String sn;
+public final class SimpleSumkException extends SumkException {
+
+	private static final long serialVersionUID = 1L;
+
+	public SimpleSumkException(int code, String msg) {
+		super(code, msg);
+	}
+
+	@Override
+	public Throwable fillInStackTrace() {
+		return this;
+	}
+
 }

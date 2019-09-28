@@ -34,7 +34,7 @@ public final class AppInfo {
 	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
 
-	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>(4);
+	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>();
 	public static final Charset UTF8 = StandardCharsets.UTF_8;
 
 	private static SystemConfig info;
@@ -67,7 +67,7 @@ public final class AppInfo {
 			String clzName = System.getProperty("sumk.appinfo.class");
 			if (clzName != null && clzName.length() > 5) {
 				Class<?> clz = Loader.loadClass(clzName);
-				Object obj = clz.newInstance();
+				Object obj = Loader.newInstance(clz);
 				if (SystemConfig.class.isInstance(obj)) {
 					SimpleLoggerHolder.inst().info("sumk.conf", "use " + clzName + " for appInfo");
 					info = (SystemConfig) obj;
@@ -77,13 +77,13 @@ public final class AppInfo {
 			SimpleLoggerHolder.inst().info("sumk.conf", "#AppInfo#error for sumk.appinfo.class:");
 			SimpleLoggerHolder.error("sumk.conf", e);
 		}
-		try {
-			if (info == null) {
+		if (info == null) {
+			try {
 				info = new AppPropertiesInfo();
+			} catch (Exception e) {
+				SimpleLoggerHolder.error("sumk.conf", e);
+				System.exit(-1);
 			}
-		} catch (Exception e) {
-			SimpleLoggerHolder.error("sumk.conf", e);
-			System.exit(-1);
 		}
 		info.start();
 	}

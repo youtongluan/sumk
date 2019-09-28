@@ -106,7 +106,7 @@ public class SumkDataSource implements DataSource {
 
 	@Override
 	public boolean isWrapperFor(Class<?> iface) throws SQLException {
-		return iface.isInstance(proxy);
+		return iface == this.getClass() || iface.isInstance(proxy);
 	}
 
 	@Override

@@ -155,9 +155,10 @@ public final class AsmUtils {
 		if (clzOutPath != null && clzOutPath.length() > 0) {
 			try {
 				File f = new File(clzOutPath, fullName + ".class");
-				FileOutputStream fos = new FileOutputStream(f);
-				fos.write(b);
-				fos.close();
+				try (FileOutputStream fos = new FileOutputStream(f)) {
+					fos.write(b);
+					fos.flush();
+				}
 			} catch (Exception e) {
 				if (Log.isTraceEnable("proxy")) {
 					Log.printStack("sumk.error", e);

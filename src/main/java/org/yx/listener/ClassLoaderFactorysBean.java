@@ -73,7 +73,7 @@ public abstract class ClassLoaderFactorysBean<T extends Ordered> implements List
 				Log.get("sumk.SYS").debug("{} is not a Listener", listener);
 				continue;
 			}
-			beans.add((T) clz.newInstance());
+			beans.add((T) Loader.newInstance(clz));
 		}
 	}
 

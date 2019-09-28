@@ -32,7 +32,7 @@ import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.StartConstants;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
-import org.yx.exception.SumkException;
+import org.yx.exception.SimpleSumkException;
 import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
@@ -147,7 +147,7 @@ public final class BeanPublisher {
 							target = InjectParser.get(f, inject, bean);
 						} catch (Exception e) {
 							Log.printStack("sumk.error", e);
-							SumkException.throwException(-235435628, bean.getClass().getName() + "." + f.getName()
+							throw new SimpleSumkException(-235435628, bean.getClass().getName() + "." + f.getName()
 									+ " cannot injected with " + inject.handler());
 						}
 					} else if (f.getType().isArray()) {
@@ -160,7 +160,7 @@ public final class BeanPublisher {
 						target = getBean(f, clz);
 					}
 					if (target == null) {
-						SumkException.throwException(-235435658,
+						throw new SimpleSumkException(-235435658,
 								bean.getClass().getName() + "." + f.getName() + " cannot injected.");
 					}
 					injectField(f, bean, target);
@@ -171,7 +171,7 @@ public final class BeanPublisher {
 				if (c != null) {
 					Object target = getCacheObject(f);
 					if (target == null) {
-						SumkException.throwException(23526568,
+						throw new SimpleSumkException(23526568,
 								bean.getClass().getName() + "." + f.getName() + " cannot injected");
 					}
 					injectField(f, bean, target);
@@ -184,7 +184,7 @@ public final class BeanPublisher {
 
 	private static Set<?> getSetField(Field f, Class<?> clz, Object bean) {
 		if (clz == Object.class) {
-			SumkException.throwException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
+			throw new SimpleSumkException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
 					+ ": beanClz of @Inject in list type cannot be null");
 		}
 		List<?> target = IOC.getBeans(clz);
@@ -196,7 +196,7 @@ public final class BeanPublisher {
 
 	private static List<?> getListField(Field f, Class<?> clz, Object bean) {
 		if (clz == Object.class) {
-			SumkException.throwException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
+			throw new SimpleSumkException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
 					+ ": beanClz of @Inject in list type cannot be null");
 		}
 		List<?> target = IOC.getBeans(clz);
@@ -211,7 +211,7 @@ public final class BeanPublisher {
 		if (clz == Object.class) {
 			clz = filedType;
 		} else if (!filedType.isAssignableFrom(clz)) {
-			SumkException.throwException(-239864568, bean.getClass().getName() + "." + f.getName() + " is "
+			throw new SimpleSumkException(-239864568, bean.getClass().getName() + "." + f.getName() + " is "
 					+ filedType.getSimpleName() + "[], is not " + clz.getSimpleName() + "[]");
 		}
 		List<?> target = IOC.getBeans(clz);

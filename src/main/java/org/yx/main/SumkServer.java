@@ -103,14 +103,14 @@ public final class SumkServer {
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
-			if (StartContext.inst.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
+			if (StartContext.inst().get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
 				rpcEnable = true;
 			}
-			if (StartContext.inst.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
+			if (StartContext.inst().get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
-			if (StartContext.inst.get(StartConstants.NOSOA_ClIENT) == null
+			if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) == null
 					&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
 				Rpc.init();
 			}
@@ -135,10 +135,10 @@ public final class SumkServer {
 		args.forEach(arg -> {
 			if (arg.contains("=")) {
 				String[] kv = arg.split("=", 2);
-				StartContext.inst.put(kv[0], kv[1]);
+				StartContext.inst().put(kv[0], kv[1]);
 				return;
 			}
-			StartContext.inst.put(arg, Boolean.TRUE);
+			StartContext.inst().put(arg, Boolean.TRUE);
 		});
 
 	}
@@ -178,7 +178,6 @@ public final class SumkServer {
 			destoryed = true;
 			started = false;
 		}
-		SumkThreadPool.shutdown();
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
 		if (lifes != null && lifes.size() > 0) {
 			Collections.reverse(lifes);
@@ -195,6 +194,7 @@ public final class SumkServer {
 		} catch (Throwable e2) {
 		}
 		InnerIOC.clear();
+		SumkThreadPool.shutdown();
 		Log.get("sumk.SYS").info("sumk server stoped!!!");
 	}
 }

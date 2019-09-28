@@ -25,7 +25,7 @@ import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.db.DBType;
 import org.yx.db.event.EventLane;
-import org.yx.exception.SumkException;
+import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
@@ -116,7 +116,7 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.getWriteConnection();
 		case READONLY:
 			if (type == DBType.WRITE) {
-				SumkException.throwException(5639234, "can not open write connection in readonly context");
+				throw new SimpleSumkException(5639234, "can not open write connection in readonly context");
 			}
 			return this.getReadConnection();
 		case READ:

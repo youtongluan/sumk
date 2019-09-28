@@ -16,6 +16,7 @@
 package org.yx.log;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.slf4j.Marker;
 
@@ -65,7 +66,7 @@ public class CodeLineMarker implements Marker {
 
 			@Override
 			public Marker next() {
-				return null;
+				throw new NoSuchElementException();
 			}
 
 		};

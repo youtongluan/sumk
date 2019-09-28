@@ -37,8 +37,8 @@ public class HttpHandlerChain implements HttpHandler {
 	private Logger LOG_ERROR = Log.get("sumk.http.req.error");
 	private List<HttpHandler> handlers = new ArrayList<>();
 
-	public static HttpHandlerChain inst = new HttpHandlerChain();
-	public static HttpHandlerChain upload = new HttpHandlerChain();
+	public static final HttpHandlerChain inst = new HttpHandlerChain();
+	public static final HttpHandlerChain upload = new HttpHandlerChain();
 
 	private HttpHandlerChain() {
 

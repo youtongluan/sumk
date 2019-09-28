@@ -17,6 +17,7 @@ package org.yx.http.start;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.watcher.BeanWatcher;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 
@@ -42,7 +43,7 @@ public class WebAnnotationWatcher implements BeanWatcher {
 				factory.resolve(bean);
 			}
 		} catch (Exception e) {
-			Log.printStack("sumk.error", e);
+			throw SumkException.create(e);
 		}
 	}
 

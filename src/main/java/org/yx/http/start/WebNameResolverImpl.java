@@ -16,11 +16,33 @@
 package org.yx.http.start;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.yx.annotation.http.Web;
+import org.yx.util.StringUtil;
 
 public class WebNameResolverImpl implements WebNameResolver {
 
 	@Override
-	public String solve(Class<?> clz, Method m, String name) {
+	public List<String> solve(Class<?> clz, Method m, Web web) {
+		String name = web.value();
+		if (name == null || name.isEmpty()) {
+			return Collections.singletonList(m.getName());
+		}
+		List<String> list = new ArrayList<String>(1);
+		String[] names = StringUtil.toLatin(name).split(",");
+		for (String n : names) {
+			String realName = solve(n);
+			if (realName != null) {
+				list.add(realName);
+			}
+		}
+		return list.size() > 0 ? list : Collections.singletonList(m.getName());
+	}
+
+	private String solve(String name) {
 		if (name != null && name.length() > 0) {
 			name = name.trim();
 			if (name.length() > 0) {
@@ -31,7 +53,7 @@ public class WebNameResolverImpl implements WebNameResolver {
 				return name;
 			}
 		}
-		return m.getName();
+		return null;
 	}
 
 	private String convertFromPath(String path) {

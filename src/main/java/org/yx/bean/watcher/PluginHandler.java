@@ -58,9 +58,12 @@ public class PluginHandler {
 		}
 		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 300);
 		try {
-			latch.await(timeout, TimeUnit.MILLISECONDS);
+			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
+				Log.get("sumk.SYS").error("plugins failed to start in {}ms", timeout);
+				System.exit(-1);
+			}
 		} catch (InterruptedException e) {
-			Log.get("sumk.SYS").error("系统在{}ms时间内启动超时", timeout);
+			Log.get("sumk.SYS").error("receive InterruptedException in plugin starting", timeout);
 			System.exit(-1);
 		}
 		for (Plugin plugin : plugins) {

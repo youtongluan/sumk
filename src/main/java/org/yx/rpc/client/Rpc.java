@@ -28,7 +28,7 @@ public final class Rpc {
 	private Rpc() {
 	}
 
-	public static int DEFAULT_TIMEOUT;
+	private static int DEFAULT_TIMEOUT;
 
 	private static volatile boolean strated;
 

@@ -72,7 +72,7 @@ public class RedisLoader {
 			Class<?> factoryClz = Loader.loadClass(resourceFactory);
 			Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
 					resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
-			resourceLoader = (SingleResourceLoader) factoryClz.newInstance();
+			resourceLoader = (SingleResourceLoader) Loader.newInstance(factoryClz);
 		}
 		return resourceLoader.readResource(REDIS_FILE);
 	}

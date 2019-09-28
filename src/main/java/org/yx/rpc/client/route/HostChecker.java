@@ -83,13 +83,12 @@ public class HostChecker {
 			Host[] urls = downUrls.keySet().toArray(new Host[0]);
 			int timeout = getTimeOut(urls.length);
 			for (Host url : urls) {
-				try {
-					Socket socket = new Socket();
+				try (Socket socket = new Socket()) {
 
 					socket.connect(url.toInetSocketAddress(), timeout);
 					if (socket.isConnected()) {
-						socket.close();
 						downUrls.remove(url);
+						Log.get("sumk.rpc").info("{} reconected", url);
 					}
 				} catch (UnknownHostException e) {
 					Log.get("sumk.rpc").error(e.getMessage(), e);

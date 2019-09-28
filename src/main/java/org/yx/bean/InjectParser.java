@@ -25,8 +25,7 @@ public class InjectParser {
 
 	private static ConcurrentMap<String, BeanHandler> map = new ConcurrentHashMap<>();
 
-	static Object get(Field field, Inject inject, Object bean)
-			throws ClassNotFoundException, InstantiationException, IllegalAccessException {
+	static Object get(Field field, Inject inject, Object bean) throws Exception {
 		String handler = inject.handler();
 		if (handler == null || handler.isEmpty()) {
 			return null;
@@ -34,7 +33,7 @@ public class InjectParser {
 		BeanHandler beanHandler = map.get(handler);
 		if (beanHandler == null) {
 			Class<?> clz = Loader.loadClass(handler);
-			beanHandler = (BeanHandler) clz.newInstance();
+			beanHandler = (BeanHandler) Loader.newInstance(clz);
 			map.put(handler, beanHandler);
 		}
 		return beanHandler.handle(inject, field);

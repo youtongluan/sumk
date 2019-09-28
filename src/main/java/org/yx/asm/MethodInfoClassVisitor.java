@@ -29,7 +29,7 @@ class MethodInfoClassVisitor extends ClassVisitor {
 
 	public final List<String> argNames;
 	public final List<String> signatures;
-	public String[] descriptor;
+	public final String[] descriptor;
 	private final Method m;
 
 	public MethodInfoClassVisitor(Method m) {

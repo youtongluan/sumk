@@ -48,7 +48,7 @@ public class Loggers {
 				return;
 			}
 			String temp = AppInfo.getLatin("sumk.log.level", "info");
-			String[] levelStrs = temp.split(",");
+			String[] levelStrs = temp.replace(';', ',').split(",");
 			Map<String, LogLevel> newLevels = new HashMap<>();
 			for (String levelStr : levelStrs) {
 				levelStr = levelStr.trim();
@@ -75,7 +75,6 @@ public class Loggers {
 		}
 	};
 	static {
-
 		AppInfo.addObserver(observer);
 	}
 
