@@ -17,7 +17,7 @@ package org.yx.conf;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
+import java.util.Set;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -88,7 +88,7 @@ public abstract class AbstractZKConfig implements SystemConfig {
 	}
 
 	@Override
-	public Collection<String> keys() {
+	public Set<String> keys() {
 		return zkInfo.keys();
 	}
 }

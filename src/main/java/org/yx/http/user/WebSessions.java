@@ -80,8 +80,5 @@ public class WebSessions {
 			factory = () -> redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
 		}
 		session = factory.create();
-		if (LocalUserSession.class.isInstance(session)) {
-			Log.get("sumk.loginAction").info("use local session.");
-		}
 	}
 }

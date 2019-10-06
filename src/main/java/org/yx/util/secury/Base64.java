@@ -40,7 +40,22 @@ public final class Base64 {
 		return decoder.decode(src);
 	}
 
+	/**
+	 * 解码，是否含有\r\n都能解码
+	 * 
+	 * @param src
+	 *            数据源
+	 * @return 明文
+	 */
+	public byte[] decode(String src) {
+		return decoder.decode(src);
+	}
+
 	public byte[] encode(byte[] src) {
 		return encoder.encode(src);
+	}
+
+	public String encodeToString(byte[] src) {
+		return encoder.encodeToString(src);
 	}
 }

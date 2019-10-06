@@ -16,7 +16,7 @@
 package org.yx.conf;
 
 import java.net.URL;
-import java.util.Collection;
+import java.util.Set;
 
 public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 
@@ -43,7 +43,7 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	}
 
 	@Override
-	public Collection<String> keys() {
+	public Set<String> keys() {
 		return pairs.keys();
 	}
 

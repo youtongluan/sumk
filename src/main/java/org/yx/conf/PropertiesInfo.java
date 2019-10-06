@@ -18,9 +18,9 @@ package org.yx.conf;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
@@ -68,7 +68,7 @@ public abstract class PropertiesInfo implements FileHandler, SystemConfig {
 	}
 
 	@Override
-	public Collection<String> keys() {
+	public Set<String> keys() {
 		return map.keySet();
 	}
 

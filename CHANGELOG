@@ -54,3 +54,7 @@ v2.4.1
 1、将Class.newInstance()改为使用构造器初始化，这是因为java12开始，该方法被列为不推荐使用
 2、http和微服务的名称支持逗号分隔
 3、日志level的分隔符，从原来的逗号扩展到逗号和分号都可以
+
+v2.4.2
+1、S.base64增加2个小方法
+2、SystemConfig.keys()的返回值，从Collection改为Set

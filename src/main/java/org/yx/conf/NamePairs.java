@@ -2,10 +2,10 @@ package org.yx.conf;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.yx.util.CollectionUtil;
 
@@ -56,7 +56,7 @@ public class NamePairs {
 		return this.data;
 	}
 
-	public Collection<String> keys() {
+	public Set<String> keys() {
 		return this.map.keySet();
 	}
 

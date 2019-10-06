@@ -15,12 +15,12 @@
  */
 package org.yx.conf;
 
-import java.util.Collection;
+import java.util.Set;
 
 import org.yx.common.Lifecycle;
 
 public interface SystemConfig extends Lifecycle {
 	String get(String key);
 
-	Collection<String> keys();
+	Set<String> keys();
 }

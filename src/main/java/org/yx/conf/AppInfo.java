@@ -238,6 +238,9 @@ public final class AppInfo {
 	}
 
 	public static Map<String, String> subMap(String prefix) {
+		if (prefix == null) {
+			prefix = "";
+		}
 		int len = prefix.length();
 		Map<String, String> map = new HashMap<>();
 		for (String name : info.keys()) {

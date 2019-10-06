@@ -15,6 +15,10 @@
  */
 package org.yx.http.user;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -33,7 +37,15 @@ public class LocalUserSession implements UserSession {
 	private ConcurrentMap<String, TimedObject> map = new ConcurrentHashMap<>();
 	private ConcurrentMap<String, byte[]> keyMap = new ConcurrentHashMap<>();
 
-	private ConcurrentMap<String, String> userSessionMap = new ConcurrentHashMap<>();
+	private Map<String, String> userSessionMap = Collections.synchronizedMap(new LinkedHashMap<String, String>() {
+		private static final long serialVersionUID = 1L;
+
+		@Override
+		protected boolean removeEldestEntry(Entry<String, String> eldest) {
+			return this.size() > AppInfo.getInt("sumk.http.localsession.maxSize", 1000);
+		}
+
+	});
 
 	private String singleKey(String userId, String type) {
 		StringBuilder sb = new StringBuilder();

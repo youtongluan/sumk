@@ -15,8 +15,8 @@
  */
 package org.yx.conf;
 
-import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MapConfig implements SystemConfig {
@@ -37,7 +37,7 @@ public class MapConfig implements SystemConfig {
 	}
 
 	@Override
-	public Collection<String> keys() {
+	public Set<String> keys() {
 		return map.keySet();
 	}
 

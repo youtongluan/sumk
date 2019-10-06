@@ -48,7 +48,7 @@ public class ActInfomation extends HttpServlet {
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		InnerHttpUtil.noCache(resp);
 		resp.setContentType("text/html;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.acts.md5", "61c72b1ce5858d83c90ba7b5b1096697");
+		String md5 = AppInfo.get("sumk.union.monitor", "sumk.acts.md5", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
