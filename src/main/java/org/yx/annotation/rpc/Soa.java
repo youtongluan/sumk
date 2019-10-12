@@ -17,18 +17,13 @@ package org.yx.annotation.rpc;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yx.annotation.Bean;
-
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@Inherited
-@Bean
 public @interface Soa {
 	/**
 	 * @return 服务名称，如果为空。发布的服务名称=groupId.appId.methodName

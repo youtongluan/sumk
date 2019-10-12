@@ -17,12 +17,15 @@ package org.yx.asm;
 
 import java.lang.reflect.Method;
 
-public final class MethodDesc {
+import org.objectweb.asm.Type;
+
+public final class MethodParamInfo {
 
 	private Method method;
 	private String[] argNames;
 	private String[] descs;
 	private String[] signatures;
+	private String methodDesc;
 
 	public String[] getArgNames() {
 		return argNames;
@@ -36,16 +39,33 @@ public final class MethodDesc {
 		return signatures;
 	}
 
-	public MethodDesc(Method method, String[] argNames, String[] descs, String[] signatures) {
-		super();
+	public MethodParamInfo(Method method, String[] argNames, String[] descs, String[] signatures) {
 		this.method = method;
 		this.argNames = argNames;
 		this.descs = descs;
 		this.signatures = signatures;
+		this.methodDesc = Type.getMethodDescriptor(method);
 	}
 
 	public Method getMethod() {
 		return method;
 	}
 
+	public String getMethodDesc() {
+		return methodDesc;
+	}
+
+	public boolean isSameMethod(String methodName, String desc) {
+
+		return methodName.equals(method.getName()) && this.methodDesc.equals(desc)
+				&& AsmUtils.sameType(Type.getArgumentTypes(desc), method.getParameterTypes());
+	}
+
+	public Type[] getArgumentTypes() {
+		return Type.getArgumentTypes(this.methodDesc);
+	}
+
+	public Class<?> getDeclaringClass() {
+		return this.method.getDeclaringClass();
+	}
 }

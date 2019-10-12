@@ -22,7 +22,7 @@ import java.util.List;
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
-import org.yx.asm.MethodDesc;
+import org.yx.asm.MethodParamInfo;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
@@ -33,6 +33,7 @@ import org.yx.exception.SimpleSumkException;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.log.ConsoleLog;
+import org.yx.log.Log;
 import org.yx.validate.ParamFactory;
 
 public class WebAnnotationResolver {
@@ -57,45 +58,42 @@ public class WebAnnotationResolver {
 		if (!matcher.match(clz.getName())) {
 			return;
 		}
-		Method[] methods = clz.getMethods();
+		Method[] methods = clz.getDeclaredMethods();
 		List<Method> httpMethods = new ArrayList<>();
 		for (final Method m : methods) {
 			if (AsmUtils.isFilted(m.getName())) {
 				continue;
 			}
-			if (AsmUtils.notPublicOnly(m.getModifiers())) {
+			if (!m.isAnnotationPresent(Web.class)) {
 				continue;
 			}
-			if (m.isAnnotationPresent(Web.class)) {
-				httpMethods.add(m);
+			if (AsmUtils.notPublicOnly(m.getModifiers())) {
+				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
+						m.getName());
+				continue;
 			}
+			httpMethods.add(m);
 		}
 		if (httpMethods.isEmpty()) {
 			return;
 		}
-		String classFullName = clz.getName();
-		for (final Method m : httpMethods) {
+
+		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(httpMethods);
+		for (MethodParamInfo info : mpInfos) {
+			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
 			List<String> names = nameResolver.solve(clz, m, act);
 			if (names == null || names.isEmpty()) {
 				continue;
 			}
 
-			Method proxyedMethod = AsmUtils.getSameMethod(m, bean.getClass());
-			HttpActionNode node;
-			if (m.getParameterTypes().length == 0) {
-				node = new HttpActionNode(bean, proxyedMethod, null, null, null, null, m, act);
-			} else {
-				MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-				node = new HttpActionNode(bean, proxyedMethod, ArgPojos.create(classFullName, mInfo),
-						mInfo.getArgNames(), m.getParameterTypes(), ParamFactory.create(m), m, act);
-			}
+			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
+					ParamFactory.create(m), m, act);
 
 			for (String name : names) {
 				this.addAction(name, node);
 			}
 		}
-
 	}
 
 	private void addAction(String name, HttpActionNode node) throws Exception {

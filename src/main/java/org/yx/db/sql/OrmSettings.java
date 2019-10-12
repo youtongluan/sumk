@@ -15,7 +15,6 @@
  */
 package org.yx.db.sql;
 
-import org.yx.annotation.db.ColumnType;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
@@ -24,22 +23,14 @@ class OrmSettings {
 	static boolean FROM_CACHE;
 	static boolean TO_CACHE;
 
-	static ColumnType modifyByColumnType = ColumnType.ID_DB;
-
 	static void register() {
 		AppInfo.addObserver(info -> {
 			try {
-				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.sql.failIfPropertyNotMapped", true);
-				FROM_CACHE = AppInfo.getBoolean("sumk.sql.fromCache", true);
-				TO_CACHE = AppInfo.getBoolean("sumk.sql.toCache", true);
-				String byType = AppInfo.get("sumk.orm.update.byType", "ID_DB");
-				if ("ID_DB".equals(byType)) {
-					modifyByColumnType = ColumnType.ID_DB;
-				} else {
-					modifyByColumnType = ColumnType.ID_CACHE;
-				}
+				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.db.failIfPropertyNotMapped", true);
+				FROM_CACHE = AppInfo.getBoolean("sumk.db.fromCache", true);
+				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
 			} catch (Exception e) {
-				Log.get("sumk.appInfo").info(e.getMessage(), e);
+				Log.get("sumk.db").info(e.getMessage(), e);
 			}
 		});
 	}

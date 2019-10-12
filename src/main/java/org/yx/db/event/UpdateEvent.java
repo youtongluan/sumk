@@ -18,6 +18,8 @@ package org.yx.db.event;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.util.CollectionUtil;
+
 public class UpdateEvent extends ModifyEvent {
 
 	private final Map<String, Object> to;
@@ -29,11 +31,11 @@ public class UpdateEvent extends ModifyEvent {
 	public UpdateEvent(String table, Map<String, Object> to, Map<String, Number> incrMap,
 			List<Map<String, Object>> wheres, boolean fullUpdate, boolean updateDBID) {
 		super(table);
-		this.to = to;
 		this.incrMap = incrMap == null || incrMap.isEmpty() ? null : incrMap;
 		this.wheres = wheres;
 		this.fullUpdate = fullUpdate;
 		this.updateDBID = updateDBID;
+		this.to = fullUpdate ? to : CollectionUtil.removeNull(to);
 	}
 
 	public boolean isFullUpdate() {

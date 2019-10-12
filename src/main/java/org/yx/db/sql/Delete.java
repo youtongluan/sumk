@@ -37,7 +37,8 @@ public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 
 	/**
 	 * 删除的条件。如果是map类型，就要设置tableClass<BR>
-	 * 多次执行delete，相互之间是or条件
+	 * 多次执行delete，相互之间是or条件。<BR>
+	 * <B>注意：如果pojo是map类型，那么它的null值是有效条件</B>
 	 * 
 	 * @param pojo
 	 *            map或pojo

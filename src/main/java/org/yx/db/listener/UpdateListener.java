@@ -47,6 +47,7 @@ public class UpdateListener implements DBListener<UpdateEvent> {
 			}
 			List<Map<String, Object>> wheres = event.getWheres();
 			for (Map<String, Object> where : wheres) {
+
 				handleUpdate(event, pm, where);
 			}
 

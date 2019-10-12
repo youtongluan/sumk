@@ -18,4 +18,6 @@ package org.yx.asm;
 public interface ArgPojo {
 
 	Object[] params();
+
+	Object invoke(Object owner) throws Throwable;
 }

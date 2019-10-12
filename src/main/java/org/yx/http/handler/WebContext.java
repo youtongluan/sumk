@@ -55,7 +55,7 @@ public class WebContext {
 		return result;
 	}
 
-	public void result(Object result) {
+	void result(Object result) {
 		this.result = result;
 		this.str_resp = String.class.isInstance(result) ? (String) result : null;
 	}

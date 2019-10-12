@@ -30,8 +30,6 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		OrmSettings.register();
 	}
 
-	protected boolean withnull;
-
 	protected SumkDbVisitor<T> visitor;
 
 	protected Class<?> tableClass;
@@ -77,7 +75,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	}
 
 	protected void _addIn(Object src) {
-		this._addIn(src, withnull);
+		this._addIn(src, Map.class.isInstance(src));
 	}
 
 	@SuppressWarnings("unchecked")

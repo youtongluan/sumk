@@ -15,28 +15,44 @@
  */
 package org.yx.http;
 
+import java.util.Objects;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.kit.InnerHttpUtil;
 
 /**
  * 这个类要在sumk-http中调用，不能在自定义的servlet中调用
  */
-public final class HttpHeadersHolder {
+public final class HttpContextHolder {
 
 	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
+	private static ThreadLocal<HttpServletResponse> _resp = new ThreadLocal<>();
 
-	static void setHttpRequest(HttpServletRequest req) {
-		_req.set(req);
+	public static void set(HttpServletRequest req, HttpServletResponse resp) {
+		_req.set(Objects.requireNonNull(req));
+		if (resp != null) {
+			_resp.set(resp);
+		}
 	}
 
-	public static String getHeader(String name) {
-		return _req.get().getHeader(name);
+	public static void clear() {
+		_req.remove();
+		_resp.remove();
 	}
 
 	public static HttpServletRequest getHttpRequest() {
 		return _req.get();
+	}
+
+	public static HttpServletResponse getHttpResponse() {
+		return _resp.get();
+	}
+
+	public static String getHeader(String name) {
+		return _req.get().getHeader(name);
 	}
 
 	public static String sessionId() {

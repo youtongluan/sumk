@@ -52,4 +52,13 @@ public class Statis {
 				+ failedTime;
 	}
 
+	public String toSimpleString() {
+		return String.join("   ", name, String.valueOf(count.get()), String.valueOf(time.get()),
+				String.valueOf(failedCount.get()), String.valueOf(failedTime.get()));
+	}
+
+	public static String header() {
+		return "name  count  time  failedCount  failedTime";
+	}
+
 }

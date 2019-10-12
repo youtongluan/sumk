@@ -40,10 +40,10 @@ public final class HttpActionNode extends CalleeNode {
 		return HttpTypePredicate.test(types, type);
 	}
 
-	public HttpActionNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
-			Class<?>[] argTypes, Param[] params, Method m, Web action) {
-		super(obj, proxyMethod, argClz, argNames, argTypes, params, Objects.requireNonNull(action).priority() > 0
-				? action.priority() : AppInfo.getInt("sumk.http.thread.priority.default", 100000));
+	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
+			Method m, Web action) {
+		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).priority() > 0 ? action.priority()
+				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.action = action;
 		if (HttpSettings.isUploadEnable()) {
 			this.upload = m.getAnnotation(Upload.class);

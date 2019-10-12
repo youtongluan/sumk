@@ -58,3 +58,12 @@ v2.4.1
 v2.4.2
 1、S.base64增加2个小方法
 2、SystemConfig.keys()的返回值，从Collection改为Set
+
+v2.5.0
+1、ORM去掉了withnull属性，改为自动判断。如果开发者传递的参数是pojo对象，会将pojo中null字段排除掉，如果传递的是map，其中的null字段会被保留。比如作为where条件，它将会作为IS NULL条件
+2、ORM中的update去掉根据redis主键更新的方法
+3、S.bean去掉无参的beanToMap方法。
+4、Plugin接口的stop方法提供默认方法。
+5、HttpUtil增加获取request和response的方法
+6、优化字节码处理
+

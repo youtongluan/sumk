@@ -15,10 +15,7 @@
  */
 package org.yx.db.sql;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.db.ColumnType;
@@ -31,20 +28,20 @@ import org.yx.util.CollectionUtil;
 
 public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
-	private ColumnType _byType;
+	private boolean fullUpdate;
 
 	private Map<String, Object> updateTo;
-	private boolean _updateDBID = true;
+	private boolean updateDBID;
 
 	private Map<String, Number> incrMap;
 
 	/**
 	 * @param update
-	 *            如果为false，则数据库主键不会被更新。默认为true。
+	 *            如果为false，则数据库主键不会被更新。默认为false。
 	 * @return 当前对象
 	 */
 	public Update updateDBID(boolean update) {
-		this._updateDBID = update;
+		this.updateDBID = update;
 		return this;
 	}
 
@@ -65,6 +62,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 * <LI>调用本方法后，byDBID和byCacheID方法将被忽略</LI>
 	 * <LI>本方法可以被多次调用，多次调用之间是OR关系</LI>
 	 * <LI><B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B></LI>
+	 * <LI><B>注意：如果pojo是map类型，那么它的null值是有效条件</B></LI>
 	 * </UL>
 	 * 
 	 * @param pojo
@@ -73,7 +71,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 */
 
 	public Update addWhere(Object pojo) {
-		this._addIn(pojo, false);
+		this._addIn(pojo);
 		return this;
 	}
 
@@ -92,24 +90,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 * @return 当前对象
 	 */
 	public Update fullUpdate(boolean fullUpdate) {
-		this.withnull = fullUpdate;
-		return this;
-	}
-
-	private ColumnType byType() {
-		if (_byType != null) {
-			return _byType;
-		}
-		return OrmSettings.modifyByColumnType;
-	}
-
-	/**
-	 * 默认是根据数据库主键更新
-	 * 
-	 * @return 当前对象
-	 */
-	public Update byDBID() {
-		this._byType = ColumnType.ID_DB;
+		this.fullUpdate = fullUpdate;
 		return this;
 	}
 
@@ -122,16 +103,6 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 */
 	public Update partition(String sub) {
 		sub(sub);
-		return this;
-	}
-
-	/**
-	 * 根据缓存id更新数据。默认是根据数据库主键更新
-	 * 
-	 * @return 当前对象
-	 */
-	public Update byCacheID() {
-		this._byType = ColumnType.ID_CACHE;
 		return this;
 	}
 
@@ -159,7 +130,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			SumkException.throwException(36541, pojo.getClass() + " does not config as a table");
 		}
 		try {
-			this.updateTo = this.pojoMeta.populate(pojo, withnull);
+			this.updateTo = this.pojoMeta.populate(pojo, true);
 		} catch (Exception e) {
 			SumkException.throwException(-345461, e.getMessage(), e);
 		}
@@ -178,12 +149,12 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		this.pojoMeta = this.parsePojoMeta(true);
 		this.checkMap(this.updateTo, this.pojoMeta);
 		if (CollectionUtil.isEmpty(this.in)) {
-			return this.toMapedSqlWithoutWhere();
+			this.addDBIDs2Where();
 		}
-		return this.toMapedSqlWithWhere();
+		return _toMapedSql();
 	}
 
-	private MapedSql toMapedSqlWithWhere() throws Exception {
+	protected MapedSql _toMapedSql() throws Exception {
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
@@ -203,10 +174,10 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				continue;
 			}
 			Object value = fm.value(this.updateTo);
-			if (value == null && !withnull) {
+			if (value == null && !this.fullUpdate) {
 				continue;
 			}
-			if (fm.accept(ColumnType.ID_DB) && !this._updateDBID) {
+			if (fm.accept(ColumnType.ID_DB) && !this.updateDBID) {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
@@ -216,17 +187,22 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
-
+		boolean isSingle = in.size() == 1;
 		for (Map<String, Object> where : this.in) {
 			this.checkMap(where, this.pojoMeta);
-			ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
+			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
 			for (ColumnMeta fm : fms) {
 				Object value = null;
-				if (where.containsKey(fm.getFieldName())) {
-					value = where.get(fm.getFieldName());
-					andItem.item().append(fm.dbColumn).append("=? ");
-					ms.addParam(value);
+				if (!where.containsKey(fm.getFieldName())) {
+					continue;
 				}
+				value = where.get(fm.getFieldName());
+				if (value == null) {
+					andItem.item().append(fm.dbColumn).append(" IS NULL ");
+					continue;
+				}
+				andItem.item().append(fm.dbColumn).append("=? ");
+				ms.addParam(value);
 			}
 			orItem.item().append(andItem.toCharSequence());
 		}
@@ -236,68 +212,19 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		sb.append(whereStr);
 		ms.sql = sb.toString();
-		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in, this.withnull,
-				this._updateDBID);
-		ms.event = event;
+		ms.event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in, this.fullUpdate,
+				this.updateDBID);
 		return ms;
 	}
 
-	private MapedSql toMapedSqlWithoutWhere() throws Exception {
-		MapedSql ms = new MapedSql();
-		StringBuilder sb = new StringBuilder();
-		sb.append("UPDATE ").append(pojoMeta.getTableName());
-		ColumnMeta[] fms = pojoMeta.fieldMetas;
-		ItemJoiner whereItem = new ItemJoiner(" AND ", " WHERE ", null);
-		ColumnType byType = byType();
-		boolean notFirst = false;
-		List<Object> whereParams = new ArrayList<>();
+	protected void addDBIDs2Where() throws Exception {
+		ColumnMeta[] whereColumns = this.pojoMeta.getPrimaryIDs();
 		Map<String, Object> paramMap = new HashMap<>();
-		Map<String, Object> to = new HashMap<>(this.updateTo);
-		for (ColumnMeta fm : fms) {
+		for (ColumnMeta fm : whereColumns) {
 			String fieldName = fm.getFieldName();
-			Object value = null;
-			if (fm.accept(byType)) {
-				value = fm.value(this.updateTo);
-				if (value == null) {
-					SumkException.throwException(234, fieldName + " cannot be null");
-				}
-				whereItem.item().append(fm.dbColumn).append("=? ");
-				whereParams.add(value);
-				paramMap.put(fieldName, value);
-				continue;
-			}
-
-			if (this.incrMap != null && this.incrMap.containsKey(fieldName)) {
-				to.remove(fieldName);
-				sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append('=').append(fm.dbColumn)
-						.append(" +? ");
-				notFirst = true;
-				ms.addParam(this.incrMap.get(fieldName));
-				continue;
-			}
-			value = fm.value(this.updateTo);
-			if (value == null && !withnull) {
-				continue;
-			}
-			if (fm.accept(ColumnType.ID_DB) && !this._updateDBID) {
-				continue;
-			}
-			sb.append(notFirst ? " , " : " SET ");
-			sb.append(fm.dbColumn).append("=? ");
-			notFirst = true;
-			ms.addParam(value);
+			paramMap.put(fieldName, fm.value(this.updateTo));
 		}
-		CharSequence whereStr = whereItem.toCharSequence(true);
-		if (whereStr == null || whereStr.length() == 0) {
-			SumkException.throwException(-345445, "where cannot be null");
-		}
-		sb.append(whereStr);
-		ms.addParams(whereParams);
-		ms.sql = sb.toString();
-		UpdateEvent event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap,
-				Collections.singletonList(paramMap), this.withnull, this._updateDBID);
-		ms.event = event;
-		return ms;
+		this._addIn(paramMap, true);
 	}
 
 	/**

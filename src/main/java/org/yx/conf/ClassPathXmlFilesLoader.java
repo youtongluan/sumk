@@ -51,7 +51,7 @@ public class ClassPathXmlFilesLoader extends AbstractFilesLoader {
 		}
 		final Map<String, byte[]> map = new HashMap<>();
 		Collection<File> files = new HashSet<>();
-		Logger log = Log.get("sumk.conf.loader.multi");
+		Logger log = Log.get("sumk.conf.loader");
 		do {
 			URL url = urls.nextElement();
 			if (JarFileUtil.URL_PROTOCOL_JAR.equals(url.getProtocol())

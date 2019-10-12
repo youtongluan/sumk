@@ -55,6 +55,20 @@ public class ItemJoiner {
 		return this;
 	}
 
+	public ItemJoiner append(ItemJoiner item, CharSequence pre, CharSequence sub) {
+		if (item == null) {
+			return this;
+		}
+		if (item.hasDelimiter && pre != null) {
+			sb.append(pre);
+		}
+		sb.append(item.toCharSequence());
+		if (item.hasDelimiter && sub != null) {
+			sb.append(sub);
+		}
+		return this;
+	}
+
 	public CharSequence toCharSequence() {
 		return this.toCharSequence(false);
 	}

@@ -26,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.common.date.TimedObject;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpHeadersHolder;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
@@ -91,7 +91,7 @@ public class LocalUserSession implements UserSession {
 	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends SessionObject> T getUserObject(Class<T> clz) {
-		String sid = HttpHeadersHolder.sessionId();
+		String sid = HttpContextHolder.sessionId();
 		if (sid == null) {
 			return null;
 		}
@@ -104,7 +104,7 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public void flushSession() {
-		String sid = HttpHeadersHolder.sessionId();
+		String sid = HttpContextHolder.sessionId();
 		if (sid == null) {
 			return;
 		}
@@ -113,7 +113,7 @@ public class LocalUserSession implements UserSession {
 			return;
 		}
 		to.setEvictTime(
-				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()) * 1000);
+				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpContextHolder.getType()) * 1000);
 
 	}
 
@@ -122,13 +122,13 @@ public class LocalUserSession implements UserSession {
 		TimedObject to = new TimedObject();
 		to.setTarget(sessionObj);
 		to.setEvictTime(
-				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpHeadersHolder.getType()) * 1000);
+				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpContextHolder.getType()) * 1000);
 		map.put(sessionId, to);
 	}
 
 	@Override
 	public void removeSession() {
-		String sessionId = HttpHeadersHolder.sessionId();
+		String sessionId = HttpContextHolder.sessionId();
 		if (sessionId == null) {
 			return;
 		}
@@ -143,7 +143,7 @@ public class LocalUserSession implements UserSession {
 
 	@Override
 	public void updateSession(SessionObject sessionObj) {
-		String sessionId = HttpHeadersHolder.sessionId();
+		String sessionId = HttpContextHolder.sessionId();
 		if (sessionId == null) {
 			return;
 		}

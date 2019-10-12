@@ -91,6 +91,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", req);
 				return;
 			}
+			HttpContextHolder.set(req, resp);
 			ActionContext.httpContext(act, req.getParameter("thisIsTest"));
 			handle(act, info, req, resp);
 
@@ -106,6 +107,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				log.error(e.toString(), e);
 			}
 		} finally {
+			HttpContextHolder.remove();
 			ActionContext.remove();
 		}
 	}

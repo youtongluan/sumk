@@ -15,9 +15,13 @@
  */
 package org.yx.util;
 
-import javax.servlet.http.HttpServletRequest;
+import java.nio.charset.Charset;
 
-import org.yx.http.HttpHeadersHolder;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.yx.http.HttpContextHolder;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
 
@@ -45,17 +49,27 @@ public final class HttpUtil {
 	}
 
 	public static String getHeader(String name) {
-		return HttpHeadersHolder.getHeader(name);
+		return HttpContextHolder.getHeader(name);
 	}
 
 	/**
 	 * 获取http请求中的HttpServletRequest对象 <BR>
-	 * <B>注意：不能在自定义的servlet中调用</B>
+	 * <B>注意：不能在自定义的servlet中调用，否则为null</B>
 	 * 
 	 * @return HttpServletRequest对象
 	 */
 	public static HttpServletRequest getHttpRequest() {
-		return HttpHeadersHolder.getHttpRequest();
+		return HttpContextHolder.getHttpRequest();
+	}
+
+	/**
+	 * 获取http请求中的HttpServletResponse对象 <BR>
+	 * <B>注意：不能在自定义的servlet中调用，否则为null</B>
+	 * 
+	 * @return HttpServletResponse对象
+	 */
+	public static HttpServletResponse getHttpResponse() {
+		return HttpContextHolder.getHttpResponse();
 	}
 
 	/**
@@ -65,6 +79,14 @@ public final class HttpUtil {
 	 * @return sessionId
 	 */
 	public static String sessionId() {
-		return HttpHeadersHolder.sessionId();
+		return HttpContextHolder.sessionId();
+	}
+
+	public static String getType() {
+		return InnerHttpUtil.getType(getHttpRequest());
+	}
+
+	public static Charset charset() {
+		return InnerHttpUtil.charset(getHttpRequest());
 	}
 }

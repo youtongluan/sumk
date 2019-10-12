@@ -49,9 +49,4 @@ public class Validators implements Plugin {
 		validators = list.toArray(new Validator[list.size()]);
 	}
 
-	@Override
-	public void stop() {
-
-	}
-
 }

@@ -76,7 +76,7 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	private static final int MAX_CACHE_LIMIT = 5000;
+	private static final int LIMIT_AS_NO_LIMIT = 5000;
 	private ResultHandler resultHandler;
 
 	public Select resultHandler(ResultHandler resultHandler) {
@@ -280,19 +280,8 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 如果为true，在判断是否相等时，会将null值解析成is null。否则将忽略null值
-	 * 
-	 * @param v
-	 *            默认为false
-	 * @return 当前对象
-	 */
-	public Select parseNULL(boolean v) {
-		this.withnull = v;
-		return this;
-	}
-
-	/**
-	 * 设置相等的条件。本方法可以被多次执行。 src中的各个条件是and关系。不同src之间是or关系
+	 * 设置相等的条件。本方法可以被多次执行。 src中的各个条件是and关系。不同src之间是or关系<BR>
+	 * <B>注意：如果pojo是map类型，那么它的null值是有效条件</B>
 	 * 
 	 * @param src
 	 *            map或pojo类型。
@@ -410,12 +399,12 @@ public class Select extends SelectBuilder {
 				return list;
 			}
 			list.addAll(tmp);
+			List<Map<String, Object>> eventIn = fromCache ? exchange.getCanToRedis() : this.in;
 
 			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
-					&& (limit <= 0 || limit >= MAX_CACHE_LIMIT) && exchange.getCanToRedis() != null
-					&& exchange.getCanToRedis().size() > 0) {
+					&& (limit <= 0 || limit >= LIMIT_AS_NO_LIMIT) && CollectionUtil.isNotEmpty(eventIn)) {
 				QueryEvent event = new QueryEvent(this.parsePojoMeta(true).getTableName());
-				event.setIn(exchange.getCanToRedis());
+				event.setIn(eventIn);
 				event.setResult(tmp);
 				DBEventPublisher.publish(event);
 			}

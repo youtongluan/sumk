@@ -23,21 +23,22 @@ import static org.objectweb.asm.Opcodes.GETFIELD;
 import static org.objectweb.asm.Opcodes.INVOKESPECIAL;
 import static org.objectweb.asm.Opcodes.RETURN;
 
-import java.util.concurrent.atomic.AtomicInteger;
+import java.lang.reflect.Method;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.yx.log.Log;
+import org.yx.util.UUIDSeed;
 
 public class ArgPojos {
-	private static AtomicInteger ai = new AtomicInteger(1000);
 
 	@SuppressWarnings("unchecked")
-	public static Class<? extends ArgPojo> create(String clzName, MethodDesc p) throws Exception {
-		if (p.getArgNames() == null || p.getArgNames().length == 0) {
-			return null;
-		}
-		String fullName = clzName + "_" + p.getMethod().getName();
-		fullName = fullName.replace('.', '/') + "_" + ai.incrementAndGet();
+	public static Class<? extends ArgPojo> create(MethodParamInfo p) throws Exception {
+		final Method method = p.getMethod();
+		String fullName = String.join("_", p.getDeclaringClass().getSimpleName(), method.getName(), UUIDSeed.seq());
+		Log.get("sumk.asm").debug("begin generate paramters pojo :{}", fullName);
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",
@@ -60,7 +61,31 @@ public class ArgPojos {
 
 		mv = cw.visitMethod(ACC_PUBLIC, "params", "()[Ljava/lang/Object;", null, null);
 		mv.visitCode();
-		buildArgArray(fullName, mv, args, p.getMethod().getParameterTypes());
+		buildArgArray(fullName, mv, args, method.getParameterTypes());
+		mv.visitInsn(ARETURN);
+		mv.visitMaxs(1, 0);
+		mv.visitEnd();
+
+		mv = cw.visitMethod(ACC_PUBLIC, "invoke", "(Ljava/lang/Object;)Ljava/lang/Object;", null,
+				new String[] { "java/lang/Throwable" });
+		mv.visitCode();
+		Class<?> ownerClz = method.getDeclaringClass();
+		final String ownerName = ownerClz.getName().replace('.', '/');
+
+		mv.visitLdcInsn(Type.getType(ownerClz));
+		mv.visitVarInsn(ALOAD, 1);
+		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, "java/lang/Class", "cast", "(Ljava/lang/Object;)Ljava/lang/Object;",
+				false);
+		mv.visitTypeInsn(Opcodes.CHECKCAST, ownerName);
+		loadObjectFields(fullName, mv, args, method.getParameterTypes());
+		mv.visitMethodInsn(Opcodes.INVOKEVIRTUAL, ownerName, method.getName(), p.getMethodDesc(), false);
+		Class<?> returnType = method.getReturnType();
+		if (void.class == method.getReturnType()) {
+			mv.visitInsn(Opcodes.ACONST_NULL);
+			Log.get("sumk.asm").debug("{} has no return", fullName);
+		} else if (returnType.isPrimitive()) {
+			WriterHelper.boxPrimitive(mv, returnType);
+		}
 		mv.visitInsn(ARETURN);
 		mv.visitMaxs(1, 0);
 		mv.visitEnd();
@@ -79,6 +104,13 @@ public class ArgPojos {
 			frameIndex += WriterHelper.storeToLocalVariable(mv, params[i], frameIndex);
 		}
 		WriterHelper.buildParamArray(mv, params);
+	}
+
+	private static void loadObjectFields(String fullName, MethodVisitor mv, Arg[] args, Class<?>[] params) {
+		for (int i = 0; i < params.length; i++) {
+			mv.visitVarInsn(ALOAD, 0);
+			mv.visitFieldInsn(GETFIELD, fullName, args[i].name, args[i].desc);
+		}
 	}
 
 	private static class Arg {

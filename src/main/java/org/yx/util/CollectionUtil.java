@@ -217,4 +217,15 @@ public class CollectionUtil {
 		});
 		return map;
 	}
+
+	public static <K, V> Map<K, V> removeNull(Map<K, V> map) {
+		Map<K, V> ret = new HashMap<>();
+		map.forEach((k, v) -> {
+			if (k == null || v == null) {
+				return;
+			}
+			ret.put(k, v);
+		});
+		return ret;
+	}
 }

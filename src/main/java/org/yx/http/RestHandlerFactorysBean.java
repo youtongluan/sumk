@@ -15,34 +15,20 @@
  */
 package org.yx.http;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletRequestEvent;
-import javax.servlet.ServletRequestListener;
-import javax.servlet.http.HttpServletRequest;
-
 import org.yx.annotation.Bean;
+import org.yx.http.handler.HttpHandler;
+import org.yx.listener.ClassLoaderFactorysBean;
 
 @Bean
-public class RequestListener implements ServletRequestListener {
+public class RestHandlerFactorysBean extends ClassLoaderFactorysBean<HttpHandler> {
 
-	@Override
-	public void requestDestroyed(ServletRequestEvent sre) {
-		if (sre == null) {
-			return;
-		}
-		HttpHeadersHolder.remove();
+	public RestHandlerFactorysBean() {
+		super("org.yx.http.handler", "http.intf", "org.yx.http.handler");
 	}
 
 	@Override
-	public void requestInitialized(ServletRequestEvent sre) {
-		if (sre == null) {
-			return;
-		}
-		ServletRequest request = sre.getServletRequest();
-		if (HttpServletRequest.class.isInstance(request)) {
-			HttpHeadersHolder.setHttpRequest((HttpServletRequest) request);
-		}
-
+	public Class<HttpHandler> acceptClass() {
+		return HttpHandler.class;
 	}
 
 }

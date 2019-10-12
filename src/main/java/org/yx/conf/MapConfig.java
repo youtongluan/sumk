@@ -16,19 +16,24 @@
 package org.yx.conf;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class MapConfig implements SystemConfig {
 
+	private Map<String, String> map = new ConcurrentHashMap<>();
+
 	public static MapConfig create() {
 		return new MapConfig();
 	}
 
-	private final Map<String, String> map = new ConcurrentHashMap<>();
-
 	public Map<String, String> map() {
 		return map;
+	}
+
+	public void replace(Map<String, String> config) {
+		map = Objects.requireNonNull(config);
 	}
 
 	@Override

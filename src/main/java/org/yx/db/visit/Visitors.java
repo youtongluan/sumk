@@ -62,7 +62,9 @@ public final class Visitors {
 		SumkStatement statement = SumkStatement.create(conn, maped);
 		int ret = statement.executeUpdate();
 		statement.close();
-		EventLane.pubuish(conn, maped.getEvent());
+		if (ret > 0) {
+			EventLane.pubuish(conn, maped.getEvent());
+		}
 		return ret;
 	};
 

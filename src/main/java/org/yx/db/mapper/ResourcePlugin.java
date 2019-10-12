@@ -76,8 +76,4 @@ public class ResourcePlugin implements Plugin {
 		}
 	}
 
-	@Override
-	public void stop() {
-	}
-
 }

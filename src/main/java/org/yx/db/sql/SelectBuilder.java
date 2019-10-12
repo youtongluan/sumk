@@ -32,7 +32,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		super(visitor);
 		this.fromCache = OrmSettings.FROM_CACHE;
 		this.toCache = OrmSettings.TO_CACHE;
-		this.withnull = false;
 	}
 
 	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like " };// like前后要有空格
@@ -124,7 +123,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	protected CharSequence buildWhere(List<Object> paramters) {
-		ItemJoiner joiner = new ItemJoiner(" AND ", "", "");
+		ItemJoiner joiner = new ItemJoiner(" AND ", null, null);
 		joiner.appendNotEmptyItem(buildValid(paramters)).appendNotEmptyItem(buildIn(paramters))
 				.appendNotEmptyItem(buildCompare(paramters));
 		return joiner.toCharSequence();
@@ -204,9 +203,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
 		src.forEach((filedName, v) -> {
 
-			if (v == null && !this.withnull) {
-				return;
-			}
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {

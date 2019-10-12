@@ -17,67 +17,129 @@ package org.yx.asm;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
+import org.objectweb.asm.AnnotationVisitor;
+import org.objectweb.asm.Attribute;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.Label;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
+import org.objectweb.asm.ModuleVisitor;
 import org.objectweb.asm.Type;
+import org.objectweb.asm.TypePath;
+import org.slf4j.Logger;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.util.StringUtil;
 
 class MethodInfoClassVisitor extends ClassVisitor {
 
-	public final List<String> argNames;
-	public final List<String> signatures;
-	public final String[] descriptor;
-	private final Method m;
+	private Logger log = Log.get("sumk.asm");
+	private final List<MethodParamInfo> infos;
 
-	public MethodInfoClassVisitor(Method m) {
+	public MethodInfoClassVisitor(List<Method> methods) {
 		super(Vars.ASM_VER);
-		this.m = m;
+		this.infos = new ArrayList<>(Objects.requireNonNull(methods).size());
+		for (Method method : methods) {
+			infos.add(createMethodInfo(method));
+		}
+
+	}
+
+	private MethodParamInfo createMethodInfo(Method m) {
 		Type[] tys = Type.getArgumentTypes(m);
-		this.argNames = new ArrayList<String>(tys.length);
-		this.signatures = new ArrayList<String>(tys.length);
-		descriptor = new String[tys.length];
+
+		String[] descriptor = new String[tys.length];
 		for (int i = 0; i < tys.length; i++) {
 			descriptor[i] = tys[i].getDescriptor();
 		}
+		return new MethodParamInfo(m, new String[tys.length], descriptor, new String[tys.length]);
+	}
+
+	private MethodParamInfo getMethodParamInfo(String methodName, String desc) {
+		for (MethodParamInfo mp : this.infos) {
+			if (mp.isSameMethod(methodName, desc)) {
+				return mp;
+			}
+		}
+		return null;
 	}
 
 	@Override
-	public MethodVisitor visitMethod(final int access, final String name, final String desc, final String signature,
-			final String[] exceptions) {
-		final Type[] args = Type.getArgumentTypes(desc);
+	public MethodVisitor visitMethod(final int access, final String methodName, final String desc,
+			final String signature, final String[] exceptions) {
 
-		if (!name.equals(m.getName()) || !AsmUtils.sameType(args, m.getParameterTypes())) {
-
+		MethodParamInfo info = this.getMethodParamInfo(methodName, desc);
+		if (info == null || info.getArgNames().length == 0) {
 			return null;
 		}
-		MethodVisitor v = super.visitMethod(access, name, desc, signature, exceptions);
-		return new MethodVisitor(Vars.ASM_VER, v) {
+		return new ParseParamsMethodVisitor(Vars.ASM_VER, info);
+	}
 
-			@Override
-			public void visitLocalVariable(String name, String desc, String signature, Label start, Label end,
-					int index) {
+	@Override
+	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+	}
 
-				super.visitLocalVariable(name, desc, signature, start, end, index);
-				int argSize = m.getParameterTypes().length;
-				if ("this".equals(name) || argNames.size() >= argSize || argNames.contains(name)) {
-					return;
+	@Override
+	public void visitSource(String source, String debug) {
+	}
+
+	@Override
+	public ModuleVisitor visitModule(String name, int access, String version) {
+		return null;
+	}
+
+	@Override
+	public void visitNestHost(String nestHost) {
+	}
+
+	@Override
+	public void visitOuterClass(String owner, String name, String descriptor) {
+	}
+
+	@Override
+	public AnnotationVisitor visitAnnotation(String descriptor, boolean visible) {
+		return null;
+	}
+
+	@Override
+	public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String descriptor, boolean visible) {
+		return null;
+	}
+
+	@Override
+	public void visitAttribute(Attribute attribute) {
+	}
+
+	@Override
+	public void visitNestMember(String nestMember) {
+	}
+
+	@Override
+	public void visitInnerClass(String name, String outerName, String innerName, int access) {
+	}
+
+	@Override
+	public FieldVisitor visitField(int access, String name, String descriptor, String signature, Object value) {
+		return null;
+	}
+
+	@Override
+	public void visitEnd() {
+	}
+
+	public List<MethodParamInfo> getMethodInfos() {
+		for (MethodParamInfo info : this.infos) {
+			for (String name : info.getArgNames()) {
+				if (StringUtil.isEmpty(name)) {
+					log.error("{}.{}() has empty name。params:{}", info.getMethod().getClass().getSimpleName(),
+							info.getMethod().getName(), Arrays.toString(info.getArgNames()));
+					SumkException.throwException(362655465, "params not full parsed");
 				}
-
-				int k = argNames.size();
-				if (!args[k].getDescriptor().equals(desc)) {
-
-					Log.get("sumk.SYS.asm").error("clz:{},method,parsed args:{},except desc:{},in fact desc:{}",
-							m.getDeclaringClass().getName(), argNames.toString(), args[k].getDescriptor(), desc);
-					return;
-				}
-				argNames.add(name);
-				signatures.add(signature);
 			}
-
-		};
-
+		}
+		return this.infos;
 	}
 }

@@ -231,7 +231,7 @@ public class PojoMeta implements Cloneable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> populate(Object source, boolean withnull)
+	public Map<String, Object> populate(Object source, boolean keepNull)
 			throws InstantiationException, IllegalAccessException {
 		if (Map.class.isInstance(source)) {
 			return (Map<String, Object>) source;
@@ -243,7 +243,7 @@ public class PojoMeta implements Cloneable {
 		}
 		for (ColumnMeta m : this.fieldMetas) {
 			Object v = m.value(source);
-			if (!withnull && v == null) {
+			if (!keepNull && v == null) {
 				continue;
 			}
 			String name = m.getFieldName();

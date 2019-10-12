@@ -68,9 +68,4 @@ public class RedisPlugin implements Plugin {
 		}
 	}
 
-	@Override
-	public void stop() {
-
-	}
-
 }

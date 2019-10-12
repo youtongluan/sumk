@@ -20,7 +20,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.HttpHeadersHolder;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Log;
@@ -36,14 +36,14 @@ public class ReqUserHandler implements HttpHandler {
 
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
-		String sessionID = HttpHeadersHolder.sessionId();
+		String sessionID = HttpContextHolder.sessionId();
 		UserSession session = WebSessions.loadUserSession();
 		byte[] key = session.getKey(sessionID);
 
 		if (key == null) {
-			String type = HttpHeadersHolder.getType();
+			String type = HttpContextHolder.getType();
 			if (WebSessions.isSingleLogin(type)) {
-				String userId = HttpHeadersHolder.getToken();
+				String userId = HttpContextHolder.getToken();
 				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId, type)) {

@@ -15,8 +15,6 @@
  */
 package org.yx.asm;
 
-import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
-
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.yx.conf.AppInfo;
@@ -96,39 +93,12 @@ public final class AsmUtils {
 		return true;
 	}
 
-	public static Class<?> createArgPojo(String clzName, MethodDesc p) throws Exception {
-		String fullName = clzName + "_" + p.getMethod().getName();
-		if (p.getArgNames() == null || p.getArgNames().length == 0) {
-			return null;
-		}
-
-		ClassWriter cw = new ClassWriter(0);
-		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC, fullName.replace('.', '/'), null, "java/lang/Object", null);
-
-		int argCount = 0;
-		for (int i = 0; i < p.getArgNames().length; i++) {
-
-			argCount++;
-			String arg = p.getArgNames()[i];
-			String desc = p.getDescs()[i];
-			cw.visitField(ACC_PUBLIC, arg, desc, p.getSignatures()[i], null).visitEnd();
-		}
-		cw.visitEnd();
-		if (argCount == 0) {
-			return null;
-		}
-		byte[] b = cw.toByteArray();
-
-		return loadClass(fullName, b);
-
-	}
-
-	public static MethodDesc buildMethodDesc(String classFullName, Method m) throws IOException {
+	public static List<MethodParamInfo> buildMethodInfos(List<Method> methods) throws IOException {
+		String classFullName = methods.get(0).getDeclaringClass().getName();
 		ClassReader cr = new ClassReader(openStreamForClass(classFullName));
-		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(m);
+		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(methods);
 		cr.accept(cv, 0);
-		return new MethodDesc(m, cv.argNames.toArray(new String[cv.argNames.size()]), cv.descriptor,
-				cv.signatures.toArray(new String[cv.signatures.size()]));
+		return cv.getMethodInfos();
 	}
 
 	public static Method getMethod(Class<?> clz, String methodName, Class<?>[] paramTypes) {
@@ -241,7 +211,6 @@ public final class AsmUtils {
 				break;
 			}
 		}
-
 		return locals;
 	}
 

@@ -43,6 +43,11 @@ public final class SumkServer {
 	private static volatile boolean destoryed = false;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
+	private static long startTime;
+
+	public static long startTime() {
+		return startTime;
+	}
 
 	public static void resetStatus() {
 		started = false;
@@ -95,6 +100,7 @@ public final class SumkServer {
 			}
 			started = true;
 			destoryed = false;
+			startTime = System.currentTimeMillis();
 		}
 		try {
 			handleSystemArgs();

@@ -52,9 +52,9 @@ public class ProxyRpcVisitor implements Visitor {
 				f.afterInvoke(node, visitor.req, ret);
 			}
 			return ret;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			for (RpcFilter f : list) {
-				Exception e2 = f.error(node, visitor.req, e);
+				Throwable e2 = f.error(node, visitor.req, e);
 				if (e2 != null) {
 					e = e2;
 				}

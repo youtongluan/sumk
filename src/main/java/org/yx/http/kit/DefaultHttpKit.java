@@ -26,7 +26,7 @@ import org.yx.conf.AppInfo;
 import org.yx.http.ErrorResp;
 import org.yx.http.HttpGson;
 import org.yx.http.HttpHeader;
-import org.yx.http.HttpHeadersHolder;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
@@ -36,7 +36,7 @@ public class DefaultHttpKit implements HttpKit {
 	private final ActStatis actStatic = new ActStatis();
 
 	public String getType(HttpServletRequest req) {
-		String type = HttpHeadersHolder.fromHeaderOrCookieOrParamter(req, HttpHeader.TYPE);
+		String type = HttpContextHolder.fromHeaderOrCookieOrParamter(req, HttpHeader.TYPE);
 		return type == null ? "" : type;
 	}
 

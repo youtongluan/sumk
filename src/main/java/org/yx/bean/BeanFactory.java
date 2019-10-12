@@ -20,13 +20,13 @@ import java.util.Collection;
 import org.yx.annotation.Bean;
 import org.yx.annotation.db.Cached;
 import org.yx.common.StartConstants;
-import org.yx.common.SumkLogs;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.db.Cachable;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 
 public class BeanFactory extends AbstractBeanListener {
 
@@ -41,7 +41,7 @@ public class BeanFactory extends AbstractBeanListener {
 		this.cachedScan = AppInfo.getBoolean("sumk.ioc.cached.enable", true);
 		this.useRedisAsCache = AppInfo.getBoolean("sumk.dao.cache", true);
 		excludeMatcher = MatcherFactory.createWildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);
-		SumkLogs.IOC_LOG.info("bean exclude matcher:{}", excludeMatcher);
+		Log.get("sumk.ioc").info("bean exclude matcher:{}", excludeMatcher);
 	}
 
 	@Override
@@ -50,7 +50,7 @@ public class BeanFactory extends AbstractBeanListener {
 			Class<?> clz = event.clz();
 			String clzName = clz.getName();
 			if (excludeMatcher.match(clzName)) {
-				SumkLogs.IOC_LOG.info("{} excluded", clzName);
+				Log.get("sumk.ioc").info("{} excluded", clzName);
 				return;
 			}
 

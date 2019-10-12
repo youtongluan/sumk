@@ -16,10 +16,10 @@ import org.yx.annotation.http.Web;
 import org.yx.annotation.rpc.Soa;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
-import org.yx.http.HttpHeadersHolder;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
 import org.yx.http.user.WebSessions;
+import org.yx.util.HttpUtil;
 
 @Bean
 public class PlainServer {
@@ -71,7 +71,7 @@ public class PlainServer {
 
 	@Web(requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
 	public String bizError() {
-		System.out.println("req:" + HttpHeadersHolder.getHttpRequest());
+		System.out.println("req:" + HttpUtil.getHttpRequest());
 		BizException.throwException(12345, "业务异常");
 		return "";
 	}

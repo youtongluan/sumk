@@ -15,7 +15,7 @@
  */
 package org.yx.http.handler;
 
-import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,6 +35,7 @@ import org.yx.validate.ParamInfo;
 public class InvokeHandler implements HttpHandler {
 
 	private static final Object STOP = new Object();
+	private static List<WebFilter> filters;
 
 	@Override
 	public boolean accept(Web web) {
@@ -71,44 +72,48 @@ public class InvokeHandler implements HttpHandler {
 
 	private static Object exec(HttpActionNode info, WebContext ctx) throws Throwable {
 		return info.accept(http -> {
-			if (http.argClz == null || http.argTypes == null || http.argTypes.length == 0) {
-				return exec(http.method, http.obj, null, null, ctx);
-			}
-			if (ctx.data() == null) {
-				if (http.argNames != null && http.argNames.length > 0) {
+			ArgPojo argObj;
+			if (http.argNames.length == 0) {
+				argObj = http.getEmptyArgObj();
+			} else {
+				if (ctx.data() == null) {
 					HttpException.throwException(InvokeHandler.class, "there is no data");
-					return exec(http.method, http.obj, new Object[0], info.paramInfos, ctx);
 				}
+				argObj = HttpGson.gson().fromJson((String) ctx.data(), http.argClz);
 			}
-			ArgPojo argObj = HttpGson.gson().fromJson((String) ctx.data(), http.argClz);
 
-			return exec(http.method, http.obj, argObj == null ? null : argObj.params(), info.paramInfos, ctx);
+			return exec(argObj, http.owner, info.paramInfos, ctx);
 		});
 	}
 
-	private static Object exec(Method m, Object obj, Object[] params, ParamInfo[] paramInfos, WebContext ctx)
-			throws Throwable {
-		List<WebFilter> list = IOC.getBeans(WebFilter.class);
-		if (list == null || list.isEmpty()) {
-			return BizExcutor.exec(m, obj, params, paramInfos);
+	private static Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos, WebContext ctx) throws Throwable {
+		if (filters == null) {
+			filters = IOC.getBeans(WebFilter.class);
+			if (filters == null || filters.isEmpty()) {
+				filters = Collections.emptyList();
+			}
+		}
+		Object[] params = argObj.params();
+		if (filters.isEmpty()) {
+			return BizExcutor.exec(argObj, owner, params, paramInfos);
 		}
 		HttpServletRequest req = ctx.httpRequest();
 		try {
-			for (WebFilter f : list) {
+			for (WebFilter f : filters) {
 				if (!f.beforeInvoke(req, ctx.httpResponse(), params)) {
 					return STOP;
 				}
 			}
-			Object ret = BizExcutor.exec(m, obj, params, paramInfos);
-			for (WebFilter f : list) {
+			Object ret = BizExcutor.exec(argObj, owner, params, paramInfos);
+			for (WebFilter f : filters) {
 				if (!f.afterInvoke(req, ctx.httpResponse(), params, ret)) {
 					return STOP;
 				}
 			}
 			return ret;
-		} catch (Exception e) {
-			for (WebFilter f : list) {
-				Exception e2 = f.error(req, params, e);
+		} catch (Throwable e) {
+			for (WebFilter f : filters) {
+				Throwable e2 = f.error(req, params, e);
 				if (e2 != null) {
 					e = e2;
 				}

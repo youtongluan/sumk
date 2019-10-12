@@ -15,12 +15,12 @@
  */
 package org.yx.common;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Arrays;
+import java.util.Objects;
 
 import org.yx.annotation.Param;
 import org.yx.asm.ArgPojo;
+import org.yx.bean.Loader;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.validate.ParamInfo;
@@ -30,33 +30,28 @@ public abstract class CalleeNode {
 		Object visit(CalleeNode info) throws Throwable;
 	}
 
-	public final Method method;
-
 	public final String[] argNames;
-
-	public final Class<?>[] argTypes;
 
 	public final ParamInfo[] paramInfos;
 
-	public final Object obj;
+	public final Object owner;
 
 	public final Class<? extends ArgPojo> argClz;
 
-	public final Field[] fields;
+	private final int priority;
 
-	public final int priority;
+	protected final Method method;
 
-	public CalleeNode(Object obj, Method proxyMethod, Class<? extends ArgPojo> argClz, String[] argNames,
-			Class<?>[] argTypes, Param[] params, int priority) {
-		this.obj = obj;
-		this.method = proxyMethod;
-		this.argClz = argClz;
-		this.argNames = argNames;
-		this.argTypes = argTypes;
-		this.method.setAccessible(true);
+	public CalleeNode(Object owner, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
+			int priority) {
+		this.owner = Objects.requireNonNull(owner);
+		this.argClz = Objects.requireNonNull(argClz);
+		this.argNames = Objects.requireNonNull(argNames);
+		this.method = Objects.requireNonNull(method);
 		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
 		this.priority = priority;
 		if (this.paramInfos != null) {
+			Class<?>[] argTypes = this.getParameterTypes();
 			for (int i = 0; i < this.paramInfos.length; i++) {
 				Param p = params[i];
 				if (p == null) {
@@ -64,12 +59,6 @@ public abstract class CalleeNode {
 				}
 				paramInfos[i] = new ParamInfo(p, argNames[i], argTypes[i]);
 			}
-		}
-		if (argClz != null) {
-			this.fields = argClz.getFields();
-			Arrays.stream(fields).forEachOrdered(f -> f.setAccessible(true));
-		} else {
-			this.fields = null;
 		}
 	}
 
@@ -86,6 +75,26 @@ public abstract class CalleeNode {
 			throw SumkThreadPool.THREAD_THRESHOLD_OVER;
 		}
 		return visitor.visit(this);
+	}
+
+	public ArgPojo getEmptyArgObj() throws Exception {
+		return Loader.newInstance(this.argClz);
+	}
+
+	public Class<?> getDeclaringClass() {
+		return this.method.getDeclaringClass();
+	}
+
+	public Class<?> getReturnType() {
+		return this.method.getReturnType();
+	}
+
+	public String getMethodName() {
+		return this.method.getName();
+	}
+
+	public Class<?>[] getParameterTypes() {
+		return method.getParameterTypes();
 	}
 
 }

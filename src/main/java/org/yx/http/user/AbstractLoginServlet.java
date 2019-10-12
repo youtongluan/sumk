@@ -34,14 +34,16 @@ import org.yx.util.UUIDSeed;
 
 public abstract class AbstractLoginServlet implements LoginServlet {
 
+	private static final String LOGIN_NAME = "*login*";
 	private UserSession session;
 	protected String type = "";
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		final long begin = System.currentTimeMillis();
+		boolean success = false;
 		String user = req.getParameter(userName());
 		final String sid = createSessionId(req);
-
 		try {
 			LoginObject obj = login(sid, user, req);
 
@@ -80,8 +82,11 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			if (obj.getJson() != null) {
 				resp.getOutputStream().write(obj.getJson().getBytes(charset));
 			}
+			success = true;
 		} catch (Exception e) {
 			Log.get("sumk.http.login").error(e.toString(), e);
+		} finally {
+			InnerHttpUtil.act(LOGIN_NAME, System.currentTimeMillis() - begin, success);
 		}
 
 	}

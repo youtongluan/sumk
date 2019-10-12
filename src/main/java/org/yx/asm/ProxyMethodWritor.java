@@ -246,7 +246,7 @@ public class ProxyMethodWritor {
 			String currentClz = asmMethod.currentClz.replace('.', '/');
 			List<Object> argTypes = AsmUtils.getImplicitFrame(
 					asmMethod.desc.substring(asmMethod.desc.indexOf("(") + 1, asmMethod.desc.indexOf(")")));
-			List<Object> list = new ArrayList<Object>();
+			List<Object> list = new ArrayList<>();
 			list.add(currentClz);
 			list.addAll(argTypes);
 			list.add("org/yx/common/AopExcutor");

@@ -21,6 +21,7 @@ import java.lang.reflect.Method;
 import org.yx.annotation.Param;
 import org.yx.annotation.rpc.Soa;
 import org.yx.asm.ArgPojo;
+import org.yx.bean.Loader;
 import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
@@ -30,52 +31,60 @@ import org.yx.util.S;
 public final class RpcActionNode extends CalleeNode {
 	public final Soa action;
 
-	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
-			Class<?>[] argTypes, Param[] params, Soa action) {
-		super(obj, method, argClz, argNames, argTypes, params,
+	public final Field[] fields;
+
+	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
+			Soa action) {
+		super(obj, method, argClz, argNames, params,
 				action.priority() > 0 ? action.priority() : AppInfo.getInt("sumk.rpc.thread.priority.default", 100000));
 		this.action = action;
+		if (argNames.length > 0) {
+			this.fields = new Field[argNames.length];
+			try {
+				for (int i = 0; i < this.fields.length; i++) {
+					Field f = this.argClz.getDeclaredField(argNames[i]);
+					f.setAccessible(true);
+					this.fields[i] = f;
+				}
+			} catch (Exception e) {
+				SumkException.throwException(235345, e.getMessage());
+			}
+		} else {
+			this.fields = null;
+		}
 	}
 
 	public Object invokeByJsonArg(String args) throws Throwable {
-		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(method, obj, null, null);
-		}
-		if (argClz == null) {
-			SumkException.throwException(54214657, method.getName() + " args parse error");
+		if (argNames.length == 0) {
+			return BizExcutor.exec(this.getEmptyArgObj(), this.owner, new Object[0], this.paramInfos);
 		}
 
 		ArgPojo argObj = S.json.fromJson(args, argClz);
 		Object[] params = argObj.params();
-		return BizExcutor.exec(method, obj, params, this.paramInfos);
+		return BizExcutor.exec(argObj, owner, params, this.paramInfos);
 	}
 
 	public Object invokeByOrder(String... args) throws Throwable {
-		if (argTypes == null || argTypes.length == 0) {
-			return BizExcutor.exec(method, obj, null, null);
-		}
-		Object[] params = new Object[argTypes.length];
-		if (argClz == null) {
-			SumkException.throwException(54214657, method.getName() + " args parse error");
+		if (argNames.length == 0) {
+			return BizExcutor.exec(this.getEmptyArgObj(), this.owner, new Object[0], this.paramInfos);
 		}
 		if (args == null || args.length == 0) {
 			SumkException.throwException(12012, method.getName() + "的参数不能为空");
 		}
-		if (args.length != argTypes.length) {
+		if (args.length != argNames.length) {
 			SumkException.throwException(12013,
-					method.getName() + "需要传递的参数有" + argTypes.length + "个，实际传递的是" + args.length + "个");
+					method.getName() + "需要传递的参数有" + argNames.length + "个，实际传递的是" + args.length + "个");
 		}
-		for (int i = 0, k = 0; i < params.length; i++) {
-
+		ArgPojo pojo = Loader.newInstance(this.argClz);
+		for (int i = 0, k = 0; i < fields.length; i++) {
 			if (args[k] == null) {
-				params[i] = null;
 				continue;
 			}
 			Field f = fields[k];
-			params[i] = RpcGson.fromJson(args[i], f.getGenericType());
+			f.set(pojo, RpcGson.fromJson(args[i], f.getGenericType()));
 			k++;
 		}
-		return BizExcutor.exec(method, obj, params, this.paramInfos);
+		return BizExcutor.exec(pojo, this.owner, pojo.params(), this.paramInfos);
 	}
 
 }

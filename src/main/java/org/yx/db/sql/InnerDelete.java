@@ -20,7 +20,7 @@ import java.util.Map;
 import org.yx.common.ItemJoiner;
 import org.yx.db.event.DeleteEvent;
 
-abstract class InnerDelete {
+public abstract class InnerDelete {
 	protected Delete delete;
 
 	public InnerDelete(Delete delete) {
@@ -30,12 +30,17 @@ abstract class InnerDelete {
 	protected MapedSql toMapedSql(StringBuilder sb, MapedSql ms) throws InstantiationException, IllegalAccessException {
 		PojoMeta pojoMeta = delete.parsePojoMeta(true);
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
+		boolean isSingle = delete.in.size() == 1;
 		for (Map<String, Object> oneWhere : delete.in) {
 			delete.checkMap(oneWhere, pojoMeta);
-			ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
+			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
 			for (ColumnMeta fm : pojoMeta.fieldMetas) {
+				if (!oneWhere.containsKey(fm.getFieldName())) {
+					continue;
+				}
 				Object value = fm.value(oneWhere);
 				if (value == null) {
+					andItem.item().append(fm.dbColumn).append(" IS NULL ");
 					continue;
 				}
 				andItem.item().append(fm.dbColumn).append("=?");

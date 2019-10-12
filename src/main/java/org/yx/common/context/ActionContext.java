@@ -33,7 +33,7 @@ public final class ActionContext implements Attachable {
 
 	private final ActionType type;
 
-	private volatile LogContext logContext;
+	private LogContext logContext;
 
 	/**
 	 * 用来做自增长的

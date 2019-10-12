@@ -26,5 +26,5 @@ public interface WebFilter extends Ordered {
 
 	public boolean afterInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params, Object result);
 
-	public Exception error(HttpServletRequest req, Object[] params, Exception e);
+	public Throwable error(HttpServletRequest req, Object[] params, Throwable e);
 }

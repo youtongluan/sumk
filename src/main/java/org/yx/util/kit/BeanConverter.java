@@ -81,14 +81,12 @@ public class BeanConverter {
 	 * 
 	 * @param bean
 	 *            用于转化的pojo对象。
+	 * @param keepNull
+	 *            如果为true，那么它就会保留null字段
 	 * @return 返回map对象，不为null。
 	 */
-	public Map<String, Object> beanToMap(Object bean) {
-		return this.beanToMap(bean, false);
-	}
-
 	@SuppressWarnings("unchecked")
-	public Map<String, Object> beanToMap(Object bean, boolean filterNull) {
+	public Map<String, Object> beanToMap(Object bean, boolean keepNull) {
 		if (bean == null) {
 			return Collections.emptyMap();
 		}
@@ -100,7 +98,7 @@ public class BeanConverter {
 			Map<String, Object> map = new HashMap<>();
 			for (Field f : fields) {
 				Object v = f.get(bean);
-				if (filterNull && v == null) {
+				if (!keepNull && v == null) {
 					continue;
 				}
 				map.putIfAbsent(f.getName(), v);

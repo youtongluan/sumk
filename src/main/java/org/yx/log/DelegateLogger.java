@@ -37,6 +37,9 @@ public final class DelegateLogger implements Logger {
 		}
 		if (SumkServer.isStarted() && Log.logType() == LogType.slf4j) {
 			delegate = Log.get(delegate.getName());
+			if (delegate.isDebugEnabled()) {
+				Log.get("sumk.log").debug("{} change to {}", delegate.getName(), delegate.getClass().getSimpleName());
+			}
 		}
 		return delegate;
 	}

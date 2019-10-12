@@ -22,7 +22,7 @@ import java.util.List;
 import org.yx.annotation.rpc.Soa;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
-import org.yx.asm.MethodDesc;
+import org.yx.asm.MethodParamInfo;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
@@ -58,41 +58,37 @@ public class SoaAnnotationResolver {
 		if (!matcher.match(clz.getName())) {
 			return;
 		}
-		Method[] methods = clz.getMethods();
+		Method[] methods = clz.getDeclaredMethods();
 		List<Method> actMethods = new ArrayList<>();
 		for (final Method m : methods) {
 			if (AsmUtils.isFilted(m.getName())) {
 				continue;
 			}
-			if (AsmUtils.notPublicOnly(m.getModifiers())) {
+			if (m.getAnnotation(Soa.class) == null) {
 				continue;
 			}
-			if (m.getAnnotation(Soa.class) != null) {
-				actMethods.add(m);
+			if (AsmUtils.notPublicOnly(m.getModifiers())) {
+				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
+						m.getName());
+				continue;
 			}
+			actMethods.add(m);
 		}
 		if (actMethods.isEmpty()) {
 			return;
 		}
 
-		String classFullName = clz.getName();
-		for (final Method m : actMethods) {
+		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(actMethods);
+		for (MethodParamInfo info : mpInfos) {
+			Method m = info.getMethod();
 			Soa act = m.getAnnotation(Soa.class);
 			List<String> soaNames = nameResolver.solve(clz, m, act);
 			if (soaNames == null || soaNames.isEmpty()) {
 				continue;
 			}
 
-			Method proxyedMethod = AsmUtils.getSameMethod(m, bean.getClass());
-			RpcActionNode node;
-			int argSize = m.getParameterTypes().length;
-			if (argSize == 0) {
-				node = new RpcActionNode(bean, proxyedMethod, null, null, null, null, act);
-			} else {
-				MethodDesc mInfo = AsmUtils.buildMethodDesc(classFullName, m);
-				node = new RpcActionNode(bean, proxyedMethod, ArgPojos.create(classFullName, mInfo),
-						mInfo.getArgNames(), m.getParameterTypes(), ParamFactory.create(m), act);
-			}
+			RpcActionNode node = new RpcActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
+					ParamFactory.create(m), act);
 
 			for (String soaName : soaNames) {
 				if (soaName == null || soaName.isEmpty()) {
@@ -101,14 +97,13 @@ public class SoaAnnotationResolver {
 				if (RpcActionHolder.getActionNode(soaName) != null) {
 					RpcActionNode node0 = RpcActionHolder.getActionNode(soaName);
 					Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
-							node0.method.getDeclaringClass().getName(), node0.method.getName(), classFullName,
+							node0.getDeclaringClass().getName(), node0.getMethodName(), m.getDeclaringClass().getName(),
 							m.getName());
 					throw new SimpleSumkException(1242436, soaName + " already existed");
 				}
 				RpcActionHolder.putActNode(soaName, node);
 			}
 		}
-
 	}
 
 }

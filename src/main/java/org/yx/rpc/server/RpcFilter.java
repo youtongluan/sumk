@@ -25,5 +25,5 @@ public interface RpcFilter extends Ordered {
 
 	public void afterInvoke(RpcActionNode node, Request req, Object result) throws Exception;
 
-	public Exception error(RpcActionNode node, Request req, Exception ex);
+	public Throwable error(RpcActionNode node, Request req, Throwable ex);
 }

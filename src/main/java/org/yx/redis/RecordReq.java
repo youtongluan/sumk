@@ -16,14 +16,19 @@
 package org.yx.redis;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.slf4j.Logger;
 import org.yx.db.sql.PojoMeta;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.util.Assert;
 
-public class RecordReq {
+public final class RecordReq {
+
+	private static Logger logger = Log.get("sumk.db.redis");
 
 	public static String get(PojoMeta m, String id) {
 		if (m.getCounter().isCacheRefresh()) {
@@ -51,12 +56,16 @@ public class RecordReq {
 		}
 		Assert.notEmpty(id, "key of redis value cannot be null");
 		String key = getKey(m, id);
-		RedisPool.get(m.getTableName()).setex(key, m.getTtlSec(), json);
+		String tableName = m.getTableName();
+		RedisPool.get(tableName).setex(key, m.getTtlSec(), json);
+		logger.trace("{} >> SET {} = {}", tableName, key, json);
 	}
 
 	public static void del(PojoMeta m, String id) {
 		String key = getKey(m, id);
-		RedisPool.get(m.getTableName()).del(key);
+		String tableName = m.getTableName();
+		RedisPool.get(tableName).del(key);
+		logger.trace("{} >> DELETE {}", tableName, key);
 	}
 
 	protected static String[] getKeys(PojoMeta m, String[] ids) {
@@ -71,7 +80,13 @@ public class RecordReq {
 		if (ids == null || ids.length == 0) {
 			return;
 		}
-		RedisPool.get(m.getTableName()).del(getKeys(m, ids));
+		String[] keys = getKeys(m, ids);
+		RedisPool.get(m.getTableName()).del(keys);
+		if (logger.isTraceEnabled()) {
+			String ks = Arrays.toString(keys);
+			ks = ks.substring(1, ks.length() - 1);
+			logger.trace("{} >> DEL_MULTI {}", m.getTableName(), ks);
+		}
 	}
 
 	public static List<String> getMultiValue(PojoMeta m, Collection<String> ids) {
@@ -98,9 +113,11 @@ public class RecordReq {
 			SumkException.throwException(23432, "the length of ids is not equal to values");
 		}
 		String[] keys = getKeys(m, ids);
-		Redis redis = RedisPool.get(m.getTableName());
+		String tableName = m.getTableName();
+		Redis redis = RedisPool.get(tableName);
 		for (int i = 0; i < keys.length; i++) {
 			redis.setex(keys[i], m.getTtlSec(), values[i]);
+			logger.trace("{} >> SET {} = {}", tableName, keys[i], values[i]);
 		}
 	}
 

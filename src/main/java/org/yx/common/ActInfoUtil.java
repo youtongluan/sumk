@@ -56,11 +56,12 @@ public class ActInfoUtil {
 		map.put("name", name);
 		List<Map<String, Object>> list = new ArrayList<>();
 		int paramSize = node.argNames == null ? 0 : node.argNames.length;
+		Class<?>[] paramTypes = node.getParameterTypes();
 		for (int i = 0; i < paramSize; i++) {
 			Map<String, Object> param = new LinkedHashMap<>();
 			list.add(param);
 			param.put("name", node.argNames[i]);
-			param.put("type", describe(node.argTypes[i]));
+			param.put("type", describe(paramTypes[i]));
 			ParamInfo pi = node.paramInfos == null ? null : node.paramInfos[i];
 			if (pi != null) {
 				Param p = pi.getParam();

@@ -16,25 +16,25 @@
 package org.yx.common;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
+import org.yx.asm.ArgPojo;
 import org.yx.validate.ParamInfo;
 import org.yx.validate.Validators;
 
 public abstract class BizExcutor {
 
-	public static Object exec(Method m, Object obj, Object[] params, ParamInfo[] infos) throws Throwable {
+	public static Object exec(ArgPojo argObj, Object owner, Object[] params, ParamInfo[] infos) throws Throwable {
 		if (infos != null) {
 			for (int i = 0; i < infos.length; i++) {
 				ParamInfo info = infos[i];
 				if (info != null) {
-					Validators.check(info, params == null ? null : params[i]);
+					Validators.check(info, params[i]);
 				}
 			}
 		}
 		try {
-			return m.invoke(obj, params);
-		} catch (Exception e) {
+			return argObj.invoke(owner);
+		} catch (Throwable e) {
 
 			if (InvocationTargetException.class.isInstance(e)) {
 				InvocationTargetException te = (InvocationTargetException) e;

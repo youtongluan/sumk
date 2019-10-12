@@ -58,7 +58,7 @@ public class HttpPlugin implements Plugin {
 			return;
 		}
 		try {
-			HttpHandlerChain.inst.setHandlers(IOC.get(IntfHandlerFactorysBean.class).create());
+			HttpHandlerChain.inst.setHandlers(IOC.get(RestHandlerFactorysBean.class).create());
 			if (HttpSettings.isUploadEnable()) {
 				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
 			}

@@ -55,7 +55,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		config.setMinIdle(AppInfo.getInt("sumk.redis.minidle", 1));
 		config.setMaxIdle(AppInfo.getInt("sumk.redis.maxidle", 20));
 		config.setMaxTotal(AppInfo.getInt("sumk.redis.maxtotal", 100));
-		config.setTestWhileIdle(false);
+		config.setTestWhileIdle(AppInfo.getBoolean("sumk.redis.testWhileIdle", false));
 		return config;
 	}
 
@@ -139,7 +139,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 				return callback.apply(jedis);
 			} catch (Exception e) {
 				if (isConnectException(e)) {
-					Log.get(Redis.LOG_NAME).warn("redis连接错误！" + e.getMessage());
+					Log.get(Redis.LOG_NAME).warn("redis连接错误！({})" + e.getMessage(), hosts);
 					if (jedis != null) {
 						jedis.close();
 						jedis = null;
@@ -147,7 +147,7 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 					e1 = e;
 					continue;
 				}
-				Log.get(Redis.LOG_NAME).error("redis执行错误！" + e.getMessage());
+				Log.get(Redis.LOG_NAME).error("redis执行错误！({})" + e.getMessage(), hosts);
 				if (jedis != null) {
 					jedis.close();
 					jedis = null;

@@ -142,6 +142,43 @@ public class WriterHelper {
 
 	}
 
+	public static int boxPrimitive(MethodVisitor mv, Class<?> c) {
+		if (c == Integer.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+			return SINGLE;
+		}
+		if (c == Boolean.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Boolean", "valueOf", "(Z)Ljava/lang/Boolean;", false);
+			return SINGLE;
+		}
+		if (c == Byte.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Byte", "valueOf", "(B)Ljava/lang/Byte;", false);
+			return SINGLE;
+		}
+		if (c == Character.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Character", "valueOf", "(C)Ljava/lang/Character;", false);
+			return SINGLE;
+		}
+		if (c == Short.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Short", "valueOf", "(S)Ljava/lang/Short;", false);
+			return SINGLE;
+		}
+		if (c == Float.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+			return SINGLE;
+		}
+		if (c == Double.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+			return WIDTH;
+		}
+		if (c == Long.TYPE) {
+			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+			return WIDTH;
+		}
+		return 0;
+
+	}
+
 	public static int storeToLocalVariable(MethodVisitor mv, Class<?> c, int frameIndex) {
 		if (c == Integer.TYPE || c == Boolean.TYPE || c == Byte.TYPE || c == Character.TYPE || c == Short.TYPE) {
 			mv.visitVarInsn(ISTORE, frameIndex);
