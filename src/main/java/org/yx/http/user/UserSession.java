@@ -17,30 +17,15 @@ package org.yx.http.user;
 
 public interface UserSession {
 
-	byte[] getKey(String sid);
+	byte[] getKey(String sessionId);
 
-	void putKey(String sid, byte[] key, String userId, String type);
+	<T extends SessionObject> T getUserObject(String sessionId, Class<T> clz);
 
-	<T extends SessionObject> T getUserObject(Class<T> clz);
+	boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin);
 
-	void flushSession();
+	void removeSession(String sessionId);
 
-	void setSession(String sessionId, SessionObject sessionObj);
+	boolean isLogin(String userId);
 
-	/**
-	 * 更新session中的用户信息
-	 * 
-	 * @param sessionObj
-	 *            目标用户信息
-	 */
-	void updateSession(SessionObject sessionObj);
-
-	void removeSession();
-
-	boolean isLogin(String userId, String type);
-
-	/**
-	 * @return 如果不存在，就返回null
-	 */
-	String getUserId();
+	int localCacheSize();
 }

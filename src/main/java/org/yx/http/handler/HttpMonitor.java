@@ -48,7 +48,7 @@ public class HttpMonitor extends HttpServlet {
 
 	@Override
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setCharacterEncoding("UTF-8");
+		resp.setContentType("text/plain;charset=UTF-8");
 		InnerHttpUtil.noCache(resp);
 		String md5 = AppInfo.get("sumk.union.monitor", "sumk.http.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
@@ -70,6 +70,9 @@ public class HttpMonitor extends HttpServlet {
 	}
 
 	private void outputServerInfo(HttpServletRequest req, PrintWriter writer) {
+		if (!"1".equals(req.getParameter("server"))) {
+			return;
+		}
 		writer.write(Monitors.serverInfo());
 		writer.write(TYPE_SPLIT);
 	}

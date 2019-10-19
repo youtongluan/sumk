@@ -18,6 +18,8 @@ package org.yx.common;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,12 @@ public class ActInfoUtil {
 		}
 		if (clazz.getName().startsWith("java.") || clazz.isPrimitive()) {
 			return clazz.getSimpleName();
+		}
+		if (Map.class.isAssignableFrom(clazz)) {
+			return Collections.emptyMap();
+		}
+		if (Collection.class.isAssignableFrom(clazz)) {
+			return Collections.emptyList();
 		}
 		Map<String, Object> map = new LinkedHashMap<>();
 		Class<?> tempClz = clazz;

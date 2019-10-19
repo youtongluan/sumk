@@ -15,40 +15,41 @@
  */
 package org.yx.http.user;
 
+import java.util.Objects;
+
 public class LoginObject {
 
-	private String errorMsg;
+	private final String errorMsg;
 
-	private String json;
+	private final String responseData;
 
-	private String userId;
+	private final SessionObject sessionObj;
 
-	public String getJson() {
-		return json;
+	public SessionObject getSessionObject() {
+		return sessionObj;
+	}
+
+	public LoginObject(String responseData, SessionObject sessionObj, String errorMsg) {
+		this.responseData = responseData;
+		this.sessionObj = sessionObj;
+		this.errorMsg = errorMsg;
+	}
+
+	public String getResponseData() {
+		return responseData;
 	}
 
 	public String getErrorMsg() {
 		return errorMsg;
 	}
 
-	public String getUserId() {
-		return userId;
-	}
-
 	public static LoginObject error(String errorMsg) {
-		LoginObject obj = new LoginObject();
-		obj.errorMsg = errorMsg;
-		return obj;
+		return new LoginObject(null, null, errorMsg);
 	}
 
-	public static LoginObject success(String text) {
-		return success(text, null);
+	public static LoginObject success(String responseData, SessionObject sessionObj) {
+		return new LoginObject(responseData,
+				Objects.requireNonNull(sessionObj, "sessionObject cannot be null when login successed"), null);
 	}
 
-	public static LoginObject success(String text, String userId) {
-		LoginObject obj = new LoginObject();
-		obj.json = text;
-		obj.userId = userId;
-		return obj;
-	}
 }

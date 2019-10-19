@@ -35,7 +35,7 @@ import org.yx.util.SBuilder;
 
 /**
  * 比较跟整个addEqual是add关系。同一种比较类型，比如less，它的一个key只能设置一次，后设置的会覆盖前面设置的<BR>
- * 比较中用到的key，都是java中的key，大小写敏感. 这个类只支持Mysql
+ * 比较中用到的key，都是java中的key，大小写敏感.
  */
 public class Select extends SelectBuilder {
 	public Select(SumkDbVisitor<List<Map<String, Object>>> visitor) {

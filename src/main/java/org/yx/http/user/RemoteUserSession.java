@@ -15,136 +15,167 @@
  */
 package org.yx.http.user;
 
-import org.yx.http.HttpGson;
-import org.yx.http.HttpContextHolder;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.yx.conf.AppInfo;
 import org.yx.http.HttpSettings;
+import org.yx.log.Log;
+import org.yx.main.SumkThreadPool;
 import org.yx.redis.Redis;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 
 public class RemoteUserSession implements UserSession {
+	private static final byte[] NX = { 'N', 'X' };
+	private static final byte[] PX = { 'P', 'X' };
+	private static final String SPLIT = "\n\n";
+	private Logger log = Log.get("sumk.http.session");
+
+	protected final ConcurrentMap<String, TimedCachedObject> cache = new ConcurrentHashMap<>();
+	protected int maxSize = AppInfo.getInt("sumk.http.session.catch.maxsize", 5000);
+	protected int noFreshTime = AppInfo.getInt("sumk.http.session.catch.nofreshtime", 1000 * 2);
 
 	private final Redis redis;
-	private static final String AES_KEY = "KEY";
 
-	private static final String SESSION_OBJECT = "OBJ";
-
-	private String singleKey(String userId, String type) {
+	protected final String singleKey(String userId) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("SINGLE_SES_").append(userId);
-		if (type != null && type.length() > 0) {
-			sb.append('_').append(type);
-		}
+		sb.append("_SINGLE_SES_").append(userId);
 		return sb.toString();
 	}
 
-	private String bigKey() {
-		return bigKey(org.yx.http.HttpContextHolder.sessionId());
-	}
-
-	private String bigKey(String sessionId) {
+	protected final byte[] bigKey(String sessionId) {
 		if (sessionId == null || sessionId.isEmpty()) {
 			return null;
 		}
-		return "S#" + sessionId;
+		return ("_SES_#" + sessionId).getBytes(AppInfo.UTF8);
 	}
 
 	public RemoteUserSession(Redis redis) {
 		this.redis = redis;
+		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
+			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
+			if (duration > HttpSettings.httpSessionTimeoutInMs()) {
+				duration = HttpSettings.httpSessionTimeoutInMs();
+			}
+			duration -= cache.size() * 10;
+			if (duration < this.noFreshTime) {
+				duration = this.noFreshTime + 100;
+			}
+			CacheHelper.expire(cache, duration);
+		}, seconds, seconds, TimeUnit.SECONDS);
 	}
 
-	@Override
-	public void putKey(String sessionId, byte[] key, String userId, String type) {
-		String bigkey = bigKey(sessionId);
-		if (bigkey == null) {
-			return;
+	protected TimedCachedObject load(byte[] bigKey, long now) {
+		byte[] bv = redis.get(bigKey);
+		if (bv == null) {
+			return null;
 		}
-		redis.hset(bigkey.getBytes(Redis.UTF8), AES_KEY.getBytes(Redis.UTF8), key);
-		redis.expire(bigkey, HttpSettings.httpSessionTimeout(type));
-		if ((!WebSessions.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
-			return;
+		String value = new String(bv, AppInfo.UTF8);
+		String[] vs = value.split(SPLIT, 2);
+		return new TimedCachedObject(vs[0], S.base64.decode(vs[1]), now);
+	}
+
+	protected TimedCachedObject loadUserObject(String sid) {
+		if (sid == null) {
+			return null;
+		}
+		byte[] bigKey = this.bigKey(sid);
+		TimedCachedObject to = cache.get(sid);
+		long now = System.currentTimeMillis();
+		if (to == null) {
+			to = this.load(bigKey, now);
+			if (to == null) {
+				log.trace("{} cannot found from redis", sid);
+				return null;
+			}
+			if (cache.size() < this.maxSize) {
+				log.trace("{} add to local cache", sid);
+				cache.put(sid, to);
+			}
 		}
 
-		String userSessionKey = singleKey(userId, type);
-		String oldSessionId = redis.get(userSessionKey);
-		if (StringUtil.isNotEmpty(oldSessionId)) {
-			redis.del(bigKey(oldSessionId));
+		if (to.refreshTime + this.noFreshTime < now) {
+			long durationInMS = HttpSettings.httpSessionTimeoutInMs();
+			Long v = redis.pexpire(bigKey, durationInMS);
+			if (v == null || v.intValue() == 0) {
+				cache.remove(sid);
+				log.trace("{} was pexpire by redis,and remove from local cache", sid);
+				return null;
+			}
+			log.trace("{} was refresh in redis", sid);
+			to.refreshTime = now;
 		}
-		redis.setex(userSessionKey, HttpSettings.singleSessionTimeout(type), sessionId);
+		return to;
 	}
 
 	@Override
 	public byte[] getKey(String sid) {
-		String bigKey = this.bigKey(sid);
-		if (bigKey == null) {
+		TimedCachedObject obj = this.loadUserObject(sid);
+		if (obj == null) {
 			return null;
 		}
-		return redis.hget(bigKey.getBytes(Redis.UTF8), AES_KEY.getBytes(Redis.UTF8));
+		return obj.getKey();
 	}
 
 	@Override
-	public <T extends SessionObject> T getUserObject(Class<T> clz) {
-		String bigKey = this.bigKey();
-		if (bigKey == null) {
+	public <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
+		TimedCachedObject obj = this.loadUserObject(sessionId);
+		if (obj == null) {
 			return null;
 		}
-		String json = redis.hget(bigKey, SESSION_OBJECT);
-		if (json == null) {
-			return null;
-		}
-		return HttpGson.gson().fromJson(json, clz);
+		return S.json.fromJson(obj.json, clz);
 	}
 
 	@Override
-	public void flushSession() {
-
-		String bigKey = this.bigKey();
-		if (bigKey == null) {
-			return;
-		}
-		redis.expire(bigKey, HttpSettings.httpSessionTimeout(HttpContextHolder.getType()));
-	}
-
-	@Override
-	public void setSession(String sid, SessionObject sessionObj) {
-		String bigKey = this.bigKey(sid);
-		String json = HttpGson.gson().toJson(sessionObj);
-		redis.hset(bigKey, SESSION_OBJECT, json);
-		redis.expire(bigKey, HttpSettings.httpSessionTimeout(HttpContextHolder.getType()));
-	}
-
-	@Override
-	public void removeSession() {
-		String bigKey = this.bigKey();
+	public void removeSession(String sessionId) {
+		byte[] bigKey = this.bigKey(sessionId);
 		if (bigKey == null) {
 			return;
 		}
 		redis.del(bigKey);
+		this.cache.remove(sessionId);
 	}
 
 	@Override
-	public void updateSession(SessionObject sessionObj) {
-		String bigKey = this.bigKey();
-		if (bigKey == null) {
-			return;
-		}
-		setSession(bigKey, sessionObj);
-	}
-
-	@Override
-	public boolean isLogin(String userId, String type) {
+	public boolean isLogin(String userId) {
 		if (StringUtil.isEmpty(userId)) {
 			return false;
 		}
-		return Boolean.TRUE.equals(redis.exists(this.singleKey(userId, type)));
+		return Boolean.TRUE.equals(redis.exists(this.singleKey(userId)));
 	}
 
 	@Override
-	public String getUserId() {
-		SessionObject obj = this.getUserObject(SessionObject.class);
-		if (obj == null) {
-			return null;
+	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
+		long sessionTimeout = HttpSettings.httpSessionTimeoutInMs();
+		byte[] bigKey = this.bigKey(sessionId);
+		String json = S.json.toJson(sessionObj);
+		String key2 = S.base64.encodeToString(key);
+		String value = String.join(SPLIT, json, key2);
+		String ret = redis.set(bigKey, value.getBytes(AppInfo.UTF8), NX, PX, sessionTimeout);
+		if (!"OK".equalsIgnoreCase(ret) && !"1".equals(ret)) {
+			return false;
 		}
-		return obj.getUserId();
+		if (!singleLogin) {
+			return true;
+		}
+
+		String userSessionKey = singleKey(sessionObj.userId);
+		String oldSessionId = redis.get(userSessionKey);
+		if (StringUtil.isNotEmpty(oldSessionId)) {
+			redis.del(bigKey(oldSessionId));
+			cache.remove(oldSessionId);
+		}
+		redis.psetex(userSessionKey, sessionTimeout, sessionId);
+		return true;
+	}
+
+	@Override
+	public int localCacheSize() {
+		return this.cache.size();
 	}
 
 }

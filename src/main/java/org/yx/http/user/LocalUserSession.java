@@ -19,25 +19,22 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.yx.common.date.TimedObject;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 
 public class LocalUserSession implements UserSession {
 
-	private ConcurrentMap<String, TimedObject> map = new ConcurrentHashMap<>();
-	private ConcurrentMap<String, byte[]> keyMap = new ConcurrentHashMap<>();
+	protected final ConcurrentMap<String, TimedCachedObject> map = new ConcurrentHashMap<>();
 
-	private Map<String, String> userSessionMap = Collections.synchronizedMap(new LinkedHashMap<String, String>() {
+	protected Map<String, String> userSessionMap = Collections.synchronizedMap(new LinkedHashMap<String, String>() {
 		private static final long serialVersionUID = 1L;
 
 		@Override
@@ -47,124 +44,89 @@ public class LocalUserSession implements UserSession {
 
 	});
 
-	private String singleKey(String userId, String type) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(userId);
-		if (type != null && type.length() > 0) {
-			sb.append('_').append(type);
-		}
-		return sb.toString();
+	private String singleKey(String userId) {
+		return userId;
 	}
 
 	@Override
-	public void putKey(String sessionId, byte[] key, String userId, String type) {
-		keyMap.put(sessionId, key);
-		if ((!WebSessions.isSingleLogin(type)) || StringUtil.isEmpty(userId)) {
-			return;
+	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
+		long now = System.currentTimeMillis();
+		TimedCachedObject to = new TimedCachedObject(S.json.toJson(sessionObj), key, now);
+		if (map.putIfAbsent(sessionId, to) != null) {
+			return false;
 		}
-		String oldSession = userSessionMap.put(singleKey(userId, type), sessionId);
-		if (oldSession != null) {
-			keyMap.remove(oldSession);
-			map.remove(oldSession);
+		if (!singleLogin) {
+			return true;
 		}
+		String oldSessionId = userSessionMap.put(singleKey(sessionObj.getUserId()), sessionId);
+		if (oldSessionId != null) {
+			map.remove(oldSessionId);
+		}
+		return true;
 	}
 
 	public LocalUserSession() {
 		Log.get("sumk.http").info("use local user session");
-		long seconds = AppInfo.getInt("sumk.http.localsession.period", 60);
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
-			Set<String> set = map.keySet();
-			long now = System.currentTimeMillis();
-			for (String key : set) {
-				TimedObject t = map.get(key);
-				if (t == null) {
-					continue;
-				}
-				if (now > t.getEvictTime()) {
-					map.remove(key);
-					keyMap.remove(key);
-				}
-			}
-		}, seconds, seconds, TimeUnit.SECONDS);
+		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(
+				() -> CacheHelper.expire(map, HttpSettings.httpSessionTimeoutInMs()), seconds, seconds,
+				TimeUnit.SECONDS);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public <T extends SessionObject> T getUserObject(Class<T> clz) {
-		String sid = HttpContextHolder.sessionId();
+	protected TimedCachedObject loadUserObject(String sid) {
 		if (sid == null) {
 			return null;
 		}
-		TimedObject to = map.get(sid);
+		TimedCachedObject to = map.get(sid);
 		if (to == null) {
 			return null;
 		}
-		return (T) to.getTarget();
+		long now = System.currentTimeMillis();
+		if (to.refreshTime + HttpSettings.httpSessionTimeoutInMs() < now) {
+			map.remove(sid);
+			return null;
+		}
+		to.refreshTime = now;
+		return to;
 	}
 
 	@Override
-	public void flushSession() {
-		String sid = HttpContextHolder.sessionId();
-		if (sid == null) {
-			return;
-		}
-		TimedObject to = map.get(sid);
+	public <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
+		TimedCachedObject to = this.loadUserObject(sessionId);
 		if (to == null) {
-			return;
+			return null;
 		}
-		to.setEvictTime(
-				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpContextHolder.getType()) * 1000);
-
+		return S.json.fromJson(to.getJson(), clz);
 	}
 
 	@Override
-	public void setSession(String sessionId, SessionObject sessionObj) {
-		TimedObject to = new TimedObject();
-		to.setTarget(sessionObj);
-		to.setEvictTime(
-				System.currentTimeMillis() + HttpSettings.httpSessionTimeout(HttpContextHolder.getType()) * 1000);
-		map.put(sessionId, to);
-	}
-
-	@Override
-	public void removeSession() {
-		String sessionId = HttpContextHolder.sessionId();
+	public void removeSession(String sessionId) {
 		if (sessionId == null) {
 			return;
 		}
 		map.remove(sessionId);
-		keyMap.remove(sessionId);
 	}
 
 	@Override
 	public byte[] getKey(String sid) {
-		return this.keyMap.get(sid);
-	}
-
-	@Override
-	public void updateSession(SessionObject sessionObj) {
-		String sessionId = HttpContextHolder.sessionId();
-		if (sessionId == null) {
-			return;
+		TimedCachedObject to = this.loadUserObject(sid);
+		if (to == null) {
+			return null;
 		}
-		setSession(sessionId, sessionObj);
+		return to.getKey();
 	}
 
 	@Override
-	public boolean isLogin(String userId, String type) {
+	public boolean isLogin(String userId) {
 		if (StringUtil.isEmpty(userId)) {
 			return false;
 		}
-		return this.userSessionMap.containsKey(singleKey(userId, type));
+		return this.userSessionMap.containsKey(singleKey(userId));
 	}
 
 	@Override
-	public String getUserId() {
-		SessionObject obj = this.getUserObject(SessionObject.class);
-		if (obj == null) {
-			return null;
-		}
-		return obj.getUserId();
+	public int localCacheSize() {
+		return this.map.size();
 	}
 
 }

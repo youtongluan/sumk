@@ -23,7 +23,14 @@ public final class RedisCounter implements SeqCounter {
 
 	@Override
 	public int count(String name) {
-		return redis.incr("SEQ_GLOBAL_FOR_ALL").intValue();
+		if (name == null || name.isEmpty()) {
+			return redis.incr("__SEQ_GLOBAL_FOR_ALL").intValue();
+		}
+		Redis r = RedisPool.getRedisExactly(name);
+		if (r == null) {
+			r = this.redis;
+		}
+		return r.incr("__SEQ_GLOBAL_FOR_ALL").intValue();
 	}
 
 	public RedisCounter(Redis redis) {

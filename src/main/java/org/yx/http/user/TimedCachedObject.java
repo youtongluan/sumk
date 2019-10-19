@@ -15,33 +15,36 @@
  */
 package org.yx.http.user;
 
-/**
- * 用户session,要有无构造参数的构造函数。
- */
-public class SessionObject {
+import java.util.Objects;
 
-	protected String userId;
-	protected long loginTime;
+public class TimedCachedObject {
+	long refreshTime;
+	final String json;
+	final byte[] key;
 
-	/**
-	 * 返回用户id
-	 * 
-	 * @return 用户id，不能为null
-	 */
-	public String getUserId() {
-		return userId;
+	public TimedCachedObject(String json, byte[] key, long refreshTime) {
+		this.json = Objects.requireNonNull(json);
+		this.key = Objects.requireNonNull(key);
+		this.refreshTime = refreshTime;
 	}
 
-	public void setUserId(String userId) {
-		this.userId = userId;
+	public long getRefreshTime() {
+		return refreshTime;
 	}
 
-	public long getLoginTime() {
-		return loginTime;
+	public String getJson() {
+		return json;
 	}
 
-	public void setLoginTime(long loginTime) {
-		this.loginTime = loginTime;
+	public byte[] getKey() {
+		return key;
 	}
 
+	public void setRefreshTime(long refreshTime) {
+		this.refreshTime = refreshTime;
+	}
+
+	public final boolean isExpired(long duration, long now) {
+		return this.refreshTime + duration < now;
+	}
 }

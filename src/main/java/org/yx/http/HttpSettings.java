@@ -29,20 +29,8 @@ public class HttpSettings {
 		return AppInfo.getBoolean("sumk.http.header.usecookie", true);
 	}
 
-	public static int httpSessionTimeout(String type) {
-		int timeout = AppInfo.getInt("sumk.http.session.timeout", 3600);
-		if (type == null || type.isEmpty()) {
-			return timeout;
-		}
-		return AppInfo.getInt("sumk.http.session.timeout." + type, timeout);
-	}
-
-	public static int singleSessionTimeout(String type) {
-		int timeout = AppInfo.getInt("sumk.http.session.single.timeout", 3600 * 24);
-		if (type == null || type.isEmpty()) {
-			return timeout;
-		}
-		return AppInfo.getInt("sumk.http.session.single.timeout." + type, timeout);
+	public static long httpSessionTimeoutInMs() {
+		return 1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30);
 	}
 
 	public static boolean isUploadEnable() {

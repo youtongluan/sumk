@@ -32,16 +32,6 @@ public final class HttpUtil {
 	}
 
 	/**
-	 * 设置session中的对象，如果原来已经存在，会覆盖原来的
-	 * 
-	 * @param sessionObj
-	 *            要设置的session对象
-	 */
-	public static void setUserObject(SessionObject sessionObj) {
-		WebSessions.updateUserObject(sessionObj);
-	}
-
-	/**
 	 * 移除session内容
 	 */
 	public static void removeUserObject() {
@@ -88,5 +78,13 @@ public final class HttpUtil {
 
 	public static Charset charset() {
 		return InnerHttpUtil.charset(getHttpRequest());
+	}
+
+	public static String getUserId() {
+		SessionObject obj = getUserObject(SessionObject.class);
+		if (obj == null) {
+			return null;
+		}
+		return obj.getUserId();
 	}
 }

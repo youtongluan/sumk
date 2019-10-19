@@ -34,7 +34,17 @@ public class HttpLoginWrapper extends HttpServlet {
 
 	private LoginServlet[] servs = new LoginServlet[0];
 
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	@Override
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		handle(req, resp);
+	}
+
+	@Override
+	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		handle(req, resp);
+	}
+
+	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		String type = InnerHttpUtil.getType(req);
 		for (LoginServlet s : this.servs) {
 			if (s.acceptType(type)) {

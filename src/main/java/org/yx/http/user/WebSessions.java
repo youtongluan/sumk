@@ -18,6 +18,7 @@ package org.yx.http.user;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Log;
 import org.yx.redis.Redis;
@@ -46,7 +47,7 @@ public class WebSessions {
 	}
 
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
-		return loadUserSession().getUserObject(clz);
+		return loadUserSession().getUserObject(HttpContextHolder.sessionId(), clz);
 	}
 
 	public static void remove() {
@@ -55,11 +56,7 @@ public class WebSessions {
 			Log.get("sumk.session").debug("has removed");
 			return;
 		}
-		session.removeSession();
-	}
-
-	public static void updateUserObject(SessionObject sessionObj) {
-		loadUserSession().updateSession(sessionObj);
+		session.removeSession(HttpContextHolder.sessionId());
 	}
 
 	public static boolean isSingleLogin(String type) {
@@ -74,10 +71,17 @@ public class WebSessions {
 		if (session != null) {
 			return;
 		}
-		Redis redis = RedisPool.getRedisExactly(RedisConfig.SESSION);
 		HttpSessionFactory factory = IOC.get(HttpSessionFactory.class);
 		if (factory == null) {
-			factory = () -> redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
+			factory = () -> {
+				try {
+					Redis redis = RedisPool.getRedisExactly(RedisConfig.SESSION);
+					return redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
+				} catch (NoClassDefFoundError e) {
+					Log.get("sumk.http").debug("use local session because redis cannot load", e);
+					return new LocalUserSession();
+				}
+			};
 		}
 		session = factory.create();
 	}

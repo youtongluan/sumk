@@ -41,6 +41,14 @@ public class Monitors {
 		sb.append("start at : " + SumkDate.of(startTime).to_yyyy_MM_dd_HH_mm_ss_SSS()).append(LN)
 				.append("run(ms) : " + ms).append(LN).append("localip : " + AppInfo.getIp()).append(LN)
 				.append("pid : " + AppInfo.pid()).append(LN);
+		String v = AppInfo.groupId(null);
+		if (v != null) {
+			sb.append("groupId : " + v).append(LN);
+		}
+		v = AppInfo.appId(null);
+		if (v != null) {
+			sb.append("appId : " + v).append(LN);
+		}
 		return sb.toString();
 	}
 

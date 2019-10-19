@@ -67,3 +67,9 @@ v2.5.0
 5、HttpUtil增加获取request和response的方法
 6、优化字节码处理
 
+v2.5.1
+1、优化分布式session的存取性能
+2、去掉http对redis的显式依赖
+3、去掉session中对象的修改功能
+4、去掉session根据不同客户端类型定制超时时间的功能
+

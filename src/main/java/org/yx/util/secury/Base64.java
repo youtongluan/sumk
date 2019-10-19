@@ -18,6 +18,8 @@ package org.yx.util.secury;
 import java.util.Base64.Decoder;
 import java.util.Base64.Encoder;
 
+import org.yx.conf.AppInfo;
+
 public final class Base64 {
 
 	private Base64() {
@@ -48,7 +50,7 @@ public final class Base64 {
 	 * @return 明文
 	 */
 	public byte[] decode(String src) {
-		return decoder.decode(src);
+		return decoder.decode(src.getBytes(AppInfo.UTF8));
 	}
 
 	public byte[] encode(byte[] src) {
@@ -56,6 +58,6 @@ public final class Base64 {
 	}
 
 	public String encodeToString(byte[] src) {
-		return encoder.encodeToString(src);
+		return new String(encoder.encode(src), AppInfo.UTF8);
 	}
 }

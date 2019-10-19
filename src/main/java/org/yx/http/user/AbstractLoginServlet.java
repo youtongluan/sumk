@@ -23,6 +23,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeader;
 import org.yx.http.HttpSettings;
@@ -42,25 +43,30 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		final long begin = System.currentTimeMillis();
 		boolean success = false;
-		String user = req.getParameter(userName());
-		final String sid = createSessionId(req);
 		try {
+			resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
+			final String sid = createSessionId(req);
+			String user = getUserName(req);
 			LoginObject obj = login(sid, user, req);
-
 			Charset charset = InnerHttpUtil.charset(req);
 			if (obj == null) {
-				Log.get("sumk.loginAction").info(user + ":login Object must not be null");
+				Log.get("sumk.http.login").info("{}:login Object must not be null", user);
 				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
-				Log.get("sumk.loginAction").debug(user + ":" + obj.getErrorMsg());
+				Log.get("sumk.http.login").debug("{} : {}", user, obj.getErrorMsg());
 				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			String userId = obj.getUserId();
-			session.putKey(sid, key, userId, this.getType(req));
+			boolean singleLogin = WebSessions.isSingleLogin(this.getType(req));
+			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
+				Log.get("sumk.http.login").debug("{} :sid:{} login failed", user, sid);
+				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login failed", charset);
+				return;
+			}
+			String userId = obj.getSessionObject().getUserId();
 			resp.setHeader(HttpHeader.SESSIONID, sid);
 			if (StringUtil.isNotEmpty(userId)) {
 				resp.setHeader(HttpHeader.TOKEN, userId);
@@ -79,16 +85,21 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			}
 
 			resp.getOutputStream().write(new byte[] { '\t', '\n' });
-			if (obj.getJson() != null) {
-				resp.getOutputStream().write(obj.getJson().getBytes(charset));
+			if (obj.getResponseData() != null) {
+				resp.getOutputStream().write(obj.getResponseData().getBytes(charset));
 			}
 			success = true;
 		} catch (Exception e) {
 			Log.get("sumk.http.login").error(e.toString(), e);
+			InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login fail", AppInfo.UTF8);
 		} finally {
 			InnerHttpUtil.act(LOGIN_NAME, System.currentTimeMillis() - begin, success);
 		}
 
+	}
+
+	protected String getUserName(HttpServletRequest req) {
+		return req.getParameter(AppInfo.get("sumk.http.username", "username"));
 	}
 
 	protected void setSessionCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String attr) {
@@ -114,10 +125,6 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	protected byte[] createEncryptKey(HttpServletRequest req) {
 		byte[] key = UUIDSeed.seq().substring(4).getBytes();
 		return key;
-	}
-
-	protected String userName() {
-		return "username";
 	}
 
 	protected String createSessionId(HttpServletRequest req) {
