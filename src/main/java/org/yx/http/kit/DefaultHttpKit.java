@@ -24,9 +24,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.http.ErrorResp;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpGson;
 import org.yx.http.HttpHeader;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpSettings;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
@@ -57,7 +57,7 @@ public class DefaultHttpKit implements HttpKit {
 	}
 
 	public void error(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
-		resp.setStatus(HttpSettings.ERROR_HTTP_STATUS);
+		resp.setStatus(HttpSettings.getErrorHttpStatus());
 		ErrorResp r = new ErrorResp();
 		r.setCode(code);
 		r.setMessage(errorMsg);

@@ -15,12 +15,11 @@
  */
 package org.yx.http;
 
-import org.yx.conf.AppInfo;
 import org.yx.exception.ErrorCode;
 
 /**
  * 3位数的错误码，为系统所保留，应用系统的错误码，要避开这个区间。客户端可以对这些异常码做额外处理，尤其是登录相关部分<BR>
- * 用户异常码推荐4位数，BizException中的code会对应http的异常码。<BR>
+ * 用户异常码推荐4位数，BizException中的code会对应http中json的异常码。<BR>
  * 这个错误码对应于http请求的返回码499时的异常码。它是body里的错误码（json格式）.<BR>
  * 只要有异常发生，http的状态码固定为499，json有2个默认字段code、message，其中code为int类型<BR>
  */
@@ -52,12 +51,12 @@ public interface HttpErrorCode extends ErrorCode {
 	/**
 	 * 参数验证错误
 	 */
-	int VALIDATE_ERROR = AppInfo.getInt("sumk.http.errorcode.validate", 910);
+	int VALIDATE_ERROR = 910;
 
 	/**
 	 * type类型错误
 	 */
-	int TYPE_ERROR = AppInfo.getInt("sumk.http.errorcode.type", 920);
+	int TYPE_ERROR = 920;
 
 	/**
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用

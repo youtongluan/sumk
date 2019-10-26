@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,11 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.yx.conf.AppInfo;
-
 /**
  * 本类的许多方法都会对key、value做trim()处理
  */
+
 public class CollectionUtil {
 
 	@SafeVarargs
@@ -64,7 +64,7 @@ public class CollectionUtil {
 		if (in == null) {
 			return null;
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		return loadMap(reader, keepNullValue);
 	}
 
@@ -129,7 +129,7 @@ public class CollectionUtil {
 		if (in == null) {
 			return Collections.emptyList();
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
+		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 		List<String> list = new ArrayList<>();
 		try {
 			String line = null;

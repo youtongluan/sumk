@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.common.GsonHelper;
+import org.yx.common.Monitors;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
@@ -75,7 +76,20 @@ public class ActInfomation extends HttpServlet {
 			write(resp, gson.toJson(list), pretty);
 			return;
 		}
+		if (mode.equals("beans")) {
+			write(resp, beans(), pretty);
+			return;
+		}
+	}
 
+	private String beans() {
+		List<String> names = Monitors.beans();
+		StringBuilder sb = new StringBuilder();
+		sb.append("##beans:").append(names.size()).append(Monitors.LN);
+		for (String name : names) {
+			sb.append(name).append(Monitors.LN);
+		}
+		return sb.toString();
 	}
 
 	private void write(HttpServletResponse resp, String msg, boolean pretty) throws IOException {

@@ -19,40 +19,15 @@ import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.yx.conf.AppInfo;
 
 public final class Log {
-	private static volatile LogType logType = LogType.slf4j;
+	public static final String ROOT = "";
+	private static LogType logType = LogType.slf4j;
 
 	private Log() {
 	}
 
-	static {
-		try {
-			String type = AppInfo.get("sumk.log.type", null);
-			if (type != null && type.length() > 0) {
-				type = type.trim().toLowerCase();
-				Log.setLogType(LogType.valueOf(type));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	static LogType logType() {
-		return logType;
-	}
-
-	public static LogType updateLogType() {
-		try {
-			String type = AppInfo.get("sumk.log.type", null);
-			if (type != null && type.length() > 0) {
-				type = type.trim().toLowerCase();
-				Log.setLogType(LogType.valueOf(type));
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+	public static LogType logType() {
 		return logType;
 	}
 
@@ -70,8 +45,8 @@ public final class Log {
 	}
 
 	public static Logger get(String module) {
-		if (module == null || module.isEmpty()) {
-			module = "root";
+		if (module == null) {
+			module = "";
 		}
 		if (logType == LogType.slf4j) {
 			return LoggerFactory.getLogger(module);

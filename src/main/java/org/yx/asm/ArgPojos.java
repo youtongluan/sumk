@@ -38,7 +38,7 @@ public class ArgPojos {
 	public static Class<? extends ArgPojo> create(MethodParamInfo p) throws Exception {
 		final Method method = p.getMethod();
 		String fullName = String.join("_", p.getDeclaringClass().getSimpleName(), method.getName(), UUIDSeed.seq());
-		Log.get("sumk.asm").debug("begin generate paramters pojo :{}", fullName);
+		Log.get("sumk.asm").trace("begin generate paramters pojo :{}", fullName);
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
 		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",

@@ -16,9 +16,6 @@
 package org.yx.http;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -33,29 +30,10 @@ import org.yx.exception.BizException;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogHolder;
-import org.yx.util.StringUtil;
 
 public abstract class AbstractHttpServer extends HttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
-	private static Set<String> FUSING = Collections.emptySet();
-
-	static {
-
-		AppInfo.addObserver(info -> {
-			String fusing = AppInfo.get("sumk.http.fusing", null);
-			if (fusing == null) {
-				FUSING = Collections.emptySet();
-			} else {
-				Set<String> set = new HashSet<>();
-				String[] fs = StringUtil.toLatin(fusing).split(",");
-				for (String f : fs) {
-					set.add(f.trim());
-				}
-				FUSING = set;
-			}
-		});
-	}
 
 	protected Logger log = SumkLogs.HTTP_LOG;
 
@@ -80,7 +58,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确", req);
 				return;
 			}
-			if (FUSING.contains(act)) {
+			if (HttpSettings.getFusing().contains(act)) {
 				log.error("{} is in fusing", act);
 				errorAndLog(resp, HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"), req);
 				return;

@@ -15,7 +15,6 @@
  */
 package org.yx.log;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,13 +23,13 @@ import java.util.function.Consumer;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
 
-public class Loggers {
-	public static final String ROOT = "root";
-	private LogLevel DEFAULT_LEVEL = LogLevel.INFO;
-	private Map<String, LogLevel> levelMap = new HashMap<>();
+public final class Loggers {
+	private static final String ROOT = "";
+	private static LogLevel DEFAULT_LEVEL = LogLevel.INFO;
+
+	private static Map<String, LogLevel> levelMap = new HashMap<>();
 
 	private Map<String, SumkLogger> map = new ConcurrentHashMap<>();
-	private static Loggers[] INSTS = new Loggers[0];
 	private final String name;
 
 	private Loggers(String name) {
@@ -44,10 +43,10 @@ public class Loggers {
 
 	private static final Consumer<SystemConfig> observer = info -> {
 		try {
-			if (INSTS.length == 0) {
+			String temp = AppInfo.getLatin("sumk.log.level", null);
+			if (temp == null) {
 				return;
 			}
-			String temp = AppInfo.getLatin("sumk.log.level", "info");
 			String[] levelStrs = temp.replace(';', ',').split(",");
 			Map<String, LogLevel> newLevels = new HashMap<>();
 			for (String levelStr : levelStrs) {
@@ -67,9 +66,7 @@ public class Loggers {
 					System.err.println(levelStr + " is not valid name:level format");
 				}
 			}
-			for (Loggers logger : INSTS) {
-				logger.resetLevel(newLevels);
-			}
+			Loggers.resetLevel(newLevels);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -79,17 +76,11 @@ public class Loggers {
 	}
 
 	public static synchronized Loggers create(String name) {
-		Loggers l = new Loggers(name);
-		Loggers[] rss = new Loggers[INSTS.length + 1];
-		System.arraycopy(INSTS, 0, rss, 0, INSTS.length);
-		rss[rss.length - 1] = l;
-		INSTS = rss;
-		observer.accept(null);
-		System.out.println("loggers insts:" + Arrays.toString(INSTS));
-		return l;
+		System.out.println("create loggers " + name);
+		return new Loggers(name);
 	}
 
-	private LogLevel level(String logName) {
+	private LogLevel getLevel(String logName) {
 		int index = 0;
 		while (logName.length() > 0) {
 			LogLevel level = levelMap.get(logName);
@@ -105,7 +96,7 @@ public class Loggers {
 		return DEFAULT_LEVEL;
 	}
 
-	public void setDefaultLevel(LogLevel level) {
+	public static void setDefaultLevel(LogLevel level) {
 		if (level != null) {
 			DEFAULT_LEVEL = level;
 		}
@@ -124,14 +115,13 @@ public class Loggers {
 		if (name == null || name.isEmpty()) {
 			return DEFAULT_LEVEL;
 		}
-		return level(name);
+		return getLevel(name);
 	}
 
-	public synchronized void resetLevel(Map<String, LogLevel> newLevels) {
+	public synchronized static void resetLevel(Map<String, LogLevel> newLevelMap) {
+		Map<String, LogLevel> newLevels = new HashMap<>(newLevelMap);
 		LogLevel defaultLevel = newLevels.remove(ROOT);
-		if (defaultLevel != null) {
-			DEFAULT_LEVEL = defaultLevel;
-		}
+		DEFAULT_LEVEL = defaultLevel == null ? LogLevel.INFO : defaultLevel;
 		levelMap = newLevels;
 	}
 }

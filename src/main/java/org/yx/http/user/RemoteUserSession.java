@@ -58,8 +58,8 @@ public class RemoteUserSession implements UserSession {
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
 		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
 			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
-			if (duration > HttpSettings.httpSessionTimeoutInMs()) {
-				duration = HttpSettings.httpSessionTimeoutInMs();
+			if (duration > HttpSettings.getHttpSessionTimeoutInMs()) {
+				duration = HttpSettings.getHttpSessionTimeoutInMs();
 			}
 			duration -= cache.size() * 10;
 			if (duration < this.noFreshTime) {
@@ -99,7 +99,7 @@ public class RemoteUserSession implements UserSession {
 		}
 
 		if (to.refreshTime + this.noFreshTime < now) {
-			long durationInMS = HttpSettings.httpSessionTimeoutInMs();
+			long durationInMS = HttpSettings.getHttpSessionTimeoutInMs();
 			Long v = redis.pexpire(bigKey, durationInMS);
 			if (v == null || v.intValue() == 0) {
 				cache.remove(sid);
@@ -150,7 +150,7 @@ public class RemoteUserSession implements UserSession {
 
 	@Override
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
-		long sessionTimeout = HttpSettings.httpSessionTimeoutInMs();
+		long sessionTimeout = HttpSettings.getHttpSessionTimeoutInMs();
 		byte[] bigKey = this.bigKey(sessionId);
 		String json = S.json.toJson(sessionObj);
 		String key2 = S.base64.encodeToString(key);

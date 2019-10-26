@@ -69,7 +69,7 @@ public class LocalUserSession implements UserSession {
 		Log.get("sumk.http").info("use local user session");
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
 		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(
-				() -> CacheHelper.expire(map, HttpSettings.httpSessionTimeoutInMs()), seconds, seconds,
+				() -> CacheHelper.expire(map, HttpSettings.getHttpSessionTimeoutInMs()), seconds, seconds,
 				TimeUnit.SECONDS);
 	}
 
@@ -82,7 +82,7 @@ public class LocalUserSession implements UserSession {
 			return null;
 		}
 		long now = System.currentTimeMillis();
-		if (to.refreshTime + HttpSettings.httpSessionTimeoutInMs() < now) {
+		if (to.refreshTime + HttpSettings.getHttpSessionTimeoutInMs() < now) {
 			map.remove(sid);
 			return null;
 		}

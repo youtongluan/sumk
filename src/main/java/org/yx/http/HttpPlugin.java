@@ -16,6 +16,9 @@
 package org.yx.http;
 
 import java.lang.reflect.Constructor;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
@@ -57,6 +60,23 @@ public class HttpPlugin implements Plugin {
 		if (!SumkServer.isHttpEnable()) {
 			return;
 		}
+		HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
+
+		AppInfo.addObserver(info -> {
+			HttpSettings.setCookieEnable(AppInfo.getBoolean("sumk.http.header.usecookie", true));
+			HttpSettings.setHttpSessionTimeoutInMs(1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30));
+			String fusing = AppInfo.get("sumk.http.fusing", null);
+			if (fusing == null) {
+				HttpSettings.setFusing(Collections.emptySet());
+			} else {
+				Set<String> set = new HashSet<>();
+				String[] fs = StringUtil.toLatin(fusing).split(",");
+				for (String f : fs) {
+					set.add(f.trim());
+				}
+				HttpSettings.setFusing(set);
+			}
+		});
 		try {
 			HttpHandlerChain.inst.setHandlers(IOC.get(RestHandlerFactorysBean.class).create());
 			if (HttpSettings.isUploadEnable()) {

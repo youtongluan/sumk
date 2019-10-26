@@ -15,6 +15,7 @@
  */
 package org.yx.conf;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -43,7 +44,7 @@ public class MapConfig implements SystemConfig {
 
 	@Override
 	public Set<String> keys() {
-		return map.keySet();
+		return new HashSet<>(map.keySet());
 	}
 
 	public MapConfig put(String k, String v) {

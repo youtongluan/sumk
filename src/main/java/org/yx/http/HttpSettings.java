@@ -17,23 +17,55 @@ package org.yx.http;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Set;
 
 import org.yx.conf.AppInfo;
 
-public class HttpSettings {
+public final class HttpSettings {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
-	public static final int ERROR_HTTP_STATUS = AppInfo.getInt("sumk.http.errorcode", 499);
+	private static int errorHttpStatus;
 
-	public static boolean isCookieEnable() {
-		return AppInfo.getBoolean("sumk.http.header.usecookie", true);
+	private static Set<String> fusing = Collections.emptySet();
+	private static long httpSessionTimeoutInMs;
+	private static boolean cookieEnable;
+
+	public static int getErrorHttpStatus() {
+		return errorHttpStatus;
 	}
 
-	public static long httpSessionTimeoutInMs() {
-		return 1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30);
+	public static void setErrorHttpStatus(int errorHttpStatus) {
+		HttpSettings.errorHttpStatus = errorHttpStatus;
+	}
+
+	public static Set<String> getFusing() {
+		return fusing;
+	}
+
+	public static long getHttpSessionTimeoutInMs() {
+		return httpSessionTimeoutInMs;
+	}
+
+	public static boolean isCookieEnable() {
+		return cookieEnable;
 	}
 
 	public static boolean isUploadEnable() {
 		return AppInfo.getBoolean("sumk.http.upload.enable", true);
 	}
+
+	public static void setCookieEnable(boolean cookieEnable) {
+		HttpSettings.cookieEnable = cookieEnable;
+	}
+
+	public static void setFusing(Set<String> fusing) {
+		HttpSettings.fusing = Objects.requireNonNull(fusing);
+	}
+
+	public static void setHttpSessionTimeoutInMs(long httpSessionTimeoutInMs) {
+		HttpSettings.httpSessionTimeoutInMs = httpSessionTimeoutInMs;
+	}
+
 }

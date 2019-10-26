@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -57,7 +58,7 @@ public class NamePairs {
 	}
 
 	public Set<String> keys() {
-		return this.map.keySet();
+		return new HashSet<>(this.map.keySet());
 	}
 
 	public InputStream toInputStream() {

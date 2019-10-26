@@ -18,12 +18,16 @@ package org.yx.common;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import org.yx.bean.InnerIOC;
 import org.yx.conf.AppInfo;
 import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
@@ -119,5 +123,15 @@ public class Monitors {
 		sb.append(", idle timeout(ms) : ").append(pool.getKeepAliveTime(TimeUnit.MILLISECONDS));
 		sb.append(LN);
 		return sb.toString();
+	}
+
+	public static List<String> beans() {
+		Collection<Object> beans = InnerIOC.beans();
+		List<String> names = new ArrayList<>();
+		for (Object obj : beans) {
+			names.add(obj.getClass().getName());
+		}
+		Collections.sort(names);
+		return names;
 	}
 }

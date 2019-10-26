@@ -79,7 +79,7 @@ public final class AppInfo {
 		}
 		if (info == null) {
 			try {
-				info = new AppPropertiesInfo();
+				info = new AppConfig();
 			} catch (Exception e) {
 				SimpleLoggerHolder.error("sumk.conf", e);
 				System.exit(-1);
@@ -245,7 +245,10 @@ public final class AppInfo {
 		Map<String, String> map = new HashMap<>();
 		for (String name : info.keys()) {
 			if (name.startsWith(prefix)) {
-				map.put(name.substring(len), info.get(name));
+				String v = info.get(name);
+				if (v != null) {
+					map.put(name.substring(len), v);
+				}
 			}
 		}
 		return map;

@@ -24,7 +24,7 @@ import java.util.Enumeration;
 import org.yx.conf.AppInfo;
 import org.yx.log.SimpleLoggerHolder;
 
-public class Loader {
+public final class Loader {
 
 	public static <T> T newInstance(Class<T> clz) throws Exception {
 		Constructor<T> c = clz.getDeclaredConstructor();

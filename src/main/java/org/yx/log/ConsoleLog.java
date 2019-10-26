@@ -20,15 +20,7 @@ import org.yx.util.SumkDate;
 
 public class ConsoleLog extends SumkLogger {
 
-	public static final LogLevel DEBUG = LogLevel.DEBUG;
-	public static final LogLevel TRACE = LogLevel.TRACE;
 	private static final Loggers loggers = Loggers.create("ConsoleLog");
-
-	public static void setDefaultLevel(LogLevel logLevel) {
-		if (logLevel != null) {
-			loggers.setDefaultLevel(logLevel);
-		}
-	}
 
 	public static SumkLogger get(String name) {
 		SumkLogger log = loggers.get(name);

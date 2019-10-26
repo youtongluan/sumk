@@ -11,10 +11,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.yx.common.StartConstants;
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.log.LogLevel;
 import org.yx.log.LogType;
+import org.yx.log.Loggers;
 import org.yx.main.SumkServer;
 import org.yx.rpc.client.LockHolder;
 import org.yx.rpc.client.Rpc;
@@ -26,7 +26,7 @@ public class RpcPressTest {
 	public void before(){
 		SumkServer.start(StartConstants.NOHTTP,StartConstants.NOSOA);
 		Log.setLogType(LogType.console);
-		ConsoleLog.setDefaultLevel(LogLevel.ERROR);//这个只能修改默认级别的，如果有具体设置了日志级别，它的优先级比这个高
+		Loggers.setDefaultLevel(LogLevel.ERROR);//这个只能修改默认级别的，如果有具体设置了日志级别，它的优先级比这个高
 		Rpc.init();
 	}
 	

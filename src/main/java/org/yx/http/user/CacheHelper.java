@@ -37,8 +37,8 @@ public final class CacheHelper {
 				map.remove(key);
 			}
 		}
-		if (log.isDebugEnabled()) {
-			log.debug("catch size from {} to {},duration:{}", beginSize, map.size(), duration);
+		if (log.isTraceEnabled()) {
+			log.trace("catch size from {} to {},duration:{}", beginSize, map.size(), duration);
 			;
 		}
 	}
