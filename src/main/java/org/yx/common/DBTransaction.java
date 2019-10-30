@@ -45,7 +45,7 @@ public class DBTransaction {
 
 	public void rollback(Throwable e) {
 		if (BizException.class.isInstance(e)) {
-			Log.get("sumk.SYS").info("code:{},message:{}", BizException.class.cast(e).getCode(), e.getMessage());
+			Log.get("sumk.error").warn(e.toString());
 		} else {
 			Log.printStack(SumkLogs.SQL_ERROR, e);
 		}

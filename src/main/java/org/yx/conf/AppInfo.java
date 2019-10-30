@@ -25,7 +25,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.yx.bean.Loader;
-import org.yx.log.Log;
 import org.yx.log.SimpleLoggerHolder;
 import org.yx.rpc.LocalhostUtil;
 import org.yx.util.StringUtil;
@@ -131,7 +130,7 @@ public final class AppInfo {
 		try {
 			return LocalhostUtil.getLocalIP();
 		} catch (Exception e) {
-			Log.printStack("sumk.error", e);
+			SimpleLoggerHolder.inst().error("sumk.error", e.getMessage(), e);
 		}
 		return "0.0.0.0";
 	}
@@ -222,7 +221,7 @@ public final class AppInfo {
 			return UTF8;
 		}
 		if (!Charset.isSupported(charsetName)) {
-			Log.get("sumk.SYS").error("charset '{}' is not supported", charsetName);
+			SimpleLoggerHolder.inst().error("sumk.conf", "charset '" + charsetName + "' is not supported");
 			return UTF8;
 		}
 		return Charset.forName(charsetName);

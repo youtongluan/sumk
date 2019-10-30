@@ -17,8 +17,6 @@ package org.yx.common.thread;
 
 public interface ThresholdExecutor {
 
-	static final int DEFAULT_THRESHOLD = 100000;
-
 	void execute(Runnable command, int priority);
 
 	int threshold();

@@ -76,3 +76,9 @@ v2.5.1
 v2.5.2
 1、去掉sumk.log.type参数，如果要切换日志类型需要手工调用api（这个是冷门需求）
 2、将app.properties的获取机制简单化
+
+v2.5.3
+1、将HttpUtil改名为WebUtil
+2、调整app.properties的更新频率为1分钟。上一版错误的将1秒钟的间隔（测试用）发布出去
+3、允许动态调整核心线程池的容量
+4、去掉SimpleBizException类，将BizException的构造方法改为私有，改为使用create方法创建

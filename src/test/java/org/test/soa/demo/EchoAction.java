@@ -9,6 +9,11 @@ import org.yx.annotation.rpc.Soa;
 @Bean
 public class EchoAction {
 
+	@Soa("a.b.repeat")
+	public String repeat(String s){
+		return s;
+	}
+	
 	@Soa
 	public List<String> echo(String echo, List<String> names) {
 

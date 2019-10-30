@@ -39,6 +39,11 @@ public class SimpleLoggerHolder {
 				e.printStackTrace();
 			}
 		}
+
+		@Override
+		public void error(String module, String msg) {
+			System.out.println(msg);
+		}
 	};
 
 	public static SimpleLogger inst() {

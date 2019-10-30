@@ -20,24 +20,21 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yx.common.Daemon;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
-import org.yx.common.thread.ThresholdThreadPool;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.ErrorCode;
-import org.yx.exception.SimpleBizException;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 
 public final class SumkThreadPool {
 
-	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
-			AppInfo.getInt("sumk.schedule.thread", 2), new ThreadFactory() {
+	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
+			new ThreadFactory() {
 				private final AtomicInteger threadNumber = new AtomicInteger(1);
 
 				@Override
@@ -52,7 +49,7 @@ public final class SumkThreadPool {
 				}
 			});
 
-	private static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", "sumk.pool", 50, 500);
+	private static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", 50, 500, 30000);
 
 	public static ScheduledThreadPoolExecutor scheduledExecutor() {
 		return scheduledExecutor;
@@ -62,27 +59,10 @@ public final class SumkThreadPool {
 		return EXECUTOR;
 	}
 
-	public static final BizException THREAD_THRESHOLD_OVER = new SimpleBizException(ErrorCode.THREAD_THRESHOLD_OVER,
+	public static final BizException THREAD_THRESHOLD_OVER = BizException.create(ErrorCode.THREAD_THRESHOLD_OVER,
 			"系统限流降级");
 
 	private static List<Thread> deamonThreads = new ArrayList<>();
-	static {
-		scheduledExecutor.scheduleAtFixedRate(() -> {
-
-			int threshold = AppInfo.getInt("sumk.threadpool.threshold", -1);
-			if (threshold > 0) {
-				EXECUTOR.threshold(threshold);
-				return;
-			}
-			if (!ThresholdThreadPool.class.isInstance(EXECUTOR)) {
-				return;
-			}
-			ThresholdThreadPool pool = (ThresholdThreadPool) EXECUTOR;
-			threshold = pool.getPoolSize() + pool.getQueue().size();
-			EXECUTOR.threshold(threshold);
-			Log.get("sumk.thread").trace("set pool threshold to {}", threshold);
-		}, 0, 5, TimeUnit.SECONDS);
-	}
 
 	public static synchronized void runDeamon(Daemon deamon, String threadName) {
 		if (SumkServer.isDestoryed()) {

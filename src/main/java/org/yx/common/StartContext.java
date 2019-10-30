@@ -61,8 +61,7 @@ public class StartContext {
 	}
 
 	public static void clear() {
-		inst.map = null;
-		inst = null;
+		inst.map = new ConcurrentHashMap<>();
 	}
 
 	public static void startFail() {

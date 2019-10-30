@@ -23,24 +23,35 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 
+import org.yx.log.SimpleLoggerHolder;
+import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 
 public class AppConfig implements SystemConfig {
 
 	protected boolean started;
 	protected final String fileName;
+	protected final int periodTime;
 	protected Map<String, String> map = new HashMap<>();
-	protected int periodTime = 1000 * 1;
 	protected boolean showLog = true;
+	protected ScheduledFuture<?> future;
 
 	public AppConfig() {
 		this(System.getProperty("appinfo", "app.properties"));
 	}
 
 	public AppConfig(String fileName) {
-		this.fileName = fileName;
+		this(fileName, 1000 * 60);
+	}
+
+	public AppConfig(String fileName, int periodTimeMS) {
+		this.fileName = Objects.requireNonNull(fileName);
+		this.periodTime = Math.max(periodTimeMS, 1000);
 	}
 
 	private InputStream openInputStream() throws FileNotFoundException {
@@ -52,31 +63,25 @@ public class AppConfig implements SystemConfig {
 		if (f.exists()) {
 			return new FileInputStream(f);
 		}
+		SimpleLoggerHolder.inst().info("sumk.conf", "can not found " + this.fileName);
 		return null;
 	}
 
 	private void handle() {
 		try (InputStream in = openInputStream()) {
+			if (in == null) {
+				return;
+			}
 			Map<String, String> conf = CollectionUtil.loadMap(in, false);
 			if (conf != null && !conf.equals(map)) {
 				if (this.showLog) {
-					System.out.println("app conf changed at " + new Date());
+					SimpleLoggerHolder.inst().info("sumk.conf", "app conf changed at " + new Date());
 				}
 				map = conf;
 				AppInfo.notifyUpdate();
 			}
 		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
-
-	public int getPeriodTime() {
-		return periodTime;
-	}
-
-	public void setPeriodTime(int periodTimeMS) {
-		if (periodTimeMS >= 1000) {
-			this.periodTime = periodTimeMS;
+			SimpleLoggerHolder.inst().error("sumk.conf", e.getMessage(), e);
 		}
 	}
 
@@ -95,25 +100,8 @@ public class AppConfig implements SystemConfig {
 		}
 		started = true;
 		this.handle();
-		Thread t = new Thread(() -> {
-			for (;;) {
-				try {
-					Thread.sleep(this.periodTime);
-					if (!this.started) {
-						return;
-					}
-					handle();
-				} catch (Exception e) {
-					if (InterruptedException.class.isInstance(e)) {
-						System.out.println("exit because of InterruptedException");
-						return;
-					}
-					e.printStackTrace();
-				}
-			}
-		}, "appinfo-thread");
-		t.setDaemon(true);
-		t.start();
+		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
+				this.periodTime, TimeUnit.MILLISECONDS);
 	}
 
 	@Override
@@ -123,6 +111,9 @@ public class AppConfig implements SystemConfig {
 
 	@Override
 	public synchronized void stop() {
+		if (this.future != null) {
+			this.future.cancel(false);
+		}
 		this.started = false;
 	}
 

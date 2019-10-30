@@ -19,8 +19,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-
-import org.yx.conf.AppInfo;
+import java.nio.charset.StandardCharsets;
 
 public class StringUtil {
 
@@ -64,7 +63,7 @@ public class StringUtil {
 
 	public static String load(InputStream in) throws IOException {
 		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in, AppInfo.systemCharset()));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
 			char[] buf = new char[1024];
 			int len = 0;
 			StringBuilder sb = new StringBuilder();

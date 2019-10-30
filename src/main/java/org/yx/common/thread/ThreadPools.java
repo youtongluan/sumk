@@ -15,7 +15,6 @@
  */
 package org.yx.common.thread;
 
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -28,29 +27,12 @@ import org.yx.conf.AppInfo;
 
 public class ThreadPools {
 
-	public static ExecutorService create(String type, int core, int max) {
-		return create(type, type, core, max);
-	}
-
-	public static SumkExecutorService create(String type, String configPrefix, int core, int max) {
-		return create(type, configPrefix, core, max, 30000);
-	}
-
-	public static SumkExecutorService create(String type, String configPrefix, int core, int max, int aliveTime) {
-		if (configPrefix.endsWith(".")) {
-			configPrefix = configPrefix.substring(0, configPrefix.length() - 1);
-		}
-		core = AppInfo.getInt(configPrefix + ".threadpool.core", core);
-		AbortPolicyQueue abortPolicyQueue = new AbortPolicyQueue(
-				AppInfo.getInt(configPrefix + ".threadpool.maxqueue", 100000), core);
-		ThresholdThreadPool pool = new ThresholdThreadPool(core, AppInfo.getInt(configPrefix + ".threadpool.max", max),
-				AppInfo.getInt(configPrefix + ".threadpool.alive", aliveTime), TimeUnit.MILLISECONDS, abortPolicyQueue,
-				new DefaultThreadFactory(type), abortPolicyQueue,
-				AppInfo.getInt(configPrefix + ".threshold", ThresholdExecutor.DEFAULT_THRESHOLD));
+	public static SumkExecutorService create(String name, int core, int max, int aliveTime) {
+		AbortPolicyQueue abortPolicyQueue = new AbortPolicyQueue(AppInfo.getInt("sumk.threadpool.maxqueue", 100000),
+				core);
+		ThresholdThreadPool pool = new ThresholdThreadPool(core, max, aliveTime, TimeUnit.MILLISECONDS,
+				abortPolicyQueue, new DefaultThreadFactory(name), abortPolicyQueue, 0);
 		abortPolicyQueue.pool = pool;
-		if (AppInfo.getBoolean(configPrefix + ".threadpool.allowCoreThreadTimeOut", false)) {
-			pool.allowCoreThreadTimeOut(true);
-		}
 		return pool;
 	}
 

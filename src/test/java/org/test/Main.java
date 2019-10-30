@@ -2,11 +2,13 @@ package org.test;
 
 import org.test.soa.server.SOAServer;
 import org.yx.log.Log;
+import org.yx.log.LogType;
 import org.yx.main.SumkServer;
 
 public class Main {
 	public static void main(String[] args) {
 		try {
+			Log.setLogType(LogType.console);//因为没有引入日志包，才写的临时代码
 			Log.get(Main.class).info("为了测试方便，测试环境内置了zookeeper服务器。");
 			Log.get(Main.class).info("现在开始启动内置zookeeper。。。");
 			SOAServer.startZKServer();

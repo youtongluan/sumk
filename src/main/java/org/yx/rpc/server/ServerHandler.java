@@ -115,6 +115,8 @@ public class ServerHandler implements IoHandler {
 			session.write(RpcGson.toJson(resp));
 			if (!BizException.class.isInstance(e)) {
 				Log.printStack("sumk.error", e);
+			} else {
+				Log.get("sumk.error").warn(e.toString(), e);
 			}
 		}
 

@@ -21,30 +21,25 @@ public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;
 
-	public BizException(int code, String msg) {
+	private BizException(int code, String msg) {
 		super(msg);
 		this.code = code;
 	}
 
-	public BizException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
+	public static BizException create(int code, String msg) {
+		return new BizException(code, msg);
 	}
 
 	public static void throwException(int code, String msg) throws BizException {
 		throw new BizException(code, msg);
 	}
 
-	public static void throwException(int code, String msg, Throwable exception) throws BizException {
-		throw new BizException(code, msg, exception);
+	public static BizException create(CodedMessage message) {
+		return new BizException(message.code(), message.message());
 	}
 
-	/**
-	 * 
-	 * @param message
-	 *            不能为null
-	 */
-	public static void throwException(CodedMessage message) throws BizException {
-		throw new BizException(message.code(), message.message());
+	@Override
+	public Throwable fillInStackTrace() {
+		return this;
 	}
-
 }

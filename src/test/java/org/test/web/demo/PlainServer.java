@@ -13,24 +13,17 @@ import org.yx.annotation.Bean;
 import org.yx.annotation.Param;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
-import org.yx.annotation.rpc.Soa;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
 import org.yx.http.user.WebSessions;
-import org.yx.util.HttpUtil;
+import org.yx.util.WebUtil;
 
 @Bean
 public class PlainServer {
 	
-	@Soa("a.b.repeat")
-	public String repeat(String s){
-		return s;
-	}
-
 	@Web(value = "echo")
-	@Soa
 	public List<String> echo(String echo, List<String> names) {
 		List<String> list = new ArrayList<>();
 		for (String name : names) {
@@ -71,7 +64,7 @@ public class PlainServer {
 
 	@Web(requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
 	public String bizError() {
-		System.out.println("req:" + HttpUtil.getHttpRequest());
+		System.out.println("req:" + WebUtil.getHttpRequest());
 		BizException.throwException(12345, "业务异常");
 		return "";
 	}

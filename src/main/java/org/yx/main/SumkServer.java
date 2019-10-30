@@ -22,6 +22,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
@@ -120,7 +121,8 @@ public final class SumkServer {
 					&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
 				Rpc.init();
 			}
-
+			scheduleThreadPoolReseting();
+			StartContext.clear();
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
 			try {
@@ -202,5 +204,11 @@ public final class SumkServer {
 		InnerIOC.clear();
 		SumkThreadPool.shutdown();
 		Log.get("sumk.SYS").info("sumk server stoped!!!");
+	}
+
+	private static void scheduleThreadPoolReseting() {
+		long period = AppInfo.getLong("sumk.threadpool.task.period", 10000);
+		SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(new ThreadPoolReSeter(), period, period,
+				TimeUnit.MILLISECONDS);
 	}
 }

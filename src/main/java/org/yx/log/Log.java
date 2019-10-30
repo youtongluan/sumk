@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class Log {
-	public static final String ROOT = "";
 	private static LogType logType = LogType.slf4j;
 
 	private Log() {

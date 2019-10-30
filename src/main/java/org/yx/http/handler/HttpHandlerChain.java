@@ -93,14 +93,14 @@ public class HttpHandlerChain implements HttpHandler {
 				return true;
 			}
 			if (InvalidParamException.class.isInstance(temp)) {
-				LOG_ERROR.info(msg(ctx, temp.getMessage()), temp);
+				LOG_ERROR.warn(msg(ctx, temp.getMessage()), temp);
 				error(ctx, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
 				return true;
 			}
 			do {
 				if (BizException.class.isInstance(temp)) {
 					BizException be = (BizException) temp;
-					LOG_ERROR.info(msg(ctx, temp.toString()));
+					LOG_ERROR.warn(msg(ctx, temp.toString()));
 					error(ctx, be.getCode(), be.getMessage());
 					return true;
 				}
