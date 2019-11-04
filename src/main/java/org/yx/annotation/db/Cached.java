@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yx.db.Cachable;
+import org.yx.db.dao.Cachable;
 
 /**
  * 仅用于缓存类型的bean。<br>

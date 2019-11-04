@@ -23,7 +23,7 @@ import org.yx.common.StartConstants;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
-import org.yx.db.Cachable;
+import org.yx.db.dao.Cachable;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;

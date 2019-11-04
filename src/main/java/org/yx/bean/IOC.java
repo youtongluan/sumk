@@ -17,7 +17,7 @@ package org.yx.bean;
 
 import java.util.List;
 
-import org.yx.db.Cachable;
+import org.yx.db.dao.Cachable;
 
 public final class IOC {
 
