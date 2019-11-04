@@ -40,15 +40,14 @@ public final class ConnectionPool implements AutoCloseable {
 
 	};
 	private static final Logger LOG_CONN_OPEN = Log.get("sumk.conn.open");
-	private static final Logger LOG_CONN_CLOSE = Log.get("sumk.conn.close");
 	public static final Logger LOG_CONN = Log.get("sumk.conn");
 
 	private final String dbName;
 
 	private final DBType dbType;
 
-	private Connection readConn;
-	private Connection writeConn;
+	private SumkConnection readConn;
+	private SumkConnection writeConn;
 
 	public static ConnectionPool create(String dbName, DBType dbType) {
 		if (ActionContext.get().isTest()) {
@@ -96,7 +95,7 @@ public final class ConnectionPool implements AutoCloseable {
 			return;
 		}
 		try {
-			LOG_CONN.error("###connection leak:" + list.size());
+			LOG_CONN.error("### connection leak:" + list.size());
 			while (list.size() > 0) {
 				list.get(0).close();
 			}
@@ -107,7 +106,7 @@ public final class ConnectionPool implements AutoCloseable {
 		EventLane.removeALL();
 	}
 
-	public Connection connection(DBType type) {
+	public Connection connection(DBType type) throws SQLException {
 		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
@@ -125,11 +124,11 @@ public final class ConnectionPool implements AutoCloseable {
 			}
 			return this.getReadConnection();
 		default:
-			return this.connectionByUser(type);
+			return this.connectionByRequireType(type);
 		}
 	}
 
-	private Connection connectionByUser(DBType type) {
+	private Connection connectionByRequireType(DBType type) throws SQLException {
 		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
@@ -147,30 +146,38 @@ public final class ConnectionPool implements AutoCloseable {
 		return this.getReadConnection();
 	}
 
-	private Connection getReadConnection() {
+	private Connection getReadConnection() throws SQLException {
 		if (this.readConn != null) {
 			return this.readConn;
 		}
-		ConnectionFactory factory = ConnectionFactorys.get(dbName);
-		Connection conn = factory.getConnection(DBType.READ, this.writeConn);
-		this.readConn = conn;
-		LOG_CONN_OPEN.trace("open read connection:{}", conn);
-		return conn;
+		SumkDataSource dataSource = DataSources.readDataSource(dbName);
+		if (this.writeConn != null && this.writeConn.dataSource == dataSource) {
+			if (LOG_CONN.isTraceEnabled()) {
+				LOG_CONN.trace("{}写锁分身出读锁", this.dbName);
+			}
+			this.readConn = this.writeConn.copy();
+			return this.readConn;
+		}
+		this.readConn = dataSource.getConnection();
+		LOG_CONN_OPEN.trace("open read connection:{}", readConn);
+		return readConn;
 	}
 
-	private Connection getWriteConnection() {
+	private Connection getWriteConnection() throws SQLException {
 		if (this.writeConn != null) {
 			return this.writeConn;
 		}
-		ConnectionFactory factory = ConnectionFactorys.get(dbName);
-		Connection conn = factory.getConnection(DBType.WRITE, null);
-		this.writeConn = conn;
-		LOG_CONN_OPEN.trace("open write connection:{}", conn);
-		return conn;
-	}
-
-	public Connection getDefaultConnection() {
-		return this.connectionByUser(this.dbType);
+		SumkDataSource dataSource = DataSources.writeDataSource(dbName);
+		if (this.readConn != null && this.readConn.dataSource == dataSource) {
+			this.writeConn = this.readConn.copy();
+			if (LOG_CONN.isTraceEnabled()) {
+				LOG_CONN.trace("{}读锁升级出写锁", this.dbName);
+			}
+			return this.writeConn;
+		}
+		this.writeConn = dataSource.getConnection();
+		LOG_CONN_OPEN.trace("open write connection:{}", writeConn);
+		return writeConn;
 	}
 
 	public void commit() throws SQLException {
@@ -191,26 +198,26 @@ public final class ConnectionPool implements AutoCloseable {
 	public void close() throws Exception {
 		if (this.writeConn != null) {
 			try {
-				LOG_CONN_CLOSE.trace("close write connection:{}", this.writeConn);
 				this.writeConn.close();
 			} catch (Exception e) {
 				Log.printStack(SumkLogs.SQL_ERROR, e);
 			}
-			this.writeConn = null;
 		}
-		if (this.readConn != null) {
+		if (this.readConn != null && !this.readConn.isSameInnerConnection(this.writeConn)) {
 			try {
-				LOG_CONN_CLOSE.trace("close read connection:{}", this.readConn);
 				this.readConn.close();
 			} catch (Exception e) {
 				Log.printStack(SumkLogs.SQL_ERROR, e);
 			}
-			this.readConn = null;
 		}
+		this.writeConn = null;
+		this.readConn = null;
 		List<ConnectionPool> list = connectionHolder.get();
 		int size = list.size();
 		list.remove(this);
-		LOG_CONN.trace("Close connection context [{}], from size {} to {}", this.dbName, size, list.size());
+		if (LOG_CONN.isTraceEnabled()) {
+			LOG_CONN.trace("Close connection context [{}], from size {} to {}", this.dbName, size, list.size());
+		}
 	}
 
 	public String getDbName() {

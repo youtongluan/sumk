@@ -26,7 +26,6 @@ import javax.sql.DataSource;
 
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 
 public class SumkDataSource implements DataSource {
 	private final String name;
@@ -48,24 +47,8 @@ public class SumkDataSource implements DataSource {
 	}
 
 	@Override
-	public Connection getConnection() throws SQLException {
-		Connection conn = new ConnectionWrapper(proxy.getConnection(), this);
-		if (!type.isWritable()) {
-			conn.setReadOnly(true);
-		}
-		return conn;
-	}
-
-	public Connection readConnection(Connection write) throws SQLException {
-		if (write != null && ConnectionWrapper.class.isInstance(write)
-				&& ((ConnectionWrapper) write).getDataSource() == this) {
-			Connection c = SlaveConnectionWrapper.create((ConnectionWrapper) write);
-			if (c != null) {
-				Log.get("sumk.db.ds").trace("use write connection for read");
-				return c;
-			}
-		}
-		return new ConnectionWrapper(proxy.getConnection(), this);
+	public SumkConnection getConnection() throws SQLException {
+		return new SumkConnection(proxy.getConnection(), this);
 	}
 
 	@Override
@@ -110,12 +93,13 @@ public class SumkDataSource implements DataSource {
 	}
 
 	@Override
+	public String toString() {
+		return "ds[" + name + "-" + type + "]";
+	}
+
+	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
-		Connection conn = proxy.getConnection(username, password);
-		if (!type.isWritable()) {
-			conn.setReadOnly(true);
-		}
-		return conn;
+		return new SumkConnection(proxy.getConnection(username, password), this);
 	}
 
 }

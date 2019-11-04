@@ -2,13 +2,48 @@ package org.yx.rpc.log;
 
 import java.util.Objects;
 
+import org.slf4j.Logger;
 import org.yx.common.Host;
+import org.yx.log.Log;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.client.RpcResult;
+import org.yx.util.S;
 
 public class RpcLogHolder {
 
-	private static RpcLogHandler handler;
+	private static RpcLogHandler handler = new RpcLogHandler() {
+		private Logger logger = Log.get("sumk.rpc.log");
+		private static final String LN = "\n";
+
+		@Override
+		public void handle(RpcLog rpcLog) {
+			if (logger.isDebugEnabled()) {
+				StringBuilder sb = new StringBuilder();
+				Req req = rpcLog.getReq();
+				sb.append(req.getApi()).append("   server:").append(rpcLog.getServer()).append("   total time:")
+						.append(rpcLog.getReceiveTime() - req.getStart()).append(LN);
+				if (req.getJsonedParam() != null) {
+					sb.append("   param(json): ").append(req.getJsonedParam());
+				} else {
+					sb.append("   param(array): ").append(S.json.toJson(req.getParamArray()));
+				}
+				RpcResult result = rpcLog.getResult();
+				Exception e = null;
+				if (result != null) {
+					if ((e = result.exception()) == null) {
+						sb.append(LN).append("   result: ").append(result.json());
+					}
+				}
+
+				if (e == null) {
+					logger.debug(sb.toString());
+				} else {
+					logger.debug(sb.toString(), e);
+				}
+			}
+		}
+
+	};
 
 	public static RpcLogHandler getHandler() {
 		return handler;
@@ -19,9 +54,6 @@ public class RpcLogHolder {
 	}
 
 	public static void handle(Host url, Req req, RpcResult result, long receiveTime) {
-		if (handler == null) {
-			return;
-		}
 		handler.handle(new RpcLog(url, req, result, receiveTime));
 	}
 }

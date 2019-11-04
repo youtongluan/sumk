@@ -15,8 +15,6 @@
  */
 package org.yx.db.conn;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -25,76 +23,60 @@ import java.util.Set;
 
 import javax.sql.DataSource;
 
-import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.S;
 
-public class ConnectionFactoryImpl implements ConnectionFactory {
+public final class DataSourceManagerImpl implements DataSourceManager {
 
 	private WeightedDataSourceRoute read;
 	private WeightedDataSourceRoute write;
 
 	private final String db;
 
-	public ConnectionFactoryImpl(String dbName) throws Exception {
+	public DataSourceManagerImpl(String dbName) {
 		this.db = Objects.requireNonNull(dbName);
-		this.parseDatasource();
+		try {
+			this.parseDatasource();
+		} catch (Exception e) {
+			Log.get("sumk.db").error(e.getMessage(), e);
+			throw new SumkException(1432543, dbName + "创建DataSourceManager" + "失败");
+		}
 	}
 
-	public ConnectionFactoryImpl(String dbName, WeightedDataSourceRoute write, WeightedDataSourceRoute read)
+	public DataSourceManagerImpl(String dbName, WeightedDataSourceRoute write, WeightedDataSourceRoute read)
 			throws Exception {
 		this.db = Objects.requireNonNull(dbName);
 		this.write = write;
 		this.read = read;
 	}
 
+	@Override
 	public String status() {
 		Set<DataSource> set = new HashSet<>();
 		set.addAll(this.read.allDataSource());
 		set.addAll(this.write.allDataSource());
 		Map<String, Map<String, Integer>> statusMap = new HashMap<>();
 		for (DataSource datasource : set) {
-			statusMap.put(datasource.toString(), DSFactory.manager().status(datasource));
+			statusMap.put(datasource.toString(), DSFactory.factory().status(datasource));
 		}
 		return S.json.toJson(statusMap);
 	}
 
+	@Override
 	public void destroy() {
 
 	}
 
 	private void parseDatasource() throws Exception {
 		if (this.write != null || this.read != null) {
-			Log.get("sumk.db").info("{} has init datasource", this.db);
+			Log.get("sumk.db").info("{} has inited datasource", this.db);
 			return;
 		}
 		Map<DBType, WeightedDataSourceRoute> map = DSRouteFactory.create(this.db);
 		this.write = map.get(DBType.WRITE);
 		this.read = map.get(DBType.READ);
-	}
-
-	public Connection getConnection(DBType type, Connection writeConn) {
-		if (!type.isWritable()) {
-			try {
-				SumkDataSource ds = this.read.datasource();
-				if (writeConn != null && AppInfo.getBoolean("sumk.db.slave.enable", true)
-						&& SumkDataSource.class.isInstance(ds)) {
-
-					return ds.readConnection(writeConn);
-				}
-				return ds.getConnection();
-			} catch (SQLException e) {
-				SumkException.throwException(100001, "获取" + db + "读连接失败", e);
-			}
-		}
-		try {
-			return this.write.datasource().getConnection();
-		} catch (SQLException e) {
-			SumkException.throwException(100001, "获取" + db + "写连接失败", e);
-		}
-		return null;
 	}
 
 	@Override
@@ -103,15 +85,13 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
 	}
 
 	@Override
-	public DataSource defaultDataSource() {
-		WeightedDataSourceRoute ws = this.write;
-		if (ws == null) {
-			ws = this.read;
-		}
-		if (ws == null) {
-			return null;
-		}
-		return ws.datasource();
+	public SumkDataSource writeDataSource() {
+		return this.write.datasource();
+	}
+
+	@Override
+	public SumkDataSource readDataSource() {
+		return this.read.datasource();
 	}
 
 }

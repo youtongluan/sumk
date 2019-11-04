@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
 import org.yx.rpc.Attachable;
 import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
-public final class ActionContext implements Attachable {
+public final class ActionContext implements Attachable, Cloneable {
 
 	private static final String TEST = "sumk.test";
 
@@ -180,5 +181,13 @@ public final class ActionContext implements Attachable {
 
 	public LogContext logContext() {
 		return this.logContext;
+	}
+
+	public ActionContext clone() {
+		try {
+			return (ActionContext) super.clone();
+		} catch (CloneNotSupportedException e) {
+			throw new SumkException(234235, "clone not supported");
+		}
 	}
 }

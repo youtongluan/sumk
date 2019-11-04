@@ -6,17 +6,17 @@ import org.yx.rpc.client.RpcResult;
 
 /**
  * 这里的属性，以及属性的子属性，都要只读，不要去修改它<BR>
- * Req里面有开始时间。
+ * Req里面有开始时间。<BR>
+ * 全部时间都不为null
  * 
  */
 public class RpcLog {
-	private Host server;
-	private Req req;
-	private RpcResult result;
+	private final Host server;
+	private final Req req;
+	private final RpcResult result;
 	private long receiveTime;
 
 	public RpcLog(Host server, Req req, RpcResult result, long receiveTime) {
-		super();
 		this.server = server;
 		this.req = req;
 		this.result = result;

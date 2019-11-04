@@ -161,10 +161,10 @@ public class Req {
 	}
 
 	public void setTest(boolean b) {
-		this.z = z & ReqProtocol.TEST;
+		this.z = z | ReqProtocol.TEST;
 	}
 
-	public boolean isTest(boolean b) {
+	public boolean isTest() {
 		return (z & ReqProtocol.TEST) != 0;
 	}
 

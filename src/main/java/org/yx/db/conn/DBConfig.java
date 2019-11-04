@@ -13,31 +13,63 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.db.conn;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
-import org.yx.db.conn.DSFactory;
-import org.yx.db.conn.SumkDataSource;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.S;
 
 public class DBConfig {
 
-	DBType type = DBType.ANY;
-	int weight = 0;
-	int readWeight = 0;
-	final Map<String, String> properties = new HashMap<>();
+	final DBType type;
+	final int weight;
+	final int readWeight;
+	final Map<String, String> properties;
+
+	public DBConfig(DBType type, int weight, int readWeight, Map<String, String> properties) {
+		this.type = type;
+		this.weight = weight;
+		this.readWeight = readWeight;
+		this.properties = properties;
+	}
 
 	public String getProperty(String name) {
 		return this.properties.get(name);
 	}
 
-	public void setProperties(Map<String, String> p) throws Exception {
+	public Map<String, String> getProperties() {
+		return properties;
+	}
+
+	public DBType getType() {
+		return type;
+	}
+
+	public int getWeight() {
+		return weight;
+	}
+
+	public int getReadWeight() {
+		return readWeight;
+	}
+
+	@Override
+	public String toString() {
+		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + readWeight + ", properties="
+				+ properties + "]";
+	}
+
+	public static DBConfig create(Map<String, String> p) throws Exception {
+		DBType type = DBType.ANY;
+		int weight = 0, readWeight = 0;
+		Map<String, String> properties = new HashMap<>();
+
 		Set<String> set = p.keySet();
 		for (String key : set) {
 			String v = p.get(key);
@@ -47,10 +79,10 @@ public class DBConfig {
 			}
 			switch (key.toLowerCase()) {
 			case "type":
-				this.type = parseFromConfigFile(v);
+				type = DBConfig.parseFromConfigFile(v);
 				break;
 			case "weight":
-				this.weight = Integer.parseInt(v);
+				weight = Integer.parseInt(v);
 				break;
 			case "password":
 
@@ -63,48 +95,14 @@ public class DBConfig {
 				break;
 			case "read_weight":
 			case "readweight":
-				this.readWeight = Integer.parseInt(v);
+				readWeight = Integer.parseInt(v);
 				break;
 			default:
 				properties.put(key, v);
 				break;
 			}
-
 		}
-	}
-
-	public SumkDataSource createDS(String name) throws Exception {
-		return DSFactory.create(name, type, properties);
-	}
-
-	public DBType getType() {
-		return type;
-	}
-
-	public void setType(DBType type) {
-		this.type = type;
-	}
-
-	public int getWeight() {
-		return weight;
-	}
-
-	public void setWeight(int weight) {
-		this.weight = weight;
-	}
-
-	public int getReadWeight() {
-		return readWeight;
-	}
-
-	public void setReadWeight(int readWeight) {
-		this.readWeight = readWeight;
-	}
-
-	@Override
-	public String toString() {
-		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + readWeight + ", properties="
-				+ properties + "]";
+		return new DBConfig(type, weight, readWeight, properties);
 	}
 
 	private static DBType parseFromConfigFile(String type) {

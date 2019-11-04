@@ -91,7 +91,7 @@ public final class SumkServer {
 
 	public static void start(SystemConfig config, Collection<String> args) {
 		SystemConfigHolder.setSystemConfig(config);
-		start(args);
+		start(args == null ? Collections.emptyList() : args);
 	}
 
 	public static void start(Collection<String> args) {

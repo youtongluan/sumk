@@ -34,26 +34,28 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
+import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
 import org.yx.db.event.EventLane;
+import org.yx.log.Log;
 
-public class ConnectionWrapper implements Connection {
+public final class SumkConnection implements Connection {
 
-	protected Connection inner;
+	private Connection inner;
 
-	protected final SumkDataSource dataSource;
+	final SumkDataSource dataSource;
 
 	@Override
-	public boolean isReadOnly() {
-		return !this.dataSource.getType().isWritable();
+	public boolean isReadOnly() throws SQLException {
+		return inner.isReadOnly();
 	}
 
-	public ConnectionWrapper(Connection inner, SumkDataSource ds) {
+	public SumkConnection(Connection inner, SumkDataSource ds) {
 		this.inner = inner;
 		this.dataSource = ds;
 	}
 
-	public SumkDataSource getDataSource() {
+	public SumkDataSource dataSource() {
 		return dataSource;
 	}
 
@@ -121,6 +123,13 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public void close() throws SQLException {
+		if (this.inner == null) {
+			return;
+		}
+		Logger log = Log.get("sumk.conn.close");
+		if (log.isTraceEnabled()) {
+			log.trace("{} - 关闭连接", this);
+		}
 		EventLane.remove(this);
 		inner.close();
 		this.inner = null;
@@ -354,7 +363,15 @@ public class ConnectionWrapper implements Connection {
 
 	@Override
 	public String toString() {
-		return "wrapper:" + String.valueOf(inner);
+		return this.dataSource + "::" + String.valueOf(inner);
+	}
+
+	public boolean isSameInnerConnection(SumkConnection w) {
+		return w != null && this.inner == w.inner && this.dataSource == w.dataSource;
+	}
+
+	public SumkConnection copy() {
+		return new SumkConnection(this.inner, this.dataSource);
 	}
 
 }

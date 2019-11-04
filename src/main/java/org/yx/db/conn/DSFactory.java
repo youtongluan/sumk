@@ -25,11 +25,11 @@ import org.yx.db.DBType;
 import org.yx.log.Log;
 
 public final class DSFactory {
-	private static DataSourceManager manager;
+	private static DataSourceFactory factory;
 	static {
 		try {
 
-			manager = new DBCPDataSourceManager();
+			factory = new DBCPDataSourceFactory();
 		} catch (Throwable e) {
 			Logger log = Log.get("sumk.db.factory");
 			if (log.isInfoEnabled()) {
@@ -40,16 +40,16 @@ public final class DSFactory {
 		}
 	}
 
-	public static DataSourceManager manager() {
-		return manager;
+	public static DataSourceFactory factory() {
+		return factory;
 	}
 
-	public static void manager(DataSourceManager factory) {
-		DSFactory.manager = Objects.requireNonNull(factory);
+	public static void setFactory(DataSourceFactory factory) {
+		DSFactory.factory = Objects.requireNonNull(factory);
 	}
 
 	public static SumkDataSource create(String name, DBType type, Map<String, String> properties) {
-		DataSource basic = manager.create(properties);
+		DataSource basic = factory.create(properties, !type.isWritable());
 		Log.get("sumk.db.factory").debug("create ds: {}", basic);
 		return new SumkDataSource(name, type, basic);
 	}

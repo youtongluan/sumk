@@ -18,8 +18,8 @@ package org.yx.db.dao;
 public class Pojo implements Cloneable {
 
 	@Override
-	public Object clone() throws CloneNotSupportedException {
-		return super.clone();
+	public Pojo clone() throws CloneNotSupportedException {
+		return (Pojo) super.clone();
 	}
 
 }

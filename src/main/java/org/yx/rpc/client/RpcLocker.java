@@ -75,7 +75,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 			try {
 				callback.accept(result);
 			} catch (Throwable e) {
-				Log.printStack("sumk.error", e);
+				Log.printStack("sumk.rpc", e);
 			}
 		}
 		RpcLogHolder.handle(this.url, this.req, result, receiveTime);

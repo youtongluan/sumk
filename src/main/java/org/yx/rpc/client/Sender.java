@@ -215,11 +215,12 @@ public final class Sender {
 		Request request = RpcGson.getGson().fromJson(json, Request.class);
 		req = null;
 
-		ActionContext context = ActionContext.get();
+		ActionContext context = ActionContext.get().clone();
 		try {
 			ActionContext.rpcContext(request, context.isTest());
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
+			ActionContext.recover(context);
 			locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
 		} finally {
 			ActionContext.recover(context);

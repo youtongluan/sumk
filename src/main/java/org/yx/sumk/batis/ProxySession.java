@@ -16,6 +16,7 @@
 package org.yx.sumk.batis;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import org.apache.ibatis.session.SqlSession;
 import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 
 public class ProxySession implements SqlSession {
 
@@ -38,12 +40,22 @@ public class ProxySession implements SqlSession {
 
 	protected SqlSession readSession() {
 		ConnectionPool context = ConnectionPool.get();
-		return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.READ));
+		try {
+			return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.READ));
+		} catch (SQLException e) {
+			Log.get("sumk.mybatis").error(e.getMessage(), e);
+			throw new SumkException(-345254, "创建mybatis的读session失败");
+		}
 	}
 
 	protected SqlSession writeSession() {
 		ConnectionPool context = ConnectionPool.get();
-		return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.WRITE));
+		try {
+			return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.WRITE));
+		} catch (SQLException e) {
+			Log.get("sumk.mybatis").error(e.getMessage(), e);
+			throw new SumkException(-345255, "创建mybatis的写session失败");
+		}
 	}
 
 	@Override

@@ -13,10 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.db.conn;
 
-public interface CodedMessage {
-	int code();
+import java.util.Map;
 
-	String message();
+import javax.sql.DataSource;
+
+public interface DataSourceFactory {
+	DataSource create(Map<String, String> properties, boolean readonly);
+
+	Map<String, Integer> status(DataSource datasource);
 }

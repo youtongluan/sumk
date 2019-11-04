@@ -15,12 +15,14 @@
  */
 package org.yx.db.conn;
 
-import java.util.Map;
-
-import javax.sql.DataSource;
-
 public interface DataSourceManager {
-	DataSource create(Map<String, String> properties);
 
-	Map<String, Integer> status(DataSource datasource);
+	String status();
+
+	void destroy();
+
+	SumkDataSource writeDataSource();
+
+	SumkDataSource readDataSource();
+
 }

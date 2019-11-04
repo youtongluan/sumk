@@ -15,13 +15,11 @@
  */
 package org.yx.exception;
 
-import org.yx.common.CodedMessage;
-
 public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;
 
-	private BizException(int code, String msg) {
+	protected BizException(int code, String msg) {
 		super(msg);
 		this.code = code;
 	}
@@ -32,10 +30,6 @@ public class BizException extends CodeException {
 
 	public static void throwException(int code, String msg) throws BizException {
 		throw new BizException(code, msg);
-	}
-
-	public static BizException create(CodedMessage message) {
-		return new BizException(message.code(), message.message());
 	}
 
 	@Override

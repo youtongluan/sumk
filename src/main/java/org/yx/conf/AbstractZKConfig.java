@@ -50,7 +50,7 @@ public abstract class AbstractZKConfig implements SystemConfig {
 
 	};
 
-	private void setZkInfo(NamePairs info) {
+	protected void setZkInfo(NamePairs info) {
 		zkInfo = info == null ? new NamePairs((String) null) : info;
 	}
 

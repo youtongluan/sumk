@@ -15,7 +15,7 @@
  */
 package org.yx.conf;
 
-class FileModifyTime {
+public class FileModifyTime {
 
 	final String file;
 	long lastModify;

@@ -25,16 +25,18 @@ import org.yx.common.thread.ThresholdThreadPool;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
-class ThreadPoolReSeter implements Runnable {
+public class ThreadPoolReSeter implements Runnable {
 
 	private Logger logger = Log.get("sumk.thread");
 
 	@Override
 	public void run() {
 		try {
-			resetCurrentThreshold();
-			resetThreadPoolSize();
-			resetScheduledThreadPoolSize();
+			synchronized (ThreadPoolReSeter.class) {
+				resetCurrentThreshold();
+				resetThreadPoolSize();
+				resetScheduledThreadPoolSize();
+			}
 		} catch (Exception e) {
 			logger.error(e.toString(), e);
 		}

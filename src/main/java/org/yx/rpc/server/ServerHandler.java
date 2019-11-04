@@ -97,7 +97,7 @@ public class ServerHandler implements IoHandler {
 			}
 			if (Request.class.isInstance(obj)) {
 				final Request req = (Request) obj;
-				ActionContext.rpcContext(req, ActionContext.get().isTest());
+				ActionContext.rpcContext(req, req.isTest());
 				for (RequestHandler h : handlers) {
 					Response ret = h.handle(req);
 					if (ret != null) {

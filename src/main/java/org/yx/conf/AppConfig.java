@@ -77,12 +77,17 @@ public class AppConfig implements SystemConfig {
 				if (this.showLog) {
 					SimpleLoggerHolder.inst().info("sumk.conf", "app conf changed at " + new Date());
 				}
+				onChange(conf);
 				map = conf;
 				AppInfo.notifyUpdate();
 			}
 		} catch (Exception e) {
 			SimpleLoggerHolder.inst().error("sumk.conf", e.getMessage(), e);
 		}
+	}
+
+	protected void onChange(Map<String, String> newConf) {
+
 	}
 
 	public boolean isShowLog() {

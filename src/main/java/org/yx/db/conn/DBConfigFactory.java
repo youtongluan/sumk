@@ -15,23 +15,11 @@
  */
 package org.yx.db.conn;
 
-import java.sql.Connection;
+import java.util.List;
 
-import javax.sql.DataSource;
+import org.yx.common.Ordered;
 
-import org.yx.db.DBType;
+public interface DBConfigFactory extends Ordered {
 
-public interface ConnectionFactory {
-
-	Connection getConnection(DBType type, Connection writeConn);
-
-	void destroy();
-
-	/**
-	 * 
-	 * @return null表示不支持
-	 */
-	String status();
-
-	DataSource defaultDataSource();
+	List<DBConfig> create(String dbName) throws Exception;
 }

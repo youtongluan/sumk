@@ -15,53 +15,65 @@
  */
 package org.yx.db.conn;
 
-import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Function;
 
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 import org.yx.util.Assert;
 
-public class ConnectionFactorys {
+public final class DataSources {
 
-	private static final Map<String, ConnectionFactory> factoryMap = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, DataSourceManager> factoryMap = new ConcurrentHashMap<>();
+	private static Function<String, DataSourceManager> managerFactory = name -> new DataSourceManagerImpl(name);
 
-	public static ConnectionFactory get(String dbName) {
+	public static void setManagerFactory(Function<String, DataSourceManager> managerFactory) {
+		DataSources.managerFactory = Objects.requireNonNull(managerFactory);
+	}
+
+	public static SumkDataSource writeDataSource(String dbName) {
+		return getManager(dbName).writeDataSource();
+	}
+
+	public static SumkDataSource readDataSource(String dbName) {
+		return getManager(dbName).readDataSource();
+	}
+
+	public static DataSourceManager getManager(String dbName) {
 		try {
 			Assert.hasText(dbName, "db name can not be empty");
 			dbName = dbName.trim();
-			ConnectionFactory factory = factoryMap.get(dbName);
+			DataSourceManager factory = factoryMap.get(dbName);
 			if (factory != null) {
 				return factory;
 			}
-			synchronized (ConnectionFactorys.class) {
+			synchronized (DataSources.class) {
 				factory = factoryMap.get(dbName);
 				if (factory != null) {
 					return factory;
 				}
-				factory = new ConnectionFactoryImpl(dbName);
+				factory = managerFactory.apply(dbName);
 				factoryMap.put(dbName, factory);
-				Log.get("sumk.db").debug("create {}", factory);
 			}
 			return factory;
 		} catch (Exception e) {
-			SumkException.throwException(100234325, "create factory failed", e);
-			return null;
+			throw new SumkException(100234325, "create factory failed", e);
 		}
 	}
 
-	public static void put(String dbName, ConnectionFactory factory) {
+	public static synchronized void put(String dbName, DataSourceManager factory) {
 		factoryMap.put(dbName, factory);
 	}
 
 	public static void remove(String dbName) throws Exception {
 		Assert.hasText(dbName, "db name can not be empty");
 		dbName = dbName.trim();
-		ConnectionFactory factory = factoryMap.get(dbName);
+		DataSourceManager factory = factoryMap.get(dbName);
 		if (factory == null) {
 			return;
 		}
-		ConnectionFactory old = factoryMap.remove(dbName);
+		DataSourceManager old = factoryMap.remove(dbName);
 		if (old != null) {
 			old.destroy();
 		}

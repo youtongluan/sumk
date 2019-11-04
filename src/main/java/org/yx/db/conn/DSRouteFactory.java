@@ -22,22 +22,20 @@ import java.util.Map;
 
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
-import org.yx.conf.DBConfig;
-import org.yx.conf.DBConfigFactory;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public class DSRouteFactory {
 
-	public static Map<DBType, WeightedDataSourceRoute> create(String db) throws Exception {
-		Map<String, DBConfig> configs = getConfigs(db);
+	public static Map<DBType, WeightedDataSourceRoute> create(String dbName) throws Exception {
+		List<DBConfig> configs = parseDBConfig(dbName);
 		List<WeightedDS> readDSList = new ArrayList<>(1);
 		List<WeightedDS> writeDSList = new ArrayList<>(1);
 
-		for (String key : configs.keySet()) {
-			DBConfig dc = configs.get(key);
-			SumkDataSource ds = dc.createDS(key);
+		for (DBConfig dc : configs) {
+			SumkDataSource ds = DSFactory.create(dbName, dc.type, dc.properties);
+			;
 			if (ds.getType().isWritable()) {
 				WeightedDS w = new WeightedDS(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
@@ -57,16 +55,16 @@ public class DSRouteFactory {
 
 		if (readDSList.isEmpty()) {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Log.get("sumk.db.conf").warn("you have not config any read datasource for [{}]", db);
+				Log.get("sumk.db.conf").warn("you have not config any read datasource for [{}]", dbName);
 			} else {
-				SumkException.throwException(83587871, "you have not config read datasource for " + db);
+				SumkException.throwException(83587871, "you have not config read datasource for " + dbName);
 			}
 		}
 		if (writeDSList.isEmpty()) {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Log.get("sumk.db.conf").warn("you have not config any write datasource for [{}]", db);
+				Log.get("sumk.db.conf").warn("you have not config any write datasource for [{}]", dbName);
 			} else {
-				SumkException.throwException(83587871, "you have not config write datasource for " + db);
+				SumkException.throwException(83587872, "you have not config write datasource for " + dbName);
 			}
 		}
 		WeightedDataSourceRoute read = new WeightedDataSourceRoute(readDSList);
@@ -82,10 +80,10 @@ public class DSRouteFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static Map<String, DBConfig> getConfigs(String db) throws Exception {
+	private static List<DBConfig> parseDBConfig(String db) throws Exception {
 		List<DBConfigFactory> factorys = IOC.getBeans(DBConfigFactory.class);
 		for (DBConfigFactory factory : factorys) {
-			Map<String, DBConfig> configs = factory.create(db);
+			List<DBConfig> configs = factory.create(db);
 			if (configs != null) {
 				return configs;
 			}

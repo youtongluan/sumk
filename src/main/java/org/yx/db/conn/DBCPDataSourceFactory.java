@@ -27,7 +27,7 @@ import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.Assert;
 
-public class DBCPDataSourceManager implements DataSourceManager {
+public class DBCPDataSourceFactory implements DataSourceFactory {
 
 	private static final Map<String, String> DEFAULT_PROPERTIES = new HashMap<>();
 
@@ -60,7 +60,7 @@ public class DBCPDataSourceManager implements DataSourceManager {
 	}
 
 	@Override
-	public DataSource create(Map<String, String> properties) {
+	public DataSource create(Map<String, String> properties, boolean readonly) {
 		Assert.isTrue(this.valid(properties), "url,username,password should not be null");
 		BasicDataSource basic = new BasicDataSource();
 		try {
@@ -69,6 +69,7 @@ public class DBCPDataSourceManager implements DataSourceManager {
 				map.putAll(properties);
 			}
 			SimpleBeanUtil.copyProperties(basic, map);
+			basic.setDefaultReadOnly(readonly);
 		} catch (Exception e) {
 			Log.get("sumk.db").error(e.getMessage(), e);
 			SumkException.throwException(23434, e.getMessage(), e);

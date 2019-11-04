@@ -15,6 +15,8 @@
  */
 package org.yx.db.exec;
 
+import java.util.Objects;
+
 import org.yx.db.DBType;
 
 public class DBExec {
@@ -25,7 +27,7 @@ public class DBExec {
 	}
 
 	public static void exec(ResultContainer container, DBExecutor executor) throws Exception {
-		exec(container, executor, DBType.WRITE);
+		exec(Objects.requireNonNull(container), executor, DBType.WRITE);
 	}
 
 	public static void execInAutoCommit(ResultContainer container, DBExecutor executor) throws Exception {

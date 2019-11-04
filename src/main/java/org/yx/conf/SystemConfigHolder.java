@@ -27,7 +27,7 @@ public class SystemConfigHolder {
 	 *            外部注入
 	 * @return true表示设置被更新，如果config跟原来是同一个对象，也会返回false
 	 */
-	public static boolean setSystemConfig(SystemConfig config) {
+	public static synchronized boolean setSystemConfig(SystemConfig config) {
 		SystemConfigHolder.config = Objects.requireNonNull(config);
 		return AppInfo.refreshConfig();
 	}
