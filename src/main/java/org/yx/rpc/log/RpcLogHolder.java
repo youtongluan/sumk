@@ -20,7 +20,7 @@ public class RpcLogHolder {
 			if (logger.isDebugEnabled()) {
 				StringBuilder sb = new StringBuilder();
 				Req req = rpcLog.getReq();
-				sb.append(req.getApi()).append("   server:").append(rpcLog.getServer()).append("   total time:")
+				sb.append(req.getApi()).append("   server:").append(rpcLog.getServer()).append("   totalTime:")
 						.append(rpcLog.getReceiveTime() - req.getStart()).append(LN);
 				if (req.getJsonedParam() != null) {
 					sb.append("   param(json): ").append(req.getJsonedParam());

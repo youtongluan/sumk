@@ -15,23 +15,15 @@
  */
 package org.yx.db.dao;
 
-public class AbstractCachable implements Cachable {
+public class AbstractCachable {
 
-	private boolean cacheEnable;
+	private boolean cacheEnable = true;
 
-	@Override
 	public boolean isCacheEnable() {
 		return cacheEnable;
 	}
 
-	@Override
-	public void setCacheEnable(boolean cache) {
+	protected void setCacheEnable(boolean cache) {
 		this.cacheEnable = cache;
 	}
-
-	@Override
-	public String getModule() {
-		return null;
-	}
-
 }

@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.yx.annotation.Inject;
-import org.yx.annotation.db.Cached;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.watcher.BeanCreate;
 import org.yx.bean.watcher.BeanWatcher;
@@ -93,17 +92,6 @@ public final class BeanPublisher {
 		return IOC.get(clz);
 	}
 
-	private static Object getCacheObject(Field f) {
-		String name = f.getName();
-		Class<?> clz = f.getType();
-
-		Object target = IOC.cache(name, f.getType());
-		if (target != null) {
-			return target;
-		}
-		return IOC.cache(null, clz);
-	}
-
 	private static void injectField(Field f, Object bean, Object target) {
 		boolean access = f.isAccessible();
 		if (!access) {
@@ -162,17 +150,6 @@ public final class BeanPublisher {
 					if (target == null) {
 						throw new SimpleSumkException(-235435658,
 								bean.getClass().getName() + "." + f.getName() + " cannot injected.");
-					}
-					injectField(f, bean, target);
-					continue;
-				}
-
-				Cached c = f.getAnnotation(Cached.class);
-				if (c != null) {
-					Object target = getCacheObject(f);
-					if (target == null) {
-						throw new SimpleSumkException(23526568,
-								bean.getClass().getName() + "." + f.getName() + " cannot injected");
 					}
 					injectField(f, bean, target);
 					continue;

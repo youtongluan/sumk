@@ -18,28 +18,20 @@ package org.yx.bean;
 import java.util.Collection;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.db.Cached;
 import org.yx.common.StartConstants;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
-import org.yx.db.dao.Cachable;
-import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public class BeanFactory extends AbstractBeanListener {
-
-	private boolean cachedScan;
-	private boolean useRedisAsCache;
 
 	private final TextMatcher excludeMatcher;
 
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
 		this.valid = true;
-		this.cachedScan = AppInfo.getBoolean("sumk.ioc.cached.enable", true);
-		this.useRedisAsCache = AppInfo.getBoolean("sumk.dao.cache", true);
 		excludeMatcher = MatcherFactory.createWildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);
 		Log.get("sumk.ioc").info("bean exclude matcher:{}", excludeMatcher);
 	}
@@ -62,21 +54,6 @@ public class BeanFactory extends AbstractBeanListener {
 					putFactoryBean(beans);
 				} else {
 					InnerIOC.putClass(b.value(), clz);
-				}
-			}
-
-			if (!this.cachedScan) {
-				return;
-			}
-			Cached c = clz.getAnnotation(Cached.class);
-			if (c != null) {
-				Object bean = InnerIOC.putClass(Cachable.PRE + BeanPool.resloveBeanName(clz), clz);
-				if (!Cachable.class.isInstance(bean)) {
-					throw new SimpleSumkException(35423543, clz.getName() + " is not instance of Cachable");
-				}
-				if (this.useRedisAsCache) {
-					Cachable cache = (Cachable) bean;
-					cache.setCacheEnable(true);
 				}
 			}
 		} catch (RuntimeException e) {

@@ -17,8 +17,6 @@ package org.yx.bean;
 
 import java.util.List;
 
-import org.yx.db.dao.Cachable;
-
 public final class IOC {
 
 	public static <T> T get(String name) {
@@ -39,14 +37,6 @@ public final class IOC {
 
 	public static String info() {
 		return InnerIOC.pool.toString();
-	}
-
-	public static <T> T cache(String name, Class<T> clz) {
-		if (name == null || name.isEmpty()) {
-			name = BeanPool.resloveBeanName(clz);
-		}
-		name = Cachable.PRE + name;
-		return InnerIOC.pool.getBean(name, clz);
 	}
 
 	public static String[] beanNames() {
