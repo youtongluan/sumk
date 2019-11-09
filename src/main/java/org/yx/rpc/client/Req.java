@@ -38,9 +38,9 @@ public class Req {
 
 	private transient String traceId;
 
-	private String j;
+	private transient String j;
 
-	private String[] p;
+	private transient String[] p;
 
 	private String a;
 
@@ -153,11 +153,6 @@ public class Req {
 
 	public void setSecret(String secret) {
 		this.secret = secret;
-	}
-
-	public void clearParams() {
-		this.j = null;
-		this.p = null;
 	}
 
 	public void setTest(boolean b) {

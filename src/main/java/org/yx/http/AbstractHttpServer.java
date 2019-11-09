@@ -47,6 +47,16 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		this.handle(req, resp);
 	}
 
+	@Override
+	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
+	}
+
+	@Override
+	protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
+	}
+
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
 		try {
 			setRespHeader(req, resp);

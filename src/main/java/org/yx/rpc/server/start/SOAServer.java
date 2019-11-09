@@ -130,7 +130,7 @@ public class SOAServer implements Lifecycle {
 			String zkData = createZkRouteData();
 			client.createEphemeral(path, zkData);
 			client.subscribeStateChanges(stateListener);
-			Log.get("sumk.rpc.zk").trace("server zk data:\n{}", zkData);
+			Log.get("sumk.rpc.zk").debug("server zk data:\n{}", zkData);
 		}
 
 	}

@@ -50,7 +50,6 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 
 		DEFAULT_PROPERTIES.put("logExpiredConnections", "false");
 		DEFAULT_PROPERTIES.put("poolPreparedStatements", "false");
-		DEFAULT_PROPERTIES.put("defaultAutoCommit", "false");
 
 	}
 

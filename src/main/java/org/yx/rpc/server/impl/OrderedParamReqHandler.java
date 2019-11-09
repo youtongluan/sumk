@@ -50,9 +50,9 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.json(RpcGson.toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
+			SumkLogs.RPC_LOG.info(req.getApi() + "," + e.toString(), e);
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
-			SumkLogs.RPC_LOG.debug(req.getApi() + "," + e.toString(), e);
 		} finally {
 			resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
 			ActionContext.remove();

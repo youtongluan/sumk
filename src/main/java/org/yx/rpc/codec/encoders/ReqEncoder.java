@@ -17,7 +17,9 @@ package org.yx.rpc.codec.encoders;
 
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
+import org.slf4j.Logger;
 import org.yx.annotation.Bean;
+import org.yx.log.Log;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
@@ -25,6 +27,8 @@ import org.yx.rpc.codec.SumkProtocolEncoder;
 
 @Bean
 public class ReqEncoder implements SumkMinaEncoder {
+
+	private Logger log = Log.get("sumk.rpc");
 
 	@Override
 	public boolean accept(Class<?> messageClz) {
@@ -37,11 +41,12 @@ public class ReqEncoder implements SumkMinaEncoder {
 		String jsonedArg = req.getJsonedParam();
 		String[] params = req.getParamArray();
 		int paramProtocal = req.paramProtocol();
-		req.clearParams();
 
 		if (paramProtocal == Protocols.REQ_PARAM_JSON) {
-
 			String json_req = String.join(Protocols.LINE_SPLIT, RpcGson.toJson(req), jsonedArg);
+			if (Log.isON(log)) {
+				log.trace("req in json: {}", json_req);
+			}
 			SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
 			return;
 		}
@@ -53,6 +58,9 @@ public class ReqEncoder implements SumkMinaEncoder {
 		json_req.append(String.format("%02d", params.length)).append(RpcGson.toJson(req));
 		for (String p : params) {
 			json_req.append(Protocols.LINE_SPLIT).append(p);
+		}
+		if (Log.isON(log)) {
+			log.trace("req in array: {}", json_req);
 		}
 		SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
 	}

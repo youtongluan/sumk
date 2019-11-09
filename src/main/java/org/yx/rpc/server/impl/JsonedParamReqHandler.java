@@ -17,6 +17,7 @@ package org.yx.rpc.server.impl;
 
 import org.yx.annotation.Bean;
 import org.yx.common.CalleeNode;
+import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
@@ -48,6 +49,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
 			resp.json(RpcGson.toJson(ret));
 		} catch (Throwable e) {
+			SumkLogs.RPC_LOG.info(req.getApi() + "," + e.toString(), e);
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {

@@ -173,10 +173,11 @@ public final class ConnectionPool implements AutoCloseable {
 			if (LOG_CONN.isTraceEnabled()) {
 				LOG_CONN.trace("{}读锁升级出写锁", this.dbName);
 			}
-			return this.writeConn;
+		} else {
+			this.writeConn = dataSource.getConnection();
+			LOG_CONN_OPEN.trace("open write connection:{}", writeConn);
 		}
-		this.writeConn = dataSource.getConnection();
-		LOG_CONN_OPEN.trace("open write connection:{}", writeConn);
+		this.writeConn.disableAutoCommit();
 		return writeConn;
 	}
 

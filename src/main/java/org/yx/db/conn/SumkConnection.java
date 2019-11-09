@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Executor;
 
-import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
 import org.yx.db.event.EventLane;
 import org.yx.log.Log;
@@ -44,6 +43,8 @@ public final class SumkConnection implements Connection {
 	private Connection inner;
 
 	final SumkDataSource dataSource;
+
+	private Boolean originAutoCommit;
 
 	@Override
 	public boolean isReadOnly() throws SQLException {
@@ -126,11 +127,15 @@ public final class SumkConnection implements Connection {
 		if (this.inner == null) {
 			return;
 		}
-		Logger log = Log.get("sumk.conn.close");
-		if (log.isTraceEnabled()) {
-			log.trace("{} - 关闭连接", this);
+		if (Log.get("sumk.conn.close").isTraceEnabled()) {
+			Log.get("sumk.conn.close").trace("{} - 关闭连接", this);
 		}
 		EventLane.remove(this);
+		try {
+			this.recoverAutoCommit();
+		} catch (Exception e) {
+			Log.get("sumk.conn").error(e.getMessage(), e);
+		}
 		inner.close();
 		this.inner = null;
 	}
@@ -374,4 +379,20 @@ public final class SumkConnection implements Connection {
 		return new SumkConnection(this.inner, this.dataSource);
 	}
 
+	public void disableAutoCommit() throws SQLException {
+		originAutoCommit = inner.getAutoCommit();
+		if (!originAutoCommit) {
+			return;
+		}
+		inner.setAutoCommit(false);
+	}
+
+	public void recoverAutoCommit() throws SQLException {
+
+		if (originAutoCommit == null || originAutoCommit.booleanValue() == inner.getAutoCommit()) {
+			return;
+		}
+		Log.get("sumk.conn").trace("recover autoCommit to {}", originAutoCommit);
+		inner.setAutoCommit(originAutoCommit);
+	}
 }

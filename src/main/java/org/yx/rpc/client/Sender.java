@@ -213,6 +213,9 @@ public final class Sender {
 
 		JsonElement json = RpcGson.getGson().toJsonTree(req);
 		Request request = RpcGson.getGson().fromJson(json, Request.class);
+
+		request.setJsonedParam(req.getJsonedParam());
+		request.setParamArray(req.getParamArray());
 		req = null;
 
 		ActionContext context = ActionContext.get().clone();

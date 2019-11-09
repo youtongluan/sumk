@@ -40,4 +40,8 @@ public final class RpcUtil {
 	public static RpcAttachment attachments() {
 		return RpcAttachment.get();
 	}
+
+	public static void removeContext() {
+		ActionContext.remove();
+	}
 }
