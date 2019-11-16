@@ -46,7 +46,7 @@ public class ConsoleLog extends SumkLogger {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ")
-				.append(LogKits.shorter(name, 40)).append(" - ").append(msg);
+				.append(LogKits.shorterPrefix(name, 40)).append(" - ").append(msg);
 		System.err.print(sb.toString());
 		e.printStackTrace();
 	}
@@ -56,7 +56,7 @@ public class ConsoleLog extends SumkLogger {
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ")
-				.append(LogKits.shorter(name, 40)).append(" - ").append(msg);
+				.append(LogKits.shorterPrefix(name, 40)).append(" - ").append(msg);
 		System.out.println(sb.toString());
 	}
 

@@ -22,12 +22,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.yx.log.ConsoleLog;
+import org.yx.common.StartOnceLifecycle;
 import org.yx.log.SimpleLoggerHolder;
 import org.yx.main.SumkServer;
 import org.yx.util.StreamUtil;
 
-public abstract class AbstractUrlConfig {
+public abstract class AbstractUrlConfig extends StartOnceLifecycle {
 
 	protected final URL url;
 
@@ -44,10 +44,13 @@ public abstract class AbstractUrlConfig {
 
 	private volatile boolean threadStarted;
 
-	protected volatile boolean stoped;
+	public final synchronized void stop() {
+		this.started = false;
+		this.onStop();
+	}
 
-	public void stop() {
-		this.stoped = true;
+	protected void onStop() {
+
 	}
 
 	/**
@@ -65,11 +68,11 @@ public abstract class AbstractUrlConfig {
 				}
 				threadStarted = true;
 			}
-			while (!SumkServer.isDestoryed() && !stoped) {
+			while (!SumkServer.isDestoryed() && started) {
 				try {
 					Thread.sleep(period);
 				} catch (InterruptedException e) {
-					ConsoleLog.get("sumk.conf.url").debug("url config exited because interrupted");
+					SimpleLoggerHolder.inst().debug("sumk.conf", "url config exited because interrupted");
 					return;
 				}
 				if (extractData()) {

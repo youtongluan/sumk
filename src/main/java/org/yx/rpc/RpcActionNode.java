@@ -26,6 +26,7 @@ import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.util.S;
 
 public final class RpcActionNode extends CalleeNode {
@@ -68,21 +69,21 @@ public final class RpcActionNode extends CalleeNode {
 		if (argNames.length == 0) {
 			return BizExcutor.exec(this.getEmptyArgObj(), this.owner, new Object[0], this.paramInfos);
 		}
-		if (args == null || args.length == 0) {
+		if (args == null) {
 			SumkException.throwException(12012, method.getName() + "的参数不能为空");
 		}
 		if (args.length != argNames.length) {
-			SumkException.throwException(12013,
-					method.getName() + "需要传递的参数有" + argNames.length + "个，实际传递的是" + args.length + "个");
+			Log.get("sumk.rpc.server")
+					.debug(method.getName() + "需要传递" + argNames.length + "个参数，实际传递" + args.length + "个");
 		}
+
 		ArgPojo pojo = Loader.newInstance(this.argClz);
-		for (int i = 0, k = 0; i < fields.length; i++) {
-			if (args[k] == null) {
+		for (int i = 0; i < fields.length; i++) {
+			if (i >= args.length || args[i] == null) {
 				continue;
 			}
-			Field f = fields[k];
+			Field f = fields[i];
 			f.set(pojo, RpcGson.fromJson(args[i], f.getGenericType()));
-			k++;
 		}
 		return BizExcutor.exec(pojo, this.owner, pojo.params(), this.paramInfos);
 	}

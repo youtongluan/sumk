@@ -27,7 +27,7 @@ public class JettyHandlerSupplier {
 	private static Supplier<GzipHandler> gzipHandlerSupplier = () -> {
 		GzipHandler h = new GzipHandler();
 		h.addIncludedMethods("POST");
-		h.setMinGzipSize(AppInfo.getInt("sumk.jetty.gzip.minsize", 512));
+		h.setMinGzipSize(AppInfo.getInt("sumk.jetty.gzip.minsize", 1024));
 		return h;
 	};
 

@@ -18,6 +18,8 @@ package org.yx.conf;
 import java.net.URL;
 import java.util.Set;
 
+import org.yx.log.SimpleLoggerHolder;
+
 public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 
 	public UrlSystemConfig(URL url) {
@@ -27,9 +29,9 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	protected NamePairs pairs = NamePairs.createByString(null);
 
 	@Override
-	public void start() {
+	protected void onStart() {
 		this.init();
-
+		SimpleLoggerHolder.setLogger(SimpleLoggerHolder.SLF4J_LOG);
 	}
 
 	@Override
@@ -50,11 +52,6 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	@Override
 	protected void notifyUpdate() {
 		AppInfo.notifyUpdate();
-	}
-
-	@Override
-	public void stop() {
-
 	}
 
 }

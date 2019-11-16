@@ -15,15 +15,14 @@
  */
 package org.yx.http.handler;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.slf4j.Logger;
 import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojo;
-import org.yx.bean.IOC;
 import org.yx.common.BizExcutor;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
@@ -35,7 +34,21 @@ import org.yx.validate.ParamInfo;
 public class InvokeHandler implements HttpHandler {
 
 	private static final Object STOP = new Object();
-	private static List<WebFilter> filters;
+	private static WebFilter[] filters;
+
+	public static void setFilters(WebFilter[] filters) {
+		InvokeHandler.filters = Objects.requireNonNull(filters);
+		if (filters.length > 0) {
+			Logger log = Log.get("sumk.http");
+			if (log.isDebugEnabled()) {
+				StringBuilder sb = new StringBuilder("web filter:");
+				for (WebFilter f : filters) {
+					sb.append("  ").append(f.getClass().getSimpleName());
+				}
+				log.debug(sb.toString());
+			}
+		}
+	}
 
 	@Override
 	public boolean accept(Web web) {
@@ -57,7 +70,7 @@ public class InvokeHandler implements HttpHandler {
 						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
 					throw e;
 				}
-				Log.get("sumk.http.invoke").debug(e.getMessage(), e);
+				Log.get("sumk.http").debug(e.getMessage(), e);
 				BizException.throwException(info.errorHandler.code(), info.errorHandler.message());
 			}
 		} else {
@@ -87,14 +100,8 @@ public class InvokeHandler implements HttpHandler {
 	}
 
 	private static Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos, WebContext ctx) throws Throwable {
-		if (filters == null) {
-			filters = IOC.getBeans(WebFilter.class);
-			if (filters == null || filters.isEmpty()) {
-				filters = Collections.emptyList();
-			}
-		}
 		Object[] params = argObj.params();
-		if (filters.isEmpty()) {
+		if (filters.length == 0) {
 			return BizExcutor.exec(argObj, owner, params, paramInfos);
 		}
 		HttpServletRequest req = ctx.httpRequest();

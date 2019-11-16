@@ -28,13 +28,13 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.yx.common.StartOnceLifecycle;
 import org.yx.log.SimpleLoggerHolder;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 
-public class AppConfig implements SystemConfig {
+public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 
-	protected boolean started;
 	protected final String fileName;
 	protected final int periodTime;
 	protected Map<String, String> map = new HashMap<>();
@@ -99,14 +99,11 @@ public class AppConfig implements SystemConfig {
 	}
 
 	@Override
-	public synchronized void start() {
-		if (started) {
-			return;
-		}
-		started = true;
+	protected void onStart() {
 		this.handle();
 		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
 				this.periodTime, TimeUnit.MILLISECONDS);
+		SimpleLoggerHolder.setLogger(SimpleLoggerHolder.SLF4J_LOG);
 	}
 
 	@Override

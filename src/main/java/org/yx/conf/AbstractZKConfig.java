@@ -21,11 +21,12 @@ import java.util.Set;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.yx.common.StartOnceLifecycle;
 import org.yx.log.ConsoleLog;
 import org.yx.log.SimpleLoggerHolder;
 import org.yx.util.ZkClientHelper;
 
-public abstract class AbstractZKConfig implements SystemConfig {
+public abstract class AbstractZKConfig extends StartOnceLifecycle implements SystemConfig {
 
 	protected NamePairs zkInfo = new NamePairs((String) null);
 	private Charset charset = StandardCharsets.UTF_8;
@@ -62,10 +63,11 @@ public abstract class AbstractZKConfig implements SystemConfig {
 		this.charset = charset;
 	}
 
-	public void start() {
+	protected void onStart() {
 		String zkUrl = getZkUrl();
 		NamePairs info = ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
 		this.setZkInfo(info);
+		SimpleLoggerHolder.setLogger(SimpleLoggerHolder.SLF4J_LOG);
 	}
 
 	public void stop() {
@@ -73,8 +75,9 @@ public abstract class AbstractZKConfig implements SystemConfig {
 			String zkUrl = getZkUrl();
 			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			client.unsubscribeDataChanges(getDataPath(), listener);
+			this.started = false;
 		} catch (Exception e) {
-			e.printStackTrace();
+			SimpleLoggerHolder.inst().error("sumk.conf", e.getMessage(), e);
 		}
 	}
 

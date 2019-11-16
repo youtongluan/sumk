@@ -38,13 +38,13 @@ public class OrderedParamDeserializer implements SumkMinaDeserializer<Request> {
 
 		Request req = RpcGson.fromJson(msgs[0], Request.class);
 		int len = Integer.parseInt(argLength);
+		String[] params = new String[len];
 		if (len > 0) {
-			String[] params = new String[len];
 			for (int i = 0; i < len; i++) {
 				params[i] = msgs[i + 1];
 			}
-			req.setParamArray(params);
 		}
+		req.setParamArray(params);
 		req.protocol(protocol);
 		return req;
 	}

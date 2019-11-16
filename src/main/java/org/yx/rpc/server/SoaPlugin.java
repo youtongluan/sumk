@@ -16,19 +16,31 @@
 package org.yx.rpc.server;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 import org.yx.annotation.Bean;
+import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
+import org.yx.rpc.server.impl.ProxyRpcVisitor;
+import org.yx.util.ZkClientHelper;
 
 @Bean
 public class SoaPlugin implements Plugin {
 
 	private Lifecycle server;
+
+	private static RpcFilter[] initFilters() {
+		List<RpcFilter> list = IOC.getBeans(RpcFilter.class);
+		if (list == null || list.isEmpty()) {
+			return new RpcFilter[0];
+		}
+		return list.toArray(new RpcFilter[list.size()]);
+	}
 
 	@Override
 	public void startAsync() {
@@ -36,12 +48,14 @@ public class SoaPlugin implements Plugin {
 			if (!SumkServer.isRpcEnable()) {
 				return;
 			}
+			ProxyRpcVisitor.setFilters(initFilters());
 			int port = StartContext.soaPort();
 			if (port > -1) {
 				String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SOAServer");
 				Class<?> clz = Class.forName(clzName);
 				Constructor<?> c = clz.getConstructor(int.class);
 				server = (Lifecycle) c.newInstance(port);
+				ZkClientHelper.getZkClient(AppInfo.getServerZKUrl());
 			}
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);

@@ -19,7 +19,7 @@ import java.util.Objects;
 
 public class SimpleLoggerHolder {
 
-	private static SimpleLogger inst = new SimpleLogger() {
+	public static final SimpleLogger CONSOLE_LOG = new SimpleLogger() {
 		@Override
 		public void debug(String module, String msg) {
 
@@ -45,6 +45,37 @@ public class SimpleLoggerHolder {
 			System.out.println(msg);
 		}
 	};
+
+	public static final SimpleLogger SLF4J_LOG = new SimpleLogger() {
+		@Override
+		public void debug(String module, String msg) {
+			Log.get(module).debug(msg);
+		}
+
+		@Override
+		public void info(String module, String msg) {
+			Log.get(module).info(msg);
+		}
+
+		@Override
+		public void error(String module, String msg, Throwable e) {
+			if (e == null) {
+				Log.get(module).error(msg);
+				return;
+			}
+			if (msg == null || msg.isEmpty()) {
+				msg = e.toString();
+			}
+			Log.get(module).error(msg, e);
+		}
+
+		@Override
+		public void error(String module, String msg) {
+			Log.get(module).error(msg);
+		}
+	};
+
+	private static SimpleLogger inst = CONSOLE_LOG;
 
 	public static SimpleLogger inst() {
 		return inst;

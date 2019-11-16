@@ -67,8 +67,20 @@ public class SOAServer implements Lifecycle {
 		}
 
 	};
-	private final Runnable zkRegister = new ZKResiter();
-	private final Runnable zkUnRegister = new ZKUnResiter();
+	private final Runnable zkUnRegister = () -> {
+		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+		client.unsubscribeStateChanges(stateListener);
+		client.delete(path);
+	};
+
+	private final Runnable zkRegister = () -> {
+		zkUnRegister.run();
+		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+		String zkData = createZkRouteData();
+		client.createEphemeral(path, zkData);
+		client.subscribeStateChanges(stateListener);
+		Log.get("sumk.rpc.zk").debug("server zk data:\n{}", zkData);
+	};
 
 	public SOAServer(int port) {
 		this.init(port);
@@ -119,31 +131,6 @@ public class SOAServer implements Lifecycle {
 			}
 		}
 		started = false;
-	}
-
-	public class ZKResiter implements Runnable {
-
-		@Override
-		public void run() {
-			zkUnRegister.run();
-			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			String zkData = createZkRouteData();
-			client.createEphemeral(path, zkData);
-			client.subscribeStateChanges(stateListener);
-			Log.get("sumk.rpc.zk").debug("server zk data:\n{}", zkData);
-		}
-
-	}
-
-	public class ZKUnResiter implements Runnable {
-
-		@Override
-		public void run() {
-			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			client.unsubscribeStateChanges(stateListener);
-			client.delete(path);
-		}
-
 	}
 
 	@Override

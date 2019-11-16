@@ -15,11 +15,12 @@
  */
 package org.yx.rpc.server.impl;
 
-import java.util.List;
+import java.util.Objects;
 
-import org.yx.bean.IOC;
+import org.slf4j.Logger;
 import org.yx.common.CalleeNode;
 import org.yx.common.CalleeNode.Visitor;
+import org.yx.log.Log;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RpcFilter;
@@ -27,6 +28,21 @@ import org.yx.rpc.server.RpcFilter;
 public class ProxyRpcVisitor implements Visitor {
 
 	private AbstractRpcVisitor visitor;
+	private static RpcFilter[] filters;
+
+	public static void setFilters(RpcFilter[] filters) {
+		ProxyRpcVisitor.filters = Objects.requireNonNull(filters);
+		if (filters.length > 0) {
+			Logger log = Log.get("sumk.rpc");
+			if (log.isDebugEnabled()) {
+				StringBuilder sb = new StringBuilder("rpc filter:");
+				for (RpcFilter f : filters) {
+					sb.append("  ").append(f.getClass().getSimpleName());
+				}
+				log.debug(sb.toString());
+			}
+		}
+	}
 
 	public static ProxyRpcVisitor proxy(AbstractRpcVisitor visitor) {
 		return new ProxyRpcVisitor(visitor);
@@ -38,22 +54,21 @@ public class ProxyRpcVisitor implements Visitor {
 
 	@Override
 	public Object visit(CalleeNode info) throws Throwable {
-		List<RpcFilter> list = IOC.getBeans(RpcFilter.class);
-		if (list == null || list.isEmpty()) {
+		if (filters.length == 0) {
 			return this.visitor.visit(info);
 		}
 		RpcActionNode node = (RpcActionNode) info;
 		try {
-			for (RpcFilter f : list) {
+			for (RpcFilter f : filters) {
 				f.beforeInvoke(node, visitor.req);
 			}
 			Object ret = this.visitor.visit(info);
-			for (RpcFilter f : list) {
+			for (RpcFilter f : filters) {
 				f.afterInvoke(node, visitor.req, ret);
 			}
 			return ret;
 		} catch (Throwable e) {
-			for (RpcFilter f : list) {
+			for (RpcFilter f : filters) {
 				Throwable e2 = f.error(node, visitor.req, e);
 				if (e2 != null) {
 					e = e2;

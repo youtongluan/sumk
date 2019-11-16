@@ -18,6 +18,7 @@ package org.yx.http;
 import java.lang.reflect.Constructor;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.yx.annotation.Bean;
@@ -28,6 +29,7 @@ import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.handler.HttpHandlerChain;
+import org.yx.http.handler.InvokeHandler;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
@@ -55,11 +57,20 @@ public class HttpPlugin implements Plugin {
 		return 10010;
 	}
 
+	private static WebFilter[] initFilters() {
+		List<WebFilter> list = IOC.getBeans(WebFilter.class);
+		if (list == null || list.isEmpty()) {
+			return new WebFilter[0];
+		}
+		return list.toArray(new WebFilter[list.size()]);
+	}
+
 	@Override
 	public void startAsync() {
 		if (!SumkServer.isHttpEnable()) {
 			return;
 		}
+		InvokeHandler.setFilters(initFilters());
 		HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
 
 		AppInfo.addObserver(info -> {

@@ -17,7 +17,6 @@ package org.yx.util;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,22 +27,18 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
+import org.yx.common.date.DateFormater;
 import org.yx.common.date.DateTimeFormater;
 import org.yx.common.date.FullDateTimeFormater;
 import org.yx.common.date.SumkDateFormater;
 import org.yx.common.date.SumkDateQuery;
-import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.log.SimpleLoggerHolder;
 
 public final class SumkDate implements Comparable<SumkDate> {
 	private static final String LOG_NAME = "sumk.date";
@@ -61,28 +56,8 @@ public final class SumkDate implements Comparable<SumkDate> {
 	public static final int ERROR_CODE = 912753954;
 
 	private static final int MIL_TO_NANO = 1000_000;
-	private static SumkDateFormater[] formaters;
-	static {
-		try {
-			Collection<Class<? extends SumkDateFormater>> clzs = ClassScaner
-					.listSubClassesInSamePackage(SumkDateFormater.class);
-			List<SumkDateFormater> list = new ArrayList<>();
-			for (Class<? extends SumkDateFormater> clz : clzs) {
-				Field f = clz.getField("inst");
-				if (f == null) {
-					SimpleLoggerHolder.inst().info("sumk.date", clz.getName() + " has no inst field");
-					continue;
-				}
-				f.setAccessible(true);
-				list.add((SumkDateFormater) f.get(null));
-			}
-			list.sort(null);
-			formaters = list.toArray(new SumkDateFormater[list.size()]);
-		} catch (Exception e) {
-			SimpleLoggerHolder.error(LOG_NAME, e);
-			System.exit(-1);
-		}
-	}
+	private static final SumkDateFormater[] formaters = { FullDateTimeFormater.inst, DateTimeFormater.inst,
+			DateFormater.inst };
 
 	/**
 	 * @return 当前时间

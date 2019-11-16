@@ -17,7 +17,7 @@ package org.yx.log;
 
 import org.yx.conf.AppInfo;
 
-public class LogKits {
+public final class LogKits {
 
 	public static String clipIfNecessary(String log) {
 		if (log == null || log.isEmpty()) {
@@ -33,14 +33,18 @@ public class LogKits {
 		return log.substring(0, maxLength - 5) + "...";
 	}
 
-	public static String shorter(String name, int maxLogNameLength) {
-		if (maxLogNameLength < 1) {
+	public static String shorterPrefix(String name, int maxLogNameLength) {
+		if (maxLogNameLength < 5 || name == null || name.length() <= maxLogNameLength) {
 			return name;
 		}
-		if (name == null || name.length() < maxLogNameLength) {
-			return name;
+		return "..".concat(name.substring(name.length() - maxLogNameLength + 2));
+	}
+
+	public static String shorterSubfix(String text, int maxLogNameLength) {
+		if (maxLogNameLength < 5 || text == null || text.length() <= maxLogNameLength) {
+			return text;
 		}
-		return "..." + name.substring(name.length() - maxLogNameLength + 3);
+		return text.substring(0, maxLogNameLength - 2).concat("..");
 	}
 
 }
