@@ -121,7 +121,7 @@ public final class AsmUtils {
 
 	public static Class<?> loadClass(String fullName, byte[] b) throws Exception {
 
-		String clzOutPath = AppInfo.get("sumk.aop.debug.output");
+		String clzOutPath = AppInfo.get("sumk.asm.debug.output");
 		if (clzOutPath != null && clzOutPath.length() > 0) {
 			try {
 				File f = new File(clzOutPath, fullName + ".class");

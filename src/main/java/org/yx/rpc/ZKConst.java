@@ -15,17 +15,12 @@
  */
 package org.yx.rpc;
 
-import org.yx.conf.AppInfo;
-
 public interface ZKConst {
+	String SUMK_SOA_ROOT = "/sumk_soa";
 
-	public static String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "/sumk_soa");
-
-	public static final String METHODS = "methods";
-	public static final String METHOD_SPLIT = "#";
-	public static final String FEATURE = "feature";
-	public static final String WEIGHT = "weight";
-
-	public static final String CLIENT_COUNT = "client";
-	public static final String START = "start";
+	String METHODS = "methods";
+	String METHOD_SPLIT = "#";
+	String FEATURE = "feature";
+	String WEIGHT = "weight";
+	String START = "start";
 }

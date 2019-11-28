@@ -19,11 +19,23 @@ import java.io.InputStream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 
+@Bean
 public class ReqBodyHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 1300;
+	}
+
+	@Override
+	public boolean supportRestType(RestType type) {
+		return type == RestType.PLAIN;
+	}
 
 	@Override
 	public boolean accept(Web web) {

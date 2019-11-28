@@ -43,7 +43,7 @@ public class Monitors {
 		long ms = now - startTime;
 		StringBuilder sb = new StringBuilder();
 		sb.append("start at : " + SumkDate.of(startTime).to_yyyy_MM_dd_HH_mm_ss_SSS()).append(LN)
-				.append("run(ms) : " + ms).append(LN).append("localip : " + AppInfo.getIp()).append(LN)
+				.append("run(ms) : " + ms).append(LN).append("localip : " + AppInfo.getLocalIp()).append(LN)
 				.append("pid : " + AppInfo.pid()).append(LN);
 		String v = AppInfo.groupId(null);
 		if (v != null) {

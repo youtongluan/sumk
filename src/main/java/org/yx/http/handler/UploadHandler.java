@@ -23,13 +23,25 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
 import org.yx.common.SumkLogs;
 import org.yx.exception.HttpException;
 import org.yx.http.kit.InnerHttpUtil;
 
+@Bean
 public class UploadHandler implements HttpHandler {
+
+	@Override
+	public boolean supportRestType(RestType type) {
+		return type == RestType.UPLOAD;
+	}
+
+	@Override
+	public int order() {
+		return 1300;
+	}
 
 	@Override
 	public boolean accept(Web web) {

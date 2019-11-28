@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.listener;
 
-import org.yx.annotation.http.Web;
+import org.yx.common.Ordered;
 
-public class ToByteHandler implements HttpHandler {
+public interface SumkListener extends Ordered {
 
-	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		Object result = ctx.result();
-		if (result.getClass() == byte[].class) {
-			return false;
-		}
-		String bs = (String) result;
-		ctx.result(bs.getBytes(ctx.charset()));
-		return false;
-	}
+	void listen(SumkEvent event);
 
 }

@@ -103,6 +103,7 @@ public class JettyServer implements Lifecycle {
 
 	protected synchronized void init() {
 		try {
+			buildJettyProperties();
 			server = new Server(new ExecutorThreadPool(HttpExcutors.getThreadPool()));
 			ServerConnector connector = this.createConnector();
 			Log.get("sumk.http").info("listen port: {}", port);
@@ -138,6 +139,14 @@ public class JettyServer implements Lifecycle {
 			System.exit(-1);
 		}
 
+	}
+
+	protected void buildJettyProperties() {
+		String key = "org.eclipse.jetty.server.Request.maxFormContentSize";
+		String v = AppInfo.get(key);
+		if (v != null && v.length() > 0 && System.getProperty(key) == null) {
+			System.setProperty(key, v);
+		}
 	}
 
 	@Override

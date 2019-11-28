@@ -17,18 +17,43 @@ package org.yx.db.mapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
+import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.common.SumkLogs;
 import org.yx.conf.MultiResourceLoader;
+import org.yx.db.event.DBEventPublisher;
+import org.yx.db.listener.DBEventListener;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.SumkDate;
 
 @Bean
-public class ResourcePlugin implements Plugin {
+public class SumkDBPlugin implements Plugin {
+
+	@Override
+	public void startAsync() {
+		buildDBListeners();
+		loadSDBResources();
+	}
+
+	protected void buildDBListeners() {
+		List<DBEventListener> listeners = IOC.getBeans(DBEventListener.class);
+		DBEventPublisher.group().setListener(listeners.toArray(new DBEventListener[0]));
+	}
+
+	protected void loadSDBResources() {
+		try {
+			MultiResourceLoader loader = SqlHolder.resourceLoader().get();
+			loadSql(loader);
+			startListen(loader);
+		} catch (Throwable e) {
+			SumkException.throwException(2351343, SumkLogs.SQL_ERROR, e);
+		}
+	}
 
 	private void startListen(MultiResourceLoader loader) {
 		loader.startListen(load -> {
@@ -64,16 +89,4 @@ public class ResourcePlugin implements Plugin {
 		}
 		SqlHolder.setSQLS(sqlMap);
 	}
-
-	@Override
-	public void startAsync() {
-		try {
-			MultiResourceLoader loader = SqlHolder.resourceLoader().get();
-			loadSql(loader);
-			startListen(loader);
-		} catch (Throwable e) {
-			SumkException.throwException(2351343, SumkLogs.SQL_ERROR, e);
-		}
-	}
-
 }

@@ -15,14 +15,12 @@
  */
 package org.yx.listener;
 
-public interface ListenerGroup<T extends SumkEvent> {
+public interface ListenerGroup<T extends SumkListener> {
 
-	boolean addListener(Listener<T> listener);
+	void setListener(T[] listeners);
 
-	Listener<T> removeListener(Listener<T> listener);
+	SumkListener[] getListeners();
 
-	int size();
-
-	void listen(T event);
+	void listen(SumkEvent event);
 
 }

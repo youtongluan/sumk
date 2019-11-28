@@ -37,7 +37,7 @@ import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 public class SqlSessionFactory {
 
@@ -76,7 +76,7 @@ public class SqlSessionFactory {
 
 	public static SqlSessionFactory get(String dbName) {
 		try {
-			Assert.hasText(dbName, "db name can not be empty");
+			Asserts.hasText(dbName, "db name can not be empty");
 			dbName = dbName.trim();
 			SqlSessionFactory factory = factoryMap.get(dbName);
 			if (factory != null) {
@@ -103,7 +103,7 @@ public class SqlSessionFactory {
 	}
 
 	public static void reload(String dbName) throws Exception {
-		Assert.hasText(dbName, "db name can not be empty");
+		Asserts.hasText(dbName, "db name can not be empty");
 		dbName = dbName.trim();
 		SqlSessionFactory factory = factoryMap.get(dbName);
 		if (factory == null) {

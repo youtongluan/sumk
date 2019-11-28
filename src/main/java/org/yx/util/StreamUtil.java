@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class StreamUtil {
+public final class StreamUtil {
 
 	public static byte[] extractData(InputStream in, boolean closeInput) throws IOException {
 		ByteArrayOutputStream out = new ByteArrayOutputStream();

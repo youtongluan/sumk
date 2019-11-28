@@ -13,22 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.bean;
 
-import org.yx.annotation.Bean;
-import org.yx.http.handler.HttpHandler;
-import org.yx.listener.ClassLoaderFactorysBean;
+import java.util.Objects;
+import java.util.function.Supplier;
 
-@Bean
-public class RestHandlerFactorysBean extends ClassLoaderFactorysBean<HttpHandler> {
+import org.yx.db.sql.PojoMetaListener;
 
-	public RestHandlerFactorysBean() {
-		super("org.yx.http.handler", "http.intf", "org.yx.http.handler");
+public final class Scaners {
+
+	private static Supplier<BeanEventListener[]> supplier = () -> new BeanEventListener[] { new BeanFactory(),
+			new PojoMetaListener() };
+
+	public static void setSupplier(Supplier<BeanEventListener[]> supplier) {
+		Scaners.supplier = Objects.requireNonNull(supplier);
 	}
 
-	@Override
-	public Class<HttpHandler> acceptClass() {
-		return HttpHandler.class;
+	public static Supplier<BeanEventListener[]> supplier() {
+		return supplier;
 	}
 
 }

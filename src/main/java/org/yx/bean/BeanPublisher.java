@@ -29,17 +29,17 @@ import org.yx.bean.watcher.BeanWatcher;
 import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.StartConstants;
+import org.yx.common.StartContext;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
-import org.yx.listener.Listener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
 
 public final class BeanPublisher {
 
-	private static ListenerGroup<BeanEvent> group = new ListenerGroupImpl<>();
+	private static ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
 
 	public static synchronized void publishBeans(List<String> packageNames) {
 		if (packageNames.isEmpty()) {
@@ -106,6 +106,7 @@ public final class BeanPublisher {
 
 	private static void autoWiredAll() {
 		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
+		StartContext.inst().setBeans(beans);
 		Log.get("sumk.ioc").trace("after beans create...");
 		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
 		Log.get("sumk.ioc").trace("inject beans properties...");
@@ -202,21 +203,8 @@ public final class BeanPublisher {
 		group.listen(event);
 	}
 
-	public static synchronized boolean addListener(Listener<BeanEvent> listener) {
-		group.addListener(listener);
-		return true;
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public static synchronized boolean addListeners(List<Listener> list) {
-		for (Listener<BeanEvent> l : list) {
-			addListener(l);
-		}
-		return true;
-	}
-
-	public static synchronized void removeListener(Listener<BeanEvent> listener) {
-		group.removeListener(listener);
+	public static synchronized void setListeners(BeanEventListener[] array) {
+		group.setListener(array);
 	}
 
 }

@@ -62,10 +62,6 @@ public class JettyHttpsServer extends JettyServer {
 				new HttpConnectionFactory() };
 	}
 
-	/**
-	 * @param string
-	 * @return
-	 */
 	private String get(String name) {
 		String v = AppInfo.get(name, null);
 		if (v == null) {

@@ -21,7 +21,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
-public class StringUtil {
+public final class StringUtil {
 
 	public static String[] splitByComma(String text) {
 		return text.replace('，', ',').split(",");
@@ -102,4 +102,7 @@ public class StringUtil {
 		return sb.toString();
 	}
 
+	public static boolean isNumber(char c) {
+		return c >= '0' && c <= '9';
+	}
 }

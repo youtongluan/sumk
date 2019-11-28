@@ -30,15 +30,14 @@ import org.yx.log.Log;
 import org.yx.redis.RecordReq;
 
 @Bean
-public class QueryListener implements DBListener<QueryEvent> {
+public class QueryListener implements DBEventListener {
 
 	@Override
-	public boolean accept(SumkEvent event) {
-		return QueryEvent.class.isInstance(event);
-	}
-
-	@Override
-	public void listen(QueryEvent event) {
+	public void listen(SumkEvent ev) {
+		if (!QueryEvent.class.isInstance(ev)) {
+			return;
+		}
+		QueryEvent event = QueryEvent.class.cast(ev);
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache() || event.getResult() == null) {

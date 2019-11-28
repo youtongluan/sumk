@@ -15,8 +15,8 @@
  */
 package org.yx.common;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
@@ -29,7 +29,16 @@ public class StartContext {
 		return inst;
 	}
 
-	private Map<String, Object> map = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
+	private static final String KEY_BEANS = "key_beans";
+
+	public void setBeans(Object[] beans) {
+		map.put(KEY_BEANS, beans);
+	}
+
+	public Object[] getBeans() {
+		return (Object[]) map.get(KEY_BEANS);
+	}
 
 	public void put(String key, Object obj) {
 		map.put(key, obj);
@@ -75,7 +84,7 @@ public class StartContext {
 	}
 
 	public static String soaHost() {
-		return get("sumk.rpc.host", AppInfo.getIp());
+		return get("sumk.rpc.host", AppInfo.getLocalIp());
 	}
 
 	public static int soaPort() {

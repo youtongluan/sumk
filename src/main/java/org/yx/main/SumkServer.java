@@ -28,7 +28,7 @@ import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Plugin;
-import org.yx.bean.ScanerFactorysBean;
+import org.yx.bean.Scaners;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
@@ -36,7 +36,6 @@ import org.yx.conf.SystemConfig;
 import org.yx.conf.SystemConfigHolder;
 import org.yx.log.Log;
 import org.yx.redis.RedisPool;
-import org.yx.rpc.client.Rpc;
 import org.yx.util.StringUtil;
 
 public final class SumkServer {
@@ -106,7 +105,7 @@ public final class SumkServer {
 		try {
 			handleSystemArgs();
 			handleArgs(args);
-			BeanPublisher.addListeners(new ScanerFactorysBean().create());
+			BeanPublisher.setListeners(Scaners.supplier().get());
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
@@ -117,10 +116,6 @@ public final class SumkServer {
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
-			if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) == null
-					&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
-				Rpc.init();
-			}
 			scheduleThreadPoolReseting();
 			StartContext.clear();
 		} catch (Throwable e) {

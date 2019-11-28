@@ -15,6 +15,7 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
@@ -22,9 +23,15 @@ import org.yx.http.HttpCiphers;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
+@Bean
 public class ReqSignValidateHandler implements HttpHandler {
 
 	private byte[] salt;
+
+	@Override
+	public int order() {
+		return 1600;
+	}
 
 	public ReqSignValidateHandler() {
 

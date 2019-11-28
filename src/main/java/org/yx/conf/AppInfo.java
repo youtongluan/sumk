@@ -24,9 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.yx.bean.Loader;
-import org.yx.log.SimpleLoggerHolder;
-import org.yx.rpc.LocalhostUtil;
+import org.yx.log.InnerLog;
 import org.yx.util.StringUtil;
 
 public final class AppInfo {
@@ -38,67 +36,60 @@ public final class AppInfo {
 
 	private static SystemConfig info;
 	private static String pid;
-	private static String localIp;
 
 	static {
 		try {
 			String temp = ManagementFactory.getRuntimeMXBean().getName();
 			pid = temp.substring(0, temp.indexOf("@"));
 		} catch (Exception e) {
-			SimpleLoggerHolder.error("sumk.conf", e);
+			InnerLog.error("sumk.conf", e);
 			pid = "UNKNOW";
 		}
 		init();
 	}
 
-	private static void init() {
+	private synchronized static void init() {
+		if (info != null) {
+			return;
+		}
 		try {
 			if (refreshConfig()) {
 				return;
 			}
 		} catch (Exception e) {
-			SimpleLoggerHolder.error("sumk.conf", e);
+			InnerLog.error("sumk.conf", e);
 			System.exit(-1);
-		}
-
-		try {
-
-			String clzName = System.getProperty("sumk.appinfo.class");
-			if (clzName != null && clzName.length() > 5) {
-				Class<?> clz = Loader.loadClass(clzName);
-				Object obj = Loader.newInstance(clz);
-				if (SystemConfig.class.isInstance(obj)) {
-					SimpleLoggerHolder.inst().info("sumk.conf", "use " + clzName + " for appInfo");
-					info = (SystemConfig) obj;
-				}
-			}
-		} catch (Throwable e) {
-			SimpleLoggerHolder.inst().info("sumk.conf", "#AppInfo#error for sumk.appinfo.class:");
-			SimpleLoggerHolder.error("sumk.conf", e);
 		}
 		if (info == null) {
 			try {
-				info = new AppConfig();
+				setConfig(new AppConfig());
 			} catch (Exception e) {
-				SimpleLoggerHolder.error("sumk.conf", e);
+				InnerLog.error("sumk.conf", e);
 				System.exit(-1);
 			}
 		}
-		info.start();
 	}
 
 	public static String pid() {
 		return pid;
 	}
 
-	static boolean refreshConfig() {
+	private static synchronized void setConfig(SystemConfig config) {
+		if (info == null) {
+			info = config;
+		}
+		config.start();
+		LocalhostUtil.setLocalIp(config.get("sumk.ip"));
+		info = config;
+	}
+
+	static synchronized boolean refreshConfig() {
 		SystemConfig config = SystemConfigHolder.config;
 		if (info == config || config == null) {
 			return false;
 		}
 		SystemConfig old = info;
-		info = config;
-		info.start();
+		setConfig(config);
 		notifyUpdate();
 		if (old != null) {
 			old.stop();
@@ -122,17 +113,8 @@ public final class AppInfo {
 		return info.get("sumk.zkurl");
 	}
 
-	public static String getIp() {
-		String ip = localIp;
-		if (ip != null) {
-			return ip;
-		}
-		try {
-			return LocalhostUtil.getLocalIP();
-		} catch (Exception e) {
-			SimpleLoggerHolder.inst().error("sumk.error", e.getMessage(), e);
-		}
-		return "0.0.0.0";
+	public static String getLocalIp() {
+		return LocalhostUtil.getLocalIP();
 	}
 
 	/**
@@ -182,12 +164,12 @@ public final class AppInfo {
 		return v;
 	}
 
-	public static String get(String name1, String name2, String defaultValue) {
-		String value = info.get(name1);
+	public static String get(String first, String second, String defaultValue) {
+		String value = info.get(first);
 		if (value != null && value.length() > 0) {
 			return value;
 		}
-		return get(name2, defaultValue);
+		return get(second, defaultValue);
 	}
 
 	public static int getInt(String name, int defaultValue) {
@@ -221,7 +203,7 @@ public final class AppInfo {
 			return UTF8;
 		}
 		if (!Charset.isSupported(charsetName)) {
-			SimpleLoggerHolder.inst().error("sumk.conf", "charset '" + charsetName + "' is not supported");
+			InnerLog.error("sumk.conf", "charset '" + charsetName + "' is not supported");
 			return UTF8;
 		}
 		return Charset.forName(charsetName);
@@ -263,8 +245,13 @@ public final class AppInfo {
 		ob.accept(info);
 	}
 
+	public static void removeObserver(Consumer<SystemConfig> ob) {
+		synchronized (observers) {
+			observers.remove(ob);
+		}
+	}
+
 	public static synchronized void notifyUpdate() {
-		localIp = info.get("sumk.ip");
 		List<Consumer<SystemConfig>> consumers;
 		synchronized (observers) {
 			consumers = new ArrayList<>(observers);
@@ -273,7 +260,7 @@ public final class AppInfo {
 			try {
 				consumer.accept(info);
 			} catch (Exception e) {
-				SimpleLoggerHolder.error("sumk.conf", e);
+				InnerLog.error("sumk.conf", e);
 			}
 		}
 	}

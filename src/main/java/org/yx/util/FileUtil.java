@@ -22,7 +22,7 @@ import java.util.Collection;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 
-public class FileUtil {
+public final class FileUtil {
 	/**
 	 * 列出该目录下的所有子文件（不包含目录）
 	 * 

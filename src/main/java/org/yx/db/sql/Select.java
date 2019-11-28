@@ -29,7 +29,7 @@ import org.yx.db.visit.PojoResultHandler;
 import org.yx.db.visit.ResultHandler;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
 import org.yx.util.SBuilder;
 
@@ -223,7 +223,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
-		Assert.isTrue(offset >= 0, "offset must bigger or equal than 0");
+		Asserts.isTrue(offset >= 0, "offset must bigger or equal than 0");
 		this.offset = offset;
 		return this;
 	}
@@ -235,7 +235,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
-		Assert.isTrue(limit >= 0, "limit must bigger or equal than 0");
+		Asserts.isTrue(limit >= 0, "limit must bigger or equal than 0");
 		this.limit = limit;
 		return this;
 	}
@@ -349,7 +349,7 @@ public class Select extends SelectBuilder {
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
 		ColumnMeta[] cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
-		Assert.isTrue(cms != null && cms.length == 1,
+		Asserts.isTrue(cms != null && cms.length == 1,
 				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "redis") + " key table");
 		String key = cms[0].getFieldName();
 		Arrays.asList(ids).forEach(id -> {

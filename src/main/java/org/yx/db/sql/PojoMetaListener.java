@@ -17,8 +17,8 @@ package org.yx.db.sql;
 
 import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
-import org.yx.common.SumkLogs;
 import org.yx.common.StartConstants;
+import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
@@ -29,7 +29,7 @@ public class PojoMetaListener extends AbstractBeanListener {
 	}
 
 	@Override
-	public void listen(BeanEvent event) {
+	public void onListen(BeanEvent event) {
 		try {
 			Class<?> clz = event.clz();
 			PojoMetaHolder.resolve(clz);

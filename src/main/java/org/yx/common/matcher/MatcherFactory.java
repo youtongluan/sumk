@@ -15,62 +15,78 @@
  */
 package org.yx.common.matcher;
 
+import static org.yx.common.matcher.WildcardMatcher.WILDCARD;
+
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
-import org.slf4j.Logger;
-import org.yx.log.ConsoleLog;
+import org.yx.log.InnerLog;
 import org.yx.util.StringUtil;
 
 public class MatcherFactory {
-	public static final String WILDCARD = "*";
 
-	private static final Logger log = ConsoleLog.get("sumk.common.matcher");
+	public static Predicate<String> createWildcardMatcher(String patterns, int minPatternLength) {
 
-	public static TextMatcher createWildcardMatcher(String patterns, int minPatternLength) {
-
-		if (patterns == null) {
+		if (patterns == null || patterns.isEmpty()) {
 			return BooleanMatcher.FALSE;
 		}
 		Set<String> exact = new HashSet<>();
-		Set<String> start = new HashSet<>();
-		Set<String> end = new HashSet<>();
+		Set<String> matchStart = new HashSet<>();
+		Set<String> matchEnd = new HashSet<>();
+		Set<String> matchContain = new HashSet<>();
 		patterns = StringUtil.toLatin(patterns);
 		String[] noProxyArray = patterns.split(",");
+		String doubleWild = WILDCARD + WILDCARD;
 		for (String s : noProxyArray) {
 			if ((s = s.trim()).isEmpty()) {
 				continue;
 			}
+			if (s.length() < minPatternLength) {
+				InnerLog.warn("sumk.conf", s + "的长度太短，将被忽略");
+				continue;
+			}
 
-			if (!s.contains(WILDCARD)) {
+			int beginIndex = s.indexOf(WILDCARD);
+			if (beginIndex < 0) {
 				exact.add(s);
 				continue;
 			}
 
-			if (s.indexOf(WILDCARD) != s.lastIndexOf(WILDCARD)) {
-				log.warn("{}出现了2次*,本配置将被忽略", s);
-				continue;
-			}
-			if (s.length() < minPatternLength) {
-				log.warn("{}的长度太短，将被忽略", s);
-				continue;
-			}
-			if (WILDCARD.equals(s)) {
+			if (WILDCARD.equals(s) || doubleWild.equals(s)) {
 				return BooleanMatcher.TRUE;
 			}
-			if (s.endsWith(WILDCARD)) {
-				start.add(s.substring(0, s.length() - 1));
-			} else if (s.startsWith(WILDCARD)) {
-				end.add(s.substring(1));
-			} else {
-				log.warn("{}的*不是出现在头尾，将被忽略", s);
+
+			if (beginIndex == s.length() - 1) {
+				matchStart.add(s.substring(0, beginIndex));
+				continue;
 			}
+
+			if (beginIndex != 0) {
+				InnerLog.warn("sumk.conf", s + "的*不是出现在头尾，将被忽略");
+				continue;
+			}
+
+			int endIndex = s.indexOf(WILDCARD, beginIndex + 1);
+			if (endIndex < 0) {
+				matchEnd.add(s.substring(1));
+				continue;
+			}
+			if (endIndex == s.length() - 1) {
+				matchContain.add(s.substring(1, endIndex));
+				continue;
+			}
+			InnerLog.warn("sumk.conf", s + "的*不止出现在头尾，将被忽略！！！");
 		}
 
 		Set<String> exacts = exact.size() > 0 ? exact : null;
-		String[] matchStarts = start.size() > 0 ? start.toArray(new String[start.size()]) : null;
-		String[] matchEnds = end.size() > 0 ? end.toArray(new String[end.size()]) : null;
-		return new WildcardMatcher(exacts, matchStarts, matchEnds);
+		String[] matchStarts = matchStart.size() > 0 ? matchStart.toArray(new String[0]) : null;
+		String[] matchEnds = matchEnd.size() > 0 ? matchEnd.toArray(new String[0]) : null;
+		String[] matchContains = matchContain.size() > 0 ? matchContain.toArray(new String[0]) : null;
+		if (exacts == null && matchStarts == null && matchEnds == null && matchContains == null) {
+			return BooleanMatcher.FALSE;
+		}
+		return new WildcardMatcher(exacts, matchStarts, matchEnds, matchContains);
 	}
 
 }

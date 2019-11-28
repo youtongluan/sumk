@@ -13,31 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.server.start;
+package org.yx.bean;
 
-import org.yx.annotation.Bean;
-import org.yx.bean.watcher.BeanWatcher;
-import org.yx.exception.SumkException;
-import org.yx.main.SumkServer;
+import org.yx.listener.SumkListener;
 
-@Bean
-public class SoaAnnotationWatcher implements BeanWatcher {
-
-	@Override
-	public void afterInstalled(Object[] beans) {
-		if (!SumkServer.isRpcEnable()) {
-			return;
-		}
-
-		SoaAnnotationResolver factory = new SoaAnnotationResolver();
-
-		try {
-			for (Object bean : beans) {
-				factory.resolve(bean);
-			}
-		} catch (Exception e) {
-			throw SumkException.create(e);
-		}
-	}
-
+public interface BeanEventListener extends SumkListener {
 }

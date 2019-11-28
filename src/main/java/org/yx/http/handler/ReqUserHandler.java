@@ -15,6 +15,7 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
@@ -28,7 +29,13 @@ import org.yx.log.Log;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
+@Bean
 public class ReqUserHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 1000;
+	}
 
 	@Override
 	public boolean accept(Web web) {

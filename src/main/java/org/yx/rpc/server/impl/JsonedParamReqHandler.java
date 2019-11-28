@@ -49,7 +49,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
 			resp.json(RpcGson.toJson(ret));
 		} catch (Throwable e) {
-			SumkLogs.RPC_LOG.info(req.getApi() + "," + e.toString(), e);
+			SumkLogs.RPC_LOG.warn(req.getApi() + " # " + e.toString(), e);
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {

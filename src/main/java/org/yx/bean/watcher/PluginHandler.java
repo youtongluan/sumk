@@ -69,7 +69,7 @@ public class PluginHandler {
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();
 		}
-		Log.get("sumk.SYS").info("all plugin started");
+		Log.get("sumk.SYS").debug("all plugin started");
 	}
 
 }

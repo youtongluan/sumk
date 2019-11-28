@@ -16,7 +16,6 @@
 package org.yx.rpc;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +54,7 @@ public class RpcActionHolder {
 		return actMap.keySet();
 	}
 
-	public static Collection<String> publishSoaSet() {
+	public static List<String> publishSoaSet() {
 		List<String> list = new ArrayList<>(actMap.size());
 		actMap.forEach((method, v) -> {
 			if (v.action.publish()) {

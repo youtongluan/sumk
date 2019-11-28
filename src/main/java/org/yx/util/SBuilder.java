@@ -18,7 +18,7 @@ package org.yx.util;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SBuilder {
+public final class SBuilder {
 	public static boolean isMap(Object obj) {
 		return Map.class.isInstance(obj);
 	}

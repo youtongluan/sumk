@@ -50,7 +50,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 			resp.json(RpcGson.toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
-			SumkLogs.RPC_LOG.info(req.getApi() + "," + e.toString(), e);
+			SumkLogs.RPC_LOG.warn(req.getApi() + " # " + e.toString(), e);
 			resp.json(null);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		} finally {

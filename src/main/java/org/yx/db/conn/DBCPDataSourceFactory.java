@@ -25,7 +25,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 public class DBCPDataSourceFactory implements DataSourceFactory {
 
@@ -60,7 +60,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 
 	@Override
 	public DataSource create(Map<String, String> properties, boolean readonly) {
-		Assert.isTrue(this.valid(properties), "url,username,password should not be null");
+		Asserts.isTrue(this.valid(properties), "url,username,password should not be null");
 		BasicDataSource basic = new BasicDataSource();
 		try {
 			Map<String, String> map = new HashMap<>(DEFAULT_PROPERTIES);

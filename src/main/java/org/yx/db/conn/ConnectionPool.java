@@ -27,7 +27,7 @@ import org.yx.db.DBType;
 import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 public final class ConnectionPool implements AutoCloseable {
 
@@ -78,7 +78,7 @@ public final class ConnectionPool implements AutoCloseable {
 
 	public static ConnectionPool get() {
 		List<ConnectionPool> list = connectionHolder.get();
-		Assert.isTrue(list.size() > 0, "must open transaction in box or other containers");
+		Asserts.isTrue(list.size() > 0, "must open transaction in box or other containers");
 		ConnectionPool context = list.get(0);
 		return context;
 	}

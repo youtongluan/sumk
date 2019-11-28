@@ -72,8 +72,8 @@ public final class Rpc {
 		return req;
 	}
 
-	public static Sender create(String method) {
-		return new Sender(method);
+	public static Client create(String method) {
+		return new Client(method);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String call(String method, Object... args) {
-		return new Sender(method).paramInArray(args).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInArray(args).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**
@@ -107,11 +107,11 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String callInJson(String method, String json) {
-		return new Sender(method).paramInJson(json).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInJson(json).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	public static String callInMap(String method, Map<String, ?> map) {
-		return new Sender(method).paramInMap(map).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInMap(map).timeout(DEFAULT_TIMEOUT).execute().getOrException();
 	}
 
 	/**
@@ -124,7 +124,7 @@ public final class Rpc {
 	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callAsync(String method, Object... args) {
-		return new Sender(method).paramInArray(args).execute();
+		return new Client(method).paramInArray(args).execute();
 	}
 
 	/**
@@ -136,11 +136,11 @@ public final class Rpc {
 	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callInJsonAsync(String method, String json) {
-		return new Sender(method).paramInJson(json).execute();
+		return new Client(method).paramInJson(json).execute();
 	}
 
 	public static RpcFuture callInMapAsync(String method, Map<String, ?> map) {
-		return new Sender(method).paramInMap(map).execute();
+		return new Client(method).paramInMap(map).execute();
 	}
 
 }

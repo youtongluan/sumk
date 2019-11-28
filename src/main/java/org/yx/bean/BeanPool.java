@@ -28,16 +28,16 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.yx.asm.ProxyClassFactory;
-import org.yx.common.Ordered;
 import org.yx.exception.TooManyBeanException;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
-public final class BeanPool {
+final class BeanPool {
 
-	private final Map<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
+	private final ConcurrentMap<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 
 	public static String resloveBeanName(Class<?> clz) {
 		String name = StringUtil.uncapitalize(clz.getSimpleName());
@@ -47,7 +47,7 @@ public final class BeanPool {
 		return name;
 	}
 
-	static Set<String> resloveBeanNames(Class<?> clazz) {
+	public static Set<String> resloveBeanNames(Class<?> clazz) {
 		Objects.requireNonNull(clazz, "Class must not be null");
 		Set<Class<?>> interfaces = new HashSet<>();
 		resloveSuperClassAndInterface(clazz, interfaces);
@@ -80,13 +80,13 @@ public final class BeanPool {
 		return w.getTargetClass();
 	}
 
-	String[] beanNames() {
+	public String[] beanNames() {
 		Set<String> names = map.keySet();
 		return names.toArray(new String[0]);
 	}
 
 	Collection<BeanWrapper> allBeanWrapper() {
-		Map<BeanWrapper, Boolean> beans = new IdentityHashMap<>();
+		Map<BeanWrapper, Boolean> beans = new IdentityHashMap<>(map.size());
 		Collection<Object> vs = map.values();
 		for (Object v : vs) {
 			if (!v.getClass().isArray()) {
@@ -101,8 +101,8 @@ public final class BeanPool {
 		return beans.keySet();
 	}
 
-	Collection<Object> beans() {
-		Map<Object, Boolean> beans = new IdentityHashMap<>();
+	public Collection<Object> beans() {
+		Map<Object, Boolean> beans = new IdentityHashMap<>(map.size());
 		Collection<Object> vs = map.values();
 		for (Object v : vs) {
 			if (!v.getClass().isArray()) {
@@ -150,34 +150,31 @@ public final class BeanPool {
 		return bean;
 	}
 
-	private void put(String name, BeanWrapper w) {
+	private synchronized void put(String name, BeanWrapper w) {
 		Class<?> clz = w.getTargetClass();
 		Object oldWrapper = map.putIfAbsent(name, w);
 		if (oldWrapper == null) {
 			return;
 		}
-		synchronized (this) {
-			if (!oldWrapper.getClass().isArray()) {
-				if (clz == this.getBeanClass(oldWrapper)) {
-					Log.get("sumk.bean").debug("{}={} duplicate,will be ignored", name, clz.getName());
-					return;
-				}
-				map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
+		if (!oldWrapper.getClass().isArray()) {
+			if (clz == this.getBeanClass(oldWrapper)) {
+				Log.get("sumk.bean").debug("{}={} duplicate,will be ignored", name, clz.getName());
 				return;
 			}
-			BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
-			for (BeanWrapper o : objs) {
-				if (clz == this.getBeanClass(o)) {
-					Log.get("sumk.bean").debug("{}={} duplicate,will be ignored.", name, clz.getName());
-					return;
-				}
-			}
-			BeanWrapper[] beans = new BeanWrapper[objs.length + 1];
-			System.arraycopy(objs, 0, beans, 0, objs.length);
-			beans[beans.length - 1] = w;
-			map.put(name, beans);
+			map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
+			return;
 		}
-
+		BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
+		for (BeanWrapper o : objs) {
+			if (clz == this.getBeanClass(o)) {
+				Log.get("sumk.bean").debug("{}={} duplicate,will be ignored.", name, clz.getName());
+				return;
+			}
+		}
+		BeanWrapper[] beans = new BeanWrapper[objs.length + 1];
+		System.arraycopy(objs, 0, beans, 0, objs.length);
+		beans[beans.length - 1] = w;
+		map.put(name, beans);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -233,22 +230,22 @@ public final class BeanPool {
 
 	@SuppressWarnings("unchecked")
 	public <T> List<T> getBeans(String name, Class<T> clz) {
-		List<T> list = new ArrayList<>(4);
 		if (name == null || name.length() == 0) {
 			name = resloveBeanName(clz);
 		}
 		Object bw = map.get(name);
 		if (bw == null) {
-			return list;
+			return Collections.emptyList();
 		}
 		if (!bw.getClass().isArray()) {
 			Object obj = this.getBean(bw);
-			if (clz == null || clz.isInstance(obj)) {
-				list.add((T) obj);
+			if (clz.isInstance(obj)) {
+				return Collections.singletonList((T) obj);
 			}
-			return list;
+			return Collections.emptyList();
 		}
 		BeanWrapper[] objs = (BeanWrapper[]) bw;
+		List<T> list = new ArrayList<>(objs.length);
 
 		for (BeanWrapper w : objs) {
 			Object o = w.getBean();
@@ -256,7 +253,7 @@ public final class BeanPool {
 				list.add((T) o);
 			}
 		}
-		if (Ordered.class.isAssignableFrom(clz)) {
+		if (list.size() > 1 && Comparable.class.isAssignableFrom(clz)) {
 			list.sort(null);
 		}
 		return list;
@@ -298,11 +295,11 @@ public final class BeanPool {
 		}
 	}
 
-	Object getBeanWrapper(String name) {
+	public Object getBeanWrapper(String name) {
 		return map.get(name);
 	}
 
-	void clear() {
+	public synchronized void clear() {
 		map.clear();
 	}
 }

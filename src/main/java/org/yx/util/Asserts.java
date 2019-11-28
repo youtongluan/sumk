@@ -13,22 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.util;
 
-import org.yx.annotation.Bean;
-import org.yx.http.handler.HttpHandler;
-import org.yx.listener.ClassLoaderFactorysBean;
+import org.yx.exception.SumkException;
 
-@Bean
-public class UploadHandlerFactorysBean extends ClassLoaderFactorysBean<HttpHandler> {
+public final class Asserts {
 
-	public UploadHandlerFactorysBean() {
-		super("org.yx.http.handler", "http.upload", "org.yx.http.handler");
+	public static void notEmpty(String text, String msg) {
+		if (text == null || text.isEmpty()) {
+			throw new SumkException(657645465, msg);
+		}
+
 	}
 
-	@Override
-	public Class<HttpHandler> acceptClass() {
-		return HttpHandler.class;
+	public static void isTrue(boolean b, String msg) {
+		if (b) {
+			return;
+		}
+		throw new SumkException(5674354, msg);
+	}
+
+	public static void hasText(String text, String msg) {
+		if (text == null || text.trim().isEmpty()) {
+			throw new SumkException(652342134, msg);
+		}
+
 	}
 
 }

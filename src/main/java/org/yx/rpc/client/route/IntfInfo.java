@@ -20,7 +20,6 @@ import org.yx.util.StringUtil;
 public class IntfInfo {
 	private String name;
 	private Integer weight;
-	private Integer clientCount;
 
 	public String getName() {
 		return name;
@@ -34,10 +33,6 @@ public class IntfInfo {
 		return weight;
 	}
 
-	public Integer getClientCount() {
-		return clientCount;
-	}
-
 	void setWeight(String w) {
 		if (StringUtil.isEmpty(w)) {
 			return;
@@ -45,11 +40,9 @@ public class IntfInfo {
 		this.weight = Integer.valueOf(w);
 	}
 
-	void setClientCount(String w) {
-		if (StringUtil.isEmpty(w)) {
-			return;
-		}
-		this.clientCount = Integer.valueOf(w);
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }

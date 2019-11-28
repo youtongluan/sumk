@@ -15,10 +15,17 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.http.HttpGson;
 
+@Bean
 public class RespToStringHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 2100;
+	}
 
 	@Override
 	public boolean accept(Web web) {

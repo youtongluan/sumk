@@ -22,7 +22,7 @@ import org.yx.util.SumkDate;
  */
 public final class DateTimeFormater implements SumkDateFormater {
 
-	public static final SumkDateFormater inst = new DateTimeFormater();
+	public static final DateTimeFormater inst = new DateTimeFormater();
 
 	private DateTimeFormater() {
 

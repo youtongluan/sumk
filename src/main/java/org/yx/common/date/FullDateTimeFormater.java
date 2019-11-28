@@ -15,6 +15,7 @@
  */
 package org.yx.common.date;
 
+import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
 /**
@@ -34,14 +35,26 @@ public final class FullDateTimeFormater implements SumkDateFormater {
 
 	@Override
 	public SumkDate parse(String text) {
-		int firstIndex = text.length() - 19;
-		int year = Integer.parseInt(text.substring(0, firstIndex));
-		int month = Integer.parseInt(text.substring(firstIndex + 1, firstIndex + 3));
-		int day = Integer.parseInt(text.substring(firstIndex + 4, firstIndex + 6));
-		int hour = Integer.parseInt(text.substring(firstIndex + 7, firstIndex + 9));
-		int minute = Integer.parseInt(text.substring(firstIndex + 10, firstIndex + 12));
-		int second = Integer.parseInt(text.substring(firstIndex + 13, firstIndex + 15));
-		int mils = Integer.parseInt(text.substring(firstIndex + 16));
+		int dotIndex = text.length() - 1;
+		for (; dotIndex > 15; dotIndex--) {
+			char c = text.charAt(dotIndex);
+			if (!StringUtil.isNumber(c)) {
+				break;
+			}
+		}
+		String textMil = text.substring(dotIndex + 1);
+		int mils = Integer.parseInt(textMil);
+		if (textMil.length() == 1) {
+			mils *= 100;
+		} else if (textMil.length() == 2) {
+			mils *= 10;
+		}
+		int second = Integer.parseInt(text.substring(dotIndex - 2, dotIndex));
+		int minute = Integer.parseInt(text.substring(dotIndex - 5, dotIndex - 3));
+		int hour = Integer.parseInt(text.substring(dotIndex - 8, dotIndex - 6));
+		int day = Integer.parseInt(text.substring(dotIndex - 11, dotIndex - 9));
+		int month = Integer.parseInt(text.substring(dotIndex - 14, dotIndex - 12));
+		int year = Integer.parseInt(text.substring(0, dotIndex - 15));
 		return SumkDate.of(year, month, day, hour, minute, second, mils);
 	}
 

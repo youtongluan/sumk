@@ -15,58 +15,36 @@
  */
 package org.yx.listener;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
+import java.util.Objects;
 
-import org.yx.log.Log;
+import org.yx.exception.SumkException;
 
-public class ListenerGroupImpl<T extends SumkEvent> implements ListenerGroup<T> {
+public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<T> {
 
-	protected List<Listener<T>> listeners = new ArrayList<>();
+	private SumkListener[] listeners = new SumkListener[0];
 
 	@Override
-	public Listener<T> removeListener(Listener<T> listener) {
-		List<Listener<T>> lis = this.listeners;
-		lis = new ArrayList<>(lis);
-		Listener<T> l = null;
-		for (int i = lis.size() - 1; i >= 0; i--) {
-			if (lis.get(i).equals(listener)) {
-				l = lis.remove(i);
-				break;
+	public void listen(SumkEvent event) {
+		for (SumkListener lin : listeners) {
+			lin.listen(event);
+		}
+	}
+
+	@Override
+	public void setListener(T[] listeners) {
+		Objects.requireNonNull(listeners);
+		for (SumkListener lis : listeners) {
+			if (lis == null) {
+				throw new SumkException(2453451, "监听器不能为null");
 			}
 		}
-		if (l != null) {
-			this.listeners = lis;
-		}
-		return l;
+		this.listeners = Objects.requireNonNull(listeners);
+
 	}
 
 	@Override
-	public boolean addListener(Listener<T> listener) {
-		List<Listener<T>> lis = this.listeners;
-		lis = new ArrayList<>(lis);
-		if (!lis.contains(listener)) {
-			lis.add(listener);
-			this.listeners = lis;
-			Log.get("sumk.SYS").trace("add listener {}", listener.toString());
-			return true;
-		}
-		return false;
+	public SumkListener[] getListeners() {
+		return Arrays.copyOf(this.listeners, this.listeners.length);
 	}
-
-	@Override
-	public void listen(T event) {
-		List<Listener<T>> lis = this.listeners;
-		for (Listener<T> lin : lis) {
-			if (lin.accept(event)) {
-				lin.listen(event);
-			}
-		}
-	}
-
-	@Override
-	public int size() {
-		return this.listeners.size();
-	}
-
 }

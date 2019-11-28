@@ -15,10 +15,17 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.util.S;
 
+@Bean
 public class Base64EncodeHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 2400;
+	}
 
 	@Override
 	public boolean accept(Web web) {

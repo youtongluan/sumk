@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +29,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.common.StartOnceLifecycle;
-import org.yx.log.SimpleLoggerHolder;
+import org.yx.log.InnerLog;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 
@@ -37,7 +37,7 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 
 	protected final String fileName;
 	protected final int periodTime;
-	protected Map<String, String> map = new HashMap<>();
+	protected Map<String, String> map = Collections.emptyMap();
 	protected boolean showLog = true;
 	protected ScheduledFuture<?> future;
 
@@ -63,7 +63,7 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 		if (f.exists()) {
 			return new FileInputStream(f);
 		}
-		SimpleLoggerHolder.inst().info("sumk.conf", "can not found " + this.fileName);
+		InnerLog.info("sumk.conf", "can not found " + this.fileName);
 		return null;
 	}
 
@@ -73,16 +73,16 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 				return;
 			}
 			Map<String, String> conf = CollectionUtil.loadMap(in, false);
-			if (conf != null && !conf.equals(map)) {
+			if (conf != null && !conf.equals(this.map)) {
 				if (this.showLog) {
-					SimpleLoggerHolder.inst().info("sumk.conf", "app conf changed at " + new Date());
+					InnerLog.info("sumk.conf", "app conf changed at " + new Date());
 				}
 				onChange(conf);
-				map = conf;
+				this.map = conf;
 				AppInfo.notifyUpdate();
 			}
 		} catch (Exception e) {
-			SimpleLoggerHolder.inst().error("sumk.conf", e.getMessage(), e);
+			InnerLog.error("sumk.conf", e.getMessage(), e);
 		}
 	}
 
@@ -103,7 +103,7 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 		this.handle();
 		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
 				this.periodTime, TimeUnit.MILLISECONDS);
-		SimpleLoggerHolder.setLogger(SimpleLoggerHolder.SLF4J_LOG);
+		InnerLog.setLogger(InnerLog.SLF4J_LOG);
 	}
 
 	@Override

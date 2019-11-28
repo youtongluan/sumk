@@ -25,15 +25,18 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
+import org.slf4j.Logger;
 import org.yx.common.Host;
 import org.yx.common.matcher.MatcherFactory;
-import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.conf.NamePairs;
+import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtil;
@@ -41,10 +44,12 @@ import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHelper;
 
 public class ZkRouteParser {
-	private String zkUrl;
+	private final String zkUrl;
 	private Set<String> childs = Collections.emptySet();
-	private TextMatcher includes;
-	private TextMatcher excludes;
+	private final Predicate<String> includes;
+	private final Predicate<String> excludes;
+	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "sumk.rpc.client.zk.route", ZKConst.SUMK_SOA_ROOT);
+	private Logger logger = Log.get("sumk.rpc.zk");
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
@@ -64,6 +69,7 @@ public class ZkRouteParser {
 	public void readRouteAndListen() throws IOException {
 		Map<Host, ZkData> datas = new HashMap<>();
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
+		ZkClientHelper.makeSure(zk, SOA_ROOT);
 
 		final IZkDataListener nodeListener = new IZkDataListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
@@ -72,10 +78,10 @@ public class ZkRouteParser {
 			public void handleDataChange(String dataPath, Object data) throws Exception {
 				ServerData d = parser.buildZkNodeData(dataPath, ZkClientHelper.data2String((byte[]) data));
 				if (d == null) {
-					parser.handle(RouteEvent.delete(Host.create(dataPath)));
+					parser.handle(RouteEvent.deleteEvent(Host.create(dataPath)));
 					return;
 				}
-				parser.handle(RouteEvent.create(d.url, d.data));
+				parser.handle(RouteEvent.modifyEvent(d.url, d.data));
 			}
 
 			@Override
@@ -85,11 +91,14 @@ public class ZkRouteParser {
 
 		};
 
-		List<String> paths = zk.subscribeChildChanges(ZKConst.SOA_ROOT, new IZkChildListener() {
+		List<String> paths = zk.subscribeChildChanges(SOA_ROOT, new IZkChildListener() {
 			ZkRouteParser parser = ZkRouteParser.this;
 
 			@Override
 			public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
+				if (currentChilds == null) {
+					currentChilds = Collections.emptyList();
+				}
 				List<String> ips = filter(currentChilds);
 
 				List<String> createChilds = new ArrayList<>();
@@ -101,31 +110,35 @@ public class ZkRouteParser {
 						createChilds.add(zkChild);
 					}
 				}
+				ZkClient zkClient = ZkClientHelper.getZkClient(zkUrl);
 				parser.childs = new HashSet<>(ips);
 				for (String create : createChilds) {
-					ServerData d = parser.getZkNodeData(create);
+					ServerData d = parser.getZkNodeData(zkClient, create);
 					if (d == null) {
 						continue;
 					}
-					parser.handle(RouteEvent.create(d.url, d.data));
+					parser.handle(RouteEvent.createEvent(d.url, d.data));
 					zk.subscribeDataChanges(parentPath + "/" + create, nodeListener);
 				}
 
 				for (String delete : deleteChilds) {
-					parser.handle(RouteEvent.delete(Host.create(delete)));
+					parser.handle(RouteEvent.deleteEvent(Host.create(delete)));
 					zk.unsubscribeDataChanges(parentPath + "/" + delete, nodeListener);
 				}
 			}
 
 		});
+		if (paths == null) {
+			paths = Collections.emptyList();
+		}
 		paths = filter(paths);
 		this.childs = new HashSet<>(paths);
 		for (String path : paths) {
-			ServerData d = getZkNodeData(path);
-			zk.subscribeDataChanges(ZKConst.SOA_ROOT + "/" + path, nodeListener);
+			ServerData d = getZkNodeData(zk, path);
 			if (d == null) {
 				continue;
 			}
+			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
 			datas.put(d.url, d.data);
 		}
 		Routes.refresh(datas);
@@ -134,7 +147,19 @@ public class ZkRouteParser {
 			if (event == null) {
 				return true;
 			}
-			Routes.handle(event);
+			List<RouteEvent> list = new ArrayList<>(10);
+			list.add(event);
+			for (int i = 0; i < 8; i++) {
+				event = queue.poll(20, TimeUnit.MILLISECONDS);
+				if (event == null) {
+					break;
+				}
+				list.add(event);
+			}
+			Map<Host, ZkData> data = new HashMap<>(Routes.currentDatas());
+			if (handleData(data, list) > 0) {
+				Routes.refresh(data);
+			}
 			return true;
 		}, "rpc-client-route");
 	}
@@ -144,7 +169,7 @@ public class ZkRouteParser {
 		if (includes != null) {
 			List<String> ips = new ArrayList<>();
 			for (String ip : currentChilds) {
-				if (includes.match(ip)) {
+				if (includes.test(ip)) {
 					ips.add(ip);
 				}
 			}
@@ -154,7 +179,7 @@ public class ZkRouteParser {
 		if (excludes != null) {
 			List<String> ips = new ArrayList<>();
 			for (String ip : currentChilds) {
-				if (!excludes.match(ip)) {
+				if (!excludes.test(ip)) {
 					ips.add(ip);
 				}
 			}
@@ -164,15 +189,19 @@ public class ZkRouteParser {
 		return currentChilds;
 	}
 
-	private ServerData getZkNodeData(String path) throws IOException {
-		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
-		String json = ZkClientHelper.data2String(zk.readData(ZKConst.SOA_ROOT + "/" + path));
+	private ServerData getZkNodeData(ZkClient zk, String path) throws IOException {
+		String json = ZkClientHelper.data2String(zk.readData(SOA_ROOT + "/" + path));
 		return buildZkNodeData(path, json);
 	}
 
 	private ServerData buildZkNodeData(String path, String json) throws IOException {
 		if (path.contains("/")) {
 			path = path.substring(path.lastIndexOf("/") + 1);
+		}
+		Host host = Host.create(path);
+		if (host == null) {
+			Log.get("sumk.rpc.zk").warn("{} 不是有效的host", path);
+			return null;
 		}
 		Map<String, String> map = NamePairs.createByString(json).values();
 		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS + ".");
@@ -181,7 +210,6 @@ public class ZkRouteParser {
 		}
 		ZkData data = new ZkData();
 		data.setWeight(map.get(ZKConst.WEIGHT));
-		data.setClientCount(map.get(ZKConst.CLIENT_COUNT));
 		methodMap.forEach((m, value) -> {
 			if (m.length() == 0) {
 				return;
@@ -192,10 +220,9 @@ public class ZkRouteParser {
 			if (value != null && value.length() > 0) {
 				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
 				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
-				intf.setClientCount(methodProperties.get(ZKConst.CLIENT_COUNT));
 			}
 		});
-		return new ServerData(Host.create(path), data);
+		return new ServerData(host, data);
 	}
 
 	public void handle(RouteEvent event) {
@@ -210,10 +237,37 @@ public class ZkRouteParser {
 		final ZkData data;
 
 		private ServerData(Host url, ZkData data) {
-			super();
 			this.url = url;
 			this.data = data;
 		}
+	}
+
+	private int handleData(Map<Host, ZkData> data, List<RouteEvent> list) {
+		int count = 0;
+		for (RouteEvent event : list) {
+			if (logger.isDebugEnabled()) {
+				logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
+				if (logger.isTraceEnabled() && event.getZkData() != null) {
+					logger.trace("接口列表：{}", event.getZkData().getIntfs());
+				}
+			}
+			switch (event.getType()) {
+			case CREATE:
+			case MODIFY:
+				data.put(event.getUrl(), event.getZkData());
+				count++;
+				break;
+			case DELETE:
+
+				if (data.remove(event.getUrl()) != null) {
+					count++;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		return count;
 	}
 
 }

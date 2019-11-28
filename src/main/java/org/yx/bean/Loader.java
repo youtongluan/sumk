@@ -22,7 +22,7 @@ import java.net.URL;
 import java.util.Enumeration;
 
 import org.yx.conf.AppInfo;
-import org.yx.log.SimpleLoggerHolder;
+import org.yx.log.InnerLog;
 
 public final class Loader {
 
@@ -44,7 +44,7 @@ public final class Loader {
 			try {
 				return (T) Loader.newInstance(daoClz);
 			} catch (Throwable e) {
-				SimpleLoggerHolder.inst().error("sumk.bean", e.getMessage(), e);
+				InnerLog.error("sumk.bean", e.getMessage(), e);
 				return null;
 			}
 		}

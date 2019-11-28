@@ -18,7 +18,7 @@ package org.yx.bean;
 import java.util.Collection;
 
 public final class InnerIOC {
-	final static BeanPool pool = new BeanPool();
+	static final BeanPool pool = new BeanPool();
 
 	public static <T> T putClass(String name, Class<T> clz) throws Exception {
 		return pool.putClass(name, clz);

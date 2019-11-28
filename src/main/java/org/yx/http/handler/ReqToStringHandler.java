@@ -15,9 +15,16 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 
+@Bean
 public class ReqToStringHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 1700;
+	}
 
 	@Override
 	public boolean accept(Web web) {

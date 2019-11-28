@@ -27,15 +27,14 @@ import org.yx.log.Log;
 import org.yx.redis.RecordReq;
 
 @Bean
-public class DeleteListener implements DBListener<DeleteEvent> {
+public class DeleteListener implements DBEventListener {
 
 	@Override
-	public boolean accept(SumkEvent event) {
-		return DeleteEvent.class.isInstance(event);
-	}
-
-	@Override
-	public void listen(DeleteEvent event) {
+	public void listen(SumkEvent ev) {
+		if (!DeleteEvent.class.isInstance(ev)) {
+			return;
+		}
+		DeleteEvent event = DeleteEvent.class.cast(ev);
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache()) {

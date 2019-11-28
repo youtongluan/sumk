@@ -24,7 +24,7 @@ import org.slf4j.Logger;
 import org.yx.db.sql.PojoMeta;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 public final class RecordReq {
 
@@ -54,7 +54,7 @@ public final class RecordReq {
 		if (json == null) {
 			return;
 		}
-		Assert.notEmpty(id, "key of redis value cannot be null");
+		Asserts.notEmpty(id, "key of redis value cannot be null");
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		RedisPool.get(tableName).setex(key, m.getTtlSec(), json);

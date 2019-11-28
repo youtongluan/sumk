@@ -15,9 +15,8 @@
  */
 package org.yx.db.listener;
 
-import org.yx.db.event.DBEvent;
-import org.yx.listener.Listener;
+import org.yx.listener.SumkListener;
 
-public interface DBListener<T extends DBEvent> extends Listener<T> {
+public interface DBEventListener extends SumkListener {
 
 }

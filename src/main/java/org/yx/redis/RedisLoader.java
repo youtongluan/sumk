@@ -20,12 +20,9 @@ import java.io.StringReader;
 import java.util.Map;
 import java.util.Set;
 
-import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.conf.NamePairs;
-import org.yx.conf.SingleResourceLoader;
 import org.yx.log.Log;
-import org.yx.util.Assert;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -34,18 +31,12 @@ import redis.clients.jedis.JedisPoolConfig;
 public class RedisLoader {
 	private static JedisPoolConfig defaultConfig = null;
 
-	private static SingleResourceLoader resourceLoader;
-
 	public static JedisPoolConfig getDefaultConfig() {
 		return defaultConfig;
 	}
 
 	public static void setDefaultConfig(JedisPoolConfig defaultConfig) {
 		RedisLoader.defaultConfig = defaultConfig;
-	}
-
-	public static void setResourceLoader(SingleResourceLoader resourceLoader) {
-		RedisLoader.resourceLoader = resourceLoader;
 	}
 
 	private static final String REDIS_FILE = "redis.properties";
@@ -60,21 +51,8 @@ public class RedisLoader {
 	}
 
 	private static byte[] loadConfig() throws Exception {
-		if (AppInfo.getBoolean("sumk.redis.appinfo", true)) {
-			Map<String, String> redis = AppInfo.subMap("s.redis.");
-			return new NamePairs(redis).toBytes();
-		}
-		if (resourceLoader == null) {
-			String resourceFactory = AppInfo.get("sumk.redis.conf.loader", "redis.RedisPropertiesLoader");
-			if (resourceFactory == null || resourceFactory.isEmpty()) {
-				return null;
-			}
-			Class<?> factoryClz = Loader.loadClass(resourceFactory);
-			Assert.isTrue(SingleResourceLoader.class.isAssignableFrom(factoryClz),
-					resourceFactory + " should extend from " + SingleResourceLoader.class.getSimpleName());
-			resourceLoader = (SingleResourceLoader) Loader.newInstance(factoryClz);
-		}
-		return resourceLoader.readResource(REDIS_FILE);
+		Map<String, String> map = AppInfo.subMap("s.redis.");
+		return new NamePairs(map).toBytes();
 	}
 
 	private static void loadRedisByConfig() throws IOException, Exception {

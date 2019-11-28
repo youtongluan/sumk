@@ -66,12 +66,19 @@ public class SoaException extends CodeException {
 		return e.getMessage();
 	}
 
+	private boolean printRawStackTrace() {
+		return AppInfo.getBoolean("sumk.rpc.printRawStackTrace", false);
+	}
+
 	@Override
-	public void printStackTrace(PrintStream s) {
-		if (AppInfo.getBoolean("sumk.rpc.printRawStackTrace", false)) {
-			super.printStackTrace(s);
-			return;
+	public Throwable fillInStackTrace() {
+		if (printRawStackTrace()) {
+			super.fillInStackTrace();
 		}
+		return this;
+	}
+
+	private String buildStackTraceMessage() {
 		StringBuilder sb = new StringBuilder(this.toString());
 		if (this.exceptionClz != null && this.exceptionClz.length() > 0) {
 			sb.append("\n\tcause by " + this.exceptionClz);
@@ -79,6 +86,26 @@ public class SoaException extends CodeException {
 				sb.append(":").append(this.detailError);
 			}
 		}
-		s.println(sb.toString());
+		return sb.toString();
 	}
+
+	@Override
+	public void printStackTrace(PrintStream s) {
+		if (printRawStackTrace()) {
+			super.printStackTrace(s);
+			return;
+		}
+
+		s.println(this.buildStackTraceMessage());
+	}
+
+	@Override
+	public void printStackTrace(PrintWriter s) {
+		if (printRawStackTrace()) {
+			super.printStackTrace(s);
+			return;
+		}
+		s.println(this.buildStackTraceMessage());
+	}
+
 }

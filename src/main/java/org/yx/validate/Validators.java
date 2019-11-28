@@ -28,6 +28,7 @@ public class Validators implements Plugin {
 	private static Validator[] validators;
 
 	public static void check(ParamInfo info, Object arg) throws InvalidParamException {
+		Validator[] validators = Validators.validators;
 		if (info == null || info.param == null || validators == null || validators.length == 0) {
 			return;
 		}
@@ -38,12 +39,9 @@ public class Validators implements Plugin {
 
 	@Override
 	public void startAsync() {
-
-		if (validators != null) {
-			return;
-		}
 		List<Validator> list = IOC.getBeans(Validator.class);
 		if (list == null || list.isEmpty()) {
+			validators = null;
 			return;
 		}
 		validators = list.toArray(new Validator[list.size()]);

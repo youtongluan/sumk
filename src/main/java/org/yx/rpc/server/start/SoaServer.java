@@ -16,7 +16,6 @@
 package org.yx.rpc.server.start;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +36,14 @@ import org.yx.rpc.server.RequestHandler;
 import org.yx.util.CollectionUtil;
 import org.yx.util.ZkClientHelper;
 
-public class SOAServer implements Lifecycle {
+public class SoaServer implements Lifecycle {
 
 	private volatile boolean started = false;
 	private MinaServer server;
 	private String zkUrl;
 	private String path;
 	private boolean enable;
+	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "sumk.rpc.server.zk.route", ZKConst.SUMK_SOA_ROOT);
 
 	private static boolean soaServerEnable() {
 		return AppInfo.getBoolean("sumk.rpc.server.register", true);
@@ -74,15 +74,16 @@ public class SOAServer implements Lifecycle {
 	};
 
 	private final Runnable zkRegister = () -> {
-		zkUnRegister.run();
 		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 		String zkData = createZkRouteData();
+
+		zkUnRegister.run();
 		client.createEphemeral(path, zkData);
 		client.subscribeStateChanges(stateListener);
 		Log.get("sumk.rpc.zk").debug("server zk data:\n{}", zkData);
 	};
 
-	public SOAServer(int port) {
+	public SoaServer(int port) {
 		this.init(port);
 	}
 
@@ -94,18 +95,15 @@ public class SOAServer implements Lifecycle {
 	}
 
 	private String createZkRouteData() {
-		Collection<String> methodSet = RpcActionHolder.publishSoaSet();
-		String[] methods = methodSet.toArray(new String[methodSet.size()]);
+		List<String> methods = RpcActionHolder.publishSoaSet();
 		final Map<String, String> map = new HashMap<>();
-		if (methods.length > 0) {
-			for (String method : methods) {
-				map.put(ZKConst.METHODS + "." + method, AppInfo.get("sumk.rpc.methods." + method));
-			}
+		for (String method : methods) {
+
+			map.put(ZKConst.METHODS + "." + method, AppInfo.get("sumk.rpc.methods." + method));
 		}
 		map.put(ZKConst.FEATURE, Profile.featureInHex());
 		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));
 		map.put(ZKConst.WEIGHT, AppInfo.get("sumk.rpc.weight", "100"));
-		map.put(ZKConst.CLIENT_COUNT, AppInfo.get("sumk.rpc.client.count", "1000"));
 
 		String zkData = CollectionUtil.saveMapToText(map, "\n", "=");
 		return zkData;
@@ -145,7 +143,7 @@ public class SOAServer implements Lifecycle {
 				this.zkUnRegister.run();
 			}
 			AppInfo.addObserver(info -> {
-				if (!SOAServer.this.started) {
+				if (!SoaServer.this.started) {
 					Log.get("sumk.rpc.zk").debug("soa server unstarted");
 					return;
 				}
@@ -155,10 +153,10 @@ public class SOAServer implements Lifecycle {
 				}
 				try {
 					if (serverEnable) {
-						SOAServer.this.zkRegister.run();
+						SoaServer.this.zkRegister.run();
 						Log.get("sumk.rpc").info("soa server enabled");
 					} else {
-						SOAServer.this.zkUnRegister.run();
+						SoaServer.this.zkUnRegister.run();
 						Log.get("sumk.rpc").info("soa server disabled!!!");
 					}
 					enable = serverEnable;
@@ -188,11 +186,12 @@ public class SOAServer implements Lifecycle {
 			if (port_zk < 1) {
 				port_zk = port;
 			}
+			Log.get("sumk.rpc").debug("register zk by ip:{},port:{}", ip_zk, port_zk);
 
-			path = ZKConst.SOA_ROOT + "/" + ip_zk + ":" + port_zk;
+			path = SOA_ROOT + "/" + ip_zk + ":" + port_zk;
 			zkUrl = AppInfo.getServerZKUrl();
 			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			ZkClientHelper.makeSure(client, ZKConst.SOA_ROOT);
+			ZkClientHelper.makeSure(client, SOA_ROOT);
 		} catch (Exception e) {
 			Log.get("sumk.rpc").error(e.toString(), e);
 			System.exit(-1);

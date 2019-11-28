@@ -17,7 +17,7 @@ package org.yx.util;
 
 import org.yx.common.sequence.SeqHolder;
 
-public class SeqUtil {
+public final class SeqUtil {
 
 	public static long next() {
 		return SeqHolder.inst().next();

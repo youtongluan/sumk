@@ -66,7 +66,7 @@ public final class SumkDate implements Comparable<SumkDate> {
 		return of(LocalDateTime.now());
 	}
 
-	private static SumkDate of(Calendar cal) {
+	public static SumkDate of(Calendar cal) {
 
 		int y = cal.get(Calendar.ERA) == GregorianCalendar.AD ? cal.get(Calendar.YEAR) : 1 - cal.get(Calendar.YEAR);
 		return of(y, cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DATE), cal.get(Calendar.HOUR_OF_DAY),
@@ -108,22 +108,22 @@ public final class SumkDate implements Comparable<SumkDate> {
 
 	SumkDate(int year, byte month, byte day, byte hour, byte minute, byte second, short milSecond) {
 		if (month < 1 || month > 12) {
-			SumkException.throwException(ERROR_CODE, month + " is not valid value");
+			SumkException.throwException(ERROR_CODE, month + " is not valid month");
 		}
 		if (day < 1 || day > 31) {
-			SumkException.throwException(ERROR_CODE, day + " is not valid value");
+			SumkException.throwException(ERROR_CODE, day + " is not valid day");
 		}
 		if (hour < 0 || hour > 23) {
-			SumkException.throwException(ERROR_CODE, hour + " is not valid value");
+			SumkException.throwException(ERROR_CODE, hour + " is not valid hour");
 		}
 		if (minute < 0 || minute > 59) {
-			SumkException.throwException(ERROR_CODE, minute + " is not valid value");
+			SumkException.throwException(ERROR_CODE, minute + " is not valid minute");
 		}
 		if (second < 0 || second > 59) {
-			SumkException.throwException(ERROR_CODE, second + " is not valid value");
+			SumkException.throwException(ERROR_CODE, second + " is not valid second");
 		}
 		if (milSecond < 0 || milSecond > 999) {
-			SumkException.throwException(ERROR_CODE, milSecond + " is not valid value");
+			SumkException.throwException(ERROR_CODE, milSecond + " is not valid milSecond");
 		}
 		this.year = year;
 		this.month = month;
@@ -164,10 +164,12 @@ public final class SumkDate implements Comparable<SumkDate> {
 	}
 
 	public static SumkDate of(final String dateString) {
-		if (dateString.length() < 23 || dateString.charAt(dateString.length() - 3) == ':') {
-			return DateTimeFormater.inst.parse(dateString);
+		int lastDot = dateString.lastIndexOf(".");
+
+		if (lastDot > 15 && dateString.length() - lastDot <= 4) {
+			return FullDateTimeFormater.inst.parse(dateString);
 		}
-		return FullDateTimeFormater.inst.parse(dateString);
+		return DateTimeFormater.inst.parse(dateString);
 	}
 
 	public static SumkDate of(final String dateString, final String format) {

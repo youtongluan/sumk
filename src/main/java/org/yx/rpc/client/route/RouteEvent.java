@@ -18,9 +18,9 @@ package org.yx.rpc.client.route;
 import org.yx.common.Host;
 
 public class RouteEvent {
-	private RouteEventType type;
-	private ZkData zkData;
-	private Host url;
+	private final RouteEventType type;
+	private final ZkData zkData;
+	private final Host url;
 
 	public Host getUrl() {
 		return url;
@@ -35,21 +35,20 @@ public class RouteEvent {
 	}
 
 	private RouteEvent(RouteEventType type, Host url, ZkData zkData) {
-		super();
 		this.type = type;
 		this.zkData = zkData;
 		this.url = url;
 	}
 
-	public static RouteEvent create(Host url, ZkData data) {
+	public static RouteEvent createEvent(Host url, ZkData data) {
 		return new RouteEvent(RouteEventType.CREATE, url, data);
 	}
 
-	public static RouteEvent delete(Host url) {
+	public static RouteEvent deleteEvent(Host url) {
 		return new RouteEvent(RouteEventType.DELETE, url, null);
 	}
 
-	public static RouteEvent modify(Host url, ZkData data) {
+	public static RouteEvent modifyEvent(Host url, ZkData data) {
 		return new RouteEvent(RouteEventType.MODIFY, url, data);
 	}
 }

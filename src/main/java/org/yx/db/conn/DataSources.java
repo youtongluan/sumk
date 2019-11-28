@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import org.yx.exception.SumkException;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 public final class DataSources {
 
@@ -42,7 +42,7 @@ public final class DataSources {
 
 	public static DataSourceManager getManager(String dbName) {
 		try {
-			Assert.hasText(dbName, "db name can not be empty");
+			Asserts.hasText(dbName, "db name can not be empty");
 			dbName = dbName.trim();
 			DataSourceManager factory = factoryMap.get(dbName);
 			if (factory != null) {
@@ -67,7 +67,7 @@ public final class DataSources {
 	}
 
 	public static void remove(String dbName) throws Exception {
-		Assert.hasText(dbName, "db name can not be empty");
+		Asserts.hasText(dbName, "db name can not be empty");
 		dbName = dbName.trim();
 		DataSourceManager factory = factoryMap.get(dbName);
 		if (factory == null) {

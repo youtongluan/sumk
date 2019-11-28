@@ -21,10 +21,17 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.http.kit.InnerHttpUtil;
 
-public class ReqHeaderHandler implements HttpHandler {
+@Bean
+public class ReqParameterHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 1100;
+	}
 
 	@Override
 	public boolean accept(Web web) {

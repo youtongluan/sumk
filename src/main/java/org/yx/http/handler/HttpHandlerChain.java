@@ -18,7 +18,6 @@ package org.yx.http.handler;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -35,7 +34,7 @@ public class HttpHandlerChain implements HttpHandler {
 
 	private Logger LOG = Log.get("sumk.http.chain");
 	private Logger LOG_ERROR = Log.get("sumk.http.req.error");
-	private List<HttpHandler> handlers = new ArrayList<>();
+	private HttpHandler[] handlers;
 
 	public static final HttpHandlerChain inst = new HttpHandlerChain();
 	public static final HttpHandlerChain upload = new HttpHandlerChain();
@@ -44,15 +43,8 @@ public class HttpHandlerChain implements HttpHandler {
 
 	}
 
-	public void addHandler(HttpHandler handler) {
-		if (this.handlers.contains(handler)) {
-			return;
-		}
-		this.handlers.add(handler);
-	}
-
 	public void setHandlers(List<HttpHandler> handlers) {
-		this.handlers = handlers;
+		this.handlers = handlers.toArray(new HttpHandler[0]);
 	}
 
 	@Override
@@ -64,8 +56,7 @@ public class HttpHandlerChain implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Exception {
 		boolean success = true;
 		try {
-			for (int i = 0; i < this.handlers.size(); i++) {
-				HttpHandler h = this.handlers.get(i);
+			for (HttpHandler h : this.handlers) {
 				if (h.accept(ctx.httpNode().action)) {
 					if (LOG.isTraceEnabled()) {
 						if (String.class.isInstance(ctx.data())) {

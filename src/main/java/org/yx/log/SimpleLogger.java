@@ -20,6 +20,8 @@ public interface SimpleLogger {
 
 	void info(String module, String msg);
 
+	void warn(String module, String msg);
+
 	void error(String module, String msg, Throwable e);
 
 	void error(String module, String msg);

@@ -17,7 +17,7 @@ package org.yx.log;
 
 import java.util.Objects;
 
-public class SimpleLoggerHolder {
+public class InnerLog {
 
 	public static final SimpleLogger CONSOLE_LOG = new SimpleLogger() {
 		@Override
@@ -27,6 +27,11 @@ public class SimpleLoggerHolder {
 
 		@Override
 		public void info(String module, String msg) {
+			System.out.println(msg);
+		}
+
+		@Override
+		public void warn(String module, String msg) {
 			System.out.println(msg);
 		}
 
@@ -58,14 +63,12 @@ public class SimpleLoggerHolder {
 		}
 
 		@Override
+		public void warn(String module, String msg) {
+			Log.get(module).warn(msg);
+		}
+
+		@Override
 		public void error(String module, String msg, Throwable e) {
-			if (e == null) {
-				Log.get(module).error(msg);
-				return;
-			}
-			if (msg == null || msg.isEmpty()) {
-				msg = e.toString();
-			}
 			Log.get(module).error(msg, e);
 		}
 
@@ -73,20 +76,44 @@ public class SimpleLoggerHolder {
 		public void error(String module, String msg) {
 			Log.get(module).error(msg);
 		}
+
 	};
 
 	private static SimpleLogger inst = CONSOLE_LOG;
 
-	public static SimpleLogger inst() {
-		return inst;
+	public static void setLogger(SimpleLogger inst) {
+		InnerLog.inst = Objects.requireNonNull(inst);
 	}
 
-	public static void setLogger(SimpleLogger inst) {
-		SimpleLoggerHolder.inst = Objects.requireNonNull(inst);
+	public static void debug(String module, String msg) {
+		inst.debug(module, msg);
+	}
+
+	public static void info(String module, String msg) {
+		inst.info(module, msg);
+	}
+
+	public static void warn(String module, String msg) {
+		inst.warn(module, msg);
+	}
+
+	public static void error(String module, String msg) {
+		inst.error(module, msg);
 	}
 
 	public static void error(String module, Throwable e) {
 		inst.error(module, e.getMessage(), e);
+	}
+
+	public static void error(String module, String msg, Throwable e) {
+		if (e == null) {
+			inst.error(module, msg);
+			return;
+		}
+		if (msg == null || msg.isEmpty()) {
+			msg = e.toString();
+		}
+		inst.error(module, msg, e);
 	}
 
 }

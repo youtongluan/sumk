@@ -34,7 +34,7 @@ import java.util.Set;
  * 本类的许多方法都会对key、value做trim()处理
  */
 
-public class CollectionUtil {
+public final class CollectionUtil {
 
 	@SafeVarargs
 	public static <T> List<T> list(T... a) {

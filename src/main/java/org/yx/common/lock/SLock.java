@@ -18,7 +18,7 @@ package org.yx.common.lock;
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 import org.yx.util.UUIDSeed;
 
 public final class SLock implements Lock {
@@ -33,8 +33,8 @@ public final class SLock implements Lock {
 	private long endTime;
 
 	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
-		Assert.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
-		Assert.isTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
+		Asserts.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
+		Asserts.isTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
 				"lock param is not valid");
 		this.id = keyId;
 		this.value = value;

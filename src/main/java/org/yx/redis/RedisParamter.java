@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.yx.common.Host;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 
 import redis.clients.jedis.Protocol;
 
@@ -40,7 +40,7 @@ public class RedisParamter {
 	private String masterName;
 
 	public RedisParamter(String host) {
-		Assert.notEmpty(host, "redis host cannot be empty");
+		Asserts.notEmpty(host, "redis host cannot be empty");
 		host = host.replace('　', ' ').replace('，', ',').replace('：', ':').replaceAll("\\s", "");
 		int index = host.indexOf('-');
 		if (index > -1) {

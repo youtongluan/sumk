@@ -22,13 +22,15 @@ public final class Host implements Comparable<Host> {
 	private final int port;
 
 	private Host(String ip, int port) {
-		super();
 		this.ip = ip;
 		this.port = port;
 	}
 
 	public static Host create(String addr) {
 		int index = addr.lastIndexOf(':');
+		if (index < 1) {
+			return null;
+		}
 		return new Host(addr.substring(0, index), Integer.valueOf(addr.substring(index + 1)));
 	}
 

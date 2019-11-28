@@ -18,11 +18,10 @@ package org.yx.bean;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.yx.listener.Listener;
 import org.yx.listener.SumkEvent;
 import org.yx.util.StringUtil;
 
-public abstract class AbstractBeanListener implements Listener<BeanEvent> {
+public abstract class AbstractBeanListener implements BeanEventListener {
 
 	protected final String[] packages;
 	protected boolean valid;
@@ -46,7 +45,16 @@ public abstract class AbstractBeanListener implements Listener<BeanEvent> {
 	}
 
 	@Override
-	public boolean accept(SumkEvent event) {
+	public void listen(SumkEvent event) {
+		if (this.accept(event)) {
+			this.onListen(BeanEvent.class.cast(event));
+		}
+
+	}
+
+	protected abstract void onListen(BeanEvent cast);
+
+	private boolean accept(SumkEvent event) {
 		if (!valid) {
 			return false;
 		}

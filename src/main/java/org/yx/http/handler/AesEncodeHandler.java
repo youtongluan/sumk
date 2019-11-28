@@ -15,10 +15,17 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.http.HttpCiphers;
 
+@Bean
 public class AesEncodeHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 2300;
+	}
 
 	@Override
 	public boolean accept(Web web) {

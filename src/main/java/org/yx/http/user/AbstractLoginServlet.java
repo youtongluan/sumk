@@ -44,6 +44,10 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		final long begin = System.currentTimeMillis();
 		boolean success = false;
 		try {
+			if (!acceptMethod(req, resp)) {
+				Log.get("sumk.http.login").warn("不是有效的method，只能使用GET或POST");
+				return;
+			}
 			resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
 			final String sid = createSessionId(req);
 			String user = getUserName(req);
@@ -96,6 +100,15 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			InnerHttpUtil.act(LOGIN_NAME, System.currentTimeMillis() - begin, success);
 		}
 
+	}
+
+	protected boolean acceptMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		String method = req.getMethod().toUpperCase();
+		if (!"GET".equals(method) && !"POST".equals(method)) {
+			resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, method + " not allowd");
+			return false;
+		}
+		return true;
 	}
 
 	protected String getUserName(HttpServletRequest req) {

@@ -31,15 +31,14 @@ import org.yx.log.Log;
 import org.yx.redis.RecordReq;
 
 @Bean
-public class UpdateListener implements DBListener<UpdateEvent> {
+public class UpdateListener implements DBEventListener {
 
 	@Override
-	public boolean accept(SumkEvent event) {
-		return UpdateEvent.class.isInstance(event);
-	}
-
-	@Override
-	public void listen(UpdateEvent event) {
+	public void listen(SumkEvent ev) {
+		if (!UpdateEvent.class.isInstance(ev)) {
+			return;
+		}
+		UpdateEvent event = UpdateEvent.class.cast(ev);
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache()) {

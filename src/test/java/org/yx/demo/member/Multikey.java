@@ -3,10 +3,9 @@ package org.yx.demo.member;
 import org.yx.annotation.db.Column;
 import org.yx.annotation.db.ColumnType;
 import org.yx.annotation.db.Table;
-import org.yx.db.dao.Pojo;
 
 @Table
-public class Multikey extends Pojo {
+public class Multikey {
 
 	@Column(columnType = ColumnType.ID_BOTH, columnOrder = 1)
 	private String id1;

@@ -13,12 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.matcher;
+package org.yx.http.handler;
 
-public interface TextMatcher {
+public enum RestType {
+	/**
+	 * 普通的http请求
+	 */
+	PLAIN,
 
-	final String WILDCARD = "*";
-
-	boolean match(String text);
-
+	/**
+	 * 文件上传
+	 */
+	UPLOAD
 }

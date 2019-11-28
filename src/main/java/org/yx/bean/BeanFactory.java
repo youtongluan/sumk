@@ -16,18 +16,18 @@
 package org.yx.bean;
 
 import java.util.Collection;
+import java.util.function.Predicate;
 
 import org.yx.annotation.Bean;
 import org.yx.common.StartConstants;
 import org.yx.common.matcher.MatcherFactory;
-import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public class BeanFactory extends AbstractBeanListener {
 
-	private final TextMatcher excludeMatcher;
+	private final Predicate<String> excludeMatcher;
 
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
@@ -37,11 +37,11 @@ public class BeanFactory extends AbstractBeanListener {
 	}
 
 	@Override
-	public void listen(BeanEvent event) {
+	public void onListen(BeanEvent event) {
 		try {
 			Class<?> clz = event.clz();
 			String clzName = clz.getName();
-			if (excludeMatcher.match(clzName)) {
+			if (excludeMatcher.test(clzName)) {
 				Log.get("sumk.ioc").info("{} excluded", clzName);
 				return;
 			}

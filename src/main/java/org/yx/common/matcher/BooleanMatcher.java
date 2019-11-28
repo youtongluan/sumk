@@ -1,6 +1,8 @@
 package org.yx.common.matcher;
 
-public class BooleanMatcher implements TextMatcher {
+import java.util.function.Predicate;
+
+public class BooleanMatcher implements Predicate<String> {
 
 	public static final BooleanMatcher TRUE = new BooleanMatcher(true);
 	public static final BooleanMatcher FALSE = new BooleanMatcher(false);
@@ -12,7 +14,7 @@ public class BooleanMatcher implements TextMatcher {
 	}
 
 	@Override
-	public boolean match(String text) {
+	public boolean test(String text) {
 		return matched;
 	}
 

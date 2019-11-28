@@ -18,6 +18,7 @@ package org.yx.http.start;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojos;
@@ -27,7 +28,6 @@ import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
-import org.yx.common.matcher.TextMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
 import org.yx.http.HttpActionHolder;
@@ -38,7 +38,7 @@ import org.yx.validate.ParamFactory;
 
 public class WebAnnotationResolver {
 	private WebNameResolver nameResolver;
-	private TextMatcher matcher = BooleanMatcher.TRUE;
+	private Predicate<String> matcher = BooleanMatcher.TRUE;
 
 	public WebAnnotationResolver() {
 		nameResolver = Loader.newInstanceFromAppKey("sumk.http.name.resolver");
@@ -55,7 +55,7 @@ public class WebAnnotationResolver {
 	public void resolve(Object bean) throws Exception {
 
 		Class<?> clz = IOC.getTargetClassOfBean(bean);
-		if (!matcher.match(clz.getName())) {
+		if (!matcher.test(clz.getName())) {
 			return;
 		}
 		Method[] methods = clz.getDeclaredMethods();

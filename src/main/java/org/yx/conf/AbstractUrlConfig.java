@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.yx.common.StartOnceLifecycle;
-import org.yx.log.SimpleLoggerHolder;
+import org.yx.log.InnerLog;
 import org.yx.main.SumkServer;
 import org.yx.util.StreamUtil;
 
@@ -72,7 +72,7 @@ public abstract class AbstractUrlConfig extends StartOnceLifecycle {
 				try {
 					Thread.sleep(period);
 				} catch (InterruptedException e) {
-					SimpleLoggerHolder.inst().debug("sumk.conf", "url config exited because interrupted");
+					InnerLog.debug("sumk.conf", "url config exited because interrupted");
 					return;
 				}
 				if (extractData()) {
@@ -105,7 +105,7 @@ public abstract class AbstractUrlConfig extends StartOnceLifecycle {
 			handleData(data);
 			this.rawData = data;
 		} catch (Exception e) {
-			SimpleLoggerHolder.error("sumk.conf", e);
+			InnerLog.error("sumk.conf", e);
 			return false;
 		} finally {
 			if (conn != null) {

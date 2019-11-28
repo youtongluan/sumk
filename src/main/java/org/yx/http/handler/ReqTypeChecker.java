@@ -15,12 +15,19 @@
  */
 package org.yx.http.handler;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.InnerHttpUtil;
 
+@Bean
 public class ReqTypeChecker implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 1200;
+	}
 
 	@Override
 	public boolean accept(Web web) {

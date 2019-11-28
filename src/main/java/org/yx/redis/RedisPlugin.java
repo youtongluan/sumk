@@ -22,7 +22,6 @@ import org.yx.bean.Plugin;
 import org.yx.common.lock.Locker;
 import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 
@@ -31,17 +30,17 @@ public class RedisPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
+		if (AppInfo.subMap("s.redis.").isEmpty()) {
+			return;
+		}
 		try {
-			if (AppInfo.subMap("s.redis.").isEmpty()) {
-				return;
-			}
 			Class.forName("redis.clients.jedis.Jedis");
 		} catch (Throwable e) {
 			Log.get(Redis.LOG_NAME).warn("Jedis is not in use because of " + e.getMessage());
 			return;
 		}
 		try {
-			ConsoleLog.get(Redis.LOG_NAME).debug("redis pool init");
+			Log.get(Redis.LOG_NAME).debug("redis pool init");
 			RedisLoader.init();
 			initSeqUtilCounter();
 			SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(RedisChecker.get(), 5,
@@ -50,7 +49,6 @@ public class RedisPlugin implements Plugin {
 			Log.get(Redis.LOG_NAME).error(e.getMessage(), e);
 			System.exit(-1);
 		}
-
 		Locker.init();
 	}
 
@@ -63,7 +61,7 @@ public class RedisPlugin implements Plugin {
 			redis = RedisPool.getRedisExactly("session");
 		}
 		if (redis != null) {
-			ConsoleLog.get(Redis.LOG_NAME).debug("use redis counter");
+			Log.get(Redis.LOG_NAME).debug("use redis counter");
 			SeqHolder.inst().setCounter(new RedisCounter(redis));
 		}
 	}

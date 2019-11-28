@@ -17,9 +17,16 @@ package org.yx.http.handler;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 
+@Bean
 public class RespHeaderHandler implements HttpHandler {
+
+	@Override
+	public int order() {
+		return 2500;
+	}
 
 	@Override
 	public boolean accept(Web web) {

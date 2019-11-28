@@ -19,47 +19,45 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.yx.common.Host;
+import org.yx.log.Log;
 
-public class Routes {
-	private final Map<String, RpcRoute> routes;
+public final class Routes {
+	private final Map<String, RpcRoute> rpcRoutes;
 	private final Map<Host, ZkData> zkDatas;
 
 	private Routes(Map<Host, ZkData> zkDatas, Map<String, RpcRoute> routes) {
-		super();
-		this.zkDatas = zkDatas;
-		this.routes = routes;
+		this.zkDatas = Objects.requireNonNull(zkDatas);
+		this.rpcRoutes = Objects.requireNonNull(routes);
 	}
 
 	private static volatile Routes ROUTE = new Routes(Collections.emptyMap(), Collections.emptyMap());
 
+	public static Map<Host, ZkData> currentDatas() {
+		return Collections.unmodifiableMap(ROUTE.zkDatas);
+	}
+
 	public static RpcRoute getRoute(String api) {
-		return ROUTE.routes.get(api);
+		return ROUTE.rpcRoutes.get(api);
+	}
+
+	public static int routeSize() {
+		return ROUTE.rpcRoutes.size();
 	}
 
 	private static void _refresh(Map<Host, ZkData> data, Map<String, RpcRoute> route) {
 		Routes r = new Routes(data, route);
 		Routes.ROUTE = r;
-	}
-
-	static void handle(RouteEvent event) {
-		Map<Host, ZkData> data = new HashMap<>(ROUTE.zkDatas);
-		switch (event.getType()) {
-		case CREATE:
-		case MODIFY:
-			data.put(event.getUrl(), event.getZkData());
-			break;
-		case DELETE:
-
-			if (data.remove(event.getUrl()) == null) {
-				return;
+		if (Log.get("sumk.rpc.zk").isDebugEnabled()) {
+			StringBuilder sb = new StringBuilder("微服务源:");
+			for (Host host : data.keySet()) {
+				sb.append("  ").append(host.toString());
 			}
-			break;
-		default:
+			Log.get("sumk.rpc.zk").debug(sb.toString());
 		}
-		refresh(data);
 	}
 
 	public static synchronized void refresh(Map<Host, ZkData> datas) {

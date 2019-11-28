@@ -29,15 +29,14 @@ import org.yx.log.Log;
 import org.yx.redis.RecordReq;
 
 @Bean
-public class InsertListener implements DBListener<InsertEvent> {
+public class InsertListener implements DBEventListener {
 
 	@Override
-	public boolean accept(SumkEvent event) {
-		return InsertEvent.class.isInstance(event);
-	}
-
-	@Override
-	public void listen(InsertEvent event) {
+	public void listen(SumkEvent ev) {
+		if (!InsertEvent.class.isInstance(ev)) {
+			return;
+		}
+		InsertEvent event = InsertEvent.class.cast(ev);
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			List<Map<String, Object>> list = event.getPojos();

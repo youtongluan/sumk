@@ -17,8 +17,11 @@ package org.yx.common.matcher;
 
 import java.util.Arrays;
 import java.util.Set;
+import java.util.function.Predicate;
 
-public class WildcardMatcher implements TextMatcher {
+public class WildcardMatcher implements Predicate<String> {
+
+	public static final String WILDCARD = "*";
 
 	private final Set<String> exacts;
 
@@ -26,13 +29,17 @@ public class WildcardMatcher implements TextMatcher {
 
 	private final String[] matchEnds;
 
-	WildcardMatcher(Set<String> exacts, String[] matchStarts, String[] matchEnds) {
+	private final String[] contains;
+
+	WildcardMatcher(Set<String> exacts, String[] matchStarts, String[] matchEnds, String[] contains) {
 		this.exacts = exacts;
 		this.matchStarts = matchStarts;
 		this.matchEnds = matchEnds;
+		this.contains = contains;
 	}
 
-	public boolean match(String text) {
+	@Override
+	public boolean test(String text) {
 
 		if (this.exacts != null && this.exacts.contains(text)) {
 
@@ -56,13 +63,21 @@ public class WildcardMatcher implements TextMatcher {
 				}
 			}
 		}
+
+		if (this.contains != null) {
+			for (String c : this.contains) {
+				if (text.contains(c)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
 	@Override
 	public String toString() {
 		return "exacts=" + exacts + ", matchStarts=" + Arrays.toString(matchStarts) + ", matchEnds="
-				+ Arrays.toString(matchEnds);
+				+ Arrays.toString(matchEnds) + ", contains=" + Arrays.toString(this.contains);
 	}
 
 }

@@ -15,25 +15,20 @@
  */
 package org.yx.db.event;
 
-import org.yx.db.listener.DBListener;
+import org.yx.db.listener.DBEventListener;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 
-public class DBEventPublisher {
+public final class DBEventPublisher {
 
-	private static ListenerGroup<DBEvent> group = new ListenerGroupImpl<>();
+	private static final ListenerGroup<DBEventListener> group = new ListenerGroupImpl<>();
 
 	public static void publish(DBEvent event) {
 		group.listen(event);
 	}
 
-	public static synchronized boolean addListener(DBListener<DBEvent> listener) {
-		group.addListener(listener);
-		return true;
-	}
-
-	public static synchronized void removeListener(DBListener<DBEvent> listener) {
-		group.removeListener(listener);
+	public static ListenerGroup<DBEventListener> group() {
+		return group;
 	}
 
 }

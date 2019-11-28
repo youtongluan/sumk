@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
@@ -71,7 +71,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	}
 
 	protected void checkIn() {
-		Assert.isTrue(CollectionUtil.isNotEmpty(this.in), "no conditions");
+		Asserts.isTrue(CollectionUtil.isNotEmpty(this.in), "no conditions");
 	}
 
 	protected void _addIn(Object src) {

@@ -13,31 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util;
+package org.yx.http.handler;
 
-import org.yx.exception.SumkException;
+import org.yx.annotation.Bean;
+import org.yx.annotation.http.Web;
 
-public final class Assert {
+@Bean
+public class ToBytesHandler implements HttpHandler {
 
-	public static void notEmpty(String text, String msg) {
-		if (text == null || text.isEmpty()) {
-			throw new SumkException(657645465, msg);
-		}
-
+	@Override
+	public int order() {
+		return 2200;
 	}
 
-	public static void isTrue(boolean b, String msg) {
-		if (b) {
-			return;
-		}
-		throw new SumkException(5674354, msg);
+	@Override
+	public boolean accept(Web web) {
+		return true;
 	}
 
-	public static void hasText(String text, String msg) {
-		if (text == null || text.trim().isEmpty()) {
-			throw new SumkException(652342134, msg);
+	@Override
+	public boolean handle(WebContext ctx) throws Exception {
+		Object result = ctx.result();
+		if (result.getClass() == byte[].class) {
+			return false;
 		}
-
+		String bs = (String) result;
+		ctx.result(bs.getBytes(ctx.charset()));
+		return false;
 	}
 
 }

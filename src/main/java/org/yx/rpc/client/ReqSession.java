@@ -66,7 +66,7 @@ public final class ReqSession {
 				}
 			}
 		} catch (Exception e1) {
-			Log.get("sumk.rpc.session").error(e1.toString(), e1);
+			Log.get("sumk.rpc").error(this.addr + " - " + e1.toString(), e1);
 			HostChecker.get().addDownUrl(addr);
 		}
 

@@ -20,6 +20,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
+import org.yx.annotation.Bean;
 import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojo;
@@ -31,10 +32,16 @@ import org.yx.http.WebFilter;
 import org.yx.log.Log;
 import org.yx.validate.ParamInfo;
 
+@Bean
 public class InvokeHandler implements HttpHandler {
 
 	private static final Object STOP = new Object();
 	private static WebFilter[] filters;
+
+	@Override
+	public int order() {
+		return 2000;
+	}
 
 	public static void setFilters(WebFilter[] filters) {
 		InvokeHandler.filters = Objects.requireNonNull(filters);

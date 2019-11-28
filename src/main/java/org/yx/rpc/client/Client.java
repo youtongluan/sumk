@@ -37,12 +37,12 @@ import org.yx.rpc.client.route.RpcRoute;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.util.Assert;
+import org.yx.util.Asserts;
 import org.yx.util.S;
 
 import com.google.gson.JsonElement;
 
-public final class Sender {
+public final class Client {
 
 	private static enum ParamType {
 		JSONARRAY, JSON
@@ -62,31 +62,31 @@ public final class Sender {
 	private static AtomicInteger counter = new AtomicInteger();
 	private Consumer<RpcResult> callback;
 
-	Sender(String api) {
+	Client(String api) {
 		this.api = api;
 	}
 
-	public Sender directUrls(Host... urls) {
+	public Client directUrls(Host... urls) {
 		this.directUrls = urls;
 		return this;
 	}
 
-	public Sender backup(boolean backup) {
+	public Client backup(boolean backup) {
 		this.backup = backup;
 		return this;
 	}
 
-	public Sender timeout(int timeout) {
+	public Client timeout(int timeout) {
 		this.totalTimeout = timeout;
 		return this;
 	}
 
-	public Sender callback(Consumer<RpcResult> callback) {
+	public Client callback(Consumer<RpcResult> callback) {
 		this.callback = callback;
 		return this;
 	}
 
-	public Sender paramInArray(Object... args) {
+	public Client paramInArray(Object... args) {
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
 			params[i] = RpcGson.toJson(args[i]);
@@ -96,13 +96,13 @@ public final class Sender {
 		return this;
 	}
 
-	public Sender paramInJson(String json) {
+	public Client paramInJson(String json) {
 		this.params = json;
 		this.paramType = ParamType.JSON;
 		return this;
 	}
 
-	public Sender paramInMap(Map<String, ?> map) {
+	public Client paramInMap(Map<String, ?> map) {
 		this.params = S.json.toJson(map);
 		this.paramType = ParamType.JSON;
 		return this;
@@ -115,7 +115,7 @@ public final class Sender {
 	 *         通信异常是SoaException；如果是业务类异常，则是BizException
 	 */
 	public RpcFuture execute() {
-		Assert.notEmpty(api, "api cannot be empty");
+		Asserts.notEmpty(api, "api cannot be empty");
 		Objects.requireNonNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
 		Req req = Rpc.req(this.api);

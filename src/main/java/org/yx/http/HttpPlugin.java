@@ -16,11 +16,13 @@
 package org.yx.http;
 
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
@@ -28,8 +30,12 @@ import org.yx.common.Lifecycle;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
+import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.InvokeHandler;
+import org.yx.http.handler.RestType;
+import org.yx.http.start.WebAnnotationResolver;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
@@ -37,7 +43,7 @@ import org.yx.util.StringUtil;
 @Bean
 public class HttpPlugin implements Plugin {
 
-	private Lifecycle server;
+	protected Lifecycle server;
 
 	public static final String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
 
@@ -54,10 +60,10 @@ public class HttpPlugin implements Plugin {
 
 	@Override
 	public int order() {
-		return 10010;
+		return 10100;
 	}
 
-	private static WebFilter[] initFilters() {
+	protected static WebFilter[] initFilters() {
 		List<WebFilter> list = IOC.getBeans(WebFilter.class);
 		if (list == null || list.isEmpty()) {
 			return new WebFilter[0];
@@ -65,14 +71,95 @@ public class HttpPlugin implements Plugin {
 		return list.toArray(new WebFilter[list.size()]);
 	}
 
+	protected void resolveWebAnnotation(Object[] beans) {
+		WebAnnotationResolver factory = new WebAnnotationResolver();
+		try {
+			for (Object bean : beans) {
+				factory.resolve(bean);
+			}
+		} catch (Exception e) {
+			throw SumkException.create(e);
+		}
+	}
+
 	@Override
 	public void startAsync() {
-		if (!SumkServer.isHttpEnable()) {
+		if (!this.isHttpEnable()) {
 			return;
 		}
-		InvokeHandler.setFilters(initFilters());
-		HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
+		try {
+			Object[] beans = StartContext.inst().getBeans();
+			resolveWebAnnotation(beans);
+			InvokeHandler.setFilters(initFilters());
+			HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
+			this.addFusingObserver();
+			this.buildHttpHandlers();
+			this.initServer();
+		} catch (Throwable e) {
+			Log.printStack("sumk.error", e);
+			System.exit(-1);
+		}
+	}
 
+	protected void initServer() throws Exception {
+		int port = StartContext.httpPort();
+		if (port < 1) {
+			return;
+		}
+		String nojetty = StartConstants.NOJETTY;
+		if (StartContext.inst().get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
+			return;
+		}
+		String httpServerClass = StringUtil.isEmpty(AppInfo.get(KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
+				: HTTPS_SERVER_CLASS;
+		String hs = AppInfo.get("sumk.http.starter.class", httpServerClass);
+		if (!hs.contains(".")) {
+			return;
+		}
+		Class<?> httpClz = Class.forName(hs);
+		Constructor<?> c = httpClz.getConstructor(int.class);
+		this.server = (Lifecycle) c.newInstance(port);
+	}
+
+	protected void buildHttpHandlers() {
+		List<HttpHandler> handlers = IOC.getBeans(HttpHandler.class);
+		List<HttpHandler> restHandlers = new ArrayList<>(handlers.size());
+		List<HttpHandler> uploadHandlers = new ArrayList<>(handlers.size());
+		for (HttpHandler h : handlers) {
+			if (h.supportRestType(RestType.PLAIN)) {
+				restHandlers.add(h);
+			}
+			if (h.supportRestType(RestType.UPLOAD)) {
+				uploadHandlers.add(h);
+			}
+		}
+		HttpHandlerChain.inst.setHandlers(restHandlers);
+		Logger logger = Log.get("sumk.http");
+		if (logger.isDebugEnabled()) {
+			logger.debug("rest  handlers:{}", this.buildString(restHandlers));
+		}
+		if (HttpSettings.isUploadEnable()) {
+			HttpHandlerChain.upload.setHandlers(uploadHandlers);
+			if (logger.isDebugEnabled()) {
+				logger.debug("upload handlers:{}", this.buildString(uploadHandlers));
+			}
+		}
+	}
+
+	protected boolean isHttpEnable() {
+		if (!SumkServer.isHttpEnable()) {
+			return false;
+		}
+		try {
+			Class.forName("javax.servlet.http.HttpServlet");
+		} catch (Exception e) {
+			Log.get("sumk.http").error("javax-servlet-api-**.jar is not imported");
+			return false;
+		}
+		return true;
+	}
+
+	protected void addFusingObserver() {
 		AppInfo.addObserver(info -> {
 			HttpSettings.setCookieEnable(AppInfo.getBoolean("sumk.http.header.usecookie", true));
 			HttpSettings.setHttpSessionTimeoutInMs(1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30));
@@ -88,32 +175,6 @@ public class HttpPlugin implements Plugin {
 				HttpSettings.setFusing(set);
 			}
 		});
-		try {
-			HttpHandlerChain.inst.setHandlers(IOC.get(RestHandlerFactorysBean.class).create());
-			if (HttpSettings.isUploadEnable()) {
-				HttpHandlerChain.upload.setHandlers(IOC.get(UploadHandlerFactorysBean.class).create());
-			}
-			int port = StartContext.httpPort();
-			if (port < 1) {
-				return;
-			}
-			String nojetty = StartConstants.NOJETTY;
-			if (StartContext.inst().get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
-				return;
-			}
-			String httpServerClass = StringUtil.isEmpty(AppInfo.get(KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
-					: HTTPS_SERVER_CLASS;
-			String hs = AppInfo.get("sumk.http.starter.class", httpServerClass);
-			if (!hs.contains(".")) {
-				return;
-			}
-			Class<?> httpClz = Class.forName(hs);
-			Constructor<?> c = httpClz.getConstructor(int.class);
-			server = (Lifecycle) c.newInstance(port);
-		} catch (Throwable e) {
-			Log.printStack("sumk.error", e);
-			System.exit(-1);
-		}
 	}
 
 	@Override
@@ -123,6 +184,14 @@ public class HttpPlugin implements Plugin {
 			return;
 		}
 		server.start();
+	}
+
+	protected String buildString(List<HttpHandler> hs) {
+		StringBuilder sb = new StringBuilder();
+		for (HttpHandler h : hs) {
+			sb.append(" ").append(h.getClass().getSimpleName()).append("(").append(h.order()).append(")");
+		}
+		return sb.toString();
 	}
 
 }
