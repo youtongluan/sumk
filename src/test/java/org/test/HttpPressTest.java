@@ -51,6 +51,7 @@ public class HttpPressTest {
 		long begin=System.currentTimeMillis();
 		int count=100000;
 		AtomicLong totalRT=new AtomicLong();
+		AtomicLong success=new AtomicLong();
 		for(int i=0;i<count;i++){
 			executor.execute(()->{
 				try {
@@ -60,6 +61,7 @@ public class HttpPressTest {
 					totalRT.addAndGet(System.currentTimeMillis()-b2);
 					String ret = EntityUtils.toString(resEntity, charset);
 					Assert.assertEquals("[\"你好!!! 小明\",\"你好!!! 小张\"]", ret);
+					success.incrementAndGet();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -69,6 +71,7 @@ public class HttpPressTest {
 		executor.shutdown();
 		executor.awaitTermination(1, TimeUnit.DAYS);
 		long time=System.currentTimeMillis()-begin;
+		Assert.assertEquals(count, success.get());
 		System.out.println(count+"次http请求总耗时:"+time+"ms,平均每秒请求数:"+(count*1000d/time));
 		System.out.println("平均每个请求耗时："+totalRT.get()/count+"ms");
 	}

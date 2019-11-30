@@ -27,7 +27,7 @@ import java.util.function.Predicate;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.common.matcher.WildcardMatcher;
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
 
 public final class LocalhostUtil {
@@ -68,7 +68,7 @@ public final class LocalhostUtil {
 			}
 			return true;
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error("sumk.conf", e.getMessage(), e);
 			return false;
 		}
 	}
@@ -89,7 +89,7 @@ public final class LocalhostUtil {
 				return;
 			}
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
 		if (localIp == null) {
 			localIp = "0.0.0.0";
@@ -108,10 +108,10 @@ public final class LocalhostUtil {
 			}
 		}
 		if (list.size() > 0) {
-			InnerLog.warn("sumk.conf", "没有合适ip，使用第一个ip，列表为:" + list);
+			RawLog.warn("sumk.conf", "没有合适ip，使用第一个ip，列表为:" + list);
 			return list.get(0);
 		}
-		InnerLog.warn("sumk.conf", "找不到任何ip，使用0.0.0.0");
+		RawLog.warn("sumk.conf", "找不到任何ip，使用0.0.0.0");
 		return "0.0.0.0";
 	}
 
@@ -134,7 +134,7 @@ public final class LocalhostUtil {
 				}
 			}
 		} catch (SocketException e) {
-			InnerLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
 		return ipList;
 	}

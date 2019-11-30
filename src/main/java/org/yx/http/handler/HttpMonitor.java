@@ -37,6 +37,7 @@ import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.log.Log;
 import org.yx.util.S;
 
 @Bean
@@ -53,7 +54,9 @@ public class HttpMonitor extends HttpServlet {
 		String md5 = AppInfo.get("sumk.union.monitor", "sumk.http.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		try {
-			if (sign == null || !md5.equalsIgnoreCase(S.hash.digest(sign, StandardCharsets.UTF_8))) {
+			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
+			if (sign == null || !md5.equalsIgnoreCase(signed)) {
+				Log.get("sumk.http").debug("signed:{},need:{}", signed, md5);
 				return;
 			}
 		} catch (Exception e) {

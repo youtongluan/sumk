@@ -52,7 +52,7 @@ public class PluginHandler {
 					Log.get("sumk.SYS").debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
 					Log.printStack("sumk.error", e);
-					System.exit(-1);
+					System.exit(1);
 				}
 			});
 		}
@@ -60,11 +60,11 @@ public class PluginHandler {
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
 				Log.get("sumk.SYS").error("plugins failed to start in {}ms", timeout);
-				System.exit(-1);
+				System.exit(1);
 			}
 		} catch (InterruptedException e) {
 			Log.get("sumk.SYS").error("receive InterruptedException in plugin starting", timeout);
-			System.exit(-1);
+			System.exit(1);
 		}
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();

@@ -167,7 +167,7 @@ public class SoaServer implements Lifecycle {
 			started = true;
 		} catch (Exception e) {
 			Log.printStack("sumk.error", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 
 	}
@@ -194,7 +194,7 @@ public class SoaServer implements Lifecycle {
 			ZkClientHelper.makeSure(client, SOA_ROOT);
 		} catch (Exception e) {
 			Log.get("sumk.rpc").error(e.toString(), e);
-			System.exit(-1);
+			System.exit(1);
 		}
 
 	}

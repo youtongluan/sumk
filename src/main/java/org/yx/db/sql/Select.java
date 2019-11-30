@@ -90,7 +90,7 @@ public class Select extends SelectBuilder {
 			return this;
 		}
 		if (_compare == null) {
-			_compare = new HashMap[4];
+			_compare = new HashMap[COMPARES.length];
 		}
 		this._compare[index] = map;
 		return this;
@@ -137,6 +137,7 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
+	 * like操作，%号要自己添加
 	 * 
 	 * @param key
 	 *            字段名
@@ -146,6 +147,19 @@ public class Select extends SelectBuilder {
 	 */
 	public Select like(String key, Object value) {
 		return setCompare(LIKE, key, value);
+	}
+
+	/**
+	 * 不等于操作
+	 * 
+	 * @param key
+	 *            字段名
+	 * @param value
+	 *            值，不会自动添加%
+	 * @return 当前对象
+	 */
+	public Select not(String key, Object value) {
+		return setCompare(NOT, key, value);
 	}
 
 	public Select bigThan(Map<String, Object> map) {
@@ -180,6 +194,10 @@ public class Select extends SelectBuilder {
 
 	public Select like(Map<String, Object> map) {
 		return setCompare(LIKE, map);
+	}
+
+	public Select not(Map<String, Object> map) {
+		return setCompare(NOT, map);
 	}
 
 	/**

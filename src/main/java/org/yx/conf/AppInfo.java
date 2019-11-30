@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
 
 public final class AppInfo {
@@ -42,7 +42,7 @@ public final class AppInfo {
 			String temp = ManagementFactory.getRuntimeMXBean().getName();
 			pid = temp.substring(0, temp.indexOf("@"));
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e);
+			RawLog.error("sumk.conf", e);
 			pid = "UNKNOW";
 		}
 		init();
@@ -57,15 +57,15 @@ public final class AppInfo {
 				return;
 			}
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e);
-			System.exit(-1);
+			RawLog.error("sumk.conf", e);
+			System.exit(1);
 		}
 		if (info == null) {
 			try {
 				setConfig(new AppConfig());
 			} catch (Exception e) {
-				InnerLog.error("sumk.conf", e);
-				System.exit(-1);
+				RawLog.error("sumk.conf", e);
+				System.exit(1);
 			}
 		}
 	}
@@ -203,7 +203,7 @@ public final class AppInfo {
 			return UTF8;
 		}
 		if (!Charset.isSupported(charsetName)) {
-			InnerLog.error("sumk.conf", "charset '" + charsetName + "' is not supported");
+			RawLog.error("sumk.conf", "charset '" + charsetName + "' is not supported");
 			return UTF8;
 		}
 		return Charset.forName(charsetName);
@@ -260,7 +260,7 @@ public final class AppInfo {
 			try {
 				consumer.accept(info);
 			} catch (Exception e) {
-				InnerLog.error("sumk.conf", e);
+				RawLog.error("sumk.conf", e);
 			}
 		}
 	}

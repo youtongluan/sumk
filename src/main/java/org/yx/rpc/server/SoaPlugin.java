@@ -60,7 +60,7 @@ public class SoaPlugin implements Plugin {
 			}
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 	}
 

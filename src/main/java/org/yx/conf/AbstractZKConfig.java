@@ -23,7 +23,7 @@ import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.yx.common.StartOnceLifecycle;
 import org.yx.log.ConsoleLog;
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 import org.yx.util.ZkClientHelper;
 
 public abstract class AbstractZKConfig extends StartOnceLifecycle implements SystemConfig {
@@ -39,7 +39,7 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 				AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
 				AppInfo.notifyUpdate();
 			} catch (Exception e) {
-				InnerLog.error("sumk.conf", e);
+				RawLog.error("sumk.conf", e);
 			}
 		}
 
@@ -67,7 +67,7 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 		String zkUrl = getZkUrl();
 		NamePairs info = ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
 		this.setZkInfo(info);
-		InnerLog.setLogger(InnerLog.SLF4J_LOG);
+		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	public void stop() {
@@ -77,7 +77,7 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 			client.unsubscribeDataChanges(getDataPath(), listener);
 			this.started = false;
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
 	}
 

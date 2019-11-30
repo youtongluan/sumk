@@ -97,7 +97,7 @@ public class HttpPlugin implements Plugin {
 			this.initServer();
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 	}
 

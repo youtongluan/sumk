@@ -18,7 +18,7 @@ package org.yx.conf;
 import java.net.URL;
 import java.util.Set;
 
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 
 public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 
@@ -31,7 +31,7 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	@Override
 	protected void onStart() {
 		this.init();
-		InnerLog.setLogger(InnerLog.SLF4J_LOG);
+		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	@Override

@@ -32,6 +32,7 @@ import org.yx.common.Monitors;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.log.Log;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
@@ -53,8 +54,9 @@ public class ActInfomation extends HttpServlet {
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		try {
-			if (sign == null || !md5.equalsIgnoreCase(S.hash.digest(sign, StandardCharsets.UTF_8))
-					|| StringUtil.isEmpty(mode)) {
+			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
+			if (sign == null || !md5.equalsIgnoreCase(signed) || StringUtil.isEmpty(mode)) {
+				Log.get("sumk.http").debug("signed:{},need:{}", signed, md5);
 				return;
 			}
 		} catch (Exception e) {

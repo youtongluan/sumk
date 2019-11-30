@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,7 +90,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		if (Map.class.isInstance(src)) {
 			Map<String, Object> map = (Map<String, Object>) src;
 			if (!map.isEmpty()) {
-				this.in.add(map);
+				this.in.add(new HashMap<>(map));
 			}
 			return;
 		}

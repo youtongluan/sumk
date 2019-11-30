@@ -17,7 +17,7 @@ package org.yx.log;
 
 import java.util.Objects;
 
-public class InnerLog {
+public final class RawLog {
 
 	public static final SimpleLogger CONSOLE_LOG = new SimpleLogger() {
 		@Override
@@ -82,7 +82,7 @@ public class InnerLog {
 	private static SimpleLogger inst = CONSOLE_LOG;
 
 	public static void setLogger(SimpleLogger inst) {
-		InnerLog.inst = Objects.requireNonNull(inst);
+		RawLog.inst = Objects.requireNonNull(inst);
 	}
 
 	public static void debug(String module, String msg) {

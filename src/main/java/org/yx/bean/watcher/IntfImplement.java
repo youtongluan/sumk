@@ -52,7 +52,7 @@ public class IntfImplement {
 			}
 		} catch (Exception e) {
 			Log.printStack("sumk.error", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 
 	}

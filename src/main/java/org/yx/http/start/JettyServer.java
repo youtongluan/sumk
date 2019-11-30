@@ -78,7 +78,7 @@ public class JettyServer implements Lifecycle {
 						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 1000));
 					} catch (InterruptedException e1) {
 						Log.get("sumk.http").error("showdown because of InterruptedException");
-						System.exit(-1);
+						System.exit(1);
 					}
 					Log.get("sumk.http").warn("{} was occupied,begin retry {}", this.getPort(), i);
 					try {
@@ -136,7 +136,7 @@ public class JettyServer implements Lifecycle {
 			server.setHandler(context);
 		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 
 	}
@@ -159,7 +159,7 @@ public class JettyServer implements Lifecycle {
 			started = true;
 		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
-			System.exit(-1);
+			System.exit(1);
 		}
 
 	}

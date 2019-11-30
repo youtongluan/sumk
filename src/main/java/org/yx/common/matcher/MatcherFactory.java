@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
 
 public class MatcherFactory {
@@ -43,7 +43,7 @@ public class MatcherFactory {
 				continue;
 			}
 			if (s.length() < minPatternLength) {
-				InnerLog.warn("sumk.conf", s + "的长度太短，将被忽略");
+				RawLog.warn("sumk.conf", s + "的长度太短，将被忽略");
 				continue;
 			}
 
@@ -63,7 +63,7 @@ public class MatcherFactory {
 			}
 
 			if (beginIndex != 0) {
-				InnerLog.warn("sumk.conf", s + "的*不是出现在头尾，将被忽略");
+				RawLog.warn("sumk.conf", s + "的*不是出现在头尾，将被忽略");
 				continue;
 			}
 
@@ -76,7 +76,7 @@ public class MatcherFactory {
 				matchContain.add(s.substring(1, endIndex));
 				continue;
 			}
-			InnerLog.warn("sumk.conf", s + "的*不止出现在头尾，将被忽略！！！");
+			RawLog.warn("sumk.conf", s + "的*不止出现在头尾，将被忽略！！！");
 		}
 
 		Set<String> exacts = exact.size() > 0 ? exact : null;

@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
@@ -29,7 +28,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.common.StartOnceLifecycle;
-import org.yx.log.InnerLog;
+import org.yx.log.RawLog;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 
@@ -63,7 +62,7 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 		if (f.exists()) {
 			return new FileInputStream(f);
 		}
-		InnerLog.info("sumk.conf", "can not found " + this.fileName);
+		RawLog.info("sumk.conf", "can not found " + this.fileName);
 		return null;
 	}
 
@@ -75,14 +74,14 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 			Map<String, String> conf = CollectionUtil.loadMap(in, false);
 			if (conf != null && !conf.equals(this.map)) {
 				if (this.showLog) {
-					InnerLog.info("sumk.conf", "app conf changed at " + new Date());
+					RawLog.info("sumk.conf", fileName + " loaded");
 				}
 				onChange(conf);
 				this.map = conf;
 				AppInfo.notifyUpdate();
 			}
 		} catch (Exception e) {
-			InnerLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
 	}
 
@@ -103,7 +102,7 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 		this.handle();
 		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
 				this.periodTime, TimeUnit.MILLISECONDS);
-		InnerLog.setLogger(InnerLog.SLF4J_LOG);
+		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	@Override

@@ -34,12 +34,13 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		this.toCache = OrmSettings.TO_CACHE;
 	}
 
-	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like " };// like前后要有空格
+	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like ", " != " };// like前后要有空格
 	protected static final int BIG = 0;
 	protected static final int BIG_EQUAL = 1;
 	protected static final int LESS = 2;
 	protected static final int LESS_EQUAL = 3;
 	protected static final int LIKE = 4;
+	protected static final int NOT = 5;
 
 	List<String> selectColumns;
 
@@ -145,8 +146,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		for (int i = 0; i < COMPARES.length && i < this._compare.length; i++) {
+		for (int i = 0; i < COMPARES.length; i++) {
 			Map<String, Object> map = this._compare[i];
+			if (map == null || map.isEmpty()) {
+				continue;
+			}
 			CharSequence sub = this.parseMap(map, COMPARES[i], paramters);
 			if (sub == null) {
 				continue;

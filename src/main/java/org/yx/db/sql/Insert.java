@@ -16,7 +16,6 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +25,7 @@ import org.yx.db.event.InsertEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.util.SeqUtil;
 
-public final class Insert extends AbstractSqlBuilder<Integer> {
+public class Insert extends AbstractSqlBuilder<Integer> {
 
 	private List<Object> src = new ArrayList<>();
 
@@ -70,59 +69,7 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		this.checkIn();
 		this.pojoMeta = this.parsePojoMeta(true);
-		return this.in.size() == 1 ? singleInsert() : batchInsert();
-	}
-
-	private MapedSql singleInsert() throws InstantiationException, IllegalAccessException {
-		Map<String, Object> pojoMap = this.in.get(0);
-		MapedSql ms = new MapedSql();
-		StringBuilder sb = new StringBuilder();
-		sb.append("INSERT INTO ");
-		sb.append(pojoMeta.getTableName());
-		sb.append(" (");
-		boolean notFirst = false;
-		StringBuilder values = new StringBuilder();
-		ColumnMeta[] fms = pojoMeta.fieldMetas;
-		Map<String, Object> map = new HashMap<>();
-
-		for (ColumnMeta fm : fms) {
-			String name = fm.dbColumn;
-			Object value = fm.value(pojoMap);
-			if (value == null) {
-
-				if (fm.isDBID() && canUseAutoID(pojoMeta)) {
-					value = SeqUtil.next(pojoMeta.getTableName());
-					fm.setValue(pojoMap, value);
-					fm.setValue(src.get(0), value);
-				} else {
-					continue;
-				}
-			}
-			if (notFirst) {
-				sb.append(',');
-				values.append(',');
-			}
-			notFirst = true;
-			sb.append(name);
-			ms.addParam(value);
-			map.put(fm.getFieldName(), value);
-			values.append('?');
-		}
-		if (pojoMeta.isSoftDelete()) {
-			String columnName = pojoMeta.softDelete.columnName;
-			sb.append(',').append(columnName);
-			values.append(",?");
-			ms.addParam(pojoMeta.softDelete.validValue);
-		}
-		sb.append(')');
-		sb.append(" VALUES ");
-		sb.append('(');
-		sb.append(values);
-		sb.append(')');
-		ms.sql = sb.toString();
-		InsertEvent event = new InsertEvent(pojoMeta.getTableName(), Collections.singletonList(map));
-		ms.event = event;
-		return ms;
+		return batchInsert();
 	}
 
 	private MapedSql batchInsert() throws InstantiationException, IllegalAccessException {
@@ -157,7 +104,6 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 		for (int i = 0; i < recodeSize; i++) {
 			Map<String, Object> pojoMap = this.in.get(i);
 			Map<String, Object> map = new HashMap<>();
-			cacheList.add(map);
 
 			for (ColumnMeta fm : fms) {
 				Object value = fm.value(pojoMap);
@@ -172,6 +118,10 @@ public final class Insert extends AbstractSqlBuilder<Integer> {
 				ms.addParam(value);
 				map.put(fm.getFieldName(), value);
 			}
+			if (map.isEmpty()) {
+				continue;
+			}
+			cacheList.add(map);
 			if (pojoMeta.isSoftDelete()) {
 				ms.addParam(pojoMeta.softDelete.validValue);
 			}

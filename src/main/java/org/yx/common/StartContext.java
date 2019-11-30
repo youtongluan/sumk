@@ -75,7 +75,7 @@ public class StartContext {
 
 	public static void startFail() {
 		if (AppInfo.getBoolean("sumk.exitIfFail", true)) {
-			System.exit(-1);
+			System.exit(1);
 		}
 	}
 

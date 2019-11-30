@@ -51,7 +51,7 @@ public final class Locker {
 			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
 			Log.printStack("sumk.lock", e);
 			if (AppInfo.getBoolean("sumk.shutdown.if.lock", false)) {
-				System.exit(-1);
+				System.exit(1);
 			}
 		}
 	}

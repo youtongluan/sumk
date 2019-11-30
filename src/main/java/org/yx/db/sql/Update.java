@@ -59,7 +59,6 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	/**
 	 * 设置where条件，如果没有设置该条件。就用pojo的数据库主键或者redis主键
 	 * <UL>
-	 * <LI>调用本方法后，byDBID和byCacheID方法将被忽略</LI>
 	 * <LI>本方法可以被多次调用，多次调用之间是OR关系</LI>
 	 * <LI><B>注意：如果本表使用了缓存，本参数必须包含所有redis主键</B></LI>
 	 * <LI><B>注意：如果pojo是map类型，那么它的null值是有效条件</B></LI>
@@ -189,6 +188,9 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
 		boolean isSingle = in.size() == 1;
 		for (Map<String, Object> where : this.in) {
+			if (where.isEmpty()) {
+				continue;
+			}
 			this.checkMap(where, this.pojoMeta);
 			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
 			for (ColumnMeta fm : fms) {
@@ -204,7 +206,10 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				andItem.item().append(fm.dbColumn).append("=? ");
 				ms.addParam(value);
 			}
-			orItem.item().append(andItem.toCharSequence());
+			CharSequence one = andItem.toCharSequence();
+			if (one != null && one.length() > 0) {
+				orItem.item().append(one);
+			}
 		}
 		CharSequence whereStr = orItem.toCharSequence(true);
 		if (whereStr == null || whereStr.length() == 0) {

@@ -47,7 +47,7 @@ public class RedisPlugin implements Plugin {
 					AppInfo.getInt("sumk.redis.check.period", 5), TimeUnit.SECONDS);
 		} catch (Exception e) {
 			Log.get(Redis.LOG_NAME).error(e.getMessage(), e);
-			System.exit(-1);
+			System.exit(1);
 		}
 		Locker.init();
 	}
