@@ -15,46 +15,20 @@
  */
 package org.yx.http.handler;
 
-import java.util.Objects;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.annotation.http.Web;
-import org.yx.asm.ArgPojo;
-import org.yx.common.BizExcutor;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
-import org.yx.http.HttpGson;
-import org.yx.http.WebFilter;
+import org.yx.http.invoke.WebHandler;
 import org.yx.log.Log;
-import org.yx.validate.ParamInfo;
 
 @Bean
 public class InvokeHandler implements HttpHandler {
 
-	private static final Object STOP = new Object();
-	private static WebFilter[] filters;
-
 	@Override
 	public int order() {
 		return 2000;
-	}
-
-	public static void setFilters(WebFilter[] filters) {
-		InvokeHandler.filters = Objects.requireNonNull(filters);
-		if (filters.length > 0) {
-			Logger log = Log.get("sumk.http");
-			if (log.isDebugEnabled()) {
-				StringBuilder sb = new StringBuilder("web filter:");
-				for (WebFilter f : filters) {
-					sb.append("  ").append(f.getClass().getSimpleName());
-				}
-				log.debug(sb.toString());
-			}
-		}
 	}
 
 	@Override
@@ -71,7 +45,7 @@ public class InvokeHandler implements HttpHandler {
 		Object ret = null;
 		if (info.errorHandler != null) {
 			try {
-				ret = exec(info, ctx);
+				ret = WebHandler.handle(ctx);
 			} catch (Exception e) {
 				if (BizException.class.isInstance(e)
 						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
@@ -81,59 +55,10 @@ public class InvokeHandler implements HttpHandler {
 				BizException.throwException(info.errorHandler.code(), info.errorHandler.message());
 			}
 		} else {
-			ret = exec(info, ctx);
-		}
-		if (STOP == ret) {
-			return true;
+			ret = WebHandler.handle(ctx);
 		}
 		ctx.result(ret);
 		return false;
-	}
-
-	private static Object exec(HttpActionNode info, WebContext ctx) throws Throwable {
-		return info.accept(http -> {
-			ArgPojo argObj;
-			if (http.argNames.length == 0) {
-				argObj = http.getEmptyArgObj();
-			} else {
-				if (ctx.data() == null) {
-					HttpException.throwException(InvokeHandler.class, "there is no data");
-				}
-				argObj = HttpGson.gson().fromJson((String) ctx.data(), http.argClz);
-			}
-
-			return exec(argObj, http.owner, info.paramInfos, ctx);
-		});
-	}
-
-	private static Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos, WebContext ctx) throws Throwable {
-		Object[] params = argObj.params();
-		if (filters.length == 0) {
-			return BizExcutor.exec(argObj, owner, params, paramInfos);
-		}
-		HttpServletRequest req = ctx.httpRequest();
-		try {
-			for (WebFilter f : filters) {
-				if (!f.beforeInvoke(req, ctx.httpResponse(), params)) {
-					return STOP;
-				}
-			}
-			Object ret = BizExcutor.exec(argObj, owner, params, paramInfos);
-			for (WebFilter f : filters) {
-				if (!f.afterInvoke(req, ctx.httpResponse(), params, ret)) {
-					return STOP;
-				}
-			}
-			return ret;
-		} catch (Throwable e) {
-			for (WebFilter f : filters) {
-				Throwable e2 = f.error(req, params, e);
-				if (e2 != null) {
-					e = e2;
-				}
-			}
-			throw e;
-		}
 	}
 
 }

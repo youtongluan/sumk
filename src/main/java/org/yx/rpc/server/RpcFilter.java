@@ -15,15 +15,19 @@
  */
 package org.yx.rpc.server;
 
+import java.util.Objects;
+
 import org.yx.common.Ordered;
 import org.yx.rpc.RpcActionNode;
-import org.yx.rpc.codec.Request;
 
-public interface RpcFilter extends Ordered {
+public abstract class RpcFilter implements Ordered {
 
-	public void beforeInvoke(RpcActionNode node, Request req) throws Exception;
+	protected RpcFilter next;
 
-	public void afterInvoke(RpcActionNode node, Request req, Object result) throws Exception;
+	public void setNext(RpcFilter next) {
+		this.next = Objects.requireNonNull(next);
+	}
 
-	public Throwable error(RpcActionNode node, Request req, Throwable ex);
+	public abstract Object doFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable;
+
 }

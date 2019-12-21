@@ -29,7 +29,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.http.log.HttpLogHolder;
+import org.yx.util.UUIDSeed;
 
 public abstract class AbstractHttpServer extends HttpServlet {
 
@@ -39,6 +39,9 @@ public abstract class AbstractHttpServer extends HttpServlet {
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		if (!InnerHttpUtil.checkGetMethod(resp)) {
+			return;
+		}
 		this.handle(req, resp);
 	}
 
@@ -75,24 +78,21 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			}
 			HttpActionNode info = HttpActionHolder.getHttpInfo(act);
 			if (info == null) {
-				log.error(act + " donot found handler");
-				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确", req);
+				InnerHttpUtil.actNotFound(req, resp, act);
 				return;
 			}
+			info.checkThreshold();
 			HttpContextHolder.set(req, resp);
-			ActionContext.httpContext(act, req.getParameter("thisIsTest"));
+			ActionContext.newContext(act, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
 			handle(act, info, req, resp);
 
 		} catch (Exception e) {
 			if (BizException.class.isInstance(e)) {
-				log.info("code:{},message:{}", BizException.class.cast(e).getCode(), e.getMessage());
+				BizException be = BizException.class.cast(e);
+				errorAndLog(resp, be.getCode(), be.getMessage(), req);
 			} else {
 				log.error(e.toString(), e);
-			}
-			try {
-				errorAndLog(resp, -1005, "请求格式不正确", req);
-			} catch (IOException e1) {
-				log.error(e.toString(), e);
+				errorAndLog(resp, HttpErrorCode.FRAMEWORK_ERROR, "请求处理异常", req);
 			}
 		} finally {
 			HttpContextHolder.remove();
@@ -100,13 +100,17 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		}
 	}
 
-	protected void errorAndLog(HttpServletResponse resp, int code, String errorMsg, HttpServletRequest req)
-			throws IOException {
-		HttpLogHolder.errorLog(code, errorMsg, req);
-		InnerHttpUtil.error(resp, code, errorMsg, InnerHttpUtil.charset(req));
+	protected void errorAndLog(HttpServletResponse resp, int code, String errorMsg, HttpServletRequest req) {
+		try {
+			InnerHttpUtil.error(req, resp, code, errorMsg);
+		} catch (IOException e) {
+			log.error(e.toString(), e);
+		}
 	}
 
-	protected abstract ActParser getParser();
+	protected ActParser getParser() {
+		return ActParser.pathActParser;
+	}
 
 	protected void setRespHeader(HttpServletRequest req, HttpServletResponse resp) {
 		resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));

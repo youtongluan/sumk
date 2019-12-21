@@ -27,9 +27,6 @@ import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
-	static {
-		OrmSettings.register();
-	}
 
 	protected SumkDbVisitor<T> visitor;
 
@@ -126,7 +123,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	public AbstractSqlBuilder(SumkDbVisitor<T> visitor) {
 		this.visitor = visitor;
-		this.failIfPropertyNotMapped = OrmSettings.FAIL_IF_PROPERTY_NOT_MAPPED;
+		this.failIfPropertyNotMapped = DBSettings.failIfPropertyNotMapped();
 	}
 
 	protected T accept(SumkDbVisitor<T> visitor) {

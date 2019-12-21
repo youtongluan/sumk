@@ -13,14 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.rpc.server;
 
-@FunctionalInterface
-public interface Daemon {
+import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.codec.Request;
 
-	boolean run() throws Exception;
+public abstract class RpcVisitor {
 
-	default void close() throws Exception {
-
+	public RpcVisitor(Request req) {
+		this.req = req;
 	}
+
+	protected final Request req;
+
+	public Request req() {
+		return req;
+	}
+
+	public abstract Object visit(RpcActionNode info) throws Throwable;
 }

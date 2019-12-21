@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.HttpHeader;
+import org.yx.http.HttpHeaderName;
 import org.yx.http.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
@@ -54,26 +54,24 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			LoginObject obj = login(sid, user, req);
 			Charset charset = InnerHttpUtil.charset(req);
 			if (obj == null) {
-				Log.get("sumk.http.login").info("{}:login Object must not be null", user);
-				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login failed", charset);
+				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, user + " : login failed");
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
-				Log.get("sumk.http.login").debug("{} : {}", user, obj.getErrorMsg());
-				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
+				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg());
 				return;
 			}
 			byte[] key = createEncryptKey(req);
 			boolean singleLogin = WebSessions.isSingleLogin(this.getType(req));
 			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
 				Log.get("sumk.http.login").debug("{} :sid:{} login failed", user, sid);
-				InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login failed", charset);
+				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, user + " : login failed");
 				return;
 			}
 			String userId = obj.getSessionObject().getUserId();
-			resp.setHeader(HttpHeader.SESSIONID, sid);
+			resp.setHeader(HttpHeaderName.sessionId(), sid);
 			if (StringUtil.isNotEmpty(userId)) {
-				resp.setHeader(HttpHeader.TOKEN, userId);
+				resp.setHeader(HttpHeaderName.token(), userId);
 			}
 			outputKey(resp, key);
 			if (HttpSettings.isCookieEnable()) {
@@ -95,9 +93,9 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			success = true;
 		} catch (Exception e) {
 			Log.get("sumk.http.login").error(e.toString(), e);
-			InnerHttpUtil.error(resp, HttpErrorCode.LOGINFAILED, "login fail", AppInfo.UTF8);
+			InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, "login fail");
 		} finally {
-			InnerHttpUtil.act(LOGIN_NAME, System.currentTimeMillis() - begin, success);
+			InnerHttpUtil.record(LOGIN_NAME, System.currentTimeMillis() - begin, success);
 		}
 
 	}
@@ -118,7 +116,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	protected void setSessionCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String attr) {
 		StringBuilder cookie = new StringBuilder();
 
-		cookie.append(HttpHeader.SESSIONID).append('=').append(sid).append(attr);
+		cookie.append(HttpHeaderName.sessionId()).append('=').append(sid).append(attr);
 
 		resp.addHeader("Set-Cookie", cookie.toString());
 	}
@@ -126,7 +124,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	protected void setTokenCookie(HttpServletRequest req, HttpServletResponse resp, String userId, String attr) {
 		if (WebSessions.isSingleLogin(this.getType(req)) && StringUtil.isNotEmpty(userId)) {
 			StringBuilder cookie = new StringBuilder();
-			cookie.append(HttpHeader.TOKEN).append('=').append(userId).append(attr);
+			cookie.append(HttpHeaderName.token()).append('=').append(userId).append(attr);
 			resp.addHeader("Set-Cookie", cookie.toString());
 		}
 	}
@@ -173,7 +171,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		StringBuilder cookie = new StringBuilder();
 		String type = this.getType(req);
 		if (StringUtil.isNotEmpty(type)) {
-			cookie.append(HttpHeader.TYPE).append('=').append(type).append(attr);
+			cookie.append(HttpHeaderName.type()).append('=').append(type).append(attr);
 			resp.addHeader("Set-Cookie", cookie.toString());
 		}
 	}

@@ -56,7 +56,7 @@ public final class HttpContextHolder {
 	}
 
 	public static String sessionId() {
-		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.SESSIONID);
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeaderName.sessionId());
 	}
 
 	private static String fromHeaderOrCookie(HttpServletRequest req, String name) {
@@ -102,11 +102,6 @@ public final class HttpContextHolder {
 	}
 
 	public static String getToken() {
-		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.TOKEN);
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeaderName.token());
 	}
-
-	public static String clientType() {
-		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeader.CLIENT);
-	}
-
 }

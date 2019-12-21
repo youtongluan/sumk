@@ -24,7 +24,6 @@ import org.yx.http.handler.HttpActionNode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Log;
 
 /**
  * 
@@ -41,25 +40,21 @@ public class UploadServer extends AbstractHttpServer {
 	protected void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
 		if (HttpHandlerChain.upload == null) {
-			Log.get("sumk.http").error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
-			InnerHttpUtil.error(resp, HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用", InnerHttpUtil.charset(req));
+			log.error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
+			InnerHttpUtil.error(req, resp, HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
 			return;
 		}
 		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
-			Log.get("sumk.http").error("the MIME of act is " + MULTI + ",not " + req.getContentType());
+			log.error("the MIME of act is " + MULTI + ",not " + req.getContentType());
 			return;
 		}
 		if (info.upload == null) {
 
-			Log.get("sumk.http").error(act + " has error type, it must be have @Upload");
+			log.error(act + " has error type, it must be have @Upload");
 			return;
 		}
 		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.upload.handle(wc);
 	}
 
-	@Override
-	protected ActParser getParser() {
-		return ActParser.pathActParser;
-	}
 }

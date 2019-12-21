@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.youtongluan</groupId>
 	<artifactId>sumk</artifactId>
-	<version>2.6.4</version>
+	<version>2.6.5</version>
 
 	<name>com.github.youtongluan:sumk</name>
 	<description>A quick developing framewort for internet company</description>

@@ -29,7 +29,6 @@ import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
-import org.yx.exception.SimpleSumkException;
 import org.yx.http.HttpActionHolder;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.log.ConsoleLog;
@@ -99,9 +98,6 @@ public class WebAnnotationResolver {
 	private void addAction(String name, HttpActionNode node) throws Exception {
 		if (name == null || name.isEmpty()) {
 			return;
-		}
-		if (HttpActionHolder.getHttpInfo(name) != null) {
-			throw new SimpleSumkException(1242435, name + " already existed");
 		}
 		HttpActionHolder.putActInfo(name, node);
 	}

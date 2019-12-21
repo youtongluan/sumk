@@ -33,8 +33,8 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.InvokeHandler;
 import org.yx.http.handler.RestType;
+import org.yx.http.invoke.WebHandler;
 import org.yx.http.start.WebAnnotationResolver;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
@@ -63,14 +63,6 @@ public class HttpPlugin implements Plugin {
 		return 10100;
 	}
 
-	protected static WebFilter[] initFilters() {
-		List<WebFilter> list = IOC.getBeans(WebFilter.class);
-		if (list == null || list.isEmpty()) {
-			return new WebFilter[0];
-		}
-		return list.toArray(new WebFilter[list.size()]);
-	}
-
 	protected void resolveWebAnnotation(Object[] beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
@@ -88,9 +80,11 @@ public class HttpPlugin implements Plugin {
 			return;
 		}
 		try {
+			HttpHeaderName.init();
+			HttpActionHolder.setIngoreCase(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
 			Object[] beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
-			InvokeHandler.setFilters(initFilters());
+			WebHandler.init();
 			HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
 			this.addFusingObserver();
 			this.buildHttpHandlers();

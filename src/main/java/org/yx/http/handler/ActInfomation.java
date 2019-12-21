@@ -53,9 +53,13 @@ public class ActInfomation extends HttpServlet {
 		String md5 = AppInfo.get("sumk.union.monitor", "sumk.acts.md5", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
+		if (sign == null) {
+			Log.get("sumk.http").debug("sign is empty");
+			return;
+		}
 		try {
 			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
-			if (sign == null || !md5.equalsIgnoreCase(signed) || StringUtil.isEmpty(mode)) {
+			if (!md5.equalsIgnoreCase(signed) || StringUtil.isEmpty(mode)) {
 				Log.get("sumk.http").debug("signed:{},need:{}", signed, md5);
 				return;
 			}

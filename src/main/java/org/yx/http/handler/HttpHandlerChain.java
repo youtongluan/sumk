@@ -27,7 +27,7 @@ import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.http.log.HttpLogHolder;
+import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
 
 public class HttpHandlerChain implements HttpHandler {
@@ -67,7 +67,7 @@ public class HttpHandlerChain implements HttpHandler {
 						}
 					}
 					if (h.handle(ctx)) {
-						success = true;
+						break;
 					}
 				}
 			}
@@ -99,9 +99,9 @@ public class HttpHandlerChain implements HttpHandler {
 			LOG_ERROR.error(msg(ctx, e.getMessage()), e);
 			error(ctx, HttpErrorCode.HANDLE_ERROR, "请求出错");
 		} finally {
-			HttpLogHolder.log(ctx);
+			HttpLogs.log(ctx);
 			UploadFileHolder.remove();
-			InnerHttpUtil.act(ctx.act(), System.currentTimeMillis() - ctx.beginTime(), success);
+			InnerHttpUtil.record(ctx.act(), System.currentTimeMillis() - ctx.beginTime(), success);
 		}
 		return true;
 	}
@@ -112,8 +112,7 @@ public class HttpHandlerChain implements HttpHandler {
 	}
 
 	private void error(WebContext ctx, int code, String message) throws UnsupportedEncodingException, IOException {
-		HttpLogHolder.errorLog(code, message, ctx);
-		InnerHttpUtil.error(ctx.httpResponse(), code, message, ctx.charset());
+		InnerHttpUtil.error(ctx, code, message);
 	}
 
 }

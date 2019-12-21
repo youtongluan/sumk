@@ -18,10 +18,11 @@ package org.yx.common;
 import java.lang.reflect.InvocationTargetException;
 
 import org.yx.asm.ArgPojo;
+import org.yx.exception.SumkException;
 import org.yx.validate.ParamInfo;
 import org.yx.validate.Validators;
 
-public abstract class BizExcutor {
+public final class BizExcutor {
 
 	public static Object exec(ArgPojo argObj, Object owner, Object[] params, ParamInfo[] infos) throws Throwable {
 		if (infos != null) {
@@ -44,6 +45,13 @@ public abstract class BizExcutor {
 			}
 			throw e;
 		}
+	}
+
+	public static void checkNode(String api, CalleeNode node) {
+		if (node == null) {
+			SumkException.throwException(123546, "[" + api + "] is not a valid interface");
+		}
+		node.checkThreshold();
 	}
 
 }

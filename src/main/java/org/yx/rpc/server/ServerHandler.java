@@ -26,14 +26,13 @@ import org.slf4j.Logger;
 import org.yx.bean.IOC;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
-import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.ProtocolDeserializer;
 import org.yx.rpc.codec.Request;
-import org.yx.util.S;
+import org.yx.rpc.log.RpcLogs;
 
 public class ServerHandler implements IoHandler {
 
@@ -90,33 +89,32 @@ public class ServerHandler implements IoHandler {
 
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
+		Response resp = new Response();
+		Request req = null;
 		try {
 			Object obj = this.deserializer.deserialize(message);
 			if (obj == null) {
 				return;
 			}
 			if (Request.class.isInstance(obj)) {
-				final Request req = (Request) obj;
+				req = (Request) obj;
 				ActionContext.rpcContext(req, req.isTest());
 				for (RequestHandler h : handlers) {
-					Response ret = h.handle(req);
-					if (ret != null) {
-						if (log.isTraceEnabled()) {
-							log.trace("req:{}\nresp:{}", S.json.toJson(obj), S.json.toJson(ret));
-						}
-						session.write(ret);
+					if (h.handle(req, resp)) {
+						resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
+						session.write(resp);
 						return;
 					}
 				}
 			}
-		} catch (Exception e) {
-			Response resp = new Response();
+		} catch (Throwable e) {
+			long begin = req == null ? 0 : req.getStartInServer();
+			resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(RpcGson.toJson(resp));
-			if (!BizException.class.isInstance(e)) {
-				Log.printStack("sumk.error", e);
-			} else {
-				Log.get("sumk.error").warn(e.toString(), e);
+		} finally {
+			if (AppInfo.getBoolean("sumk.rpc.server.log", false)) {
+				RpcLogs.serverLog(req, resp);
 			}
 		}
 

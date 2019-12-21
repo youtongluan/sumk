@@ -25,9 +25,12 @@ import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.http.ErrorResp;
 import org.yx.http.HttpContextHolder;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpGson;
-import org.yx.http.HttpHeader;
+import org.yx.http.HttpHeaderName;
 import org.yx.http.HttpSettings;
+import org.yx.http.handler.WebContext;
+import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
@@ -36,7 +39,7 @@ public class DefaultHttpKit implements HttpKit {
 	private final ActStatis actStatic = new ActStatis();
 
 	public String getType(HttpServletRequest req) {
-		String type = HttpContextHolder.fromHeaderOrCookieOrParamter(req, HttpHeader.TYPE);
+		String type = HttpContextHolder.fromHeaderOrCookieOrParamter(req, HttpHeaderName.type());
 		return type == null ? "" : type;
 	}
 
@@ -56,12 +59,21 @@ public class DefaultHttpKit implements HttpKit {
 		return Charset.forName(charsetName);
 	}
 
-	public void error(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
+	@Override
+	public void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) throws IOException {
+		HttpLogs.errorLog(code, errorMsg, req);
 		resp.setStatus(HttpSettings.getErrorHttpStatus());
-		ErrorResp r = new ErrorResp();
-		r.setCode(code);
-		r.setMessage(errorMsg);
-		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
+		ErrorResp r = new ErrorResp(code, errorMsg);
+		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset(req)));
+	}
+
+	@Override
+	public void error(WebContext ctx, int code, String errorMsg) throws IOException {
+		HttpLogs.errorLog(code, errorMsg, ctx);
+		HttpServletResponse resp = ctx.httpResponse();
+		resp.setStatus(HttpSettings.getErrorHttpStatus());
+		ErrorResp r = new ErrorResp(code, errorMsg);
+		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(ctx.charset()));
 	}
 
 	public void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
@@ -78,13 +90,23 @@ public class DefaultHttpKit implements HttpKit {
 		resp.setDateHeader("Expires", 0);
 	}
 
-	public void act(String act, long time, boolean isSuccess) {
+	@Override
+	public void record(String act, long time, boolean isSuccess) {
 		actStatic.visit(act, time, isSuccess);
 	}
 
 	@Override
 	public ActStatis actStatis() {
 		return this.actStatic;
+	}
+
+	@Override
+	public void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
+		Log.get("sumk.http").error(act + " donot found handler");
+		int code = HttpErrorCode.ACT_FORMAT_ERROR;
+		String errorMsg = "请求的格式不正确";
+		HttpLogs.errorLog(code, errorMsg, req);
+		error(req, resp, code, errorMsg);
 	}
 
 }

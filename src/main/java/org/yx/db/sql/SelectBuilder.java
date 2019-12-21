@@ -30,8 +30,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
 		super(visitor);
-		this.fromCache = OrmSettings.FROM_CACHE;
-		this.toCache = OrmSettings.TO_CACHE;
+		this.fromCache = DBSettings.fromCache();
+		this.toCache = DBSettings.toCache();
 	}
 
 	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like ", " != " };// like前后要有空格
@@ -42,20 +42,22 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	protected static final int LIKE = 4;
 	protected static final int NOT = 5;
 
-	List<String> selectColumns;
+	protected List<String> selectColumns;
 
 	protected Map<String, Object>[] _compare;
 
-	List<Order> orderby;
+	protected List<Order> orderby;
 
-	int offset;
+	protected int offset;
 
-	int limit;
+	protected int limit;
 
-	boolean fromCache;
-	boolean toCache;
+	protected boolean fromCache;
+	protected boolean toCache;
 
 	protected boolean allowEmptyWhere;
+
+	protected CompareNullPolicy compareNullPolicy = CompareNullPolicy.CONTINUE;
 
 	@Override
 	public MapedSql toMapedSql() throws Exception {
@@ -131,13 +133,18 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	private CharSequence buildValid(List<Object> paramters) {
-		SoftDeleteMeta sm = this.pojoMeta.softDelete;
-		if (sm == null) {
+		SoftDeleteMeta softDelete = this.pojoMeta.softDelete;
+		if (softDelete == null) {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder();
-		sb.append(sm.columnName).append(" =? ");
-		paramters.add(sm.validValue);
+		if (softDelete.equalValid) {
+			sb.append(softDelete.columnName).append(" =? ");
+			paramters.add(softDelete.validValue);
+		} else {
+			sb.append(softDelete.columnName).append(" != ? ");
+			paramters.add(softDelete.inValidValue);
+		}
 		return sb;
 	}
 
@@ -147,15 +154,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
 		for (int i = 0; i < COMPARES.length; i++) {
-			Map<String, Object> map = this._compare[i];
-			if (map == null || map.isEmpty()) {
-				continue;
-			}
-			CharSequence sub = this.parseMap(map, COMPARES[i], paramters);
-			if (sub == null) {
-				continue;
-			}
-			joiner.item().append(sub);
+			this.parseMap(joiner, this._compare[i], i, paramters);
 		}
 		return joiner.toCharSequence();
 	}
@@ -176,28 +175,37 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return joiner.toCharSequence();
 	}
 
-	private CharSequence parseMap(Map<String, Object> src, String compare, List<Object> paramters) {
+	private void parseMap(ItemJoiner joiner, Map<String, Object> src, int compareIndex, List<Object> paramters) {
 		if (CollectionUtil.isEmpty(src)) {
-			return null;
+			return;
 		}
 
-		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		src.forEach((filedName, v) -> {
+		for (Map.Entry<String, Object> en : src.entrySet()) {
+			String filedName = en.getKey();
+			Object v = en.getValue();
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
-			if (v == null) {
-				return;
-			}
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
 					SumkException.throwException(234, filedName + " has no mapper");
 				}
-				return;
+				continue;
 			}
-			joiner.item().append(cm.dbColumn).append(compare).append(" ? ");
+			if (v == null) {
+				if (compareIndex == NOT) {
+					joiner.item().append(cm.dbColumn).append(" IS NOT NULL ");
+					continue;
+				}
+				if (this.compareNullPolicy == null || this.compareNullPolicy == CompareNullPolicy.CONTINUE) {
+					continue;
+				}
+				if (this.compareNullPolicy == CompareNullPolicy.FAIL) {
+					SumkException.throwException(2342423, filedName + "的值为null");
+				}
+			}
+			joiner.item().append(cm.dbColumn).append(COMPARES[compareIndex]).append(" ? ");
 			paramters.add(v);
-		});
+		}
 
-		return joiner.toCharSequence();
 	}
 
 	private CharSequence parseEqual(Map<String, Object> src, List<Object> paramters) {

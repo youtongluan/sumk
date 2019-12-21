@@ -23,7 +23,6 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
-import org.yx.log.Log;
 
 @Bean
 @SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
@@ -35,16 +34,11 @@ public class RestServer extends AbstractHttpServer {
 	protected void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
 			throws Exception {
 		if (info.upload != null) {
-			Log.get("sumk.http").error(act + " type error.It is not uploader");
+			log.error(act + " type error.It is not uploader");
 			return;
 		}
 
 		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.inst.handle(wc);
-	}
-
-	@Override
-	protected ActParser getParser() {
-		return ActParser.pathActParser;
 	}
 }

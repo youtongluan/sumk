@@ -28,12 +28,6 @@ public final class ActionContext implements Attachable, Cloneable {
 
 	private static final String TEST = "sumk.test";
 
-	public static enum ActionType {
-		HTTP, RPC, OTHER
-	}
-
-	private final ActionType type;
-
 	private LogContext logContext;
 
 	/**
@@ -52,19 +46,13 @@ public final class ActionContext implements Attachable, Cloneable {
 		return AppInfo.getBoolean(TEST, false);
 	}
 
-	private ActionContext(ActionType type, String act, String traceId, String spanId, String userId, boolean isTest,
+	private ActionContext(String act, String traceId, String spanId, String userId, boolean isTest,
 			Map<String, String> attachments) {
-		this.type = type;
 		this.logContext = LogContext.create(act, traceId, spanId, userId, this.parseTest(isTest), attachments);
 	}
 
-	private ActionContext(ActionType type, LogContext logContext) {
-		this.type = type;
+	private ActionContext(LogContext logContext) {
 		this.logContext = logContext;
-	}
-
-	public ActionType type() {
-		return type;
 	}
 
 	public String act() {
@@ -84,25 +72,25 @@ public final class ActionContext implements Attachable, Cloneable {
 		@Override
 		protected ActionContext initialValue() {
 
-			return new ActionContext(ActionType.OTHER, LogContext.EMPTY);
+			return new ActionContext(LogContext.EMPTY);
 		}
 
 	};
 
-	public static ActionContext httpContext(String act, String thisIsTest) {
+	public static ActionContext newContext(String act, String traceId, String thisIsTest) {
 		boolean test = false;
 		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
 			test = true;
 		}
-		ActionContext c = new ActionContext(ActionType.HTTP, act, null, null, null, test, null);
+		ActionContext c = new ActionContext(act, traceId, null, null, test, null);
 		holder.set(c);
 		return c;
 	}
 
 	public static ActionContext rpcContext(Req req, boolean isTest) {
 		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
-		ActionContext c = new ActionContext(ActionType.RPC, req.getApi(), traceId, req.getSpanId(), req.getUserId(),
-				isTest, req.getAttachments());
+		ActionContext c = new ActionContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
+				req.getAttachments());
 		holder.set(c);
 		return c;
 	}

@@ -31,6 +31,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface SoftDelete {
+
 	/**
 	 * @return 数据库中字段的名字
 	 */
@@ -54,4 +55,6 @@ public @interface SoftDelete {
 	 * 
 	 */
 	String inValidValue() default "0";
+
+	ValidRecord whatIsValid() default ValidRecord.EQUAL_VALID;
 }

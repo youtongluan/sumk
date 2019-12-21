@@ -15,10 +15,9 @@
  */
 package org.yx.util;
 
-import java.util.concurrent.ExecutorService;
-
 import org.yx.common.GsonHelper;
 import org.yx.common.lock.Locker;
+import org.yx.common.thread.SumkExecutorService;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.helper.ArrayHelper;
 import org.yx.util.kit.BeanConverter;
@@ -40,7 +39,7 @@ public final class S {
 	/**
 	 * 系统共用的线程池
 	 */
-	public static final ExecutorService executor = SumkThreadPool.executor();
+	public static final SumkExecutorService executor = SumkThreadPool.executor();
 
 	public static final Base64 base64 = Base64.inst;
 

@@ -157,6 +157,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder();
 		ColumnMeta[] fms = pojoMeta.fieldMetas;
+		SoftDeleteMeta softDelete = pojoMeta.softDelete;
 		sb.append("UPDATE ").append(pojoMeta.getTableName());
 		boolean notFirst = false;
 		Map<String, Object> to = new HashMap<>(this.updateTo);
@@ -206,10 +207,20 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				andItem.item().append(fm.dbColumn).append("=? ");
 				ms.addParam(value);
 			}
-			CharSequence one = andItem.toCharSequence();
-			if (one != null && one.length() > 0) {
-				orItem.item().append(one);
+			if (andItem.isEmpty()) {
+				continue;
 			}
+			if (softDelete != null) {
+				if (softDelete.equalValid) {
+					andItem.item().append(softDelete.columnName).append("=? ");
+					ms.addParam(softDelete.validValue);
+				} else {
+					andItem.item().append(softDelete.columnName).append(" != ? ");
+					ms.addParam(softDelete.inValidValue);
+				}
+			}
+			CharSequence one = andItem.toCharSequence();
+			orItem.item().append(one);
 		}
 		CharSequence whereStr = orItem.toCharSequence(true);
 		if (whereStr == null || whereStr.length() == 0) {

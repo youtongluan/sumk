@@ -34,7 +34,7 @@ public class DefaultHttpLogHandler implements HttpLogHandler {
 				writer.close();
 				LOG_REQ.debug(stringWriter.toString());
 			} catch (Exception e) {
-				Log.get("sumk.log.handler").error(e.toString(), e);
+				Log.get("sumk.http").error(e.toString(), e);
 			}
 		}
 	}
@@ -57,7 +57,7 @@ public class DefaultHttpLogHandler implements HttpLogHandler {
 				writer.close();
 				LOG_REQ.info(stringWriter.toString());
 			} catch (Exception e) {
-				Log.get("sumk.log.handler").error(e.toString(), e);
+				Log.get("sumk.http").error(e.toString(), e);
 			}
 		}
 	}
@@ -75,7 +75,7 @@ public class DefaultHttpLogHandler implements HttpLogHandler {
 				writer.close();
 				LOG_REQ.info(stringWriter.toString());
 			} catch (Exception e) {
-				Log.get("sumk.log.handler").error(e.toString(), e);
+				Log.get("sumk.http").error(e.toString(), e);
 			}
 		}
 	}

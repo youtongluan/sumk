@@ -29,7 +29,7 @@ import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
-import org.yx.rpc.log.RpcLogHolder;
+import org.yx.rpc.log.RpcLogs;
 
 public final class RpcLocker implements IoFutureListener<WriteFuture> {
 
@@ -78,7 +78,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 				Log.printStack("sumk.rpc", e);
 			}
 		}
-		RpcLogHolder.handle(this.url, this.req, result, receiveTime);
+		RpcLogs.clientLog(this.url, this.req, result, receiveTime);
 	}
 
 	@Override

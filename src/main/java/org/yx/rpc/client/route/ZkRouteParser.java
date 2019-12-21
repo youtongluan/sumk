@@ -142,7 +142,7 @@ public class ZkRouteParser {
 			datas.put(d.url, d.data);
 		}
 		Routes.refresh(datas);
-		SumkThreadPool.runDeamon(() -> {
+		SumkThreadPool.loop(() -> {
 			RouteEvent event = queue.take();
 			if (event == null) {
 				return true;

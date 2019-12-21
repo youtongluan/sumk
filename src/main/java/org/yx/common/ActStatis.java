@@ -38,7 +38,7 @@ public class ActStatis {
 		}
 	}
 
-	public Map<String, Statis> getAndreset() {
+	public Map<String, Statis> getAndReset() {
 		Map<String, Statis> tmp = this.actStatis;
 		actStatis = new ConcurrentHashMap<>();
 		return tmp;

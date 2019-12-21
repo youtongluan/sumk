@@ -44,8 +44,7 @@ public class SoaException extends CodeException {
 	}
 
 	public SoaException(int code, String msg, String detail) {
-		super(msg);
-		this.code = code;
+		super(code, msg);
 		this.exceptionClz = null;
 		this.detailError = detail;
 	}

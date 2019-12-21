@@ -47,6 +47,6 @@ public @interface Web {
 
 	String[] type() default { "" };
 
-	int priority() default 0;
+	int toplimit() default 0;
 
 }

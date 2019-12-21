@@ -15,18 +15,21 @@
  */
 package org.yx.db.sql;
 
-public class SoftDeleteMeta {
+public final class SoftDeleteMeta {
 	final String columnName;
 	final Object validValue;
 	final Object inValidValue;
 	final Class<?> columnType;
 
-	public SoftDeleteMeta(String columnName, Object validValue, Object inValidValue, Class<?> columnType) {
-		super();
+	final boolean equalValid;
+
+	public SoftDeleteMeta(String columnName, Object validValue, Object inValidValue, Class<?> columnType,
+			boolean equal) {
 		this.columnName = columnName;
 		this.validValue = validValue;
 		this.inValidValue = inValidValue;
 		this.columnType = columnType;
+		this.equalValid = equal;
 	}
 
 }

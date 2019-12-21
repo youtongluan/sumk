@@ -50,11 +50,9 @@ public class Response {
 	}
 
 	public Response() {
-		super();
 	}
 
 	public Response(String sn) {
-		super();
 		this.sn = sn;
 	}
 

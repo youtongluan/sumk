@@ -37,7 +37,7 @@ public final class RpcActionNode extends CalleeNode {
 	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
 			Soa action) {
 		super(obj, method, argClz, argNames, params,
-				action.priority() > 0 ? action.priority() : AppInfo.getInt("sumk.rpc.thread.priority.default", 100000));
+				action.toplimit() > 0 ? action.toplimit() : AppInfo.getInt("sumk.rpc.thread.priority.default", 100000));
 		this.action = action;
 		if (argNames.length > 0) {
 			this.fields = new Field[argNames.length];

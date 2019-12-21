@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
+import org.yx.http.handler.WebContext;
 
 public interface HttpKit {
 
@@ -29,14 +30,15 @@ public interface HttpKit {
 
 	Charset charset(HttpServletRequest req);
 
-	void error(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException;
+	void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) throws IOException;
 
-	void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset) throws IOException;
+	void error(WebContext ctx, int code, String errorMsg) throws IOException;
 
 	void noCache(HttpServletResponse resp);
 
-	void act(String act, long time, boolean isSuccess);
+	void record(String act, long time, boolean isSuccess);
 
 	ActStatis actStatis();
 
+	void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException;
 }

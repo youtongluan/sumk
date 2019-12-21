@@ -20,6 +20,7 @@ import java.util.List;
 import org.yx.bean.IOC;
 import org.yx.exception.SoaException;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.codec.Request;
 
 public class LocalRequestHandler {
@@ -40,12 +41,22 @@ public class LocalRequestHandler {
 
 	public Response handler(Request request, RpcActionNode action) {
 		request.protocol(request.paramProtocol());
-		for (RequestHandler h : this.handlers) {
-			Response resp = h.handle(request);
-			if (resp != null) {
-				return resp;
+		Response resp = new Response();
+		try {
+			for (RequestHandler h : this.handlers) {
+				if (h.handle(request, resp)) {
+					resp.serviceInvokeMilTime(System.currentTimeMillis() - request.getStartInServer());
+					return resp;
+				}
 			}
+		} catch (Throwable e) {
+			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 		}
-		throw new SoaException(777, "没有合适的handler", "no accepted handler");
+		long begin = request.getStartInServer();
+		resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);
+		if (resp.exception() == null) {
+			resp.exception(new SoaException(777, "没有合适的handler", "no accepted handler"));
+		}
+		return resp;
 	}
 }

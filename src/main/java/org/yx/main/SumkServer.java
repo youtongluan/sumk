@@ -63,13 +63,8 @@ public final class SumkServer {
 
 	public static void main(String[] args) {
 		long begin = System.currentTimeMillis();
-		start(Arrays.asList(args));
+		start(args);
 		Log.get("sumk.SYS").info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
-		try {
-			Thread.currentThread().join();
-		} catch (InterruptedException e) {
-			Log.printStack("sumk.error", e);
-		}
 	}
 
 	public static void start() {
@@ -102,9 +97,17 @@ public final class SumkServer {
 			destoryed = false;
 			startTime = System.currentTimeMillis();
 		}
+		if (args == null) {
+			args = Collections.emptyList();
+		}
 		try {
 			handleSystemArgs();
 			handleArgs(args);
+
+			if (StartContext.inst().get(StartConstants.THREAD_ON_DEAMON) != null) {
+				SumkThreadPool.setDaemon(true);
+			}
+
 			BeanPublisher.setListeners(Scaners.supplier().get());
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));

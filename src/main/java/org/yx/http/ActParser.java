@@ -21,31 +21,21 @@ public interface ActParser {
 
 	String parse(HttpServletRequest req);
 
-	static ActParser pathActParser = new ActParser() {
-
-		@Override
-		public String parse(HttpServletRequest req) {
-			String path = req.getPathInfo();
-			if (path == null) {
-				return null;
-			}
-			while (path.endsWith("/") && path.length() > 0) {
-				path = path.substring(0, path.length() - 1);
-			}
-			while (path.startsWith("/") && path.length() > 0) {
-				path = path.substring(1);
-			}
-			return path.replace('/', '.');
+	static final ActParser pathActParser = req -> {
+		String path = req.getPathInfo();
+		if (path == null) {
+			return null;
 		}
-
+		while (path.endsWith("/") && path.length() > 0) {
+			path = path.substring(0, path.length() - 1);
+		}
+		while (path.startsWith("/") && path.length() > 0) {
+			path = path.substring(1);
+		}
+		return path.replace('/', '.');
 	};
 
-	static ActParser paramterActParser = new ActParser() {
-
-		@Override
-		public String parse(HttpServletRequest req) {
-			return req.getParameter("act");
-		}
-
+	static final ActParser paramterActParser = req -> {
+		return req.getParameter("act");
 	};
 }

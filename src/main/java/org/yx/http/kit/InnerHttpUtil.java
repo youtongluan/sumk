@@ -25,8 +25,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
+import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
 import org.yx.http.handler.ReqBodyHandler;
+import org.yx.http.handler.WebContext;
+import org.yx.log.Log;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
@@ -76,25 +79,38 @@ public final class InnerHttpUtil {
 		return kit.charset(req);
 	}
 
-	public static void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
+	public static void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg)
 			throws IOException {
-		kit.error(resp, httpStatus, code, errorMsg, charset);
+		kit.error(req, resp, code, errorMsg);
 	}
 
-	public static void error(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
-		kit.error(resp, code, errorMsg, charset);
+	public static void error(WebContext ctx, int code, String errorMsg) throws IOException {
+		kit.error(ctx, code, errorMsg);
 	}
 
 	public static void noCache(HttpServletResponse resp) {
 		kit.noCache(resp);
 	}
 
-	public static void act(String act, long time, boolean isSuccess) {
-		kit.act(act, time, isSuccess);
+	public static void record(String act, long time, boolean isSuccess) {
+		kit.record(act, time, isSuccess);
 	}
 
 	public static ActStatis getActStatic() {
 		return kit.actStatis();
+	}
+
+	public static boolean checkGetMethod(HttpServletResponse resp) throws IOException {
+		if (AppInfo.getBoolean("sumk.http.get.enable", true)) {
+			return true;
+		}
+		Log.get("sumk.http").info("get方法被禁用了");
+		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
+		return false;
+	}
+
+	public static void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
+		kit.actNotFound(req, resp, act);
 	}
 
 }

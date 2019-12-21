@@ -19,14 +19,14 @@ public class CodeException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	protected int code;
+	protected final int code;
 
 	public int getCode() {
 		return code;
 	}
 
-	public CodeException(String msg) {
-		super(msg);
+	public String getCodedMessage() {
+		return coded(this.getMessage());
 	}
 
 	public CodeException(int code, String msg) {
@@ -41,6 +41,10 @@ public class CodeException extends RuntimeException {
 
 	@Override
 	public final String toString() {
-		return code == 0 ? super.toString() : super.toString() + " (" + code + ")";
+		return coded(super.toString());
+	}
+
+	private String coded(String text) {
+		return new StringBuilder().append(text).append(" (").append(code).append(")").toString();
 	}
 }

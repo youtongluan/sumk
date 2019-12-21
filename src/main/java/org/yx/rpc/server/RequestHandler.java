@@ -20,6 +20,6 @@ import org.yx.rpc.codec.Request;
 
 public interface RequestHandler extends Ordered {
 
-	Response handle(Request request);
+	boolean handle(Request request, Response resp);
 
 }

@@ -22,7 +22,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.yx.common.Daemon;
+import org.yx.common.JobStep;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
 import org.yx.conf.AppInfo;
@@ -33,6 +33,16 @@ import org.yx.log.Log;
 
 public final class SumkThreadPool {
 
+	private static boolean daemon;
+
+	public static boolean isDaemon() {
+		return daemon;
+	}
+
+	public static void setDaemon(boolean daemon) {
+		SumkThreadPool.daemon = daemon;
+	}
+
 	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
 			new ThreadFactory() {
 				private final AtomicInteger threadNumber = new AtomicInteger(1);
@@ -41,7 +51,7 @@ public final class SumkThreadPool {
 				public Thread newThread(Runnable r) {
 					Thread t = new Thread(r);
 					t.setName("sumk-task-" + threadNumber.getAndIncrement());
-					t.setDaemon(true);
+					t.setDaemon(daemon);
 					if (t.getPriority() != Thread.NORM_PRIORITY) {
 						t.setPriority(Thread.NORM_PRIORITY);
 					}
@@ -49,22 +59,20 @@ public final class SumkThreadPool {
 				}
 			});
 
-	private static final SumkExecutorService EXECUTOR = ThreadPools.create("sumk", 50, 500, 30000);
-
 	public static ScheduledThreadPoolExecutor scheduledExecutor() {
 		return scheduledExecutor;
 	}
 
-	public static final SumkExecutorService executor() {
-		return EXECUTOR;
+	public static SumkExecutorService executor() {
+		return ThreadPools.DEFAULT_EXECUTOR;
 	}
 
 	public static final BizException THREAD_THRESHOLD_OVER = BizException.create(ErrorCode.THREAD_THRESHOLD_OVER,
 			"系统限流降级");
 
-	private static List<Thread> deamonThreads = new ArrayList<>();
+	private static final List<Thread> jobThreads = new ArrayList<>();
 
-	public static synchronized void runDeamon(Daemon deamon, String threadName) {
+	public static synchronized void loop(JobStep step, String threadName) {
 		if (SumkServer.isDestoryed()) {
 			return;
 		}
@@ -74,7 +82,7 @@ public final class SumkThreadPool {
 					break;
 				}
 				try {
-					if (!deamon.run()) {
+					if (!step.run()) {
 						break;
 					}
 				} catch (Exception e) {
@@ -87,28 +95,28 @@ public final class SumkThreadPool {
 			}
 			try {
 				Thread.interrupted();
-				deamon.close();
+				step.close();
 			} catch (Exception e) {
 				ConsoleLog.get("sumk.SYS").error(e.getMessage(), e);
 			}
 			ConsoleLog.get("sumk.SYS").info("{} stoped", threadName);
 		};
 		Thread t = new Thread(r, threadName);
-		t.setDaemon(true);
+		t.setDaemon(daemon);
 		t.start();
-		deamonThreads.add(t);
+		jobThreads.add(t);
 	}
 
 	public static void shutdown() {
 		scheduledExecutor.shutdown();
-		EXECUTOR.shutdown();
-		deamonThreads.forEach(t -> t.interrupt());
-		deamonThreads.forEach(t -> {
+		executor().shutdown();
+		jobThreads.forEach(t -> t.interrupt());
+		jobThreads.forEach(t -> {
 			try {
 				t.join(AppInfo.getLong("sumk.thread.jointime", 3000));
 			} catch (InterruptedException e) {
 			}
 		});
-		deamonThreads.clear();
+		jobThreads.clear();
 	}
 }

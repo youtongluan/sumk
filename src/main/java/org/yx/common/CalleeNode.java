@@ -15,6 +15,8 @@
  */
 package org.yx.common;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
@@ -26,9 +28,6 @@ import org.yx.main.SumkThreadPool;
 import org.yx.validate.ParamInfo;
 
 public abstract class CalleeNode {
-	public static interface Visitor {
-		Object visit(CalleeNode info) throws Throwable;
-	}
 
 	public final String[] argNames;
 
@@ -62,7 +61,7 @@ public abstract class CalleeNode {
 		}
 	}
 
-	public Object accept(Visitor visitor) throws Throwable {
+	public void checkThreshold() {
 		if (this.priority < SumkThreadPool.executor().threshold()) {
 			if (Log.get("sumk.thread").isDebugEnabled()) {
 				String msg = new StringBuilder().append("[")
@@ -74,7 +73,6 @@ public abstract class CalleeNode {
 			}
 			throw SumkThreadPool.THREAD_THRESHOLD_OVER;
 		}
-		return visitor.visit(this);
 	}
 
 	public ArgPojo getEmptyArgObj() throws Exception {
@@ -95,6 +93,26 @@ public abstract class CalleeNode {
 
 	public Class<?>[] getParameterTypes() {
 		return method.getParameterTypes();
+	}
+
+	public Method rawMethod() {
+		return this.method;
+	}
+
+	public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
+		return method.getAnnotation(annotationClass);
+	}
+
+	public Annotation[] getDeclaredAnnotations() {
+		return method.getDeclaredAnnotations();
+	}
+
+	public Annotation[][] getParameterAnnotations() {
+		return method.getParameterAnnotations();
+	}
+
+	public AnnotatedType getAnnotatedReturnType() {
+		return method.getAnnotatedReturnType();
 	}
 
 }

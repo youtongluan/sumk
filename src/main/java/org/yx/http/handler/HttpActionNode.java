@@ -42,7 +42,7 @@ public final class HttpActionNode extends CalleeNode {
 
 	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
 			Method m, Web action) {
-		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).priority() > 0 ? action.priority()
+		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.action = action;
 		if (HttpSettings.isUploadEnable()) {

@@ -76,4 +76,9 @@ public interface HttpErrorCode extends ErrorCode {
 	 * 数据格式不正确
 	 */
 	int DATA_FORMAT_ERROR = 952;
+
+	/**
+	 * 框架处理的时候，出现了异常。这个异常可能是框架的，也可能是数据原因
+	 */
+	int FRAMEWORK_ERROR = 953;
 }

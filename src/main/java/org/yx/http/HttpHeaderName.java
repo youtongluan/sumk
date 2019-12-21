@@ -15,32 +15,30 @@
  */
 package org.yx.http;
 
-public class ErrorResp {
-	private int code;
-	private String message;
+import org.yx.conf.AppInfo;
 
-	public ErrorResp() {
+public final class HttpHeaderName {
+
+	public static final String CLIENT_PC = "PC";
+	private static String sessionId;
+	private static String token;
+	private static String type;
+
+	public static void init() {
+		sessionId = AppInfo.get("sumk.http.name.sessionId", "sid");
+		token = AppInfo.get("sumk.http.name.token", "stoken");
+		type = AppInfo.get("sumk.http.name.token", "stype");
 	}
 
-	public ErrorResp(int code, String message) {
-		this.code = code;
-		this.message = message;
+	public static String sessionId() {
+		return sessionId;
 	}
 
-	public int getCode() {
-		return code;
+	public static String token() {
+		return token;
 	}
 
-	public void setCode(int code) {
-		this.code = code;
+	public static String type() {
+		return type;
 	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
 }

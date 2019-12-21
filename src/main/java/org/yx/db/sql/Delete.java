@@ -71,8 +71,7 @@ public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 			SumkException.throwException(64342245, "can not delete all records");
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
-		SoftDeleteMeta sm = this.pojoMeta.softDelete;
-		if (sm == null) {
+		if (this.pojoMeta.softDelete == null) {
 			return new HardDelete(this).toMapedSql();
 		}
 		return new SoftDelete(this).toMapedSql();

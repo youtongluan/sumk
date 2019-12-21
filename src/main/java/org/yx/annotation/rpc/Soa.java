@@ -46,7 +46,7 @@ public @interface Soa {
 	 */
 	boolean appIdPrefix() default true;
 
-	int priority() default 0;
+	int toplimit() default 0;
 
 	boolean publish() default true;
 }

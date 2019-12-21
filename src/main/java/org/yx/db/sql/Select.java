@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.event.QueryEvent;
@@ -76,11 +77,15 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	private static final int LIMIT_AS_NO_LIMIT = 5000;
 	private ResultHandler resultHandler;
 
 	public Select resultHandler(ResultHandler resultHandler) {
-		this.resultHandler = resultHandler;
+		this.resultHandler = Objects.requireNonNull(resultHandler);
+		return this;
+	}
+
+	public Select compareNullPolicy(CompareNullPolicy policy) {
+		this.compareNullPolicy = Objects.requireNonNull(policy);
 		return this;
 	}
 
@@ -98,7 +103,7 @@ public class Select extends SelectBuilder {
 
 	@SuppressWarnings("unchecked")
 	private Select setCompare(int index, String key, Object value) {
-		if (key == null || key.isEmpty() || value == null) {
+		if (key == null || key.isEmpty()) {
 			return this;
 		}
 		if (_compare == null) {
@@ -420,7 +425,7 @@ public class Select extends SelectBuilder {
 			List<Map<String, Object>> eventIn = fromCache ? exchange.getCanToRedis() : this.in;
 
 			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
-					&& (limit <= 0 || limit >= LIMIT_AS_NO_LIMIT) && CollectionUtil.isNotEmpty(eventIn)) {
+					&& (limit <= 0 || limit >= DBSettings.asNoLimit()) && CollectionUtil.isNotEmpty(eventIn)) {
 				QueryEvent event = new QueryEvent(this.parsePojoMeta(true).getTableName());
 				event.setIn(eventIn);
 				event.setResult(tmp);

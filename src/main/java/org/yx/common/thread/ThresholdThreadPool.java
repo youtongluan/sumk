@@ -34,10 +34,10 @@ public class ThresholdThreadPool extends ThreadPoolExecutor implements SumkExecu
 		this.threshold = threshold;
 	}
 
-	public void execute(Runnable command, int priority) {
-		if (priority < threshold) {
-			String msg = new StringBuilder().append("Task ").append(toString()).append(" discarded, because of ")
-					.append(priority).append(" lower than ").append(threshold).toString();
+	public void execute(Runnable command, int toplimit) {
+		if (toplimit < threshold) {
+			String msg = new StringBuilder().append("Task ").append(toString()).append(" discarded, because toplimit ")
+					.append(toplimit).append(" lower than ").append(threshold).toString();
 			Log.get("sumk.thread").warn(msg);
 			return;
 		}

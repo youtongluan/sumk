@@ -16,9 +16,8 @@
 package org.yx.rpc.server.impl;
 
 import org.yx.annotation.Bean;
-import org.yx.common.CalleeNode;
+import org.yx.common.BizExcutor;
 import org.yx.common.context.ActionContext;
-import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcGson;
@@ -26,43 +25,40 @@ import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.rpc.server.impl.ProxyRpcVisitor.AbstractRpcVisitor;
+import org.yx.rpc.server.RpcVisitor;
 
 @Bean
 public class JsonedParamReqHandler implements RequestHandler {
 
 	@Override
-	public Response handle(final Request req) {
+	public boolean handle(final Request req, Response resp) {
 		if (!Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_JSON)) {
-			return null;
+			return false;
 		}
-		Response resp = new Response(req.getSn());
+		resp.sn(req.getSn());
 		try {
-			String method = req.getApi();
-			RpcActionNode node = RpcActionHolder.getActionNode(method);
-			if (node == null) {
-				SumkException.throwException(123546, method + " is not a valid rpc interface");
-			}
-			Object ret = node.accept(ProxyRpcVisitor.proxy(new RpcVisitor(req)));
+			String api = req.getApi();
+			RpcActionNode node = RpcActionHolder.getActionNode(api);
+			BizExcutor.checkNode(api, node);
+			Object ret = RpcHandler.handle(node, new JsonedRpcVisitor(req));
 			resp.json(RpcGson.toJson(ret));
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);
 		} finally {
 			ActionContext.remove();
 		}
-		resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());
-		return resp;
+		return true;
 	}
 
-	private static final class RpcVisitor extends AbstractRpcVisitor {
+	private static final class JsonedRpcVisitor extends RpcVisitor {
 
-		public RpcVisitor(Request req) {
+		public JsonedRpcVisitor(Request req) {
 			super(req);
 		}
 
 		@Override
-		public Object visit(CalleeNode info) throws Throwable {
-			return RpcActionNode.class.cast(info).invokeByJsonArg(req.getJsonedParam());
+		public Object visit(RpcActionNode info) throws Throwable {
+			return info.invokeByJsonArg(req.getJsonedParam());
 		}
 
 	};

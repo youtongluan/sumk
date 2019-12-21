@@ -24,11 +24,11 @@ import org.yx.util.S;
 public final class RpcResult {
 	static RpcResult timeout(Req req) {
 		if (req == null) {
-			return new RpcResult(null, new SoaException(RpcErrorCode.TIMEOUT, "服务器繁忙，请稍候", "req is null"), null);
+			return new RpcResult(null, new SoaException(RpcErrorCode.TIMEOUT, "服务处理超时", "req is null"), null);
 		}
 		long timeout = System.currentTimeMillis() - req.getStart();
 		String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
-		SoaException exception = new SoaException(RpcErrorCode.TIMEOUT, "服务器繁忙，请稍候", msg);
+		SoaException exception = new SoaException(RpcErrorCode.TIMEOUT, "服务处理超时", msg);
 		return new RpcResult(null, exception, req.getSn());
 	}
 

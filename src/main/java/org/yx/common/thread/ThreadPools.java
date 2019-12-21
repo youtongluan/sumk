@@ -27,6 +27,8 @@ import org.yx.conf.AppInfo;
 
 public class ThreadPools {
 
+	public static final SumkExecutorService DEFAULT_EXECUTOR = ThreadPools.create("sumk", 50, 500, 30000);
+
 	public static SumkExecutorService create(String name, int core, int max, int aliveTime) {
 		AbortPolicyQueue abortPolicyQueue = new AbortPolicyQueue(AppInfo.getInt("sumk.threadpool.maxqueue", 100000),
 				core);

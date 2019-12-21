@@ -18,17 +18,39 @@ package org.yx.db.sql;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
-class OrmSettings {
-	static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
-	static boolean FROM_CACHE;
-	static boolean TO_CACHE;
+public final class DBSettings {
+	private static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
+	private static boolean FROM_CACHE;
+	private static boolean TO_CACHE;
 
-	static void register() {
+	private static int LIMIT_AS_NO_LIMIT;
+
+	public static boolean failIfPropertyNotMapped() {
+		return FAIL_IF_PROPERTY_NOT_MAPPED;
+	}
+
+	public static boolean fromCache() {
+		return FROM_CACHE;
+	}
+
+	public static boolean toCache() {
+		return TO_CACHE;
+	}
+
+	public static int asNoLimit() {
+		return LIMIT_AS_NO_LIMIT;
+	}
+
+	public static synchronized void register() {
+		if (LIMIT_AS_NO_LIMIT > 0) {
+			return;
+		}
 		AppInfo.addObserver(info -> {
 			try {
 				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.db.failIfPropertyNotMapped", true);
 				FROM_CACHE = AppInfo.getBoolean("sumk.db.fromCache", true);
 				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
+				LIMIT_AS_NO_LIMIT = AppInfo.getInt("sumk.db.asnolimit", 5000);
 			} catch (Exception e) {
 				Log.get("sumk.db").info(e.getMessage(), e);
 			}

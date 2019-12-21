@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.yx.http.handler.WebContext;
 
-public class HttpLogHolder {
+public class HttpLogs {
 	private static HttpLogHandler handler = new DefaultHttpLogHandler();
 
 	public static HttpLogHandler getHandler() {
@@ -14,7 +14,7 @@ public class HttpLogHolder {
 	}
 
 	public static void setHandler(HttpLogHandler handler) {
-		HttpLogHolder.handler = Objects.requireNonNull(handler);
+		HttpLogs.handler = Objects.requireNonNull(handler);
 	}
 
 	public static void log(WebContext ctx) {

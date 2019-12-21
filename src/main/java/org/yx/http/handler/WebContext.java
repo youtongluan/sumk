@@ -16,7 +16,6 @@
 package org.yx.http.handler;
 
 import java.nio.charset.Charset;
-import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,15 +28,23 @@ public class WebContext {
 	private HttpServletResponse httpResponse;
 	private Charset charset = HttpSettings.DEFAULT_CHARSET;
 	private String sign;
-	private Map<String, String> headers;
 	private Object data;
 
 	private Object result;
 	private byte[] key;
 	private String act;
-	private String str_data;
-	private String str_resp;
+	private transient String str_data;
+	private transient String str_resp;
 	private final long beginTime;
+	private transient Object attach;
+
+	public Object getAttach() {
+		return attach;
+	}
+
+	public void setAttach(Object attach) {
+		this.attach = attach;
+	}
 
 	public long beginTime() {
 		return this.beginTime;
@@ -83,10 +90,6 @@ public class WebContext {
 		return (byte[]) data;
 	}
 
-	public Map<String, String> headers() {
-		return headers;
-	}
-
 	public HttpServletRequest httpRequest() {
 		return httpRequest;
 	}
@@ -113,10 +116,6 @@ public class WebContext {
 	void data(Object data) {
 		this.data = data;
 		this.str_data = String.class.isInstance(data) ? (String) data : null;
-	}
-
-	void headers(Map<String, String> headers) {
-		this.headers = headers;
 	}
 
 	void sign(String sign) {

@@ -13,34 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.annotation.db;
 
-public class ErrorResp {
-	private int code;
-	private String message;
+public enum ValidRecord {
+	/**
+	 * 在SoftDelete中，跟VALID相同的表示有效，其它都是无效
+	 */
+	EQUAL_VALID,
 
-	public ErrorResp() {
-	}
-
-	public ErrorResp(int code, String message) {
-		this.code = code;
-		this.message = message;
-	}
-
-	public int getCode() {
-		return code;
-	}
-
-	public void setCode(int code) {
-		this.code = code;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
+	/**
+	 * 在SoftDelete中，只要跟INVALID不同都是有效
+	 */
+	NOT_INVALID
 }

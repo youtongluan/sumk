@@ -15,10 +15,6 @@
  */
 package org.yx.http.handler;
 
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.annotation.Bean;
@@ -47,13 +43,6 @@ public class ReqParameterHandler implements HttpHandler {
 		if (data != null) {
 			ctx.data(data);
 		}
-		Enumeration<String> names = req.getHeaderNames();
-		Map<String, String> map = new HashMap<>();
-		while (names.hasMoreElements()) {
-			String name = names.nextElement();
-			map.put(name, req.getHeader(name));
-		}
-		ctx.headers(map);
 		return false;
 	}
 

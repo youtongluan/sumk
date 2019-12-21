@@ -91,6 +91,10 @@ public class ItemJoiner {
 		return ret;
 	}
 
+	public boolean isEmpty() {
+		return sb == null || sb.length() == 0;
+	}
+
 	@Override
 	public String toString() {
 		return String.valueOf(this.toCharSequence());

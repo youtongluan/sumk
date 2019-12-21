@@ -47,7 +47,8 @@ public final class Loggers {
 			if (temp == null) {
 				return;
 			}
-			String[] levelStrs = temp.replace(';', ',').split(",");
+			temp = temp.replace(';', ',').replace("\r\n", ",").replace('\n', ',').replace('\r', ',');
+			String[] levelStrs = temp.split(",");
 			Map<String, LogLevel> newLevels = new HashMap<>();
 			for (String levelStr : levelStrs) {
 				levelStr = levelStr.trim();

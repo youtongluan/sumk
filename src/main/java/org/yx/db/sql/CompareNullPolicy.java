@@ -13,34 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.db.sql;
 
-public class ErrorResp {
-	private int code;
-	private String message;
+public enum CompareNullPolicy {
 
-	public ErrorResp() {
-	}
+	CONTINUE,
 
-	public ErrorResp(int code, String message) {
-		this.code = code;
-		this.message = message;
-	}
+	AS_IT_IS,
 
-	public int getCode() {
-		return code;
-	}
-
-	public void setCode(int code) {
-		this.code = code;
-	}
-
-	public String getMessage() {
-		return message;
-	}
-
-	public void setMessage(String message) {
-		this.message = message;
-	}
-
+	FAIL
 }

@@ -24,34 +24,36 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.annotation.http.Web;
 import org.yx.common.ActInfoUtil;
+import org.yx.exception.SimpleSumkException;
 import org.yx.http.handler.HttpActionNode;
 import org.yx.main.SumkServer;
 
 /**
  * 仅供框架使用
  */
-public class HttpActionHolder {
+public final class HttpActionHolder {
 
-	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
+	private static final Map<String, HttpActionNode> actMap = new ConcurrentHashMap<>();
+	private static boolean ingoreCase;
 
-	private static Map<String, HttpActionNode> actMap = new ConcurrentHashMap<>();
-
-	public static Class<?> getArgType(String method) {
-		String m = getArgClassName(method);
-		return pojoMap.get(m);
-	}
-
-	private static String getArgClassName(String method) {
-		int k = method.lastIndexOf(".");
-		return method.substring(0, k) + "_" + method.substring(k + 1);
+	public static void setIngoreCase(boolean ingoreCase) {
+		HttpActionHolder.ingoreCase = ingoreCase;
 	}
 
 	public static HttpActionNode getHttpInfo(String name) {
+		if (ingoreCase) {
+			name = name.toLowerCase();
+		}
 		return actMap.get(name);
 	}
 
 	public static void putActInfo(String name, HttpActionNode actInfo) {
-		actMap.putIfAbsent(name, actInfo);
+		if (ingoreCase) {
+			name = name.toLowerCase();
+		}
+		if (actMap.putIfAbsent(name, actInfo) != null) {
+			throw new SimpleSumkException(1242435, name + " already existed");
+		}
 	}
 
 	public static Set<String> actSet() {

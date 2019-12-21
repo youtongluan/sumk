@@ -15,16 +15,19 @@
  */
 package org.yx.http;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 import org.yx.common.Ordered;
+import org.yx.http.handler.WebContext;
 
-public interface WebFilter extends Ordered {
+public abstract class WebFilter implements Ordered {
 
-	public boolean beforeInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params);
+	protected WebFilter next;
 
-	public boolean afterInvoke(HttpServletRequest req, HttpServletResponse resp, Object[] params, Object result);
+	public void setNext(WebFilter next) {
+		this.next = Objects.requireNonNull(next);
+	}
 
-	public Throwable error(HttpServletRequest req, Object[] params, Throwable e);
+	public abstract Object doFilter(WebContext ctx) throws Throwable;
+
 }

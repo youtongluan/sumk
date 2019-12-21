@@ -13,19 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.common;
 
-import org.yx.conf.AppInfo;
+@FunctionalInterface
+public interface JobStep {
 
-public interface HttpHeader {
+	boolean run() throws Exception;
 
-	String SESSIONID = AppInfo.get("sumk.http.header.sid", "sid");
+	default void close() throws Exception {
 
-	String TOKEN = AppInfo.get("sumk.http.header.stoken", "stoken");
-
-	String TYPE = AppInfo.get("sumk.http.header.stype", "stype");
-
-	String CLIENT = AppInfo.get("sumk.http.header.sclient", "sclient");
-
-	String CLIENT_PC = AppInfo.get("sumk.http.header.sclient.pc", "PC");
+	}
 }
