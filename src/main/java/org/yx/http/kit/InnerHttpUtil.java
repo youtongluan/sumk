@@ -27,8 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
+import org.yx.http.ErrorResp;
+import org.yx.http.HttpGson;
+import org.yx.http.HttpSettings;
 import org.yx.http.handler.ReqBodyHandler;
-import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
 public final class InnerHttpUtil {
@@ -79,15 +81,6 @@ public final class InnerHttpUtil {
 		return kit.charset(req);
 	}
 
-	public static void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg)
-			throws IOException {
-		kit.error(req, resp, code, errorMsg);
-	}
-
-	public static void error(WebContext ctx, int code, String errorMsg) throws IOException {
-		kit.error(ctx, code, errorMsg);
-	}
-
 	public static void noCache(HttpServletResponse resp) {
 		kit.noCache(resp);
 	}
@@ -111,6 +104,16 @@ public final class InnerHttpUtil {
 
 	public static void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
 		kit.actNotFound(req, resp, act);
+	}
+
+	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {
+		try {
+			resp.setStatus(HttpSettings.getErrorHttpStatus());
+			ErrorResp r = new ErrorResp(code, message);
+			resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
+		} catch (IOException e) {
+			Log.get("sumk.http").error(e.toString(), e);
+		}
 	}
 
 }

@@ -43,10 +43,6 @@ public class RespToStringHandler implements HttpHandler {
 		if (clz == byte[].class) {
 			return false;
 		}
-		if (clz.isArray()) {
-			ctx.result(HttpGson.gson().toJson(obj));
-			return false;
-		}
 		if (clz.isPrimitive() || clz.equals(String.class)) {
 			ctx.result(String.valueOf(obj));
 			return false;

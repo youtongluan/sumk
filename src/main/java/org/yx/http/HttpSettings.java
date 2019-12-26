@@ -31,13 +31,13 @@ public final class HttpSettings {
 	private static Set<String> fusing = Collections.emptySet();
 	private static long httpSessionTimeoutInMs;
 	private static boolean cookieEnable;
+	private static int maxReqLogSize;
+	private static int maxRespLogSize;
+	private static int warnTime;
+	private static int infoTime;
 
 	public static int getErrorHttpStatus() {
 		return errorHttpStatus;
-	}
-
-	public static void setErrorHttpStatus(int errorHttpStatus) {
-		HttpSettings.errorHttpStatus = errorHttpStatus;
 	}
 
 	public static Set<String> getFusing() {
@@ -66,6 +66,32 @@ public final class HttpSettings {
 
 	public static void setHttpSessionTimeoutInMs(long httpSessionTimeoutInMs) {
 		HttpSettings.httpSessionTimeoutInMs = httpSessionTimeoutInMs;
+	}
+
+	public static int maxReqLogSize() {
+		return maxReqLogSize;
+	}
+
+	public static int maxRespLogSize() {
+		return maxRespLogSize;
+	}
+
+	public static int warnTime() {
+		return warnTime;
+	}
+
+	public static int infoTime() {
+		return infoTime;
+	}
+
+	public static void init() {
+		errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
+		AppInfo.addObserver(info -> {
+			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 500);
+			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 500);
+			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn", 3000);
+			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info", 1000);
+		});
 	}
 
 }

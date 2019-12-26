@@ -97,7 +97,8 @@ public class HttpMonitor extends HttpServlet {
 			return;
 		}
 		ActStatis actStatic = InnerHttpUtil.getActStatic();
-		Map<String, Statis> map = actStatic.getAll();
+		String reset = req.getParameter("statis.reset");
+		Map<String, Statis> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
 		Collection<Statis> values = map.values();
 		StringBuilder sb = new StringBuilder();
 		sb.append("##").append(Statis.header()).append(LN);

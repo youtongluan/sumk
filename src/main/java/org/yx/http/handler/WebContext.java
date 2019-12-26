@@ -64,15 +64,18 @@ public class WebContext {
 
 	void result(Object result) {
 		this.result = result;
-		this.str_resp = String.class.isInstance(result) ? (String) result : null;
+		if (String.class.isInstance(result)) {
+			this.str_resp = (String) result;
+		}
 	}
 
-	public WebContext(String act, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp) {
+	public WebContext(String act, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
+			long beginTime) {
 		this.act = act;
 		this.node = node;
 		this.httpRequest = req;
 		this.httpResponse = resp;
-		this.beginTime = System.currentTimeMillis();
+		this.beginTime = beginTime;
 	}
 
 	public Charset charset() {
@@ -115,7 +118,9 @@ public class WebContext {
 
 	void data(Object data) {
 		this.data = data;
-		this.str_data = String.class.isInstance(data) ? (String) data : null;
+		if (String.class.isInstance(data)) {
+			this.str_data = (String) data;
+		}
 	}
 
 	void sign(String sign) {

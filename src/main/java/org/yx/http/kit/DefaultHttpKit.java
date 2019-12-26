@@ -25,12 +25,9 @@ import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.http.ErrorResp;
 import org.yx.http.HttpContextHolder;
-import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpGson;
 import org.yx.http.HttpHeaderName;
 import org.yx.http.HttpSettings;
-import org.yx.http.handler.WebContext;
-import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
@@ -59,23 +56,6 @@ public class DefaultHttpKit implements HttpKit {
 		return Charset.forName(charsetName);
 	}
 
-	@Override
-	public void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) throws IOException {
-		HttpLogs.errorLog(code, errorMsg, req);
-		resp.setStatus(HttpSettings.getErrorHttpStatus());
-		ErrorResp r = new ErrorResp(code, errorMsg);
-		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset(req)));
-	}
-
-	@Override
-	public void error(WebContext ctx, int code, String errorMsg) throws IOException {
-		HttpLogs.errorLog(code, errorMsg, ctx);
-		HttpServletResponse resp = ctx.httpResponse();
-		resp.setStatus(HttpSettings.getErrorHttpStatus());
-		ErrorResp r = new ErrorResp(code, errorMsg);
-		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(ctx.charset()));
-	}
-
 	public void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
 			throws IOException {
 		resp.setStatus(httpStatus);
@@ -102,11 +82,7 @@ public class DefaultHttpKit implements HttpKit {
 
 	@Override
 	public void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
-		Log.get("sumk.http").error(act + " donot found handler");
-		int code = HttpErrorCode.ACT_FORMAT_ERROR;
-		String errorMsg = "请求的格式不正确";
-		HttpLogs.errorLog(code, errorMsg, req);
-		error(req, resp, code, errorMsg);
+		Log.get("sumk.http").error(act + " donot found handler ------------");
 	}
 
 }

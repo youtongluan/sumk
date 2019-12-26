@@ -16,6 +16,7 @@
 package org.yx.http;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,8 +28,12 @@ import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
+import org.yx.exception.HttpException;
+import org.yx.exception.InvalidParamException;
 import org.yx.http.handler.HttpActionNode;
+import org.yx.http.handler.WebContext;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.log.HttpLogs;
 import org.yx.util.UUIDSeed;
 
 public abstract class AbstractHttpServer extends HttpServlet {
@@ -61,54 +66,56 @@ public abstract class AbstractHttpServer extends HttpServlet {
 	}
 
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
+		final long beginTime = System.currentTimeMillis();
+		Throwable ex = null;
+		WebContext wc = null;
 		try {
 			setRespHeader(req, resp);
 
-			final String act = getParser().parse(req);
+			final String act = parser().parse(req);
 			log.trace("act={}", act);
 			if (act == null || act.isEmpty()) {
 				log.error("act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
-				errorAndLog(resp, HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确", req);
-				return;
+				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确");
 			}
 			if (HttpSettings.getFusing().contains(act)) {
 				log.error("{} is in fusing", act);
-				errorAndLog(resp, HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"), req);
-				return;
+				throw BizException.create(HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"));
 			}
 			HttpActionNode info = HttpActionHolder.getHttpInfo(act);
 			if (info == null) {
 				InnerHttpUtil.actNotFound(req, resp, act);
-				return;
+				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确");
 			}
 			info.checkThreshold();
 			HttpContextHolder.set(req, resp);
 			ActionContext.newContext(act, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
-			handle(act, info, req, resp);
+			wc = new WebContext(act, info, req, resp, beginTime);
+			handle(wc);
 
-		} catch (Exception e) {
-			if (BizException.class.isInstance(e)) {
-				BizException be = BizException.class.cast(e);
-				errorAndLog(resp, be.getCode(), be.getMessage(), req);
-			} else {
-				log.error(e.toString(), e);
-				errorAndLog(resp, HttpErrorCode.FRAMEWORK_ERROR, "请求处理异常", req);
+		} catch (Throwable e) {
+			try {
+				ex = handleError(req, resp, e);
+			} catch (Exception e2) {
+				ex = e;
+				log.error("处理异常发生错误。可能是网络问题，也可能是异常处理出问题(不该发生)", e2);
 			}
 		} finally {
+			long time = System.currentTimeMillis() - beginTime;
+			HttpLogs.log(wc, req, ex, time);
 			HttpContextHolder.remove();
 			ActionContext.remove();
+			if (wc != null) {
+				InnerHttpUtil.record(wc.act(), time, ex == null);
+			}
 		}
 	}
 
-	protected void errorAndLog(HttpServletResponse resp, int code, String errorMsg, HttpServletRequest req) {
-		try {
-			InnerHttpUtil.error(req, resp, code, errorMsg);
-		} catch (IOException e) {
-			log.error(e.toString(), e);
-		}
+	protected void sendError(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) {
+		InnerHttpUtil.sendError(resp, code, errorMsg, InnerHttpUtil.charset(req));
 	}
 
-	protected ActParser getParser() {
+	protected ActParser parser() {
 		return ActParser.pathActParser;
 	}
 
@@ -116,6 +123,31 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
 	}
 
-	protected abstract void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
-			throws Exception;
+	protected abstract void handle(WebContext wc) throws Throwable;
+
+	protected Throwable handleError(HttpServletRequest req, HttpServletResponse resp, Throwable e) {
+		Throwable temp = e;
+		if (InvocationTargetException.class.isInstance(temp)) {
+			temp = ((InvocationTargetException) temp).getTargetException();
+		}
+		if (HttpException.class.isInstance(temp)) {
+			sendError(req, resp, HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
+			return temp;
+		}
+		if (InvalidParamException.class.isInstance(temp)) {
+			sendError(req, resp, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
+			return temp;
+		}
+		Throwable root = temp;
+		do {
+			if (BizException.class.isInstance(temp)) {
+				BizException be = (BizException) temp;
+				sendError(req, resp, be.getCode(), be.getMessage());
+				return be;
+			}
+		} while ((temp = temp.getCause()) != null);
+
+		sendError(req, resp, HttpErrorCode.HANDLE_ERROR, "请求处理异常");
+		return root;
+	}
 }

@@ -22,17 +22,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
-import org.yx.http.handler.WebContext;
 
 public interface HttpKit {
 
 	String getType(HttpServletRequest req);
 
 	Charset charset(HttpServletRequest req);
-
-	void error(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) throws IOException;
-
-	void error(WebContext ctx, int code, String errorMsg) throws IOException;
 
 	void noCache(HttpServletResponse resp);
 

@@ -53,12 +53,15 @@ public class Statis {
 	}
 
 	public String toSimpleString() {
-		return String.join("   ", name, String.valueOf(count.get()), String.valueOf(time.get()),
+		long c = count.get();
+		long t = time.get();
+		double avg = c == 0 ? 0 : t * 1d / c;
+		return String.join("   ", name, String.valueOf(c), String.valueOf(t), String.valueOf(Math.round(avg)),
 				String.valueOf(failedCount.get()), String.valueOf(failedTime.get()));
 	}
 
 	public static String header() {
-		return "name  count  time  failedCount  failedTime";
+		return "name  count  time  avg  failedCount  failedTime";
 	}
 
 }

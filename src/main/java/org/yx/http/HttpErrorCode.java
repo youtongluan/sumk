@@ -62,6 +62,10 @@ public interface HttpErrorCode extends ErrorCode {
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用
 	 */
 	int UPLOAD_DISABLED = 930;
+
+	int UPLOAD_NOT_MULTI_TYPE = 931;
+
+	int UPLOAD_ANNOTATION_MISS = 932;
 	/**
 	 * 请求处理出错
 	 */

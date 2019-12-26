@@ -23,11 +23,13 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeaderName;
 import org.yx.http.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
@@ -41,8 +43,9 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		final long begin = System.currentTimeMillis();
-		boolean success = false;
+		final long beginTime = System.currentTimeMillis();
+		Throwable ex = null;
+		Charset charset = InnerHttpUtil.charset(req);
 		try {
 			if (!acceptMethod(req, resp)) {
 				Log.get("sumk.http.login").warn("不是有效的method，只能使用GET或POST");
@@ -52,20 +55,19 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			final String sid = createSessionId(req);
 			String user = getUserName(req);
 			LoginObject obj = login(sid, user, req);
-			Charset charset = InnerHttpUtil.charset(req);
 			if (obj == null) {
-				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, user + " : login failed");
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
-				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg());
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
 			byte[] key = createEncryptKey(req);
 			boolean singleLogin = WebSessions.isSingleLogin(this.getType(req));
 			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
 				Log.get("sumk.http.login").debug("{} :sid:{} login failed", user, sid);
-				InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, user + " : login failed");
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
 				return;
 			}
 			String userId = obj.getSessionObject().getUserId();
@@ -90,12 +92,15 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			if (obj.getResponseData() != null) {
 				resp.getOutputStream().write(obj.getResponseData().getBytes(charset));
 			}
-			success = true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
+			ex = e;
 			Log.get("sumk.http.login").error(e.toString(), e);
-			InnerHttpUtil.error(req, resp, HttpErrorCode.LOGINFAILED, "login fail");
+			InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
 		} finally {
-			InnerHttpUtil.record(LOGIN_NAME, System.currentTimeMillis() - begin, success);
+			long time = System.currentTimeMillis() - beginTime;
+			HttpLogs.log(null, req, ex, time);
+			ActionContext.remove();
+			InnerHttpUtil.record(LOGIN_NAME, time, ex == null);
 		}
 
 	}

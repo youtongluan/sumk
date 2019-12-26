@@ -13,21 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.handler;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.SumkServlet;
-import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.WebContext;
+public abstract class AbstractHandler implements HttpHandler {
 
-@Bean
-@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
-public class RestServer extends AbstractHttpServer {
+	protected void setData(WebContext ctx, Object data) {
+		ctx.data(data);
+	}
 
-	private static final long serialVersionUID = 7437235491L;
-
-	@Override
-	protected void handle(WebContext wc) throws Throwable {
-		HttpHandlerChain.inst.handle(wc);
+	protected void setResult(WebContext ctx, Object result) {
+		ctx.result(result);
 	}
 }

@@ -15,25 +15,15 @@
  */
 package org.yx.http.handler;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.annotation.http.Web;
-import org.yx.exception.BizException;
-import org.yx.exception.HttpException;
-import org.yx.exception.InvalidParamException;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.InnerHttpUtil;
-import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
 
 public class HttpHandlerChain implements HttpHandler {
 
 	private Logger LOG = Log.get("sumk.http.chain");
-	private Logger LOG_ERROR = Log.get("sumk.http.req.error");
 	private HttpHandler[] handlers;
 
 	public static final HttpHandlerChain inst = new HttpHandlerChain();
@@ -53,8 +43,7 @@ public class HttpHandlerChain implements HttpHandler {
 	}
 
 	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		boolean success = true;
+	public boolean handle(WebContext ctx) throws Throwable {
 		try {
 			for (HttpHandler h : this.handlers) {
 				if (h.accept(ctx.httpNode().action)) {
@@ -71,48 +60,9 @@ public class HttpHandlerChain implements HttpHandler {
 					}
 				}
 			}
-		} catch (final Throwable e) {
-			success = false;
-			Throwable temp = e;
-			if (InvocationTargetException.class.isInstance(temp)) {
-				temp = ((InvocationTargetException) temp).getTargetException();
-			}
-
-			if (HttpException.class.isInstance(temp)) {
-				LOG_ERROR.error(msg(ctx, temp.getMessage()), temp);
-				error(ctx, HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
-				return true;
-			}
-			if (InvalidParamException.class.isInstance(temp)) {
-				LOG_ERROR.warn(msg(ctx, temp.getMessage()), temp);
-				error(ctx, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
-				return true;
-			}
-			do {
-				if (BizException.class.isInstance(temp)) {
-					BizException be = (BizException) temp;
-					LOG_ERROR.warn(msg(ctx, temp.toString()));
-					error(ctx, be.getCode(), be.getMessage());
-					return true;
-				}
-			} while ((temp = temp.getCause()) != null);
-			LOG_ERROR.error(msg(ctx, e.getMessage()), e);
-			error(ctx, HttpErrorCode.HANDLE_ERROR, "请求出错");
 		} finally {
-			HttpLogs.log(ctx);
 			UploadFileHolder.remove();
-			InnerHttpUtil.record(ctx.act(), System.currentTimeMillis() - ctx.beginTime(), success);
 		}
 		return true;
 	}
-
-	private String msg(WebContext ctx, String message) {
-		StringBuilder sb = new StringBuilder();
-		return sb.append("[").append(ctx.act()).append("] ").append(message).toString();
-	}
-
-	private void error(WebContext ctx, int code, String message) throws UnsupportedEncodingException, IOException {
-		InnerHttpUtil.error(ctx, code, message);
-	}
-
 }

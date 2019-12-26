@@ -81,11 +81,11 @@ public class HttpPlugin implements Plugin {
 		}
 		try {
 			HttpHeaderName.init();
+			HttpSettings.init();
 			HttpActionHolder.setIngoreCase(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
 			Object[] beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
-			HttpSettings.setErrorHttpStatus(AppInfo.getInt("sumk.http.errorcode", 499));
 			this.addFusingObserver();
 			this.buildHttpHandlers();
 			this.initServer();

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.locks.LockSupport;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
@@ -107,7 +108,7 @@ public class MinaServer implements Runnable {
 					}
 					Log.get("sumk.rpc").debug("waiting for listening to {}.{}", port, e.getMessage());
 					int time = AppInfo.getInt("sumk.rpc.server.starting.sleep", 5000);
-					Thread.sleep(time);
+					LockSupport.parkUntil(System.currentTimeMillis() + time);
 				}
 			}
 

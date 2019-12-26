@@ -15,15 +15,11 @@
  */
 package org.yx.http;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
-import org.yx.http.handler.HttpActionNode;
+import org.yx.exception.BizException;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
-import org.yx.http.kit.InnerHttpUtil;
 
 /**
  * 
@@ -37,23 +33,20 @@ public class UploadServer extends AbstractHttpServer {
 	final static String MULTI = "multipart/form-data";
 
 	@Override
-	protected void handle(String act, HttpActionNode info, HttpServletRequest req, HttpServletResponse resp)
-			throws Exception {
+	protected void handle(WebContext wc) throws Throwable {
 		if (HttpHandlerChain.upload == null) {
-			log.error("@upload is disabled,remoteAddr:{}" + req.getRemoteAddr());
-			InnerHttpUtil.error(req, resp, HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
-			return;
+			log.error("上传功能被禁用");
+			throw BizException.create(HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
 		}
-		if (req.getContentType() == null || !req.getContentType().startsWith(MULTI)) {
-			log.error("the MIME of act is " + MULTI + ",not " + req.getContentType());
-			return;
+		String contextType = wc.httpRequest().getContentType();
+		if (contextType == null || !contextType.startsWith(MULTI)) {
+			log.error("the MIME of act is " + MULTI + ",not " + contextType);
+			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE, "ContentType不是" + MULTI);
 		}
-		if (info.upload == null) {
-
-			log.error(act + " has error type, it must be have @Upload");
-			return;
+		if (wc.httpNode().upload == null) {
+			log.error("{}缺少 @upload", wc.act());
+			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS, "缺少@Upload注解");
 		}
-		WebContext wc = new WebContext(act, info, req, resp);
 		HttpHandlerChain.upload.handle(wc);
 	}
 
