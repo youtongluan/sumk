@@ -15,6 +15,8 @@
  */
 package org.yx.common;
 
+import static org.yx.conf.AppInfo.LN;
+
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.text.DecimalFormat;
@@ -34,8 +36,6 @@ import org.yx.main.SumkThreadPool;
 import org.yx.util.SumkDate;
 
 public class Monitors {
-
-	public static final String LN = "\n";
 
 	public static String serverInfo() {
 		long startTime = SumkServer.startTime();

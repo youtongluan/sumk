@@ -33,7 +33,9 @@ public @interface Web {
 	 */
 	String value() default "";
 
-	String description() default "";
+	String cnName() default "";
+
+	String comment() default "";
 
 	boolean requireLogin() default false;
 

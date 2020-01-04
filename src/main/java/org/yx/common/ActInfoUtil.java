@@ -86,6 +86,9 @@ public class ActInfoUtil {
 				if (p.minLength() > -1) {
 					param.put("minLength", p.minLength());
 				}
+				if (StringUtil.isNotEmpty(p.comment())) {
+					param.put("comment", p.comment());
+				}
 			}
 		}
 		map.put("params", list);

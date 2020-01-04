@@ -82,7 +82,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 		try {
 			ds = datasource.unwrap(BasicDataSource.class);
 		} catch (Exception e) {
-			Log.get("sumk.db").error(e.toString(), e);
+			Log.get("sumk.db").error(e.getLocalizedMessage(), e);
 		}
 		if (ds == null) {
 			Log.get("sumk.db").info("ds.class({}) is not instance form BasicDataSource",

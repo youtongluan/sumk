@@ -1,5 +1,7 @@
 package org.yx.http.log;
 
+import static org.yx.conf.AppInfo.LN;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
@@ -9,7 +11,6 @@ import org.yx.http.handler.WebContext;
 import org.yx.log.Log;
 
 public class PlainHttpLogHandler implements HttpLogHandler {
-	private static final String LN = "\n";
 	private Logger log = Log.get("sumk.http.log");
 
 	@Override
@@ -40,14 +41,14 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 
 	protected void logError(HttpServletRequest req, Throwable ex, long time) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(req.getRequestURI()).append("   time:").append(time);
+		sb.append(req.getRequestURI()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time);
 		logError(sb.toString(), ex);
 	}
 
 	protected void logError(WebContext wc, Throwable ex, long time) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(wc.act()).append("   time:").append(time).append(LN).append("   param: ")
-				.append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()));
+		sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(wc.httpRequest())).append("   time:").append(time)
+				.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()));
 		logError(sb.toString(), ex);
 	}
 
@@ -62,12 +63,16 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	protected String buildLogMsg(WebContext wc, HttpServletRequest req, long time) {
 		StringBuilder sb = new StringBuilder();
 		if (wc != null) {
-			sb.append(wc.act()).append("   time:").append(time).append(LN).append("   param: ")
-					.append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize())).append(LN).append("   resp: ")
-					.append(HttpLogs.getResponse(wc, HttpSettings.maxRespLogSize()));
+			sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time)
+					.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()))
+					.append(LN).append("   resp: ").append(HttpLogs.getResponse(wc, HttpSettings.maxRespLogSize()));
 			return sb.toString();
 		}
 		sb.append(req.getRequestURI()).append("   time:").append(time);
 		return sb.toString();
+	}
+
+	protected String remoteAddr(HttpServletRequest req) {
+		return req.getRemoteAddr();
 	}
 }

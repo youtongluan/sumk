@@ -39,7 +39,7 @@ import org.yx.util.StringUtil;
 public class PojoMeta implements Cloneable {
 
 	public static final String WILDCHAR = "?";
-	private final static char KEY_SPLIT = ',';
+	private static final char KEY_SPLIT = ':';
 	final Table table;
 
 	final ColumnMeta[] fieldMetas;

@@ -15,25 +15,22 @@
  */
 package org.yx.common;
 
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Statis {
 	public final String name;
 
-	public final AtomicInteger count;
+	public final AtomicInteger count = new AtomicInteger(0);
 
-	public final AtomicLong time;
+	public final AtomicLong time = new AtomicLong(0);
 
-	public final AtomicInteger failedCount;
-	public final AtomicLong failedTime;
+	public final AtomicInteger failedCount = new AtomicInteger(0);
+	public final AtomicLong failedTime = new AtomicLong(0);
 
 	public Statis(String name) {
-		this.name = name;
-		this.count = new AtomicInteger(0);
-		this.time = new AtomicLong(0);
-		this.failedCount = new AtomicInteger(0);
-		this.failedTime = new AtomicLong(0);
+		this.name = Objects.requireNonNull(name);
 	}
 
 	public void successVisit(long t) {

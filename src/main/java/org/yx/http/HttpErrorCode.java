@@ -85,4 +85,9 @@ public interface HttpErrorCode extends ErrorCode {
 	 * 框架处理的时候，出现了异常。这个异常可能是框架的，也可能是数据原因
 	 */
 	int FRAMEWORK_ERROR = 953;
+
+	/**
+	 * 接口没有定义，类似于404
+	 */
+	int ACT_NOT_FOUND = 954;
 }

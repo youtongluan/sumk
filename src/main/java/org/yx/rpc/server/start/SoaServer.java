@@ -29,7 +29,7 @@ import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Profile;
 import org.yx.log.Log;
-import org.yx.rpc.RpcActionHolder;
+import org.yx.rpc.RpcActions;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.RequestHandler;
@@ -95,7 +95,7 @@ public class SoaServer implements Lifecycle {
 	}
 
 	private String createZkRouteData() {
-		List<String> methods = RpcActionHolder.publishSoaSet();
+		List<String> methods = RpcActions.publishSoaSet();
 		final Map<String, String> map = new HashMap<>();
 		for (String method : methods) {
 
@@ -193,7 +193,7 @@ public class SoaServer implements Lifecycle {
 			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
 			ZkClientHelper.makeSure(client, SOA_ROOT);
 		} catch (Exception e) {
-			Log.get("sumk.rpc").error(e.toString(), e);
+			Log.get("sumk.rpc").error(e.getLocalizedMessage(), e);
 			System.exit(1);
 		}
 

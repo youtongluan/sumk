@@ -38,7 +38,7 @@ public class ThreadPoolReSeter implements Runnable {
 				resetScheduledThreadPoolSize();
 			}
 		} catch (Exception e) {
-			logger.error(e.toString(), e);
+			logger.error(e.getLocalizedMessage(), e);
 		}
 	}
 

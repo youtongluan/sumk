@@ -1,5 +1,7 @@
 package org.yx.rpc.log;
 
+import static org.yx.conf.AppInfo.LN;
+
 import java.util.Objects;
 
 import org.slf4j.Logger;
@@ -15,7 +17,6 @@ import org.yx.util.S;
 public class RpcLogs {
 
 	private static RpcLogHandler handler = new RpcLogHandler() {
-		private static final String LN = "\n";
 
 		@Override
 		public void clientLog(RpcLog rpcLog) {

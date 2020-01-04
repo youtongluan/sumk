@@ -30,10 +30,10 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.common.GsonHelper;
 import org.yx.common.Monitors;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpActionHolder;
+import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
-import org.yx.rpc.RpcActionHolder;
+import org.yx.rpc.RpcActions;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
 
@@ -73,12 +73,12 @@ public class ActInfomation extends HttpServlet {
 		}
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
-			List<Map<String, Object>> list = HttpActionHolder.infos();
+			List<Map<String, Object>> list = HttpActions.infos();
 			write(resp, gson.toJson(list), pretty);
 			return;
 		}
 		if (mode.equals("rpc")) {
-			List<Map<String, Object>> list = RpcActionHolder.infos();
+			List<Map<String, Object>> list = RpcActions.infos();
 			write(resp, gson.toJson(list), pretty);
 			return;
 		}
@@ -91,9 +91,9 @@ public class ActInfomation extends HttpServlet {
 	private String beans() {
 		List<String> names = Monitors.beans();
 		StringBuilder sb = new StringBuilder();
-		sb.append("##beans:").append(names.size()).append(Monitors.LN);
+		sb.append("##beans:").append(names.size()).append(AppInfo.LN);
 		for (String name : names) {
-			sb.append(name).append(Monitors.LN);
+			sb.append(name).append(AppInfo.LN);
 		}
 		return sb.toString();
 	}

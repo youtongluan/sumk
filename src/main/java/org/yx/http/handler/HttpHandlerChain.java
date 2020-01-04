@@ -50,9 +50,9 @@ public class HttpHandlerChain implements HttpHandler {
 					if (LOG.isTraceEnabled()) {
 						if (String.class.isInstance(ctx.data())) {
 							String s = ((String) ctx.data());
-							LOG.trace("{} - {} with data:{}", ctx.act(), h.getClass().getSimpleName(), s);
+							LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
 						} else {
-							LOG.trace("{} - {}", ctx.act(), h.getClass().getSimpleName());
+							LOG.trace("{} - {}", ctx.rawAct(), h.getClass().getSimpleName());
 						}
 					}
 					if (h.handle(ctx)) {

@@ -79,10 +79,4 @@ public class DefaultHttpKit implements HttpKit {
 	public ActStatis actStatis() {
 		return this.actStatic;
 	}
-
-	@Override
-	public void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
-		Log.get("sumk.http").error(act + " donot found handler ------------");
-	}
-
 }

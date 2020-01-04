@@ -26,7 +26,7 @@ import org.yx.annotation.rpc.Soa;
 import org.yx.common.ActInfoUtil;
 import org.yx.main.SumkServer;
 
-public class RpcActionHolder {
+public class RpcActions {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
 
@@ -68,16 +68,25 @@ public class RpcActionHolder {
 		if (!SumkServer.isRpcEnable()) {
 			return Collections.emptyList();
 		}
-		List<Map<String, Object>> ret = new ArrayList<>(actMap.size());
-		actMap.forEach((name, rpc) -> {
+		List<String> names = new ArrayList<>(actMap.keySet());
+		List<Map<String, Object>> ret = new ArrayList<>(names.size());
+		names.sort(null);
+		for (String name : names) {
+			RpcActionNode rpc = actMap.get(name);
+			if (rpc == null) {
+				continue;
+			}
 			Map<String, Object> map = ActInfoUtil.infoMap(name, rpc);
 			;
 			ret.add(map);
 			if (rpc.action != null) {
 				Soa soa = rpc.action;
-				map.put("description", soa.description());
+				map.put("cnName", soa.cnName());
+				if (soa.comment().length() > 0) {
+					map.put("comment", soa.comment());
+				}
 			}
-		});
+		}
 		return ret;
 	}
 

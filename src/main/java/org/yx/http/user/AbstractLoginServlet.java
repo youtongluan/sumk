@@ -94,7 +94,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			}
 		} catch (Throwable e) {
 			ex = e;
-			Log.get("sumk.http.login").error(e.toString(), e);
+			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
 			InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;

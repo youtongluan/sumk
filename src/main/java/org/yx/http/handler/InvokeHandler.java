@@ -20,6 +20,7 @@ import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
+import org.yx.http.act.HttpActionNode;
 import org.yx.http.invoke.WebHandler;
 import org.yx.log.Log;
 
@@ -51,7 +52,7 @@ public class InvokeHandler implements HttpHandler {
 						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
 					throw e;
 				}
-				Log.get("sumk.http").debug(e.getMessage(), e);
+				Log.get("sumk.http.error").error("业务处理含有原始异常", e);
 				BizException.throwException(info.errorHandler.code(), info.errorHandler.message());
 			}
 		} else {

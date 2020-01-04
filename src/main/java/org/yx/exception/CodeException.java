@@ -25,8 +25,9 @@ public class CodeException extends RuntimeException {
 		return code;
 	}
 
-	public String getCodedMessage() {
-		return coded(this.getMessage());
+	@Override
+	public String getLocalizedMessage() {
+		return new StringBuilder().append(this.getMessage()).append(" (").append(code).append(")").toString();
 	}
 
 	public CodeException(int code, String msg) {
@@ -41,10 +42,8 @@ public class CodeException extends RuntimeException {
 
 	@Override
 	public final String toString() {
-		return coded(super.toString());
+		return new StringBuilder(this.getClass().getSimpleName()).append(": ").append(this.getLocalizedMessage())
+				.toString();
 	}
 
-	private String coded(String text) {
-		return new StringBuilder().append(text).append(" (").append(code).append(")").toString();
-	}
 }

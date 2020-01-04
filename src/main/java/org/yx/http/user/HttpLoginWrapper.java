@@ -63,7 +63,7 @@ public class HttpLoginWrapper extends HttpServlet {
 		try {
 			List<LoginServlet> ss = IOC.getBeans(LoginServlet.class);
 			if (ss == null || ss.isEmpty()) {
-				Log.get("sumk.http").info("there is no LoginServlet");
+				Log.get("sumk.http.login").info("there is no LoginServlet");
 				return;
 			}
 			this.servs = ss.toArray(new LoginServlet[ss.size()]);
@@ -71,7 +71,7 @@ public class HttpLoginWrapper extends HttpServlet {
 				serv.init(config);
 			}
 		} catch (Exception e) {
-			Log.get("sumk.http.login").error(e.toString(), e);
+			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
 		}
 	}
 

@@ -30,10 +30,12 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
-import org.yx.http.handler.HttpActionNode;
+import org.yx.http.act.HttpActionInfo;
+import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogs;
+import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
 public abstract class AbstractHttpServer extends HttpServlet {
@@ -72,25 +74,33 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		try {
 			setRespHeader(req, resp);
 
-			final String act = parser().parse(req);
-			log.trace("act={}", act);
-			if (act == null || act.isEmpty()) {
-				log.error("act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
+			String rawAct = getRawAct(req);
+			log.trace("raw act={}", rawAct);
+			if (rawAct == null || rawAct.isEmpty()) {
+				log.error("raw act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
 				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确");
 			}
-			if (HttpSettings.getFusing().contains(act)) {
-				log.error("{} is in fusing", act);
+			String usedAct = HttpActions.solveAct(rawAct);
+			if (usedAct == null || rawAct.isEmpty()) {
+				log.error("act is empty for {}", rawAct);
+				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确");
+			}
+			if (HttpSettings.getFusing().contains(usedAct)) {
+				log.error("{} is in fusing", usedAct);
 				throw BizException.create(HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"));
 			}
-			HttpActionNode info = HttpActionHolder.getHttpInfo(act);
+			HttpActionInfo info = HttpActions.getHttpInfo(usedAct);
 			if (info == null) {
-				InnerHttpUtil.actNotFound(req, resp, act);
-				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求的格式不正确");
+				info = HttpActions.getDefaultInfo();
+				if (info == null) {
+					throw BizException.create(HttpErrorCode.ACT_NOT_FOUND, "接口不存在");
+				}
 			}
-			info.checkThreshold();
+			rawAct = info.rawAct();
+			info.node().checkThreshold();
 			HttpContextHolder.set(req, resp);
-			ActionContext.newContext(act, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
-			wc = new WebContext(act, info, req, resp, beginTime);
+			ActionContext.newContext(rawAct, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
+			wc = new WebContext(rawAct, info.node(), req, resp, beginTime);
 			handle(wc);
 
 		} catch (Throwable e) {
@@ -106,7 +116,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			HttpContextHolder.remove();
 			ActionContext.remove();
 			if (wc != null) {
-				InnerHttpUtil.record(wc.act(), time, ex == null);
+				InnerHttpUtil.record(wc.rawAct(), time, ex == null);
 			}
 		}
 	}
@@ -115,8 +125,12 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		InnerHttpUtil.sendError(resp, code, errorMsg, InnerHttpUtil.charset(req));
 	}
 
-	protected ActParser parser() {
-		return ActParser.pathActParser;
+	protected String getRawAct(HttpServletRequest req) {
+		String act = req.getPathInfo();
+		if (StringUtil.isEmpty(act) && AppInfo.getBoolean("sumk.http.act.query", false)) {
+			return req.getParameter("act");
+		}
+		return act;
 	}
 
 	protected void setRespHeader(HttpServletRequest req, HttpServletResponse resp) {

@@ -27,8 +27,8 @@ import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
-import org.yx.rpc.RpcActionHolder;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.route.HostChecker;
@@ -191,7 +191,7 @@ public final class Client {
 			LockHolder.register(locker, endTime);
 			f = session.write(req);
 		} catch (Exception e) {
-			SumkLogs.RPC_LOG.error(e.toString(), e);
+			SumkLogs.RPC_LOG.error(e.getLocalizedMessage(), e);
 		}
 		if (f == null) {
 			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", (String) null);
@@ -202,7 +202,7 @@ public final class Client {
 	}
 
 	private RpcFuture tryLocalHandler(Req req, RpcLocker locker, RpcRoute route) {
-		RpcActionNode node = RpcActionHolder.getActionNode(api);
+		RpcActionNode node = RpcActions.getActionNode(api);
 		if (node == null) {
 			return null;
 		}

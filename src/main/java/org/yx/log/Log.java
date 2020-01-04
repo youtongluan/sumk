@@ -54,7 +54,7 @@ public final class Log {
 	}
 
 	public static void printStack(String module, Throwable e) {
-		get(module).error(e.toString(), e);
+		get(module).error(e.getLocalizedMessage(), e);
 	}
 
 	public static boolean isON(Logger log) {

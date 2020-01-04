@@ -1,5 +1,7 @@
 package org.yx.conf;
 
+import static org.yx.conf.AppInfo.LN;
+
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.Collections;
@@ -11,8 +13,6 @@ import java.util.Set;
 import org.yx.util.CollectionUtil;
 
 public class NamePairs {
-
-	public static final String LN = "\n";
 
 	private final Map<String, String> map;
 

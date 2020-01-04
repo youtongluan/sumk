@@ -49,10 +49,6 @@ public final class FileUtil {
 		if (path.startsWith(AppInfo.CLASSPATH_URL_PREFIX)) {
 			return new File(Loader.loader().getResource(path.substring(AppInfo.CLASSPATH_URL_PREFIX.length())).toURI());
 		}
-		if (path.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
-			return new File(
-					Loader.loader().getResource(path.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length())).toURI());
-		}
 		return new File(path);
 	}
 }

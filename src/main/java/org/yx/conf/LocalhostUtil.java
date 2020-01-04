@@ -20,6 +20,7 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.function.Predicate;
@@ -33,6 +34,7 @@ import org.yx.util.StringUtil;
 public final class LocalhostUtil {
 
 	private static String localIp = null;
+	private static String[] localIps = null;
 	private static Predicate<String> matcher = defaultMatcher();
 
 	private static Predicate<String> defaultMatcher() {
@@ -97,25 +99,28 @@ public final class LocalhostUtil {
 	}
 
 	private static String getLocalIP0() throws Exception {
-		List<String> list = getLocalIPList();
+		String[] ips = getLocalIps();
 		Predicate<String> matcher = LocalhostUtil.matcher;
 		if (matcher == null) {
 			matcher = BooleanMatcher.TRUE;
 		}
-		for (String ip : list) {
+		for (String ip : ips) {
 			if (matcher.test(ip)) {
 				return ip;
 			}
 		}
-		if (list.size() > 0) {
-			RawLog.warn("sumk.conf", "没有合适ip，使用第一个ip，列表为:" + list);
-			return list.get(0);
+		if (ips.length > 0) {
+			RawLog.warn("sumk.conf", "没有合适ip，使用第一个ip，列表为:" + Arrays.toString(ips));
+			return ips[0];
 		}
 		RawLog.warn("sumk.conf", "找不到任何ip，使用0.0.0.0");
 		return "0.0.0.0";
 	}
 
-	public static List<String> getLocalIPList() {
+	private static synchronized String[] getLocalIps() {
+		if (localIps != null) {
+			return localIps;
+		}
 		List<String> ipList = new ArrayList<String>();
 		try {
 			Enumeration<?> e1 = (Enumeration<?>) NetworkInterface.getNetworkInterfaces();
@@ -136,7 +141,11 @@ public final class LocalhostUtil {
 		} catch (SocketException e) {
 			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
-		return ipList;
+		if (ipList.isEmpty()) {
+			return new String[0];
+		}
+		localIps = ipList.toArray(new String[0]);
+		return localIps;
 	}
 
 	/**
@@ -148,5 +157,9 @@ public final class LocalhostUtil {
 	 */
 	private static boolean isUp(NetworkInterface ni) throws SocketException {
 		return (!ni.isVirtual()) && ni.isUp() && (!ni.isLoopback());
+	}
+
+	public static List<String> getLocalIPList() {
+		return Arrays.asList(getLocalIps());
 	}
 }

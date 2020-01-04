@@ -15,7 +15,6 @@
  */
 package org.yx.http.kit;
 
-import java.io.IOException;
 import java.nio.charset.Charset;
 
 import javax.servlet.http.HttpServletRequest;
@@ -35,5 +34,4 @@ public interface HttpKit {
 
 	ActStatis actStatis();
 
-	void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException;
 }

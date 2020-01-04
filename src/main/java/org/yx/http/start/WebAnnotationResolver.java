@@ -17,6 +17,7 @@ package org.yx.http.start;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -25,30 +26,40 @@ import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
 import org.yx.bean.IOC;
-import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpActionHolder;
-import org.yx.http.handler.HttpActionNode;
-import org.yx.log.ConsoleLog;
+import org.yx.http.act.HttpActionNode;
+import org.yx.http.act.HttpActions;
 import org.yx.log.Log;
+import org.yx.util.StringUtil;
 import org.yx.validate.ParamFactory;
 
-public class WebAnnotationResolver {
-	private WebNameResolver nameResolver;
+public final class WebAnnotationResolver {
+
 	private Predicate<String> matcher = BooleanMatcher.TRUE;
 
-	public WebAnnotationResolver() {
-		nameResolver = Loader.newInstanceFromAppKey("sumk.http.name.resolver");
-		if (nameResolver == null) {
-			nameResolver = new WebNameResolverImpl();
+	private List<String> rawNames(Method m, Web web) {
+		String name = web.value();
+		if (name == null || name.isEmpty()) {
+			return Collections.singletonList(m.getName());
 		}
+		List<String> list = new ArrayList<String>(1);
+		String[] names = StringUtil.toLatin(name).split(",");
+		for (String raw : names) {
+			if (raw != null && (raw = raw.trim()).length() > 0) {
+				list.add(raw);
+			}
+		}
+		return list.size() > 0 ? list : Collections.singletonList(m.getName());
+	}
+
+	public WebAnnotationResolver() {
 		String patterns = AppInfo.get("sumk.http.pattern", null);
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		ConsoleLog.get("sumk.http").debug("web matcher:{}", this.matcher);
+		Log.get("sumk.http").debug("web matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
@@ -81,14 +92,13 @@ public class WebAnnotationResolver {
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
-			List<String> names = nameResolver.solve(clz, m, act);
-			if (names == null || names.isEmpty()) {
-				continue;
-			}
-
 			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
 					ParamFactory.create(m), m, act);
 
+			List<String> names = rawNames(m, act);
+			if (names == null || names.isEmpty()) {
+				continue;
+			}
 			for (String name : names) {
 				this.addAction(name, node);
 			}
@@ -99,7 +109,7 @@ public class WebAnnotationResolver {
 		if (name == null || name.isEmpty()) {
 			return;
 		}
-		HttpActionHolder.putActInfo(name, node);
+		HttpActions.putActInfo(name, node);
 	}
 
 }

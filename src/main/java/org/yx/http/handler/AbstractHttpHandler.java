@@ -15,7 +15,7 @@
  */
 package org.yx.http.handler;
 
-public abstract class AbstractHandler implements HttpHandler {
+public abstract class AbstractHttpHandler implements HttpHandler {
 
 	protected void setData(WebContext ctx, Object data) {
 		ctx.data(data);

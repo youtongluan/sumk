@@ -13,29 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.act;
 
-import javax.servlet.http.HttpServletRequest;
+public final class HttpActionInfo {
+	private final String rawAct;
+	private final HttpActionNode node;
 
-public interface ActParser {
+	public HttpActionInfo(String rawAct, HttpActionNode node) {
+		this.rawAct = rawAct;
+		this.node = node;
+	}
 
-	String parse(HttpServletRequest req);
+	public String rawAct() {
+		return rawAct;
+	}
 
-	static final ActParser pathActParser = req -> {
-		String path = req.getPathInfo();
-		if (path == null) {
-			return null;
-		}
-		while (path.endsWith("/") && path.length() > 0) {
-			path = path.substring(0, path.length() - 1);
-		}
-		while (path.startsWith("/") && path.length() > 0) {
-			path = path.substring(1);
-		}
-		return path.replace('/', '.');
-	};
+	public HttpActionNode node() {
+		return node;
+	}
 
-	static final ActParser paramterActParser = req -> {
-		return req.getParameter("act");
-	};
 }

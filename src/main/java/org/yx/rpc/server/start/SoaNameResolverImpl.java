@@ -25,12 +25,12 @@ import org.yx.util.StringUtil;
 
 public class SoaNameResolverImpl implements SoaNameResolver {
 
-	private String groupId;
-	private String appId;
+	private final String groupId;
+	private final String appId;
 
 	public SoaNameResolverImpl() {
-		groupId = AppInfo.groupId(null);
-		appId = AppInfo.appId(null);
+		groupId = AppInfo.getBoolean("sumk.rpc.groupId.enable", true) ? AppInfo.groupId(null) : null;
+		appId = AppInfo.getBoolean("sumk.rpc.appId.enable", true) ? AppInfo.appId(null) : null;
 	}
 
 	@Override

@@ -16,23 +16,25 @@
 package org.yx.http.handler;
 
 import java.nio.charset.Charset;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.HttpSettings;
+import org.yx.http.act.HttpActionNode;
 
 public class WebContext {
-	private HttpActionNode node;
-	private HttpServletRequest httpRequest;
-	private HttpServletResponse httpResponse;
+	private final String rawAct;
+	private final HttpActionNode node;
+	private final HttpServletRequest httpRequest;
+	private final HttpServletResponse httpResponse;
 	private Charset charset = HttpSettings.DEFAULT_CHARSET;
 	private String sign;
 	private Object data;
 
 	private Object result;
 	private byte[] key;
-	private String act;
 	private transient String str_data;
 	private transient String str_resp;
 	private final long beginTime;
@@ -69,11 +71,11 @@ public class WebContext {
 		}
 	}
 
-	public WebContext(String act, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
+	public WebContext(String rawAct, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
 			long beginTime) {
-		this.act = act;
-		this.node = node;
-		this.httpRequest = req;
+		this.rawAct = Objects.requireNonNull(rawAct);
+		this.node = Objects.requireNonNull(node);
+		this.httpRequest = Objects.requireNonNull(req);
 		this.httpResponse = resp;
 		this.beginTime = beginTime;
 	}
@@ -135,8 +137,8 @@ public class WebContext {
 		this.key = key;
 	}
 
-	public String act() {
-		return act;
+	public String rawAct() {
+		return rawAct;
 	}
 
 }

@@ -44,7 +44,7 @@ public class UploadServer extends AbstractHttpServer {
 			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE, "ContentType不是" + MULTI);
 		}
 		if (wc.httpNode().upload == null) {
-			log.error("{}缺少 @upload", wc.act());
+			log.error("{}缺少 @upload", wc.rawAct());
 			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS, "缺少@Upload注解");
 		}
 		HttpHandlerChain.upload.handle(wc);

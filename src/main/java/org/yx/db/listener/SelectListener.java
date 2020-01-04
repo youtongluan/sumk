@@ -30,7 +30,7 @@ import org.yx.log.Log;
 import org.yx.redis.RecordReq;
 
 @Bean
-public class QueryListener implements DBEventListener {
+public class SelectListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {

@@ -30,7 +30,9 @@ public @interface Soa {
 	 */
 	String value() default "";
 
-	public String description() default "";
+	public String cnName() default "";
+
+	public String comment() default "";
 
 	/**
 	 * 发布的服务名称是否加上groupId前缀，只在groupId不为空的时候才有作用

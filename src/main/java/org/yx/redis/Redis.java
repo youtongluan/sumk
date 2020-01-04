@@ -15,15 +15,15 @@
  */
 package org.yx.redis;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
+import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -47,23 +47,27 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 	protected final int db;
 	protected final int tryCount;
 	protected final Pool<Jedis> pool;
-	public static final Charset UTF8 = StandardCharsets.UTF_8;
-	boolean disConnected;
+	protected boolean disConnected;
 
 	protected JedisPoolConfig defaultPoolConfig() {
 		JedisPoolConfig config = new JedisPoolConfig();
-		config.setMinIdle(AppInfo.getInt("sumk.redis.minidle", 1));
-		config.setMaxIdle(AppInfo.getInt("sumk.redis.maxidle", 20));
-		config.setMaxTotal(AppInfo.getInt("sumk.redis.maxtotal", 100));
-		config.setTestWhileIdle(AppInfo.getBoolean("sumk.redis.testWhileIdle", false));
+		Map<String, String> map = AppInfo.subMap("sumk.redis.conf.");
+		if (map != null && map.size() > 0) {
+			try {
+				SimpleBeanUtil.copyProperties(config, map);
+			} catch (Exception e) {
+				Log.get(LOG_NAME).error(e.getLocalizedMessage(), e);
+			}
+		}
+		Log.get(LOG_NAME).debug("{}-{} : {}", this.hosts, this.db, config);
 		return config;
 	}
 
 	public Redis(JedisPoolConfig config, RedisParamter p) {
 		this.tryCount = p.getTryCount();
 		this.hosts = p.hosts();
-
 		this.db = p.getDb();
+
 		if (config == null) {
 			config = defaultPoolConfig();
 		}
@@ -107,14 +111,10 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		return tryCount;
 	}
 
-	protected final void checkConnection() {
+	public <T> T exec(Function<Jedis, T> callback) {
 		if (this.disConnected) {
 			throw DIS_CONNECTION_EXCEPTION;
 		}
-	}
-
-	public <T> T exec(Function<Jedis, T> callback) {
-		checkConnection();
 		Jedis jedis = null;
 		try {
 			jedis = this.jedis();
@@ -128,11 +128,20 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 		}
 	}
 
+	protected boolean returnNullForConnectionException() {
+		return AppInfo.getBoolean("sumk.redis.disconnect.null", false);
+	}
+
 	public <T> T executeAndRetry(Function<Jedis, T> callback) {
 		Jedis jedis = null;
 		Exception e1 = null;
 		for (int i = 0; i < this.getTryCount(); i++) {
-			checkConnection();
+			if (this.disConnected) {
+				if (this.returnNullForConnectionException()) {
+					return null;
+				}
+				throw DIS_CONNECTION_EXCEPTION;
+			}
 			try {
 				e1 = null;
 				jedis = this.jedis();
@@ -160,6 +169,10 @@ public abstract class Redis implements BinaryJedisCommands, JedisCommands, Multi
 			}
 		}
 		if (e1 != null) {
+
+			if (returnNullForConnectionException() && isConnectException(e1)) {
+				return null;
+			}
 			throw new SumkException(12342422, e1.getMessage(), e1);
 		}
 		throw new SumkException(12342423, "未知redis异常");

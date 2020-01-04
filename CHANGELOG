@@ -113,3 +113,8 @@ v2.6.5
 
 v2.6.6
 1、优化http的日志功能
+
+v2.6.7
+1、http允许开发者指定默认接口，如果接口找不到就会进入该接口
+2、允许通过sumk.redis.disconnect.null配置，指定在redis服务器异常的时候，是抛异常还是返回null
+3、通过sumk.redis.conf.**来配置redis连接池的默认属性

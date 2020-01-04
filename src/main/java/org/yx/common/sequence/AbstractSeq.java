@@ -39,7 +39,7 @@ public abstract class AbstractSeq implements Seq {
 				localSeqs.set(i, ThreadLocalRandom.current().nextInt(256));
 			}
 		} catch (Exception e) {
-			Log.get("sumk.seq").error(e.toString(), e);
+			Log.get("sumk.seq").error(e.getLocalizedMessage(), e);
 		}
 	}
 
@@ -66,7 +66,7 @@ public abstract class AbstractSeq implements Seq {
 			} catch (Exception e) {
 				Logger log = Log.get("sumk.seq");
 				if (log.isTraceEnabled()) {
-					log.trace(e.toString(), e);
+					log.trace(e.getLocalizedMessage(), e);
 				} else {
 					log.debug(e.toString());
 				}

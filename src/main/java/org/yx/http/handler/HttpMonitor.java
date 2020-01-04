@@ -15,13 +15,14 @@
  */
 package org.yx.http.handler;
 
-import static org.yx.common.Monitors.LN;
+import static org.yx.conf.AppInfo.LN;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -35,7 +36,7 @@ import org.yx.common.ActStatis;
 import org.yx.common.Monitors;
 import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpActionHolder;
+import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 import org.yx.util.S;
@@ -88,7 +89,7 @@ public class HttpMonitor extends HttpServlet {
 		if (!"1".equals(req.getParameter("acts"))) {
 			return;
 		}
-		writer.write(Arrays.toString(HttpActionHolder.acts()));
+		writer.write(Arrays.toString(HttpActions.acts()));
 		writer.write(TYPE_SPLIT);
 	}
 
@@ -99,7 +100,8 @@ public class HttpMonitor extends HttpServlet {
 		ActStatis actStatic = InnerHttpUtil.getActStatic();
 		String reset = req.getParameter("statis.reset");
 		Map<String, Statis> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
-		Collection<Statis> values = map.values();
+		List<Statis> values = new ArrayList<>(map.values());
+		values.sort((a, b) -> Long.compare(b.time.get(), a.time.get()));
 		StringBuilder sb = new StringBuilder();
 		sb.append("##").append(Statis.header()).append(LN);
 		for (Statis v : values) {

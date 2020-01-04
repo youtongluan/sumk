@@ -102,17 +102,13 @@ public final class InnerHttpUtil {
 		return false;
 	}
 
-	public static void actNotFound(HttpServletRequest req, HttpServletResponse resp, String act) throws IOException {
-		kit.actNotFound(req, resp, act);
-	}
-
 	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {
 		try {
 			resp.setStatus(HttpSettings.getErrorHttpStatus());
 			ErrorResp r = new ErrorResp(code, message);
 			resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
 		} catch (IOException e) {
-			Log.get("sumk.http").error(e.toString(), e);
+			Log.get("sumk.http").error(e.getLocalizedMessage(), e);
 		}
 	}
 

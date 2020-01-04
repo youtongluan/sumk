@@ -28,8 +28,8 @@ import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
 
 public final class AppInfo {
-	public static final String CLASSPATH_ALL_URL_PREFIX = "classpath*:";
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
+	public static final String LN = "\n";
 
 	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>();
 	public static final Charset UTF8 = StandardCharsets.UTF_8;

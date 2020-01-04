@@ -23,12 +23,6 @@ import java.util.Set;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
-/**
- * 简单的bean对象操作，只支持boolean,int,long,double,String以及他们的包装类
- * 
- * @author 游夏
- *
- */
 public class SimpleBeanUtil {
 
 	public static void setProperty(Object bean, Method m, String value)
@@ -43,26 +37,56 @@ public class SimpleBeanUtil {
 			return;
 		}
 		Class<?> ptype = m.getParameterTypes()[0];
-		Object v;
-		if (ptype == int.class || ptype == Integer.class) {
-			v = Integer.valueOf(value);
-		} else if (ptype == long.class || ptype == Long.class) {
-			v = Long.valueOf(value);
-		} else if (ptype == double.class || ptype == Double.class) {
-			v = Double.valueOf(value);
-		} else if (ptype == boolean.class || ptype == Boolean.class) {
-			if ("1".equals(value) || "true".equalsIgnoreCase(value)) {
-				v = Boolean.TRUE;
-			} else {
-				v = Boolean.FALSE;
-			}
-		} else if (ptype == String.class) {
-			v = value;
-		} else {
-			Log.get("sumk.bean").debug("{}因为类型不支持，被过滤掉", m.getName());
+		Object v = parseValue(ptype, value);
+		if (v == null) {
+			Log.get("sumk.bean").warn("{}因为类型({})不支持，被过滤掉", m.getName(), ptype);
 			return;
 		}
 		m.invoke(bean, v);
+	}
+
+	/**
+	 * @param ptype
+	 * @param value
+	 * @return
+	 */
+	private static Object parseValue(Class<?> ptype, String value) {
+		if (ptype == String.class) {
+			return value;
+		}
+		if (ptype == int.class || ptype == Integer.class) {
+			return Integer.valueOf(value);
+		}
+		if (ptype == long.class || ptype == Long.class) {
+			return Long.valueOf(value);
+		}
+		if (ptype == double.class || ptype == Double.class) {
+			return Double.valueOf(value);
+		}
+		if (ptype == boolean.class || ptype == Boolean.class) {
+			if ("1".equals(value) || "true".equalsIgnoreCase(value)) {
+				return Boolean.TRUE;
+			}
+			return Boolean.FALSE;
+		}
+
+		if (ptype == short.class || ptype == Short.class) {
+			return Short.valueOf(value);
+		}
+		if (ptype == byte.class || ptype == Byte.class) {
+			return Byte.valueOf(value);
+		}
+		if (ptype == float.class || ptype == Float.class) {
+			return Float.valueOf(value);
+		}
+
+		if (ptype == char.class || ptype == Character.class) {
+			if (value.length() > 0) {
+				return value.charAt(0);
+			}
+		}
+		return null;
+
 	}
 
 	public static void copyProperties(Object bean, Map<String, String> map) throws Exception {
@@ -71,7 +95,7 @@ public class SimpleBeanUtil {
 		for (String key : set) {
 			Method m = getMethod(ms, key);
 			if (m == null) {
-				Log.get("sumk.bean").debug("{}在{}中不存在", key, bean.getClass().getSimpleName());
+				Log.get("sumk.bean").warn("{}在{}中不存在", key, bean.getClass().getSimpleName());
 				continue;
 			}
 			setProperty(bean, m, map.get(key));

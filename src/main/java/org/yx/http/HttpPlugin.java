@@ -31,6 +31,7 @@ import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
+import org.yx.http.act.HttpActions;
 import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.RestType;
@@ -82,7 +83,7 @@ public class HttpPlugin implements Plugin {
 		try {
 			HttpHeaderName.init();
 			HttpSettings.init();
-			HttpActionHolder.setIngoreCase(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
+			HttpActions.init();
 			Object[] beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();

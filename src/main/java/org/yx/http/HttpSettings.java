@@ -87,8 +87,8 @@ public final class HttpSettings {
 	public static void init() {
 		errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
 		AppInfo.addObserver(info -> {
-			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 500);
-			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 500);
+			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 1000);
+			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 1000);
 			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn", 3000);
 			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info", 1000);
 		});

@@ -86,7 +86,7 @@ public class SumkDBPlugin implements Plugin {
 						new ByteArrayInputStream(bs));
 			}
 		} catch (Exception e) {
-			Log.get("sumk.db.sql").error(e.toString(), e);
+			Log.get("sumk.db.sql").error(e.getLocalizedMessage(), e);
 			return;
 		}
 		SqlHolder.setSQLS(sqlMap);

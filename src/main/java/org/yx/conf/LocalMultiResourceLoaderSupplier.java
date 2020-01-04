@@ -29,9 +29,6 @@ public class LocalMultiResourceLoaderSupplier implements Supplier<MultiResourceL
 	@Override
 	public MultiResourceLoader get() {
 		String xml = ".xml";
-		if (rootUri.startsWith(AppInfo.CLASSPATH_ALL_URL_PREFIX)) {
-			return new ClassPathXmlFilesLoader(rootUri.substring(AppInfo.CLASSPATH_ALL_URL_PREFIX.length()), xml);
-		}
 		if (rootUri.startsWith(AppInfo.CLASSPATH_URL_PREFIX)) {
 			return new ClassPathXmlFilesLoader(rootUri.substring(AppInfo.CLASSPATH_URL_PREFIX.length()), xml);
 		}

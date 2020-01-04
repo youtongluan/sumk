@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import redis.clients.jedis.JedisPoolConfig;
 
-public class JedisPoolConfigHolder {
+public final class JedisPoolConfigHolder {
 	private static Map<String, JedisPoolConfig> map = new ConcurrentHashMap<>();
 
 	public static void putConfig(String name, JedisPoolConfig config) {

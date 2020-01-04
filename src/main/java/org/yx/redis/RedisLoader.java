@@ -26,28 +26,10 @@ import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-import redis.clients.jedis.JedisPoolConfig;
-
 public class RedisLoader {
-	private static JedisPoolConfig defaultConfig = null;
-
-	public static JedisPoolConfig getDefaultConfig() {
-		return defaultConfig;
-	}
-
-	public static void setDefaultConfig(JedisPoolConfig defaultConfig) {
-		RedisLoader.defaultConfig = defaultConfig;
-	}
-
-	private static final String REDIS_FILE = "redis.properties";
 
 	public static void init() throws Exception {
-		try {
-			loadRedisByConfig();
-		} catch (Exception e) {
-			Log.get(Redis.LOG_NAME).error("can not load redis config,normal is in {}", REDIS_FILE);
-			throw e;
-		}
+		loadRedisByConfig();
 	}
 
 	private static byte[] loadConfig() throws Exception {
@@ -109,10 +91,6 @@ public class RedisLoader {
 
 	private static Redis create(String name, String v) throws Exception {
 		Log.get(Redis.LOG_NAME).trace("create redis {} with {}", name, v);
-		JedisPoolConfig config = JedisPoolConfigHolder.getConfig(name);
-		if (config == null) {
-			config = defaultConfig;
-		}
-		return RedisFactory.get(config, createParam(v));
+		return RedisFactory.get(JedisPoolConfigHolder.getConfig(name), createParam(v));
 	}
 }

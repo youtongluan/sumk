@@ -56,4 +56,6 @@ public @interface Param {
 	 * @return 用户自定义的属性。作用留给用户自己扩展
 	 */
 	String custom() default "";
+
+	String comment() default "";
 }

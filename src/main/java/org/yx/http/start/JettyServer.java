@@ -62,8 +62,8 @@ public class JettyServer implements Lifecycle {
 	protected ServerConnector createConnector() throws Exception {
 
 		ServerConnector connector = new ServerConnector(server, null, null, null,
-				AppInfo.getInt("sumk.jetty.connector.acceptors", 0),
-				AppInfo.getInt("sumk.jetty.connector.selectors", 5), getConnectionFactorys()) {
+				AppInfo.getInt("sumk.jetty.connector.acceptors", -1),
+				AppInfo.getInt("sumk.jetty.connector.selectors", -1), getConnectionFactorys()) {
 			@Override
 			protected ServerSocketChannel openAcceptChannel() throws IOException {
 				IOException ex = null;
