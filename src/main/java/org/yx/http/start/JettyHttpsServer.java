@@ -26,7 +26,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.http.HttpPlugin;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.FileUtil;
 
 public class JettyHttpsServer extends JettyServer {
@@ -37,12 +37,13 @@ public class JettyHttpsServer extends JettyServer {
 
 	@Override
 	protected ConnectionFactory[] getConnectionFactorys() throws URISyntaxException {
+		@SuppressWarnings("deprecation")
 		SslContextFactory sslContextFactory = new SslContextFactory();
 		String path = get(HttpPlugin.KEY_STORE_PATH);
 		File keystoreFile = FileUtil.file(path);
 		if (!keystoreFile.exists()) {
 			String msg = path + " is not exist";
-			Log.get("sumk.http").error(msg);
+			Logs.http().error(msg);
 			SumkException.throwException(-2345345, msg);
 		}
 		sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
@@ -57,7 +58,7 @@ public class JettyHttpsServer extends JettyServer {
 
 		sslContextFactory.setTrustAll(AppInfo.getBoolean("sumk.jetty.ssl.trustAll", false));
 
-		Log.get("sumk.http").info("using https");
+		Logs.http().info("using https");
 		return new ConnectionFactory[] { new SslConnectionFactory(sslContextFactory, "http/1.1"),
 				new HttpConnectionFactory() };
 	}

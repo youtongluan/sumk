@@ -17,7 +17,6 @@ package org.yx.http.invoke;
 
 import org.yx.asm.ArgPojo;
 import org.yx.common.BizExcutor;
-import org.yx.exception.SumkException;
 import org.yx.http.HttpGson;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.handler.WebContext;
@@ -28,17 +27,19 @@ public class WebVisitorImpl implements WebVisitor {
 	@Override
 	public Object visit(WebContext ctx) throws Throwable {
 		HttpActionNode http = ctx.httpNode();
-		ArgPojo argObj;
-		if (http.argNames.length == 0) {
-			argObj = http.getEmptyArgObj();
-		} else {
-			if (ctx.data() == null) {
-				throw new SumkException(3253234, "there is no data receive from request");
-			}
-			argObj = HttpGson.gson().fromJson((String) ctx.data(), http.argClz);
-		}
-
+		ArgPojo argObj = parseArgPojo(http, ctx.data());
 		return exec(argObj, http.owner, http.paramInfos);
+	}
+
+	private ArgPojo parseArgPojo(HttpActionNode http, Object reqData) throws Exception {
+		if (http.argNames.length == 0 || reqData == null) {
+			return http.getEmptyArgObj();
+		}
+		String data = (String) reqData;
+		if (data.isEmpty()) {
+			return http.getEmptyArgObj();
+		}
+		return HttpGson.gson().fromJson(data, http.argClz);
 	}
 
 	private Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos) throws Throwable {

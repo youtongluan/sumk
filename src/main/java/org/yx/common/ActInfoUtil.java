@@ -26,15 +26,16 @@ import java.util.Map;
 
 import org.yx.annotation.Param;
 import org.yx.util.StringUtil;
+import org.yx.util.SumkDate;
 import org.yx.validate.ParamInfo;
 
-public class ActInfoUtil {
+public final class ActInfoUtil {
 
 	public static Object describe(Class<?> clazz) {
 		if (clazz.isArray()) {
 			return new Object[] { describe(clazz.getComponentType()) };
 		}
-		if (clazz.getName().startsWith("java.") || clazz.isPrimitive()) {
+		if (clazz.isPrimitive() || clazz.getName().startsWith("java.") || clazz == SumkDate.class) {
 			return clazz.getSimpleName();
 		}
 		if (Map.class.isAssignableFrom(clazz)) {
@@ -62,6 +63,8 @@ public class ActInfoUtil {
 	public static Map<String, Object> infoMap(String name, CalleeNode node) {
 		Map<String, Object> map = new LinkedHashMap<>();
 		map.put("name", name);
+		map.put("class", node.getDeclaringClass().getName());
+		map.put("method", node.getMethodName());
 		List<Map<String, Object>> list = new ArrayList<>();
 		int paramSize = node.argNames == null ? 0 : node.argNames.length;
 		Class<?>[] paramTypes = node.getParameterTypes();
@@ -88,6 +91,9 @@ public class ActInfoUtil {
 				}
 				if (StringUtil.isNotEmpty(p.comment())) {
 					param.put("comment", p.comment());
+				}
+				if (StringUtil.isNotEmpty(p.custom())) {
+					param.put("custom", p.custom());
 				}
 			}
 		}

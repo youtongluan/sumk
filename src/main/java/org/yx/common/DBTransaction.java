@@ -21,6 +21,7 @@ import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
+import org.yx.log.Logs;
 import org.yx.log.Log;
 
 public class DBTransaction {
@@ -38,7 +39,7 @@ public class DBTransaction {
 	}
 
 	public void begin() {
-		Log.get("sumk.db").trace("begin with embed:{}", embed);
+		Logs.db().trace("begin with embed:{}", embed);
 
 		dbCtx = embed ? ConnectionPool.create(dbName, dbType) : ConnectionPool.createIfAbsent(dbName, dbType);
 	}
@@ -47,13 +48,13 @@ public class DBTransaction {
 		if (BizException.class.isInstance(e)) {
 			Log.get("sumk.error").warn(e.toString());
 		} else {
-			Log.printStack(SumkLogs.SQL_ERROR, e);
+			Logs.printStack(e);
 		}
 		if (dbCtx != null) {
 			try {
 				dbCtx.rollback();
 			} catch (SQLException e1) {
-				Log.printStack(SumkLogs.SQL_ERROR, e1);
+				Logs.printStack(e1);
 			}
 		}
 		if (RuntimeException.class.isInstance(e)) {
@@ -69,7 +70,7 @@ public class DBTransaction {
 		try {
 			this.dbCtx.commit();
 		} catch (SQLException e) {
-			Log.printStack(SumkLogs.SQL_ERROR, e);
+			Logs.printStack(e);
 		}
 	}
 

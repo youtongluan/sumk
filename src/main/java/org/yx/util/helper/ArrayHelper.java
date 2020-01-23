@@ -18,9 +18,9 @@ package org.yx.util.helper;
 import java.util.Objects;
 import java.util.function.IntFunction;
 
-public class ArrayHelper {
+public final class ArrayHelper {
 
-	public <T> T[] add(T[] old, T obj, IntFunction<T[]> arrayFactory) {
+	public static <T> T[] add(T[] old, T obj, IntFunction<T[]> arrayFactory) {
 		if (obj == null) {
 			return old;
 		}
@@ -40,7 +40,7 @@ public class ArrayHelper {
 		return ret;
 	}
 
-	public <T> T[] remove(T[] old, T obj, IntFunction<T[]> arrayFactory) {
+	public static <T> T[] remove(T[] old, T obj, IntFunction<T[]> arrayFactory) {
 		if (old == null || old.length == 0 || obj == null) {
 			return old;
 		}

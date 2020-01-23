@@ -15,17 +15,15 @@
  */
 package org.yx.util;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.yx.common.SimpleZkSerializer;
+import org.yx.conf.AppInfo;
 
 public final class ZkClientHelper {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
-	public static final Charset SERIAL_CHARSET = StandardCharsets.UTF_8;
 
 	public static void makeSure(ZkClient client, final String dataPath) {
 		int start = 0, index;
@@ -61,7 +59,7 @@ public final class ZkClientHelper {
 				return zk;
 			}
 			zk = new ZkClient(url, 30000);
-			zk.setZkSerializer(new SimpleZkSerializer(SERIAL_CHARSET));
+			zk.setZkSerializer(new SimpleZkSerializer(AppInfo.UTF8));
 			if (map.putIfAbsent(url, zk) != null) {
 				zk.close();
 			}
@@ -77,6 +75,6 @@ public final class ZkClientHelper {
 		if (zkData == null) {
 			return null;
 		}
-		return new String(zkData, SERIAL_CHARSET);
+		return new String(zkData, AppInfo.UTF8);
 	}
 }

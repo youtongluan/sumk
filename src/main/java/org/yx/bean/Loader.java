@@ -58,11 +58,11 @@ public final class Loader {
 			} catch (Throwable e) {
 			}
 		}
-		return Loader.class.getClassLoader().loadClass(clz);
+		return loadClassExactly(clz);
 	}
 
 	public static Class<?> loadClassExactly(String clz) throws ClassNotFoundException {
-		return Loader.class.getClassLoader().loadClass(clz);
+		return loader().loadClass(clz);
 	}
 
 	public static InputStream getResourceAsStream(String name) {

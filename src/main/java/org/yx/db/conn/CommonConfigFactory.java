@@ -23,7 +23,7 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
+import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 
 @Bean
@@ -56,7 +56,7 @@ public class CommonConfigFactory implements DBConfigFactory {
 
 		objectMap.forEach((catagory, value) -> {
 			if (!Map.class.isInstance(value)) {
-				ConsoleLog.get("sumk.db.config").info("{} is not valid config, value : {}", catagory, value);
+				Logs.db().info("{} is not valid config, value : {}", catagory, value);
 				return;
 			}
 			@SuppressWarnings("unchecked")
@@ -64,8 +64,7 @@ public class CommonConfigFactory implements DBConfigFactory {
 			Map<String, String> real = new HashMap<>();
 			config.forEach((propertyName, v) -> {
 				if (!String.class.isInstance(v)) {
-					ConsoleLog.get("sumk.db.config").info("{}.{} is not valid config,value:{}", catagory, propertyName,
-							v);
+					Logs.db().info("{}.{} is not valid config,value:{}", catagory, propertyName, v);
 					return;
 				}
 				real.put(propertyName, (String) v);

@@ -23,7 +23,7 @@ import org.yx.common.StartConstants;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public class BeanFactory extends AbstractBeanListener {
 
@@ -33,7 +33,7 @@ public class BeanFactory extends AbstractBeanListener {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
 		this.valid = true;
 		excludeMatcher = MatcherFactory.createWildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);
-		Log.get("sumk.ioc").info("bean exclude matcher:{}", excludeMatcher);
+		Logs.ioc().info("bean exclude matcher:{}", excludeMatcher);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class BeanFactory extends AbstractBeanListener {
 			Class<?> clz = event.clz();
 			String clzName = clz.getName();
 			if (excludeMatcher.test(clzName)) {
-				Log.get("sumk.ioc").info("{} excluded", clzName);
+				Logs.ioc().info("{} excluded", clzName);
 				return;
 			}
 

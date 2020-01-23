@@ -15,7 +15,10 @@
  */
 package org.yx.redis;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,7 +28,15 @@ import org.yx.log.Log;
 public class RedisPool {
 	private static final ConcurrentMap<String, Redis> map = new ConcurrentHashMap<>();
 
-	static Redis _defaultRedis;
+	private static Redis _defaultRedis;
+
+	static void defaultRedis(Redis r) {
+		_defaultRedis = r;
+	}
+
+	static List<String> keys() {
+		return new ArrayList<String>(map.keySet());
+	}
 
 	public static Redis get(String alias) {
 		if (alias == null) {
@@ -49,10 +60,10 @@ public class RedisPool {
 	}
 
 	public static void put(String alias, Redis redis) {
-		Redis old = map.put(alias.toLowerCase(), redis);
-		Log.get("sumk.redis").info("redis name {} : {}", alias, redis);
+		Redis old = map.put(alias.toLowerCase(), Objects.requireNonNull(redis));
+		Log.get("sumk.redis").trace("redis name {} : {}", alias, redis);
 		if (old != null) {
-			old.shutdown();
+			old.shutdownPool();
 			Log.get("sumk.redis").info("shutdown old redis {} : {}", alias, redis);
 		}
 	}
@@ -64,7 +75,7 @@ public class RedisPool {
 		}
 
 		for (Redis r : redises) {
-			r.shutdown();
+			r.shutdownPool();
 		}
 		map.clear();
 	}

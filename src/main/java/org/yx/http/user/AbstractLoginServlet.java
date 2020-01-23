@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -42,7 +41,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	protected String type = "";
 
 	@Override
-	public void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	public void service(HttpServletRequest req, HttpServletResponse resp) {
 		final long beginTime = System.currentTimeMillis();
 		Throwable ex = null;
 		Charset charset = InnerHttpUtil.charset(req);
@@ -51,7 +50,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				Log.get("sumk.http.login").warn("不是有效的method，只能使用GET或POST");
 				return;
 			}
-			resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
+			InnerHttpUtil.setRespHeader(resp, charset);
 			final String sid = createSessionId(req);
 			String user = getUserName(req);
 			LoginObject obj = login(sid, user, req);

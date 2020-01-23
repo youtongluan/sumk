@@ -26,9 +26,9 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
-import org.yx.common.SumkLogs;
 import org.yx.exception.HttpException;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.log.Logs;
 
 @Bean
 public class UploadHandler implements HttpHandler {
@@ -71,7 +71,7 @@ public class UploadHandler implements HttpHandler {
 				}
 				continue;
 			}
-			SumkLogs.HTTP_LOG.debug("fileupload#name:{},field:{}", name, fi.getFieldName());
+			Logs.http().debug("fileupload#name:{},field:{}", name, fi.getFieldName());
 			name = name.toLowerCase();
 			boolean valid = false;
 			for (String ext : uploadInfo.exts()) {

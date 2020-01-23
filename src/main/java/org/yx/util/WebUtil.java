@@ -16,11 +16,14 @@
 package org.yx.util;
 
 import java.nio.charset.Charset;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.HttpContextHolder;
+import org.yx.http.handler.UploadFile;
+import org.yx.http.handler.UploadFileHolder;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
@@ -86,5 +89,9 @@ public final class WebUtil {
 			return null;
 		}
 		return obj.getUserId();
+	}
+
+	public static List<UploadFile> getUploadFiles() {
+		return UploadFileHolder.getFiles();
 	}
 }

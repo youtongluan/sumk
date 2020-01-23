@@ -24,7 +24,7 @@ import javax.sql.DataSource;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.Asserts;
 
 public class DBCPDataSourceFactory implements DataSourceFactory {
@@ -70,7 +70,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 			SimpleBeanUtil.copyProperties(basic, map);
 			basic.setDefaultReadOnly(readonly);
 		} catch (Exception e) {
-			Log.get("sumk.db").error(e.getMessage(), e);
+			Logs.db().error(e.getMessage(), e);
 			SumkException.throwException(23434, e.getMessage(), e);
 		}
 		return basic;
@@ -82,11 +82,10 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 		try {
 			ds = datasource.unwrap(BasicDataSource.class);
 		} catch (Exception e) {
-			Log.get("sumk.db").error(e.getLocalizedMessage(), e);
+			Logs.db().error(e.getLocalizedMessage(), e);
 		}
 		if (ds == null) {
-			Log.get("sumk.db").info("ds.class({}) is not instance form BasicDataSource",
-					datasource.getClass().getName());
+			Logs.db().info("ds.class({}) is not instance form BasicDataSource", datasource.getClass().getName());
 			return Collections.emptyMap();
 		}
 

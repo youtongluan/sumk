@@ -25,7 +25,7 @@ import javax.sql.DataSource;
 
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 
 public final class DataSourceManagerImpl implements DataSourceManager {
@@ -40,7 +40,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		try {
 			this.parseDatasource();
 		} catch (Exception e) {
-			Log.get("sumk.db").error(e.getMessage(), e);
+			Logs.db().error(e.getMessage(), e);
 			throw new SumkException(1432543, dbName + "创建DataSourceManager" + "失败");
 		}
 	}
@@ -71,7 +71,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	private void parseDatasource() throws Exception {
 		if (this.write != null || this.read != null) {
-			Log.get("sumk.db").info("{} has inited datasource", this.db);
+			Logs.db().info("{} has inited datasource", this.db);
 			return;
 		}
 		Map<DBType, WeightedDataSourceRoute> map = DSRouteFactory.create(this.db);

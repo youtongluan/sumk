@@ -100,20 +100,20 @@ public class MinaServer implements Runnable {
 				try {
 					InetSocketAddress addr = listenAddr(randomPort);
 					acceptor.bind(addr);
-					Log.get("sumk.rpc").info("rpc listening on " + addr);
+					Log.get("sumk.rpc.server").info("rpc listening on " + addr);
 					break;
 				} catch (IOException e) {
 					if (randomPort) {
 						continue;
 					}
-					Log.get("sumk.rpc").debug("waiting for listening to {}.{}", port, e.getMessage());
+					Log.get("sumk.rpc.server").debug("waiting for listening to {}.{}", port, e.getMessage());
 					int time = AppInfo.getInt("sumk.rpc.server.starting.sleep", 5000);
 					LockSupport.parkUntil(System.currentTimeMillis() + time);
 				}
 			}
 
 		} catch (Exception e) {
-			Log.get("sumk.rpc").debug(e.getMessage(), e);
+			Log.get("sumk.rpc.server").debug(e.getLocalizedMessage(), e);
 			acceptor = null;
 			SumkException.throwException(38057306, "start mina server failed", e);
 		}

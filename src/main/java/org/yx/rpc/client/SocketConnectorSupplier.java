@@ -25,7 +25,7 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.rpc.server.MinaServer;
@@ -60,7 +60,7 @@ public class SocketConnectorSupplier implements Supplier<SocketConnector> {
 			this.connector = con;
 			return con;
 		} catch (Exception e) {
-			Log.get("sumk.rpc").error(e.getMessage(), e);
+			Logs.rpc().error(e.getMessage(), e);
 			throw new SumkException(5423654, "create connector error", e);
 		}
 	}

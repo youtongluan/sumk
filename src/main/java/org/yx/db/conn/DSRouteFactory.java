@@ -24,7 +24,7 @@ import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public class DSRouteFactory {
 
@@ -55,14 +55,14 @@ public class DSRouteFactory {
 
 		if (readDSList.isEmpty()) {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Log.get("sumk.db.conf").warn("you have not config any read datasource for [{}]", dbName);
+				Logs.db().warn("you have not config any read datasource for [{}]", dbName);
 			} else {
 				SumkException.throwException(83587871, "you have not config read datasource for " + dbName);
 			}
 		}
 		if (writeDSList.isEmpty()) {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Log.get("sumk.db.conf").warn("you have not config any write datasource for [{}]", dbName);
+				Logs.db().warn("you have not config any write datasource for [{}]", dbName);
 			} else {
 				SumkException.throwException(83587872, "you have not config write datasource for " + dbName);
 			}

@@ -27,11 +27,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
-import org.yx.http.ErrorResp;
-import org.yx.http.HttpGson;
 import org.yx.http.HttpSettings;
 import org.yx.http.handler.ReqBodyHandler;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
@@ -97,19 +95,21 @@ public final class InnerHttpUtil {
 		if (AppInfo.getBoolean("sumk.http.get.enable", true)) {
 			return true;
 		}
-		Log.get("sumk.http").info("get方法被禁用了");
+		Logs.http().info("get方法被禁用了");
 		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
 		return false;
 	}
 
 	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {
 		try {
-			resp.setStatus(HttpSettings.getErrorHttpStatus());
-			ErrorResp r = new ErrorResp(code, message);
-			resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
+			kit.sendError(resp, HttpSettings.getErrorHttpStatus(), code, message, charset);
 		} catch (IOException e) {
-			Log.get("sumk.http").error(e.getLocalizedMessage(), e);
+			Logs.http().error(e.getLocalizedMessage(), e);
 		}
+	}
+
+	public static void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException {
+		kit.setRespHeader(resp, charset);
 	}
 
 }

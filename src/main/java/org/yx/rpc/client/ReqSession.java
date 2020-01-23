@@ -26,7 +26,7 @@ import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.SocketConnector;
 import org.yx.common.Host;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.client.route.HostChecker;
 
 public final class ReqSession {
@@ -66,7 +66,7 @@ public final class ReqSession {
 				}
 			}
 		} catch (Exception e1) {
-			Log.get("sumk.rpc").error(this.addr + " - " + e1.toString(), e1);
+			Logs.rpc().error(this.addr + " - " + e1.toString(), e1);
 			HostChecker.get().addDownUrl(addr);
 		}
 
@@ -79,7 +79,7 @@ public final class ReqSession {
 	private void connect(SocketConnector connector) throws InterruptedException {
 
 		if (session == null || session.isClosing()) {
-			Log.get("sumk.rpc").debug("create session for {}", addr);
+			Logs.rpc().debug("create session for {}", addr);
 			ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
 
 			cf.await(connector.getConnectTimeoutMillis() + 1);

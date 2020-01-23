@@ -19,7 +19,6 @@ import org.yx.common.GsonHelper;
 import org.yx.common.lock.Locker;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.main.SumkThreadPool;
-import org.yx.util.helper.ArrayHelper;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
 import org.yx.util.secury.Base64;
@@ -61,7 +60,5 @@ public final class S {
 	 * bean和map的转换，以及属性复制。 只支持第一级field
 	 */
 	public static final BeanConverter bean = new BeanConverter();
-
-	public static final ArrayHelper array = new ArrayHelper();
 
 }

@@ -31,8 +31,9 @@ import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
-import org.yx.rpc.RpcActions;
+import org.yx.log.Logs;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcActions;
 import org.yx.validate.ParamFactory;
 
 public class SoaAnnotationResolver {
@@ -49,7 +50,7 @@ public class SoaAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		Log.get("sumk.rpc").debug("soa matcher:{}", this.matcher);
+		Logs.rpc().debug("soa matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
@@ -96,9 +97,8 @@ public class SoaAnnotationResolver {
 				}
 				if (RpcActions.getActionNode(soaName) != null) {
 					RpcActionNode node0 = RpcActions.getActionNode(soaName);
-					Log.get("sumk.rpc").error(soaName + " already existed -- {}.{},{}.{}",
-							node0.getDeclaringClass().getName(), node0.getMethodName(), m.getDeclaringClass().getName(),
-							m.getName());
+					Logs.rpc().error(soaName + " already existed -- {}.{},{}.{}", node0.getDeclaringClass().getName(),
+							node0.getMethodName(), m.getDeclaringClass().getName(), m.getName());
 					throw new SimpleSumkException(1242436, soaName + " already existed");
 				}
 				RpcActions.putActNode(soaName, node);

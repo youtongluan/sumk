@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.main.SumkThreadPool;
 
 public class HostChecker {
@@ -59,7 +59,7 @@ public class HostChecker {
 
 	public void addDownUrl(Host url) {
 		downUrls.putIfAbsent(url, System.currentTimeMillis());
-		Log.get("sumk.rpc").info("{} is down", url);
+		Logs.rpc().info("{} is down", url);
 	}
 
 	private class Checker implements Runnable {
@@ -88,10 +88,10 @@ public class HostChecker {
 					socket.connect(url.toInetSocketAddress(), timeout);
 					if (socket.isConnected()) {
 						downUrls.remove(url);
-						Log.get("sumk.rpc").info("{} reconected", url);
+						Logs.rpc().info("{} reconected", url);
 					}
 				} catch (UnknownHostException e) {
-					Log.get("sumk.rpc").error(e.getMessage(), e);
+					Logs.rpc().error(e.getMessage(), e);
 				} catch (Exception e) {
 				}
 			}

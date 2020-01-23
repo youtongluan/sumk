@@ -15,6 +15,12 @@
  */
 package org.yx.conf;
 
+import org.objectweb.asm.Opcodes;
+
 public final class Const {
 	public static final int DEFAULT_ORDER = 100;
+
+	public static final int JVM_VERSION = Opcodes.V1_8;
+
+	public static final int ASM_VERSION = Opcodes.ASM5;
 }

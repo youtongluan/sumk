@@ -15,52 +15,38 @@
  */
 package org.yx.redis;
 
-import org.yx.exception.SumkException;
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.yx.util.Asserts;
 import org.yx.util.StringUtil;
 
-public class RedisConfig {
+@SuppressWarnings("rawtypes")
+public class RedisConfig extends GenericObjectPoolConfig {
 
-	private int timeout = 3000;
-	private String password = null;
+	private final String hosts;
 	private int db = 0;
+	private int connectionTimeout = 5000;
+	private int timeout = 3000;
+	private String password;
 	private int tryCount = 3;
-	private String hosts;
-	private String masterName;
+	private String master;
+	private String alias;
 
-	public static final String DEFAULT = "default";
-	public static final String SESSION = "session";
-	public static final String COUNTER = "counter";
+	public RedisConfig(String host) {
+		Asserts.notEmpty(host, "redis host cannot be empty");
+		this.hosts = StringUtil.toLatin(host.trim());
 
-	public static RedisConfig create(String host) {
-		return new RedisConfig(null, host);
+		setTestWhileIdle(true);
+		setMinEvictableIdleTimeMillis(60000);
+		setTimeBetweenEvictionRunsMillis(30000);
+		setNumTestsPerEvictionRun(-1);
 	}
 
-	public static RedisConfig createSentinel(String masterName, String... hosts) {
-		return new RedisConfig(masterName, hosts);
+	public String getMaster() {
+		return master;
 	}
 
-	/**
-	 * 构造函数
-	 * 
-	 * @param masterName
-	 *            Sentinel模式下才用到，非Sentinel模式传null就好
-	 * @param hosts
-	 *            redis地址，格式为ip:port,如果port为redis默认的6379，可以不填
-	 */
-	public RedisConfig(String masterName, String... hosts) {
-		this.hosts = String.join(",", hosts);
-
-		RedisParamter p = RedisParamter.create(this.hosts);
-		if (p.hosts() == null || p.hosts().isEmpty()) {
-			SumkException.throwException(23432565, "redis的hosts参数配置错误");
-		}
-		if (p.hosts().size() > 1) {
-			this.masterName = masterName;
-		}
-	}
-
-	public String masterName() {
-		return this.masterName;
+	public void setMaster(String master) {
+		this.master = master;
 	}
 
 	public String hosts() {
@@ -71,52 +57,54 @@ public class RedisConfig {
 		return timeout;
 	}
 
-	public RedisConfig setTimeout(int timeout) {
+	public void setTimeout(int timeout) {
 		this.timeout = timeout;
-		return this;
 	}
 
 	public String getPassword() {
 		return password;
 	}
 
-	public RedisConfig setPassword(String password) {
+	public void setPassword(String password) {
 		this.password = password;
-		return this;
 	}
 
 	public int getDb() {
 		return db;
 	}
 
-	public RedisConfig setDb(int db) {
+	public void setDb(int db) {
 		this.db = db;
-		return this;
 	}
 
 	public int getTryCount() {
 		return tryCount;
 	}
 
-	public RedisConfig setTryCount(int tryCount) {
+	public void setTryCount(int tryCount) {
 		this.tryCount = tryCount;
-		return this;
+	}
+
+	public String getAlias() {
+		return alias;
+	}
+
+	public void setAlias(String alias) {
+		this.alias = alias;
+	}
+
+	public int getConnectionTimeout() {
+		return connectionTimeout;
+	}
+
+	public void setConnectionTimeout(int connectionTimeout) {
+		this.connectionTimeout = connectionTimeout;
 	}
 
 	@Override
 	public String toString() {
-		return "RedisConfig [masterName=" + masterName + ", hosts=" + hosts + ", db=" + db + ", password=" + password
-				+ ", timeout=" + timeout + ", tryCount=" + tryCount + "]";
-	}
-
-	public String toSumkConfigValue() {
-		StringBuilder sb = new StringBuilder();
-		if (StringUtil.isNotEmpty(this.masterName)) {
-			sb.append(this.masterName).append("-");
-		}
-		sb.append(hosts).append("#").append(db).append("#").append(password != null ? password : "").append("#")
-				.append(timeout).append("#").append(tryCount);
-		return sb.toString();
+		return "hosts=" + hosts + ", db=" + db + ", password=" + password + ", timeout=" + timeout + ", tryCount="
+				+ tryCount + " , " + super.toString();
 	}
 
 }

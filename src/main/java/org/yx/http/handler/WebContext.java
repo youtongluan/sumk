@@ -21,7 +21,6 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.HttpSettings;
 import org.yx.http.act.HttpActionNode;
 
 public class WebContext {
@@ -29,7 +28,7 @@ public class WebContext {
 	private final HttpActionNode node;
 	private final HttpServletRequest httpRequest;
 	private final HttpServletResponse httpResponse;
-	private Charset charset = HttpSettings.DEFAULT_CHARSET;
+	private final Charset charset;
 	private String sign;
 	private Object data;
 
@@ -66,22 +65,23 @@ public class WebContext {
 
 	void result(Object result) {
 		this.result = result;
-		if (String.class.isInstance(result)) {
+		if (result != null && String.class == result.getClass()) {
 			this.str_resp = (String) result;
 		}
 	}
 
 	public WebContext(String rawAct, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
-			long beginTime) {
+			long beginTime, Charset charset) {
 		this.rawAct = Objects.requireNonNull(rawAct);
 		this.node = Objects.requireNonNull(node);
 		this.httpRequest = Objects.requireNonNull(req);
+		this.charset = Objects.requireNonNull(charset);
 		this.httpResponse = resp;
 		this.beginTime = beginTime;
 	}
 
 	public Charset charset() {
-		return charset;
+		return this.charset;
 	}
 
 	public Object data() {
@@ -111,16 +111,9 @@ public class WebContext {
 		return sign;
 	}
 
-	void charset(Charset charset) {
-		if (charset != null) {
-			this.charset = charset;
-		}
-
-	}
-
 	void data(Object data) {
 		this.data = data;
-		if (String.class.isInstance(data)) {
+		if (data != null && String.class == data.getClass()) {
 			this.str_data = (String) data;
 		}
 	}

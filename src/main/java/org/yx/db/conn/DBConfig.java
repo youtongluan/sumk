@@ -22,7 +22,7 @@ import java.util.Set;
 import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 
 public class DBConfig {
@@ -74,7 +74,7 @@ public class DBConfig {
 		for (String key : set) {
 			String v = p.get(key);
 			if (v == null || v.isEmpty()) {
-				Log.get("sumk.db.config").debug("db config {}={} isempty,ignore it.", key, v);
+				Logs.db().debug("db config {}={} isempty,ignore it.", key, v);
 				continue;
 			}
 			switch (key.toLowerCase()) {

@@ -97,8 +97,14 @@ public final class HttpActions {
 				map.put("requestEncrypt", web.requestEncrypt());
 				map.put("responseEncrypt", web.responseEncrypt());
 				map.put("sign", web.sign());
+				if (web.toplimit() > 0) {
+					map.put("toplimit", web.toplimit());
+				}
 				if (web.comment().length() > 0) {
 					map.put("comment", web.comment());
+				}
+				if (web.custom().length() > 0) {
+					map.put("custom", web.custom());
 				}
 			}
 			map.put("upload", http.upload != null);

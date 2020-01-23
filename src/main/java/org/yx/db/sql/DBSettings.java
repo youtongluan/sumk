@@ -16,7 +16,7 @@
 package org.yx.db.sql;
 
 import org.yx.conf.AppInfo;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class DBSettings {
 	private static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
@@ -52,7 +52,7 @@ public final class DBSettings {
 				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
 				LIMIT_AS_NO_LIMIT = AppInfo.getInt("sumk.db.asnolimit", 5000);
 			} catch (Exception e) {
-				Log.get("sumk.db").info(e.getMessage(), e);
+				Logs.db().info(e.getMessage(), e);
 			}
 		});
 	}

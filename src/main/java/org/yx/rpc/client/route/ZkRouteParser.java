@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
@@ -35,21 +36,24 @@ import org.slf4j.Logger;
 import org.yx.common.Host;
 import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
-import org.yx.conf.NamePairs;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.ZKConst;
-import org.yx.util.CollectionUtil;
+import org.yx.rpc.data.RouteInfo;
+import org.yx.rpc.data.ZKPathData;
+import org.yx.rpc.data.ZkDataOperators;
 import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHelper;
 
-public class ZkRouteParser {
+public final class ZkRouteParser {
 	private final String zkUrl;
 	private Set<String> childs = Collections.emptySet();
 	private final Predicate<String> includes;
 	private final Predicate<String> excludes;
 	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "sumk.rpc.client.zk.route", ZKConst.SUMK_SOA_ROOT);
-	private Logger logger = Log.get("sumk.rpc.zk");
+	private Logger logger = Log.get("sumk.rpc.client");
+	private final ThreadPoolExecutor executor;
+	private final BlockingQueue<RouteEvent> queue = new LinkedBlockingQueue<>();
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
@@ -58,16 +62,17 @@ public class ZkRouteParser {
 
 		temp = AppInfo.getLatin("sumk.rpc.server.excludes");
 		excludes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
+		executor = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(10000),
+				SumkThreadPool.createThreadFactory("rpc-client-"), new ThreadPoolExecutor.DiscardPolicy());
+		executor.allowCoreThreadTimeOut(true);
 	}
 
 	public static ZkRouteParser get(String zkUrl) {
 		return new ZkRouteParser(zkUrl);
 	}
 
-	private BlockingQueue<RouteEvent> queue = new LinkedBlockingQueue<>();
-
 	public void readRouteAndListen() throws IOException {
-		Map<Host, ZkData> datas = new HashMap<>();
+		Map<Host, RouteInfo> datas = new HashMap<>();
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 		ZkClientHelper.makeSure(zk, SOA_ROOT);
 
@@ -76,12 +81,18 @@ public class ZkRouteParser {
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
-				ServerData d = parser.buildZkNodeData(dataPath, ZkClientHelper.data2String((byte[]) data));
-				if (d == null) {
+				logger.trace("{} node changed", dataPath);
+				int index = dataPath.lastIndexOf("/");
+				if (index > 0) {
+					dataPath = dataPath.substring(index + 1);
+				}
+				RouteInfo d = ZkDataOperators.inst().deserialize(new ZKPathData(dataPath, (byte[]) data));
+				if (d == null || d.intfs().isEmpty()) {
+					logger.debug("{} has no interface or is invalid node", dataPath);
 					parser.handle(RouteEvent.deleteEvent(Host.create(dataPath)));
 					return;
 				}
-				parser.handle(RouteEvent.modifyEvent(d.url, d.data));
+				parser.handle(RouteEvent.modifyEvent(d));
 			}
 
 			@Override
@@ -113,15 +124,17 @@ public class ZkRouteParser {
 				ZkClient zkClient = ZkClientHelper.getZkClient(zkUrl);
 				parser.childs = new HashSet<>(ips);
 				for (String create : createChilds) {
-					ServerData d = parser.getZkNodeData(zkClient, create);
+					logger.trace("{} node created", create);
+					RouteInfo d = parser.getZkNodeData(zkClient, create);
 					if (d == null) {
 						continue;
 					}
-					parser.handle(RouteEvent.createEvent(d.url, d.data));
+					parser.handle(RouteEvent.createEvent(d));
 					zk.subscribeDataChanges(parentPath + "/" + create, nodeListener);
 				}
 
 				for (String delete : deleteChilds) {
+					logger.trace("{} node deleted", delete);
 					parser.handle(RouteEvent.deleteEvent(Host.create(delete)));
 					zk.unsubscribeDataChanges(parentPath + "/" + delete, nodeListener);
 				}
@@ -132,36 +145,19 @@ public class ZkRouteParser {
 			paths = Collections.emptyList();
 		}
 		paths = filter(paths);
+		if (logger.isDebugEnabled()) {
+			logger.debug("valid rpc servers: {}", paths);
+		}
 		this.childs = new HashSet<>(paths);
 		for (String path : paths) {
-			ServerData d = getZkNodeData(zk, path);
+			RouteInfo d = getZkNodeData(zk, path);
 			if (d == null) {
 				continue;
 			}
 			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
-			datas.put(d.url, d.data);
+			datas.put(d.host(), d);
 		}
-		Routes.refresh(datas);
-		SumkThreadPool.loop(() -> {
-			RouteEvent event = queue.take();
-			if (event == null) {
-				return true;
-			}
-			List<RouteEvent> list = new ArrayList<>(10);
-			list.add(event);
-			for (int i = 0; i < 8; i++) {
-				event = queue.poll(20, TimeUnit.MILLISECONDS);
-				if (event == null) {
-					break;
-				}
-				list.add(event);
-			}
-			Map<Host, ZkData> data = new HashMap<>(Routes.currentDatas());
-			if (handleData(data, list) > 0) {
-				Routes.refresh(data);
-			}
-			return true;
-		}, "rpc-client-route");
+		Routes.refresh(datas.values());
 	}
 
 	private List<String> filter(List<String> currentChilds) {
@@ -189,40 +185,14 @@ public class ZkRouteParser {
 		return currentChilds;
 	}
 
-	private ServerData getZkNodeData(ZkClient zk, String path) throws IOException {
-		String json = ZkClientHelper.data2String(zk.readData(SOA_ROOT + "/" + path));
-		return buildZkNodeData(path, json);
-	}
-
-	private ServerData buildZkNodeData(String path, String json) throws IOException {
-		if (path.contains("/")) {
-			path = path.substring(path.lastIndexOf("/") + 1);
-		}
-		Host host = Host.create(path);
-		if (host == null) {
-			Log.get("sumk.rpc.zk").warn("{} 不是有效的host", path);
+	private RouteInfo getZkNodeData(ZkClient zk, String path) {
+		byte[] data = zk.readData(SOA_ROOT + "/" + path);
+		try {
+			return ZkDataOperators.inst().deserialize(new ZKPathData(path, (byte[]) data));
+		} catch (Exception e) {
+			logger.error("解析" + path + "的zk数据失败", e);
 			return null;
 		}
-		Map<String, String> map = NamePairs.createByString(json).values();
-		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS + ".");
-		if (methodMap.isEmpty()) {
-			return null;
-		}
-		ZkData data = new ZkData();
-		data.setWeight(map.get(ZKConst.WEIGHT));
-		methodMap.forEach((m, value) -> {
-			if (m.length() == 0) {
-				return;
-			}
-			IntfInfo intf = new IntfInfo();
-			intf.setName(m);
-			data.addIntf(intf);
-			if (value != null && value.length() > 0) {
-				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
-				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
-			}
-		});
-		return new ServerData(host, data);
 	}
 
 	public void handle(RouteEvent event) {
@@ -230,36 +200,50 @@ public class ZkRouteParser {
 			return;
 		}
 		queue.offer(event);
+		this.executor.execute(() -> {
+			if (queue.isEmpty()) {
+				return;
+			}
+			synchronized (ZkRouteParser.this) {
+				List<RouteEvent> list = new ArrayList<>();
+				queue.drainTo(list);
+				if (list.isEmpty()) {
+					return;
+				}
+				List<RouteInfo> data = Routes.currentDatas();
+				Map<Host, RouteInfo> map = new HashMap<>();
+				for (RouteInfo r : data) {
+					map.put(r.host(), r);
+				}
+				if (handleData(map, list) > 0) {
+					Routes.refresh(map.values());
+				}
+			}
+		});
 	}
 
-	private static class ServerData {
-		final Host url;
-		final ZkData data;
-
-		private ServerData(Host url, ZkData data) {
-			this.url = url;
-			this.data = data;
-		}
-	}
-
-	private int handleData(Map<Host, ZkData> data, List<RouteEvent> list) {
+	private int handleData(Map<Host, RouteInfo> data, List<RouteEvent> list) {
 		int count = 0;
 		for (RouteEvent event : list) {
-			if (logger.isDebugEnabled()) {
-				logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
-				if (logger.isTraceEnabled() && event.getZkData() != null) {
-					logger.trace("接口列表：{}", event.getZkData().getIntfs());
-				}
+			if (event == null) {
+				continue;
 			}
 			switch (event.getType()) {
 			case CREATE:
 			case MODIFY:
-				data.put(event.getUrl(), event.getZkData());
+				if (logger.isDebugEnabled()) {
+					logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
+					if (logger.isTraceEnabled()) {
+						logger.trace("event的接口列表：{}", event.getRoute().intfs());
+					}
+				}
+				data.put(event.getUrl(), event.getRoute());
 				count++;
 				break;
 			case DELETE:
 
 				if (data.remove(event.getUrl()) != null) {
+					logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
 					count++;
 				}
 				break;

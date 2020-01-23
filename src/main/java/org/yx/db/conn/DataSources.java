@@ -58,7 +58,7 @@ public final class DataSources {
 			}
 			return factory;
 		} catch (Exception e) {
-			throw new SumkException(100234325, "create factory failed", e);
+			throw new SumkException(100234325, "create factory [" + dbName + "] failed", e);
 		}
 	}
 

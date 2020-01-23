@@ -23,6 +23,7 @@ import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
 
@@ -49,7 +50,7 @@ public class PluginHandler {
 				try {
 					plugin.startAsync();
 					latch.countDown();
-					Log.get("sumk.SYS").debug("{} startAsync finished", plugin.getClass().getSimpleName());
+					Logs.system().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
 					Log.printStack("sumk.error", e);
 					System.exit(1);
@@ -59,17 +60,17 @@ public class PluginHandler {
 		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 300);
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
-				Log.get("sumk.SYS").error("plugins failed to start in {}ms", timeout);
+				Logs.system().error("plugins failed to start in {}ms", timeout);
 				System.exit(1);
 			}
 		} catch (InterruptedException e) {
-			Log.get("sumk.SYS").error("receive InterruptedException in plugin starting", timeout);
+			Logs.system().error("receive InterruptedException in plugin starting", timeout);
 			System.exit(1);
 		}
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();
 		}
-		Log.get("sumk.SYS").debug("all plugin started");
+		Logs.system().debug("all plugin started");
 	}
 
 }

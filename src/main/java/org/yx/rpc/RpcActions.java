@@ -85,6 +85,9 @@ public class RpcActions {
 				if (soa.comment().length() > 0) {
 					map.put("comment", soa.comment());
 				}
+				if (soa.toplimit() > 0) {
+					map.put("toplimit", soa.toplimit());
+				}
 			}
 		}
 		return ret;

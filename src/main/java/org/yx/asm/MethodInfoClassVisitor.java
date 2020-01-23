@@ -30,6 +30,7 @@ import org.objectweb.asm.ModuleVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
 import org.slf4j.Logger;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.StringUtil;
@@ -40,7 +41,7 @@ class MethodInfoClassVisitor extends ClassVisitor {
 	private final List<MethodParamInfo> infos;
 
 	public MethodInfoClassVisitor(List<Method> methods) {
-		super(Vars.ASM_VER);
+		super(Const.ASM_VERSION);
 		this.infos = new ArrayList<>(Objects.requireNonNull(methods).size());
 		for (Method method : methods) {
 			infos.add(createMethodInfo(method));
@@ -75,7 +76,7 @@ class MethodInfoClassVisitor extends ClassVisitor {
 		if (info == null || info.getArgNames().length == 0) {
 			return null;
 		}
-		return new ParseParamsMethodVisitor(Vars.ASM_VER, info);
+		return new ParseParamsMethodVisitor(Const.ASM_VERSION, info);
 	}
 
 	@Override

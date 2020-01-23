@@ -29,7 +29,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class DefaultClassNameScaner implements Function<String[], Collection<String>> {
 	private static final String DOT_CLASS = ".class";
@@ -66,7 +66,7 @@ public final class DefaultClassNameScaner implements Function<String[], Collecti
 					this.parseFile(classNameList, file, packagePath);
 				}
 			} catch (Exception ex) {
-				Log.get("sumk.scaner").error("parse " + packageName + "failed", ex);
+				Logs.system().error("parse " + packageName + "failed", ex);
 				SumkException.throwException(23423, ex.getMessage(), ex);
 			}
 		}
@@ -85,7 +85,7 @@ public final class DefaultClassNameScaner implements Function<String[], Collecti
 				String absolutePath = file.getAbsolutePath().replace('\\', '/');
 				int index = absolutePath.indexOf('/' + packagePath) + 1;
 				if (index < 1) {
-					Log.get("sumk.scaner").error(absolutePath + " donot contain " + packagePath);
+					Logs.system().error(absolutePath + " donot contain " + packagePath);
 					continue;
 				}
 				addClz(classNameList, absolutePath.substring(index));
@@ -109,7 +109,7 @@ public final class DefaultClassNameScaner implements Function<String[], Collecti
 
 			URLConnection conn = url.openConnection();
 			if (!JarURLConnection.class.isInstance(conn)) {
-				Log.get("sumk.scaner").error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
+				Logs.system().error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
 				SumkException.throwException(25345643, conn.getClass().getName() + " is not JarURLConnection");
 			}
 			jarFile = ((JarURLConnection) conn).getJarFile();

@@ -29,6 +29,9 @@ public abstract class SumkLogger implements Logger {
 
 	protected final String name;
 
+	/**
+	 * 不为null，也不以.开头
+	 */
 	public String getName() {
 		return name;
 	}
@@ -37,10 +40,18 @@ public abstract class SumkLogger implements Logger {
 		return AppInfo.getInt("sumk.log.maxLogNameLength", 32);
 	}
 
-	protected abstract Loggers loggers();
-
 	protected SumkLogger(String module) {
-		this.name = module;
+		this.name = parseName(module);
+	}
+
+	private String parseName(String module) {
+		if (module == null) {
+			return "";
+		}
+		while (module.startsWith(".")) {
+			module = module.substring(1);
+		}
+		return module;
 	}
 
 	protected String buildMessage(String msg, Object... args) {
@@ -61,7 +72,7 @@ public abstract class SumkLogger implements Logger {
 	}
 
 	protected boolean isLogable(LogLevel methodLevel) {
-		return methodLevel.ordinal() >= loggers().getLevel(this).ordinal();
+		return methodLevel.ordinal() >= Loggers.getLevel(this).ordinal();
 	}
 
 	protected abstract void output(Marker marker, LogLevel methodLevel, String format, Object... arguments);
@@ -255,7 +266,7 @@ public abstract class SumkLogger implements Logger {
 	}
 
 	public boolean isON() {
-		return loggers().getLevel(this) == LogLevel.ON;
+		return Loggers.getLevel(this) == LogLevel.ON;
 	}
 
 	@Override

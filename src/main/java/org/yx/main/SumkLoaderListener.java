@@ -39,6 +39,7 @@ import org.yx.conf.AppInfo;
 import org.yx.http.user.HttpLoginWrapper;
 import org.yx.http.user.LoginServlet;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -57,7 +58,7 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		Log.get("sumk.http").debug("contextInitialized");
+		Logs.http().debug("contextInitialized");
 		try {
 			SumkServer.start(new String[] { StartConstants.NOJETTY });
 			if (!SumkServer.isHttpEnable()) {
@@ -73,12 +74,12 @@ public class SumkLoaderListener implements ServletContextListener {
 				if (!loginPath.startsWith("/")) {
 					loginPath = "/" + loginPath;
 				}
-				Log.get("sumk.http").info("login path:{}", context.getContextPath() + loginPath);
+				Logs.http().info("login path:{}", context.getContextPath() + loginPath);
 				context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
 			}
 			addListeners(context);
 		} catch (Exception e) {
-			Log.get("sumk.http").error(e.getMessage(), e);
+			Logs.http().error(e.getMessage(), e);
 			throw e;
 		}
 	}
@@ -105,7 +106,7 @@ public class SumkLoaderListener implements ServletContextListener {
 				values = StringUtil.toLatin(value).split(",");
 			}
 			dynamic.addMapping(values);
-			Log.get("sumk.http.action").trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
+			Logs.http().trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
 					Arrays.toString(values));
 		}
 	}
@@ -125,7 +126,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			if (name.isEmpty()) {
 				name = bean.getClass().getSimpleName();
 			}
-			Log.get("sumk.http.action").trace("add web filter : {} - {}", name, bean.getClass().getSimpleName());
+			Logs.http().trace("add web filter : {} - {}", name, bean.getClass().getSimpleName());
 			FilterRegistration.Dynamic r = context.addFilter(name, bean);
 			r.setAsyncSupported(sumk.asyncSupported());
 			DispatcherType[] type = sumk.dispatcherType();
@@ -155,7 +156,7 @@ public class SumkLoaderListener implements ServletContextListener {
 		for (String intf : intfs) {
 			Class<?> clz = Class.forName(intf);
 			if (!EventListener.class.isAssignableFrom(clz)) {
-				Log.get("sumk.http").info(intf + " is not implement EventListener");
+				Logs.http().info(intf + " is not implement EventListener");
 				continue;
 			}
 			@SuppressWarnings("unchecked")
@@ -164,7 +165,7 @@ public class SumkLoaderListener implements ServletContextListener {
 				continue;
 			}
 			for (EventListener lis : listeners) {
-				Log.get("sumk.http").trace("add web listener:{}", lis.getClass().getSimpleName());
+				Logs.http().trace("add web listener:{}", lis.getClass().getSimpleName());
 
 				context.addListener(lis);
 			}

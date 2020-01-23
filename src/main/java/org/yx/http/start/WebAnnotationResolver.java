@@ -31,7 +31,7 @@ import org.yx.common.matcher.MatcherFactory;
 import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.act.HttpActions;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 import org.yx.validate.ParamFactory;
 
@@ -59,7 +59,7 @@ public final class WebAnnotationResolver {
 		if (patterns != null) {
 			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
 		}
-		Log.get("sumk.http").debug("web matcher:{}", this.matcher);
+		Logs.http().debug("web matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
@@ -78,8 +78,7 @@ public final class WebAnnotationResolver {
 				continue;
 			}
 			if (AsmUtils.notPublicOnly(m.getModifiers())) {
-				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
-						m.getName());
+				Logs.http().error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(), m.getName());
 				continue;
 			}
 			httpMethods.add(m);

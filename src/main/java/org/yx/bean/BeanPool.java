@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.yx.asm.ProxyClassFactory;
 import org.yx.exception.TooManyBeanException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
 final class BeanPool {
@@ -158,7 +158,7 @@ final class BeanPool {
 		}
 		if (!oldWrapper.getClass().isArray()) {
 			if (clz == this.getBeanClass(oldWrapper)) {
-				Log.get("sumk.bean").debug("{}={} duplicate,will be ignored", name, clz.getName());
+				Logs.ioc().debug("{}={} duplicate,will be ignored", name, clz.getName());
 				return;
 			}
 			map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
@@ -167,7 +167,7 @@ final class BeanPool {
 		BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
 		for (BeanWrapper o : objs) {
 			if (clz == this.getBeanClass(o)) {
-				Log.get("sumk.bean").debug("{}={} duplicate,will be ignored.", name, clz.getName());
+				Logs.ioc().debug("{}={} duplicate,will be ignored.", name, clz.getName());
 				return;
 			}
 		}

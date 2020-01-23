@@ -13,23 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.data;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.yx.common.Host;
 import org.yx.util.StringUtil;
 
-public class ZkData {
+public class RouteInfo {
 	private Collection<IntfInfo> intfs = new ArrayList<IntfInfo>();
-	int weight;
-	int clientCount;
+	private int weight;
+	private int clientCount;
+	private final Host host;
 
-	public Collection<IntfInfo> getIntfs() {
+	public RouteInfo(Host url) {
+		this.host = url;
+	}
+
+	public Collection<IntfInfo> intfs() {
 		return intfs;
 	}
 
-	public void addIntf(IntfInfo intf) {
+	void addIntf(IntfInfo intf) {
 		this.intfs.add(intf);
 	}
 
@@ -47,4 +53,15 @@ public class ZkData {
 		this.clientCount = Integer.parseInt(w);
 	}
 
+	public int weight() {
+		return this.weight;
+	}
+
+	public int clientCount() {
+		return this.clientCount;
+	}
+
+	public Host host() {
+		return host;
+	}
 }

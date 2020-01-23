@@ -17,14 +17,12 @@ package org.yx.http;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
-import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
@@ -35,44 +33,23 @@ import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogs;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
-public abstract class AbstractHttpServer extends HttpServlet {
+public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
 
-	protected Logger log = SumkLogs.HTTP_LOG;
-
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!InnerHttpUtil.checkGetMethod(resp)) {
-			return;
-		}
-		this.handle(req, resp);
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		this.handle(req, resp);
-	}
-
-	@Override
-	protected void doHead(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
-	}
-
-	@Override
-	protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
-	}
+	protected Logger log = Logs.http();
 
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
 		final long beginTime = System.currentTimeMillis();
 		Throwable ex = null;
 		WebContext wc = null;
 		try {
-			setRespHeader(req, resp);
+			final Charset charset = InnerHttpUtil.charset(req);
+			this.setRespHeader(req, resp, charset);
 
 			String rawAct = getRawAct(req);
 			log.trace("raw act={}", rawAct);
@@ -100,7 +77,7 @@ public abstract class AbstractHttpServer extends HttpServlet {
 			info.node().checkThreshold();
 			HttpContextHolder.set(req, resp);
 			ActionContext.newContext(rawAct, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
-			wc = new WebContext(rawAct, info.node(), req, resp, beginTime);
+			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
 			handle(wc);
 
 		} catch (Throwable e) {
@@ -133,8 +110,8 @@ public abstract class AbstractHttpServer extends HttpServlet {
 		return act;
 	}
 
-	protected void setRespHeader(HttpServletRequest req, HttpServletResponse resp) {
-		resp.setContentType("application/json;charset=" + InnerHttpUtil.charset(req));
+	protected void setRespHeader(HttpServletRequest req, HttpServletResponse resp, Charset charset) throws IOException {
+		InnerHttpUtil.setRespHeader(resp, charset);
 	}
 
 	protected abstract void handle(WebContext wc) throws Throwable;

@@ -24,9 +24,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,32 +36,35 @@ import org.yx.common.ActStatis;
 import org.yx.common.Monitors;
 import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
+import org.yx.http.AbstractCommonHttpServlet;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Log;
+import org.yx.log.Logs;
+import org.yx.main.SumkThreadPool;
+import org.yx.rpc.RpcActions;
 import org.yx.util.S;
 
 @Bean
-@SumkServlet(value = { "/_sumk_monitor" }, loadOnStartup = -1)
-public class HttpMonitor extends HttpServlet {
+@SumkServlet(value = { "/_sumk_monitor" }, loadOnStartup = -1, appKey = "sumkMonitor")
+public class HttpMonitor extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;
 	private static final String TYPE_SPLIT = "\n\n\n";
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		resp.setContentType("text/plain;charset=UTF-8");
+	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		InnerHttpUtil.noCache(resp);
+		resp.setContentType("text/plain;charset=UTF-8");
 		String md5 = AppInfo.get("sumk.union.monitor", "sumk.http.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		if (sign == null) {
-			Log.get("sumk.http").debug("sign is empty");
+			Logs.http().debug("sign is empty");
 			return;
 		}
 		try {
 			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
 			if (!md5.equalsIgnoreCase(signed)) {
-				Log.get("sumk.http").debug("signed:{},need:{}", signed, md5);
+				Logs.http().debug("signed:{},need:{}", signed, md5);
 				return;
 			}
 		} catch (Exception e) {
@@ -70,11 +73,14 @@ public class HttpMonitor extends HttpServlet {
 
 		this.outputServerInfo(req, writer);
 		this.outputActs(req, writer);
+		this.outputRpcActs(req, writer);
 		this.outputStatis(req, writer);
 		this.outputSystem(req, writer);
 		this.outputJvmInfo(req, writer);
 		this.outputAllTrack(req, writer);
 		this.outputThreadPool(req, writer);
+		this.outputSchedulePool(req, writer);
+		this.outputLogLevels(req, writer);
 	}
 
 	private void outputServerInfo(HttpServletRequest req, PrintWriter writer) {
@@ -90,6 +96,14 @@ public class HttpMonitor extends HttpServlet {
 			return;
 		}
 		writer.write(Arrays.toString(HttpActions.acts()));
+		writer.write(TYPE_SPLIT);
+	}
+
+	private void outputRpcActs(HttpServletRequest req, PrintWriter writer) {
+		if (!"1".equals(req.getParameter("acts.rpc"))) {
+			return;
+		}
+		writer.write(RpcActions.soaSet().toString());
 		writer.write(TYPE_SPLIT);
 	}
 
@@ -139,7 +153,23 @@ public class HttpMonitor extends HttpServlet {
 		if (!"1".equals(req.getParameter("threadpool"))) {
 			return;
 		}
-		writer.write(Monitors.threadPoolInfo());
+		writer.write(Monitors.threadPoolInfo((ThreadPoolExecutor) SumkThreadPool.executor()));
+		writer.write(TYPE_SPLIT);
+	}
+
+	private void outputSchedulePool(HttpServletRequest req, PrintWriter writer) {
+		if (!"1".equals(req.getParameter("schedulepool"))) {
+			return;
+		}
+		writer.write(Monitors.threadPoolInfo(SumkThreadPool.scheduledExecutor()));
+		writer.write(TYPE_SPLIT);
+	}
+
+	private void outputLogLevels(HttpServletRequest req, PrintWriter writer) {
+		if (!"1".equals(req.getParameter("logLevel"))) {
+			return;
+		}
+		writer.write(Monitors.logLevels());
 		writer.write(TYPE_SPLIT);
 	}
 }

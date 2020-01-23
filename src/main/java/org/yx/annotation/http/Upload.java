@@ -28,18 +28,12 @@ import java.lang.annotation.Target;
 @Inherited
 public @interface Upload {
 
-	public enum Store {
-		VM, FILE;
-	}
-
 	int maxSize() default 1024 * 1024 * 10;
 
 	int maxFiles() default 1;
 
 	String[] exts() default { ".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".gif", ".png", ".jpg", ".jpeg",
 			".bmp" };
-
-	Store tempStore() default Store.VM;
 
 	String custom() default "";
 }

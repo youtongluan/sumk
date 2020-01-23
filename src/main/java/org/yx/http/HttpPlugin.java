@@ -37,6 +37,7 @@ import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.RestType;
 import org.yx.http.invoke.WebHandler;
 import org.yx.http.start.WebAnnotationResolver;
+import org.yx.log.Logs;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
@@ -129,7 +130,7 @@ public class HttpPlugin implements Plugin {
 			}
 		}
 		HttpHandlerChain.inst.setHandlers(restHandlers);
-		Logger logger = Log.get("sumk.http");
+		Logger logger = Logs.http();
 		if (logger.isDebugEnabled()) {
 			logger.debug("rest  handlers:{}", this.buildString(restHandlers));
 		}
@@ -148,7 +149,7 @@ public class HttpPlugin implements Plugin {
 		try {
 			Class.forName("javax.servlet.http.HttpServlet");
 		} catch (Exception e) {
-			Log.get("sumk.http").error("javax-servlet-api-**.jar is not imported");
+			Logs.http().error("javax-servlet-api-**.jar is not imported");
 			return false;
 		}
 		return true;

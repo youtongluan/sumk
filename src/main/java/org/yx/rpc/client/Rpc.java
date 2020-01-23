@@ -20,7 +20,7 @@ import java.util.Map;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.UUIDSeed;
 
@@ -46,7 +46,7 @@ public final class Rpc {
 			appId = AppInfo.appId("sumk");
 			DEFAULT_TIMEOUT = AppInfo.getInt("sumk.rpc.timeout", 30000);
 			String zkUrl = AppInfo.getClinetZKUrl();
-			Log.get("sumk.rpc").info("rpc client zkUrl:{}", zkUrl);
+			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();
 			ReqSession.init();
 			strated = true;

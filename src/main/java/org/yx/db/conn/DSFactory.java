@@ -22,7 +22,7 @@ import javax.sql.DataSource;
 
 import org.slf4j.Logger;
 import org.yx.db.DBType;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class DSFactory {
 	private static DataSourceFactory factory;
@@ -31,7 +31,7 @@ public final class DSFactory {
 
 			factory = new DBCPDataSourceFactory();
 		} catch (Throwable e) {
-			Logger log = Log.get("sumk.db.factory");
+			Logger log = Logs.db();
 			if (log.isInfoEnabled()) {
 				log.error("cannot create dbcp2 factory," + e, e);
 			} else {
@@ -50,7 +50,7 @@ public final class DSFactory {
 
 	public static SumkDataSource create(String name, DBType type, Map<String, String> properties) {
 		DataSource basic = factory.create(properties, !type.isWritable());
-		Log.get("sumk.db.factory").debug("create ds: {}", basic);
+		Logs.db().debug("create ds: {}", basic);
 		return new SumkDataSource(name, type, basic);
 	}
 

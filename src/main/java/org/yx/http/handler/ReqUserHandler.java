@@ -25,7 +25,7 @@ import org.yx.http.HttpErrorCode;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
@@ -58,12 +58,12 @@ public class ReqUserHandler implements HttpHandler {
 					if (session.isLogin(userId)) {
 						int code = AppInfo.getInt("sumk.http.session.single.code", HttpErrorCode.LOGIN_AGAIN);
 						String msg = AppInfo.get("sumk.http.session.single.msg", "您已在其他地方登录！");
-						Log.get("sumk.http").info("session:{}, login by other", sessionId);
+						Logs.http().info("session:{}, login by other", sessionId);
 						BizException.throwException(code, msg);
 					}
 				}
 			}
-			Log.get("sumk.http").info("session:{}, has expired", sessionId);
+			Logs.http().info("session:{}, has expired", sessionId);
 			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆");
 		}
 		ctx.key(key);

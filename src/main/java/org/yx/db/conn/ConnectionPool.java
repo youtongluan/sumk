@@ -21,12 +21,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.db.DBType;
 import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.Asserts;
 
 public final class ConnectionPool implements AutoCloseable {
@@ -201,14 +201,14 @@ public final class ConnectionPool implements AutoCloseable {
 			try {
 				this.writeConn.close();
 			} catch (Exception e) {
-				Log.printStack(SumkLogs.SQL_ERROR, e);
+				Logs.printStack(e);
 			}
 		}
 		if (this.readConn != null && !this.readConn.isSameInnerConnection(this.writeConn)) {
 			try {
 				this.readConn.close();
 			} catch (Exception e) {
-				Log.printStack(SumkLogs.SQL_ERROR, e);
+				Logs.printStack(e);
 			}
 		}
 		this.writeConn = null;

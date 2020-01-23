@@ -13,32 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.log;
 
-import javax.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
+/**
+ * 这个类仅限于sumk框架内部使用
+ */
+public final class Logs {
 
-@Bean
-public class RespHeaderHandler implements HttpHandler {
-
-	@Override
-	public int order() {
-		return 2500;
+	public static void printStack(Throwable e) {
+		Log.printStack("sumk.sql.error", e);
 	}
 
-	@Override
-	public boolean accept(Web web) {
-		return true;
+	public static Logger http() {
+		return Log.get("sumk.http");
 	}
 
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
-		HttpServletResponse resp = ctx.httpResponse();
-		resp.setCharacterEncoding(ctx.charset().name());
-
-		return false;
+	public static Logger rpc() {
+		return Log.get("sumk.rpc");
 	}
 
+	public static Logger system() {
+		return Log.get("sumk.sys");
+	}
+
+	public static Logger db() {
+		return Log.get("sumk.db");
+	}
+
+	public static Logger ioc() {
+		return Log.get("sumk.ioc");
+	}
 }

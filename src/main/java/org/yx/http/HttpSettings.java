@@ -22,9 +22,10 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
+import org.yx.util.StringUtil;
 
 public final class HttpSettings {
-	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
 	private static int errorHttpStatus;
 
@@ -35,6 +36,7 @@ public final class HttpSettings {
 	private static int maxRespLogSize;
 	private static int warnTime;
 	private static int infoTime;
+	private static Charset defaultCharset = StandardCharsets.UTF_8;
 
 	public static int getErrorHttpStatus() {
 		return errorHttpStatus;
@@ -85,13 +87,26 @@ public final class HttpSettings {
 	}
 
 	public static void init() {
-		errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
+		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
+		String c = AppInfo.get("sumk.http.charset");
+		if (StringUtil.isNotEmpty(c)) {
+			try {
+				HttpSettings.defaultCharset = Charset.forName(c);
+			} catch (Exception e) {
+				Logs.http().error("{}不是有效的字符集编码", c);
+			}
+
+		}
 		AppInfo.addObserver(info -> {
 			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 1000);
 			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 1000);
 			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn", 3000);
 			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info", 1000);
 		});
+	}
+
+	public static Charset defaultCharset() {
+		return defaultCharset;
 	}
 
 }

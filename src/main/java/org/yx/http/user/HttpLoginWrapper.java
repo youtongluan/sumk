@@ -15,39 +15,25 @@
  */
 package org.yx.http.user;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
+import org.yx.http.AbstractCommonHttpServlet;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Log;
 
-public class HttpLoginWrapper extends HttpServlet {
+public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
 	private LoginServlet[] servs = new LoginServlet[0];
 
-	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!InnerHttpUtil.checkGetMethod(resp)) {
-			return;
-		}
-		handle(req, resp);
-	}
-
-	@Override
-	protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		handle(req, resp);
-	}
-
-	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
 		String type = InnerHttpUtil.getType(req);
 		for (LoginServlet s : this.servs) {
 			if (s.acceptType(type)) {

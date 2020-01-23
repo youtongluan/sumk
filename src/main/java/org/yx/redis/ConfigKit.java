@@ -15,23 +15,29 @@
  */
 package org.yx.redis;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.List;
 
-import redis.clients.jedis.JedisPoolConfig;
+import org.yx.common.Host;
 
-public final class JedisPoolConfigHolder {
-	private static Map<String, JedisPoolConfig> map = new ConcurrentHashMap<>();
+import redis.clients.jedis.Protocol;
 
-	public static void putConfig(String name, JedisPoolConfig config) {
-		map.put(name, config);
-	}
-
-	public static JedisPoolConfig getConfig(String name) {
-		return map.get(name);
-	}
-
-	public static void removeConfig(String name) {
-		map.remove(name);
+public final class ConfigKit {
+	public static List<Host> parseHosts(String host) {
+		host = host.replace('　', ' ').replace('，', ',').replace('：', ':').replaceAll("\\s", "");
+		String h = host;
+		String[] hs = h.split(",");
+		List<Host> hosts = new ArrayList<>(hs.length);
+		for (String addr : hs) {
+			if (addr.isEmpty()) {
+				continue;
+			}
+			if (!addr.contains(":")) {
+				hosts.add(Host.create(addr, Protocol.DEFAULT_PORT));
+				continue;
+			}
+			hosts.add(Host.create(addr));
+		}
+		return hosts;
 	}
 }

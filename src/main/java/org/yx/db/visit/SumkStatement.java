@@ -31,6 +31,7 @@ import org.yx.db.sql.MapedSql.JsonWriterVisitor;
 import org.yx.exception.SumkException;
 import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public class SumkStatement {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
@@ -116,7 +117,7 @@ public class SumkStatement {
 			});
 			statement.close();
 		} catch (SQLException e1) {
-			Log.get("sumk.db").error(e1.getMessage(), e1);
+			Logs.db().error(e1.getMessage(), e1);
 		}
 	}
 
@@ -136,7 +137,7 @@ public class SumkStatement {
 			});
 			statement.close();
 		} catch (SQLException e1) {
-			Log.get("sumk.db").error(e1.getMessage(), e1);
+			Logs.db().error(e1.getMessage(), e1);
 		}
 	}
 

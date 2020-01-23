@@ -15,6 +15,7 @@
  */
 package org.yx.http.kit;
 
+import java.io.IOException;
 import java.nio.charset.Charset;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,5 +34,10 @@ public interface HttpKit {
 	void record(String act, long time, boolean isSuccess);
 
 	ActStatis actStatis();
+
+	void sendError(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
+			throws IOException;
+
+	void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException;
 
 }

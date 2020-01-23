@@ -23,10 +23,10 @@ import java.util.function.Consumer;
 
 import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
-import org.yx.common.SumkLogs;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
+import org.yx.log.Logs;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
@@ -191,7 +191,7 @@ public final class Client {
 			LockHolder.register(locker, endTime);
 			f = session.write(req);
 		} catch (Exception e) {
-			SumkLogs.RPC_LOG.error(e.getLocalizedMessage(), e);
+			Logs.rpc().error(e.getLocalizedMessage(), e);
 		}
 		if (f == null) {
 			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", (String) null);

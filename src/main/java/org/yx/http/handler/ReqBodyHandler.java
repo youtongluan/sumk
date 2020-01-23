@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 @Bean
 public class ReqBodyHandler implements HttpHandler {
@@ -45,7 +45,7 @@ public class ReqBodyHandler implements HttpHandler {
 	@Override
 	public boolean handle(WebContext ctx) throws Exception {
 		if (ctx.data() != null) {
-			Log.get("sumk.http").debug("data is not null");
+			Logs.http().debug("data is not null");
 			return false;
 		}
 		if (ctx.httpNode().argClz == null) {

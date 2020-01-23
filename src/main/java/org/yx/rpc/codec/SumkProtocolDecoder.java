@@ -25,7 +25,7 @@ import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.yx.annotation.Bean;
 import org.yx.conf.Profile;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 @Bean
 public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
@@ -85,8 +85,8 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 		int protocol = in.getInt(pos);
 		if ((protocol & 0xFF000000) != Protocols.MAGIC) {
 			int position = in.position();
-			if (Log.get("sumk.rpc").isTraceEnabled()) {
-				Log.get("sumk.rpc").trace(in.getString(Profile.UTF8.newDecoder()));
+			if (Logs.rpc().isTraceEnabled()) {
+				Logs.rpc().trace(in.getString(Profile.UTF8.newDecoder()));
 			}
 			in.position(position);
 			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));

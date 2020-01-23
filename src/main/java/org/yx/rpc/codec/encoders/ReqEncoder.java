@@ -20,6 +20,7 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
@@ -28,7 +29,7 @@ import org.yx.rpc.codec.SumkProtocolEncoder;
 @Bean
 public class ReqEncoder implements SumkMinaEncoder {
 
-	private Logger log = Log.get("sumk.rpc");
+	private Logger log = Logs.rpc();
 
 	@Override
 	public boolean accept(Class<?> messageClz) {

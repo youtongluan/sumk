@@ -4,6 +4,7 @@ import static org.yx.conf.AppInfo.LN;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import java.util.Set;
 
 import org.yx.util.CollectionUtil;
 
-public class NamePairs {
+public final class NamePairs {
 
 	private final Map<String, String> map;
 
@@ -61,18 +62,18 @@ public class NamePairs {
 		return new HashSet<>(this.map.keySet());
 	}
 
-	public InputStream toInputStream() {
+	public InputStream toInputStream(Charset charset) {
 		if (this.data == null || this.data.isEmpty()) {
 			return new ByteArrayInputStream(new byte[0]);
 		}
-		return new ByteArrayInputStream(this.data.getBytes(AppInfo.systemCharset()));
+		return new ByteArrayInputStream(this.data.getBytes(charset));
 	}
 
-	public byte[] toBytes() {
+	public byte[] toBytes(Charset charset) {
 		if (this.data == null || this.data.isEmpty()) {
 			return new byte[0];
 		}
-		return this.data.getBytes(AppInfo.systemCharset());
+		return this.data.getBytes(charset);
 	}
 
 	public static NamePairs createByString(String data) {

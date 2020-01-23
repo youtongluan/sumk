@@ -29,6 +29,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.yx.conf.Const;
 import org.yx.log.Log;
 import org.yx.util.UUIDSeed;
 
@@ -41,7 +42,7 @@ public class ArgPojos {
 		Log.get("sumk.asm").trace("begin generate paramters pojo :{}", fullName);
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-		cw.visit(Vars.JVM_VERSION, ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",
+		cw.visit(Const.JVM_VERSION, ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",
 				new String[] { "org/yx/asm/ArgPojo" });
 		Arg[] args = new Arg[p.getArgNames().length];
 		for (int i = 0; i < args.length; i++) {

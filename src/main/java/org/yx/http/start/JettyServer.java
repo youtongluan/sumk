@@ -39,6 +39,7 @@ import org.yx.bean.IOC;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 import org.yx.log.Log;
 import org.yx.main.SumkLoaderListener;
 import org.yx.util.CollectionUtil;
@@ -77,10 +78,10 @@ public class JettyServer implements Lifecycle {
 					try {
 						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 1000));
 					} catch (InterruptedException e1) {
-						Log.get("sumk.http").error("showdown because of InterruptedException");
+						Logs.http().error("showdown because of InterruptedException");
 						System.exit(1);
 					}
-					Log.get("sumk.http").warn("{} was occupied,begin retry {}", this.getPort(), i);
+					Logs.http().warn("{} was occupied,begin retry {}", this.getPort(), i);
 					try {
 						return super.openAcceptChannel();
 					} catch (BindException e) {
@@ -106,7 +107,7 @@ public class JettyServer implements Lifecycle {
 			buildJettyProperties();
 			server = new Server(new ExecutorThreadPool(HttpExcutors.getThreadPool()));
 			ServerConnector connector = this.createConnector();
-			Log.get("sumk.http").info("listen port: {}", port);
+			Logs.http().info("listen port: {}", port);
 			String host = StartContext.httpHost();
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);

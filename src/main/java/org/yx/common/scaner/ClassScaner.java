@@ -37,17 +37,16 @@ public final class ClassScaner {
 		ClassScaner.scaner = Objects.requireNonNull(scaner);
 	}
 
-	public static <T> Collection<Class<? extends T>> listSubClassesInSamePackage(Class<T> baseClz)
+	public static <T> Set<Class<? extends T>> subClassesInSameOrSubPackage(Class<T> baseClz)
 			throws ClassNotFoundException {
 		return list(baseClz.getPackage().getName(), baseClz);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T> Collection<Class<? extends T>> list(String packageName, Class<T> baseClz)
-			throws ClassNotFoundException {
+	public static <T> Set<Class<? extends T>> list(String packageName, Class<T> baseClz) throws ClassNotFoundException {
 		Collection<String> clzNames = listClasses(packageName);
 		if (clzNames == null || clzNames.isEmpty()) {
-			return Collections.emptyList();
+			return Collections.emptySet();
 		}
 		Set<String> names = new HashSet<>(clzNames);
 		Set<Class<? extends T>> set = new HashSet<>();

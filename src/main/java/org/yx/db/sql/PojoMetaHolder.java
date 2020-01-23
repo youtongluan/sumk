@@ -29,7 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import org.yx.annotation.db.Column;
 import org.yx.annotation.db.Table;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 
 public class PojoMetaHolder {
@@ -110,7 +110,7 @@ public class PojoMetaHolder {
 			list.add(new ColumnMeta(f, c));
 		}
 		if (list.isEmpty()) {
-			Log.get("sumk.db").debug("{}'s column is empty", pojoClz.getName());
+			Logs.db().debug("{}'s column is empty", pojoClz.getName());
 			return;
 		}
 		Collections.sort(list);

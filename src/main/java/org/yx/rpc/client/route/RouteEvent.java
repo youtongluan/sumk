@@ -16,41 +16,41 @@
 package org.yx.rpc.client.route;
 
 import org.yx.common.Host;
+import org.yx.rpc.data.RouteInfo;
 
 public class RouteEvent {
 	private final RouteEventType type;
-	private final ZkData zkData;
-	private final Host url;
+	private final RouteInfo route;
 
 	public Host getUrl() {
-		return url;
+		return route.host();
+	}
+
+	public RouteInfo getRoute() {
+		return route;
 	}
 
 	public RouteEventType getType() {
 		return type;
 	}
 
-	public ZkData getZkData() {
-		return zkData;
-	}
-
-	private RouteEvent(RouteEventType type, Host url, ZkData zkData) {
+	private RouteEvent(RouteEventType type, RouteInfo route) {
 		this.type = type;
-		this.zkData = zkData;
-		this.url = url;
+		this.route = route;
 	}
 
-	public static RouteEvent createEvent(Host url, ZkData data) {
-		return new RouteEvent(RouteEventType.CREATE, url, data);
+	public static RouteEvent createEvent(RouteInfo info) {
+		return new RouteEvent(RouteEventType.CREATE, info);
 	}
 
 	public static RouteEvent deleteEvent(Host url) {
-		return new RouteEvent(RouteEventType.DELETE, url, null);
+		return new RouteEvent(RouteEventType.DELETE, new RouteInfo(url));
 	}
 
-	public static RouteEvent modifyEvent(Host url, ZkData data) {
-		return new RouteEvent(RouteEventType.MODIFY, url, data);
+	public static RouteEvent modifyEvent(RouteInfo info) {
+		return new RouteEvent(RouteEventType.MODIFY, info);
 	}
+
 }
 
 enum RouteEventType {

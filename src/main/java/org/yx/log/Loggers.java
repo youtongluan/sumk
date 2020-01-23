@@ -15,9 +15,11 @@
  */
 package org.yx.log;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
@@ -27,9 +29,9 @@ public final class Loggers {
 	private static final String ROOT = "";
 	private static LogLevel DEFAULT_LEVEL = LogLevel.INFO;
 
-	private static Map<String, LogLevel> levelMap = new HashMap<>();
+	private static ConcurrentMap<String, LogLevel> _levelMap = new ConcurrentHashMap<>();
 
-	private Map<String, SumkLogger> map = new ConcurrentHashMap<>();
+	private ConcurrentMap<String, SumkLogger> map = new ConcurrentHashMap<>();
 	private final String name;
 
 	private Loggers(String name) {
@@ -43,13 +45,14 @@ public final class Loggers {
 
 	private static final Consumer<SystemConfig> observer = info -> {
 		try {
+			Map<String, LogLevel> newLevels = new HashMap<>();
 			String temp = AppInfo.getLatin("sumk.log.level", null);
 			if (temp == null) {
+				Loggers.resetLevel(newLevels);
 				return;
 			}
 			temp = temp.replace(';', ',').replace("\r\n", ",").replace('\n', ',').replace('\r', ',');
 			String[] levelStrs = temp.split(",");
-			Map<String, LogLevel> newLevels = new HashMap<>();
 			for (String levelStr : levelStrs) {
 				levelStr = levelStr.trim();
 				if (levelStr.isEmpty()) {
@@ -81,26 +84,56 @@ public final class Loggers {
 		return new Loggers(name);
 	}
 
-	private LogLevel getLevel(String logName) {
+	private static LogLevel getLevel(final String fullName) {
+		ConcurrentMap<String, LogLevel> cache = _levelMap;
+		if (cache.isEmpty()) {
+			return DEFAULT_LEVEL;
+		}
+		LogLevel level = cache.get(fullName);
+		if (level != null) {
+			return level;
+		}
 		int index = 0;
-		while (logName.length() > 0) {
-			LogLevel level = levelMap.get(logName);
-			if (level != null) {
-				return level;
-			}
+		String logName = fullName;
+		do {
 			index = logName.lastIndexOf(".");
-			if (index < 1) {
+			if (index <= 0) {
 				break;
 			}
 			logName = logName.substring(0, index);
-		}
+			level = cache.get(logName);
+			if (level != null) {
+				cache.put(fullName, level);
+				return level;
+			}
+		} while (logName.length() > 0);
+		cache.put(fullName, DEFAULT_LEVEL);
 		return DEFAULT_LEVEL;
+	}
+
+	public static LogLevel getLevel(SumkLogger log) {
+		String name = log.getName();
+		if (name == null || name.isEmpty()) {
+			return DEFAULT_LEVEL;
+		}
+		return getLevel(name);
+	}
+
+	public synchronized static void resetLevel(Map<String, LogLevel> newLevelMap) {
+		ConcurrentMap<String, LogLevel> newLevels = new ConcurrentHashMap<>(newLevelMap);
+		LogLevel defaultLevel = newLevels.remove(ROOT);
+		DEFAULT_LEVEL = defaultLevel == null ? LogLevel.INFO : defaultLevel;
+		_levelMap = newLevels;
 	}
 
 	public static void setDefaultLevel(LogLevel level) {
 		if (level != null) {
 			DEFAULT_LEVEL = level;
 		}
+	}
+
+	public static Map<String, LogLevel> currentLevels() {
+		return Collections.unmodifiableMap(_levelMap);
 	}
 
 	public SumkLogger get(String name) {
@@ -111,18 +144,4 @@ public final class Loggers {
 		return map.putIfAbsent(name, log);
 	}
 
-	public LogLevel getLevel(SumkLogger log) {
-		String name = log.getName();
-		if (name == null || name.isEmpty()) {
-			return DEFAULT_LEVEL;
-		}
-		return getLevel(name);
-	}
-
-	public synchronized static void resetLevel(Map<String, LogLevel> newLevelMap) {
-		Map<String, LogLevel> newLevels = new HashMap<>(newLevelMap);
-		LogLevel defaultLevel = newLevels.remove(ROOT);
-		DEFAULT_LEVEL = defaultLevel == null ? LogLevel.INFO : defaultLevel;
-		levelMap = newLevels;
-	}
 }

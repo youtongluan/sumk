@@ -31,12 +31,11 @@ import org.apache.ibatis.session.defaults.DefaultSqlSession;
 import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.transaction.managed.ManagedTransaction;
 import org.yx.bean.IOC;
-import org.yx.common.SumkLogs;
 import org.yx.conf.AppInfo;
 import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.Asserts;
 
 public class SqlSessionFactory {
@@ -92,7 +91,7 @@ public class SqlSessionFactory {
 			}
 			return factory;
 		} catch (Exception e) {
-			Log.printStack(SumkLogs.SQL_ERROR, e);
+			Logs.printStack(e);
 			SumkException.throwException(100234325, "create factory failed");
 			return null;
 		}

@@ -13,34 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.redis.command;
 
-public class ErrorResp {
-	private int code;
-	private String message;
+import java.util.List;
 
-	public ErrorResp() {
-	}
+public interface ScriptingCommand {
+	Object eval(String script, int keyCount, String... params);
 
-	public ErrorResp(int code, String message) {
-		this.code = code;
-		this.message = message;
-	}
+	Object eval(String script, List<String> keys, List<String> args);
 
-	public int getCode() {
-		return code;
-	}
+	Object eval(String script);
 
-	public void setCode(int code) {
-		this.code = code;
-	}
+	Object evalsha(String sha1);
 
-	public String getMessage() {
-		return message;
-	}
+	Object evalsha(String sha1, List<String> keys, List<String> args);
 
-	public void setMessage(String message) {
-		this.message = message;
-	}
+	Object evalsha(String sha1, int keyCount, String... params);
 
+	Boolean scriptExists(String sha1);
+
+	List<Boolean> scriptExists(String... sha1);
+
+	String scriptLoad(String script);
 }

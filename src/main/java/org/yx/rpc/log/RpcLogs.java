@@ -53,8 +53,7 @@ public class RpcLogs {
 			if (logger.isDebugEnabled()) {
 				StringBuilder sb = new StringBuilder();
 				if (req != null) {
-					sb.append("-- ").append(req.getApi()).append("   serverTime:").append(resp.serviceInvokeMilTime())
-							.append(LN);
+					sb.append(req.getApi()).append("   serverTime:").append(resp.serviceInvokeMilTime()).append(LN);
 					if (req.getJsonedParam() != null) {
 						sb.append("   param(json): ").append(req.getJsonedParam());
 					} else {

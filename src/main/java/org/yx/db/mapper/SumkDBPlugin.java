@@ -17,29 +17,64 @@ package org.yx.db.mapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
-import org.yx.common.SumkLogs;
+import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceLoader;
+import org.yx.db.conn.DataSources;
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.listener.DBEventListener;
 import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
+import org.yx.main.SumkServer;
 import org.yx.util.SumkDate;
 
 @Bean
 public class SumkDBPlugin implements Plugin {
 
 	@Override
+	public int order() {
+		return 1;
+	}
+
+	@Override
 	public void startAsync() {
 		DBSettings.register();
 		buildDBListeners();
 		loadSDBResources();
+		SumkServer.setDbStarted(true);
+
+		preHotDataSource();
+	}
+
+	protected void preHotDataSource() {
+		if (AppInfo.getBoolean("sumk.db.pool.prehot.disable", false)) {
+			return;
+		}
+		Map<String, String> map = AppInfo.subMap("s.db.");
+		if (map == null || map.isEmpty()) {
+			return;
+		}
+		Set<String> names = new HashSet<>();
+		for (String key : map.keySet()) {
+			int index = key.indexOf(".");
+			if (index > 0) {
+				key = key.substring(0, index);
+			}
+			names.add(key);
+		}
+		for (String name : names) {
+			Logs.db().debug("{} begin preHot...", name);
+			DataSources.getManager(name);
+		}
+
 	}
 
 	protected void buildDBListeners() {
@@ -53,17 +88,17 @@ public class SumkDBPlugin implements Plugin {
 			loadSql(loader);
 			startListen(loader);
 		} catch (Throwable e) {
-			SumkException.throwException(2351343, SumkLogs.SQL_ERROR, e);
+			SumkException.throwException(2351343, "sdb加载本地sql文件失败", e);
 		}
 	}
 
 	private void startListen(MultiResourceLoader loader) {
 		loader.startListen(load -> {
 			try {
-				Log.get("sumk.db.sql").info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
+				Logs.db().info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
 				loadSql(load);
 			} catch (Exception e) {
-				Log.printStack(SumkLogs.SQL_ERROR, e);
+				Logs.printStack(e);
 			}
 		});
 	}
@@ -86,7 +121,7 @@ public class SumkDBPlugin implements Plugin {
 						new ByteArrayInputStream(bs));
 			}
 		} catch (Exception e) {
-			Log.get("sumk.db.sql").error(e.getLocalizedMessage(), e);
+			Logs.db().error(e.getLocalizedMessage(), e);
 			return;
 		}
 		SqlHolder.setSQLS(sqlMap);

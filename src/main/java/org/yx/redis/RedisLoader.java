@@ -15,82 +15,88 @@
  */
 package org.yx.redis;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import org.yx.conf.AppInfo;
-import org.yx.conf.NamePairs;
+import org.yx.conf.SimpleBeanUtil;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class RedisLoader {
 
-	public static void init() throws Exception {
-		loadRedisByConfig();
-	}
+	public static final String DEFAULT = "default";
+	public static final String COUNTER = "count";
+	public static final String SESSION = "session";
 
-	private static byte[] loadConfig() throws Exception {
-		Map<String, String> map = AppInfo.subMap("s.redis.");
-		return new NamePairs(map).toBytes();
-	}
+	static final String LOG_NAME = "sumk.redis";
+	private static final String CONFIG_PREFIX = "s.redis.";
 
-	private static void loadRedisByConfig() throws IOException, Exception {
-		byte[] bs = loadConfig();
-		if (bs == null || bs.length == 0) {
+	public static synchronized void init() throws Exception {
+		Map<String, String> map = AppInfo.subMap(CONFIG_PREFIX);
+		if (map == null || map.isEmpty()) {
 			return;
 		}
-		Map<String, String> p = CollectionUtil.loadMap(new StringReader(new String(bs, AppInfo.systemCharset())),
-				false);
-		Log.get(Redis.LOG_NAME).debug("config:{}", p);
-		Set<String> keys = p.keySet();
-		for (String kk : keys) {
-			if (StringUtil.isEmpty(kk)) {
+		Map<String, String> commonConfig = Collections.unmodifiableMap(AppInfo.subMap("s.common.redis."));
+		for (String key : map.keySet()) {
+			if (key.contains(".")) {
 				continue;
 			}
-			String v = p.get(kk);
-			kk = kk.toLowerCase();
-			Redis redis = create(kk, v);
-			String[] moduleKeys = kk.replace('，', ',').split(",");
-			for (String key : moduleKeys) {
-				if (StringUtil.isEmpty(key)) {
-					continue;
-				}
-				if (StringUtil.isEmpty(v)) {
-					continue;
-				}
-				if (RedisConfig.DEFAULT.equals(key)) {
-					RedisPool._defaultRedis = redis;
-					Log.get(Redis.LOG_NAME).debug("set default redis to {}", redis);
-				} else {
-					RedisPool.put(key, redis);
+			Map<String, String> configMap = new HashMap<>(commonConfig);
+			configMap.putAll(CollectionUtil.subMap(map, key + "."));
+			initRedis(key, StringUtil.toLatin(map.get(key).trim()), configMap);
+		}
+		if (Log.get(LOG_NAME).isDebugEnabled()) {
+			Log.get(LOG_NAME).debug("redis的主键列表{},默认redis: {}", RedisPool.keys(), RedisPool.defaultRedis());
+		}
+	}
+
+	private static void initRedis(final String name, String host, Map<String, String> configMap) {
+		Log.get(LOG_NAME).info("开始初始化redis：{}={}", name, host);
+		try {
+			RedisConfig config = createConfig(host, configMap);
+			Log.get(LOG_NAME).debug("{} : {}", name, config);
+
+			Redis redis = RedisFactory.create(config);
+			if (DEFAULT.equals(name)) {
+				RedisPool.defaultRedis(redis);
+			} else {
+				RedisPool.put(name, redis);
+			}
+			String aliases = config.getAlias();
+			if (StringUtil.isNotEmpty(aliases)) {
+				String[] aas = StringUtil.toLatin(aliases).split(",");
+				for (String s : aas) {
+					s = s.trim();
+					if (s.isEmpty()) {
+						continue;
+					}
+					if (RedisPool.getRedisExactly(s) != null) {
+						Log.get(LOG_NAME).warn("{}的redis配置已经存在了", s);
+						continue;
+					}
+					Log.get(LOG_NAME).debug("设置别名{} -> {}", s, name);
+					RedisPool.put(s, redis);
 				}
 			}
+		} catch (Exception e) {
+			throw new SumkException(35345, "redis [" + name + "] 初始化失败", e);
 		}
+
 	}
 
-	private static RedisParamter createParam(String v) throws Exception {
-		String[] params = v.split("#");
-		RedisParamter param = RedisParamter.create(params[0]);
-		if (params.length > 1 && !StringUtil.isEmpty(params[1])) {
-			param.setDb(Integer.parseInt(params[1]));
+	public static RedisConfig createConfig(String host, Map<String, String> configMap) {
+		RedisConfig config = new RedisConfig(host);
+		if (configMap != null && configMap.size() > 0) {
+			try {
+				SimpleBeanUtil.copyProperties(config, configMap);
+			} catch (Exception e) {
+				Log.get(LOG_NAME).error(e.getLocalizedMessage(), e);
+			}
 		}
-		if (params.length > 2 && !StringUtil.isEmpty(params[2])) {
-			param.setPassword(params[2]);
-		}
-		if (params.length > 3 && !StringUtil.isEmpty(params[3])) {
-			param.setTimeout(Integer.parseInt(params[3]));
-		}
-		if (params.length > 4 && !StringUtil.isEmpty(params[4])) {
-			param.setTryCount(Integer.parseInt(params[4]));
-		}
-		return param;
-	}
-
-	private static Redis create(String name, String v) throws Exception {
-		Log.get(Redis.LOG_NAME).trace("create redis {} with {}", name, v);
-		return RedisFactory.get(JedisPoolConfigHolder.getConfig(name), createParam(v));
+		return config;
 	}
 }

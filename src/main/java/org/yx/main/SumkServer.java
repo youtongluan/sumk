@@ -35,6 +35,7 @@ import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
 import org.yx.conf.SystemConfigHolder;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
@@ -43,6 +44,8 @@ public final class SumkServer {
 	private static volatile boolean destoryed = false;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
+	private static volatile boolean dbStarted;
+	private static volatile boolean redisStarted;
 	private static long startTime;
 
 	public static long startTime() {
@@ -64,7 +67,7 @@ public final class SumkServer {
 	public static void main(String[] args) {
 		long begin = System.currentTimeMillis();
 		start(args);
-		Log.get("sumk.SYS").info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
+		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
 	}
 
 	public static void start() {
@@ -201,7 +204,7 @@ public final class SumkServer {
 		}
 		InnerIOC.clear();
 		SumkThreadPool.shutdown();
-		Log.get("sumk.SYS").info("sumk server stoped!!!");
+		Logs.system().info("sumk server stoped!!!");
 	}
 
 	private static void scheduleThreadPoolReseting() {
@@ -209,4 +212,21 @@ public final class SumkServer {
 		SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(new ThreadPoolReSeter(), period, period,
 				TimeUnit.MILLISECONDS);
 	}
+
+	public static boolean isDbStarted() {
+		return dbStarted;
+	}
+
+	public static void setDbStarted(boolean dbStarted) {
+		SumkServer.dbStarted = dbStarted;
+	}
+
+	public static boolean isRedisStarted() {
+		return redisStarted;
+	}
+
+	public static void setRedisStarted(boolean redisStarted) {
+		SumkServer.redisStarted = redisStarted;
+	}
+
 }

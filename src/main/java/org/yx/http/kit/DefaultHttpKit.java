@@ -17,19 +17,20 @@ package org.yx.http.kit;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
-import org.yx.conf.AppInfo;
-import org.yx.http.ErrorResp;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpGson;
 import org.yx.http.HttpHeaderName;
 import org.yx.http.HttpSettings;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
+
+import com.google.gson.JsonObject;
 
 public class DefaultHttpKit implements HttpKit {
 
@@ -41,28 +42,29 @@ public class DefaultHttpKit implements HttpKit {
 	}
 
 	public Charset charset(HttpServletRequest req) {
-		String charsetName = AppInfo.get("sumk.http.charset");
+		String charsetName = req.getCharacterEncoding();
 		if (StringUtil.isEmpty(charsetName)) {
-			charsetName = req.getCharacterEncoding();
+			return HttpSettings.defaultCharset();
 		}
-		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(HttpSettings.DEFAULT_CHARSET.name())) {
-			return HttpSettings.DEFAULT_CHARSET;
+		if ("UTF8".equalsIgnoreCase(charsetName) || "UTF-8".equalsIgnoreCase(charsetName)) {
+			return StandardCharsets.UTF_8;
 		}
-
 		if (!Charset.isSupported(charsetName)) {
-			Log.get("sumk.http").error("charset '{}' is not supported", charsetName);
-			return HttpSettings.DEFAULT_CHARSET;
+			Logs.http().warn("charset '{}' is not supported,use default charset {}", charsetName,
+					HttpSettings.defaultCharset());
+			return HttpSettings.defaultCharset();
 		}
 		return Charset.forName(charsetName);
 	}
 
-	public void error(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
+	@Override
+	public void sendError(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
 			throws IOException {
 		resp.setStatus(httpStatus);
-		ErrorResp r = new ErrorResp();
-		r.setCode(code);
-		r.setMessage(errorMsg);
-		resp.getOutputStream().write(HttpGson.gson().toJson(r).getBytes(charset));
+		JsonObject jo = new JsonObject();
+		jo.addProperty("code", code);
+		jo.addProperty("message", errorMsg);
+		resp.getOutputStream().write(HttpGson.gson().toJson(jo).getBytes(charset));
 	}
 
 	public void noCache(HttpServletResponse resp) {
@@ -78,5 +80,10 @@ public class DefaultHttpKit implements HttpKit {
 	@Override
 	public ActStatis actStatis() {
 		return this.actStatic;
+	}
+
+	@Override
+	public void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException {
+		resp.setContentType("application/json;charset=" + charset.name());
 	}
 }

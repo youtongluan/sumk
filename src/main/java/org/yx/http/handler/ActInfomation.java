@@ -20,8 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,9 +28,10 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.common.GsonHelper;
 import org.yx.common.Monitors;
 import org.yx.conf.AppInfo;
+import org.yx.http.AbstractCommonHttpServlet;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.RpcActions;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
@@ -41,49 +40,47 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @Bean
-@SumkServlet(value = { "/_sumk_acts" }, loadOnStartup = -1)
-public class ActInfomation extends HttpServlet {
+@SumkServlet(value = { "/_sumk_acts" }, loadOnStartup = -1, appKey = "sumkActs")
+public class ActInfomation extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
 	@Override
-	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		InnerHttpUtil.noCache(resp);
-		resp.setContentType("text/html;charset=UTF-8");
+		resp.setContentType("text/plain;charset=UTF-8");
 		String md5 = AppInfo.get("sumk.union.monitor", "sumk.acts.md5", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		String mode = req.getParameter("mode");
 		if (sign == null) {
-			Log.get("sumk.http").debug("sign is empty");
+			Logs.http().debug("sign is empty");
 			return;
 		}
 		try {
 			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
 			if (!md5.equalsIgnoreCase(signed) || StringUtil.isEmpty(mode)) {
-				Log.get("sumk.http").debug("signed:{},need:{}", signed, md5);
+				Logs.http().debug("signed:{},need:{}", signed, md5);
 				return;
 			}
 		} catch (Exception e) {
 		}
 		GsonBuilder builder = GsonHelper.builder("sumk.acts");
-		boolean pretty = false;
 		if ("1".equals(req.getParameter("pretty"))) {
 			builder.setPrettyPrinting();
-			pretty = true;
 		}
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
 			List<Map<String, Object>> list = HttpActions.infos();
-			write(resp, gson.toJson(list), pretty);
+			write(resp, gson.toJson(list));
 			return;
 		}
 		if (mode.equals("rpc")) {
 			List<Map<String, Object>> list = RpcActions.infos();
-			write(resp, gson.toJson(list), pretty);
+			write(resp, gson.toJson(list));
 			return;
 		}
 		if (mode.equals("beans")) {
-			write(resp, beans(), pretty);
+			write(resp, beans());
 			return;
 		}
 	}
@@ -98,10 +95,7 @@ public class ActInfomation extends HttpServlet {
 		return sb.toString();
 	}
 
-	private void write(HttpServletResponse resp, String msg, boolean pretty) throws IOException {
-		if (pretty) {
-			msg = msg.replace("\n", "<br/>").replace(" ", "&nbsp;");
-		}
+	private void write(HttpServletResponse resp, String msg) throws IOException {
 		resp.getWriter().write(msg);
 	}
 }

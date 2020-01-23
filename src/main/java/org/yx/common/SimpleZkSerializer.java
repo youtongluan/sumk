@@ -34,10 +34,10 @@ public class SimpleZkSerializer implements ZkSerializer {
 		if (data == null) {
 			return null;
 		}
-		if (byte[].class.isInstance(data)) {
+		if (byte[].class == data.getClass()) {
 			return (byte[]) data;
 		}
-		if (String.class.isInstance(data)) {
+		if (String.class == data.getClass()) {
 			return ((String) data).getBytes(charset);
 		}
 		return S.json.toJson(data).getBytes(charset);

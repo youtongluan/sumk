@@ -26,7 +26,7 @@ import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 
 public final class RpcActionNode extends CalleeNode {
@@ -73,8 +73,7 @@ public final class RpcActionNode extends CalleeNode {
 			SumkException.throwException(12012, method.getName() + "的参数不能为空");
 		}
 		if (args.length != argNames.length) {
-			Log.get("sumk.rpc.server")
-					.debug(method.getName() + "需要传递" + argNames.length + "个参数，实际传递" + args.length + "个");
+			Logs.rpc().debug(method.getName() + "需要传递" + argNames.length + "个参数，实际传递" + args.length + "个");
 		}
 
 		ArgPojo pojo = Loader.newInstance(this.argClz);

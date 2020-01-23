@@ -20,7 +20,7 @@ import org.yx.annotation.http.Web;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
 import org.yx.http.HttpCiphers;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
 @Bean
@@ -64,7 +64,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		}
 		String sign1 = HttpCiphers.getSigner().sign(bs, ctx.httpRequest());
 		if (!sign.equals(sign1)) {
-			Log.get("sumk.http").debug("client sign:{},computed is:{}", sign, sign1);
+			Logs.http().debug("client sign:{},computed is:{}", sign, sign1);
 			HttpException.throwException(this.getClass(), "签名验证错误");
 		}
 		return false;

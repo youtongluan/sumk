@@ -62,7 +62,7 @@ public class ClientHandler implements IoHandler {
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		Log.get("sumk.rpc.server").error(session + " throw exception", cause);
+		Log.get("sumk.rpc.client").error(session + " throw exception", cause);
 
 	}
 

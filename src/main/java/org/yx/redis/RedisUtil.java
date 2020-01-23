@@ -13,36 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.redis;
 
-import org.yx.util.StringUtil;
+import java.util.function.Function;
 
-public class IntfInfo {
-	private String name;
-	private Integer weight;
+import redis.clients.jedis.Jedis;
 
-	public String getName() {
-		return name;
+public class RedisUtil {
+	public static <T> T execOnce(Redis redis, Function<Jedis, T> callback) {
+		return SeniorRedis.class.cast(redis).exec(callback, 1);
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public Integer getWeight() {
-		return weight;
-	}
-
-	void setWeight(String w) {
-		if (StringUtil.isEmpty(w)) {
-			return;
-		}
-		this.weight = Integer.valueOf(w);
-	}
-
-	@Override
-	public String toString() {
-		return name;
+	public static <T> T execAndRetry(Redis redis, Function<Jedis, T> callback, int totalCount) {
+		return SeniorRedis.class.cast(redis).exec(callback, totalCount);
 	}
 
 }

@@ -36,6 +36,7 @@ import org.yx.exception.SimpleSumkException;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class BeanPublisher {
 
@@ -43,7 +44,7 @@ public final class BeanPublisher {
 
 	public static synchronized void publishBeans(List<String> packageNames) {
 		if (packageNames.isEmpty()) {
-			Log.get("sumk.SYS").warn("property [sumk.ioc] is empty");
+			Logs.system().warn("property [sumk.ioc] is empty");
 		}
 
 		packageNames.remove(StartConstants.INNER_PACKAGE);
@@ -66,11 +67,11 @@ public final class BeanPublisher {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
 				}
-				Log.get("sumk.SYS").debug("{} ignored.{}", c, e.getMessage());
+				Logs.system().debug("{} ignored.{}", c, e.getMessage());
 			}
 		}
 		if (AppInfo.getBoolean("sumk.ioc.showinfo", false)) {
-			Log.get("sumk.SYS").debug(IOC.info());
+			Logs.system().debug(IOC.info());
 		}
 		autoWiredAll();
 	}
@@ -107,17 +108,17 @@ public final class BeanPublisher {
 	private static void autoWiredAll() {
 		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
 		StartContext.inst().setBeans(beans);
-		Log.get("sumk.ioc").trace("after beans create...");
+		Logs.ioc().trace("after beans create...");
 		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
-		Log.get("sumk.ioc").trace("inject beans properties...");
+		Logs.ioc().trace("inject beans properties...");
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
-		Log.get("sumk.ioc").trace("after beans installed...");
+		Logs.ioc().trace("after beans installed...");
 		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
 			watcher.afterInstalled(beans);
 		});
-		Log.get("sumk.ioc").trace("plugins starting...");
+		Logs.ioc().trace("plugins starting...");
 		PluginHandler.instance.start();
 	}
 

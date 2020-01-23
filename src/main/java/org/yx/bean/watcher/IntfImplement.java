@@ -22,6 +22,7 @@ import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -31,7 +32,7 @@ public class IntfImplement {
 		try {
 			InputStream in = Loader.getResourceAsStream("META-INF/sumk-intf");
 			if (in == null) {
-				Log.get("sumk.SYS").error("sumk-intf file cannot found");
+				Logs.system().error("sumk-intf file cannot found");
 				return;
 			}
 			Map<String, String> map = CollectionUtil.loadMap(in, false);

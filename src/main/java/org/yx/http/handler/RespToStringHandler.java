@@ -36,6 +36,10 @@ public class RespToStringHandler implements HttpHandler {
 	public boolean handle(WebContext ctx) throws Throwable {
 		Object obj = ctx.result();
 		if (obj == null) {
+			if (ctx.httpNode().getReturnType() == void.class) {
+				ctx.result(new byte[0]);
+				return false;
+			}
 			ctx.result(HttpGson.gson().toJson(obj));
 			return false;
 		}

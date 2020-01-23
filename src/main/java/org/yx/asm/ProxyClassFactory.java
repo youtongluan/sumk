@@ -23,6 +23,7 @@ import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.yx.annotation.Box;
+import org.yx.conf.Const;
 
 public class ProxyClassFactory {
 
@@ -68,7 +69,7 @@ public class ProxyClassFactory {
 
 		String newClzName = AsmUtils.proxyCalssName(clz);
 		ProxyClassVistor cv = new ProxyClassVistor(cw, newClzName, clz, aopMethods);
-		cr.accept(cv, Vars.ASM_VER);
+		cr.accept(cv, Const.ASM_VERSION);
 		return AsmUtils.loadClass(newClzName, cw.toByteArray());
 	}
 }

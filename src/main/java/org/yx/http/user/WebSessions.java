@@ -21,8 +21,9 @@ import org.yx.exception.BizException;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.redis.Redis;
-import org.yx.redis.RedisConfig;
+import org.yx.redis.RedisLoader;
 import org.yx.redis.RedisPool;
 
 public class WebSessions {
@@ -40,7 +41,7 @@ public class WebSessions {
 			initSession();
 		}
 		if (session == null) {
-			Log.get("sumk.session").info("session has not created");
+			Log.get("sumk.http.session").info("session has not created");
 			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆.");
 		}
 		return session;
@@ -53,7 +54,7 @@ public class WebSessions {
 	public static void remove() {
 		userSession();
 		if (session == null) {
-			Log.get("sumk.session").debug("has removed");
+			Log.get("sumk.http.session").debug("has removed");
 			return;
 		}
 		session.removeSession(HttpContextHolder.sessionId());
@@ -75,10 +76,10 @@ public class WebSessions {
 		if (factory == null) {
 			factory = () -> {
 				try {
-					Redis redis = RedisPool.getRedisExactly(RedisConfig.SESSION);
+					Redis redis = RedisPool.getRedisExactly(RedisLoader.SESSION);
 					return redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
 				} catch (NoClassDefFoundError e) {
-					Log.get("sumk.http").debug("use local session because redis cannot load", e);
+					Logs.http().debug("use local session because redis cannot load", e);
 					return new LocalUserSession();
 				}
 			};

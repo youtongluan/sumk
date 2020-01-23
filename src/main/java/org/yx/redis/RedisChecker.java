@@ -15,13 +15,8 @@
  */
 package org.yx.redis;
 
-import org.yx.log.Log;
-
-import redis.clients.jedis.Jedis;
-
 final class RedisChecker implements Runnable {
 
-	private static final String HELLO = "hello";
 	private static final RedisChecker holder = new RedisChecker();
 
 	private RedisChecker() {
@@ -45,25 +40,9 @@ final class RedisChecker implements Runnable {
 	public void run() {
 		Redis[] rediss = this.allRedis;
 		for (Redis redis : rediss) {
-			redis.disConnected = !this.checkRedis(redis);
+			redis.aliveCheck();
 		}
 
 	}
 
-	private boolean checkRedis(Redis redis) {
-		for (int i = 0; i < 3; i++) {
-			try (Jedis jedis = redis.jedis()) {
-				String ret = jedis.ping(HELLO);
-				if (HELLO.equals(ret)) {
-					return true;
-				}
-				Log.get("sumk.redis.checker").warn("redis answer {} for {}", ret, HELLO);
-			} catch (Exception e) {
-				if (!Redis.isConnectException(e)) {
-					Log.get("sumk.redis").error(e.getMessage(), e);
-				}
-			}
-		}
-		return false;
-	}
 }

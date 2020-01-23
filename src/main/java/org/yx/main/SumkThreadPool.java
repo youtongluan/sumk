@@ -43,21 +43,25 @@ public final class SumkThreadPool {
 		SumkThreadPool.daemon = daemon;
 	}
 
-	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
-			new ThreadFactory() {
-				private final AtomicInteger threadNumber = new AtomicInteger(1);
+	public static ThreadFactory createThreadFactory(String pre) {
+		return new ThreadFactory() {
+			private final AtomicInteger threadNumber = new AtomicInteger(1);
 
-				@Override
-				public Thread newThread(Runnable r) {
-					Thread t = new Thread(r);
-					t.setName("sumk-task-" + threadNumber.getAndIncrement());
-					t.setDaemon(daemon);
-					if (t.getPriority() != Thread.NORM_PRIORITY) {
-						t.setPriority(Thread.NORM_PRIORITY);
-					}
-					return t;
+			@Override
+			public Thread newThread(Runnable r) {
+				Thread t = new Thread(r);
+				t.setName(pre + threadNumber.getAndIncrement());
+				t.setDaemon(daemon);
+				if (t.getPriority() != Thread.NORM_PRIORITY) {
+					t.setPriority(Thread.NORM_PRIORITY);
 				}
-			});
+				return t;
+			}
+		};
+	}
+
+	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
+			createThreadFactory("sumk-task-"));
 
 	public static ScheduledThreadPoolExecutor scheduledExecutor() {
 		return scheduledExecutor;
@@ -97,9 +101,9 @@ public final class SumkThreadPool {
 				Thread.interrupted();
 				step.close();
 			} catch (Exception e) {
-				ConsoleLog.get("sumk.SYS").error(e.getMessage(), e);
+				ConsoleLog.get("sumk.sys").warn(e.getLocalizedMessage(), e);
 			}
-			ConsoleLog.get("sumk.SYS").info("{} stoped", threadName);
+			ConsoleLog.get("sumk.sys").info("{} stoped", threadName);
 		};
 		Thread t = new Thread(r, threadName);
 		t.setDaemon(daemon);
