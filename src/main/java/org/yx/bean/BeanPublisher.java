@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
 import org.yx.annotation.Inject;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.watcher.BeanCreate;
@@ -106,19 +107,20 @@ public final class BeanPublisher {
 	}
 
 	private static void autoWiredAll() {
+		Logger logger = Logs.ioc();
 		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
 		StartContext.inst().setBeans(beans);
-		Logs.ioc().trace("after beans create...");
+		logger.trace("after beans create...");
 		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
-		Logs.ioc().trace("inject beans properties...");
+		logger.trace("inject beans properties...");
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
-		Logs.ioc().trace("after beans installed...");
+		logger.trace("after beans installed...");
 		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
 			watcher.afterInstalled(beans);
 		});
-		Logs.ioc().trace("plugins starting...");
+		logger.trace("plugins starting...");
 		PluginHandler.instance.start();
 	}
 

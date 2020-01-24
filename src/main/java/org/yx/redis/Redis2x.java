@@ -44,22 +44,28 @@ public abstract class Redis2x implements SeniorRedis {
 	protected final Pool<Jedis> pool;
 	protected boolean disConnected;
 
-	private static Function<RedisConfig, JedisPool> jedisPoolFactory = conf -> {
-		List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
-		Host h = hosts.get(0);
-		return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(), conf.getPassword(),
-				conf.getDb(), AppInfo.appId("sumk"));
+	private static Function<RedisConfig, JedisPool> jedisPoolFactory = new Function<RedisConfig, JedisPool>() {
+		@Override
+		public JedisPool apply(RedisConfig conf) {
+			List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
+			Host h = hosts.get(0);
+			return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
+					conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
+		}
 	};
 
-	private static Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory = config -> {
-		List<Host> hosts = ConfigKit.parseHosts(config.hosts());
-		Set<String> sentinels = new HashSet<>();
-		for (Host h : hosts) {
-			sentinels.add(h.toString());
+	private static Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory = new Function<RedisConfig, JedisSentinelPool>() {
+		@Override
+		public JedisSentinelPool apply(RedisConfig config) {
+			List<Host> hosts = ConfigKit.parseHosts(config.hosts());
+			Set<String> sentinels = new HashSet<>();
+			for (Host h : hosts) {
+				sentinels.add(h.toString());
+			}
+			Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, config.getDb());
+			return new JedisSentinelPool(config.getMaster(), sentinels, config, config.getConnectionTimeout(),
+					config.getTimeout(), config.getPassword(), config.getDb(), AppInfo.appId("sumk"));
 		}
-		Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, config.getDb());
-		return new JedisSentinelPool(config.getMaster(), sentinels, config, config.getConnectionTimeout(),
-				config.getTimeout(), config.getPassword(), config.getDb(), AppInfo.appId("sumk"));
 	};
 
 	public static Function<RedisConfig, JedisPool> getJedisPoolFactory() {

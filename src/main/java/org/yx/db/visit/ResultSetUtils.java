@@ -35,9 +35,9 @@ public class ResultSetUtils {
 		}
 		ResultSetMetaData md = rs.getMetaData();
 		int columnCount = md.getColumnCount();
-		Map<String, Object> rowData = new HashMap<>();
+		Map<String, Object> rowData;
 		while (rs.next()) {
-			rowData = new HashMap<>(columnCount);
+			rowData = new HashMap<>();
 			for (int i = 1; i <= columnCount; i++) {
 				rowData.put(md.getColumnName(i), rs.getObject(i));
 			}
@@ -53,7 +53,7 @@ public class ResultSetUtils {
 		}
 		ResultSetMetaData md = rs.getMetaData();
 		int columnCount = md.getColumnCount();
-		Map<String, Object> rowData = new HashMap<>();
+		Map<String, Object> rowData;
 		while (rs.next()) {
 			rowData = new HashMap<>(columnCount * 2);
 			for (int i = 1; i <= columnCount; i++) {

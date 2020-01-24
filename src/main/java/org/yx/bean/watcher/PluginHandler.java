@@ -17,10 +17,12 @@ package org.yx.bean.watcher;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
+import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.log.Logs;
@@ -45,8 +47,9 @@ public class PluginHandler {
 			plugin.prepare();
 		}
 		CountDownLatch latch = new CountDownLatch(plugins.size());
+		SumkExecutorService executor = SumkThreadPool.executor();
 		for (Plugin plugin : plugins) {
-			SumkThreadPool.executor().execute(() -> {
+			executor.execute(() -> {
 				try {
 					plugin.startAsync();
 					latch.countDown();
@@ -57,6 +60,7 @@ public class PluginHandler {
 				}
 			});
 		}
+		preHotCoreThreads(executor);
 		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 300);
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
@@ -71,6 +75,15 @@ public class PluginHandler {
 			plugin.afterStarted();
 		}
 		Logs.system().debug("all plugin started");
+	}
+
+	private void preHotCoreThreads(SumkExecutorService executor) {
+		if (AppInfo.getBoolean("sumk.thread.prestartAllCoreThreads", true)) {
+			if (ThreadPoolExecutor.class.isInstance(executor)) {
+				ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
+				pool.prestartAllCoreThreads();
+			}
+		}
 	}
 
 }
