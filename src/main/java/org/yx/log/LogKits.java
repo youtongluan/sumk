@@ -15,23 +15,7 @@
  */
 package org.yx.log;
 
-import org.yx.conf.AppInfo;
-
 public final class LogKits {
-
-	public static String clipIfNecessary(String log) {
-		if (log == null || log.isEmpty()) {
-			return log;
-		}
-		if (log.length() < 1024) {
-			return log;
-		}
-		int maxLength = AppInfo.getInt("sumk.log.union.singlelog", 10_000_000);
-		if (log.length() <= maxLength) {
-			return log;
-		}
-		return log.substring(0, maxLength - 5) + "...";
-	}
 
 	public static String shorterPrefix(String name, int maxLogNameLength) {
 		if (maxLogNameLength < 5 || name == null || name.length() <= maxLogNameLength) {

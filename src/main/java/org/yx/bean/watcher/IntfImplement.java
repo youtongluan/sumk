@@ -32,7 +32,7 @@ public class IntfImplement {
 		try {
 			InputStream in = Loader.getResourceAsStream("META-INF/sumk-intf");
 			if (in == null) {
-				Logs.system().error("sumk-intf file cannot found");
+				Logs.system().error("sumk-intf file cannot be found");
 				return;
 			}
 			Map<String, String> map = CollectionUtil.loadMap(in, false);

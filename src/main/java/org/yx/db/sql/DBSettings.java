@@ -22,6 +22,7 @@ public final class DBSettings {
 	private static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
 	private static boolean FROM_CACHE;
 	private static boolean TO_CACHE;
+	private static int MAX_LOG_PARAM_LENGTH;
 
 	private static int LIMIT_AS_NO_LIMIT;
 
@@ -41,6 +42,10 @@ public final class DBSettings {
 		return LIMIT_AS_NO_LIMIT;
 	}
 
+	public static int maxSqlParamLength() {
+		return MAX_LOG_PARAM_LENGTH;
+	}
+
 	public static synchronized void register() {
 		if (LIMIT_AS_NO_LIMIT > 0) {
 			return;
@@ -51,6 +56,7 @@ public final class DBSettings {
 				FROM_CACHE = AppInfo.getBoolean("sumk.db.fromCache", true);
 				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
 				LIMIT_AS_NO_LIMIT = AppInfo.getInt("sumk.db.asnolimit", 5000);
+				MAX_LOG_PARAM_LENGTH = AppInfo.getInt("sumk.sql.param.maxlength", 5000);
 			} catch (Exception e) {
 				Logs.db().info(e.getMessage(), e);
 			}

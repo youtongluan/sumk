@@ -90,7 +90,7 @@ public class MapedSql {
 		writer.name("sql").value(sql);
 		writer.name("hash").value(sql.hashCode());
 		String params = DBGson.toJson(paramters);
-		params = LogKits.clipIfNecessary(params);
+		params = LogKits.shorterSubfix(params, DBSettings.maxSqlParamLength());
 		writer.name("paramters").value(params);
 		if (visitor != null) {
 			visitor.visit(writer);
