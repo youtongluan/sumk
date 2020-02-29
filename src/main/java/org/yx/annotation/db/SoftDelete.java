@@ -21,6 +21,8 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.yx.db.enums.ValidRecord;
+
 /**
  * 有这个标志，就说明是软删除
  * 
@@ -40,7 +42,7 @@ public @interface SoftDelete {
 	/**
 	 * @return 只能是String、Int、Byte、Short、Long、Boolean
 	 */
-	Class<?> columnType() default String.class;
+	Class<?> type() default String.class;
 
 	/**
 	 * @return 如果是数字类型，会被转化成数字类型<BR>

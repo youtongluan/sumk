@@ -30,30 +30,25 @@ public @interface Param {
 	 * @return 中文名称
 	 * 
 	 */
-	String cnName() default "";
+	String value() default "";
 
 	/**
-	 * @return 必传参数，不允许为null
+	 * @return true表示是必传参数，不允许为null
 	 */
-	boolean required() default false;
+	boolean required() default true;
 
 	/**
-	 * @return 字符串的最大长度，小于0表示不限
+	 * @return 字符串的最大长度或正整数的最大值(包含)，小于0表示不限
 	 */
-	int maxLength() default -1;
+	int max() default Integer.MIN_VALUE;
 
 	/**
-	 * @return 字符串的最小长度，小于0表示不限
+	 * @return 字符串的最小长度或正整数的最小值(包含)，小于0表示不限
 	 */
-	int minLength() default -1;
+	int min() default Integer.MIN_VALUE;
 
 	/**
-	 * @return 字符串长度，小于0表示不限
-	 */
-	int length() default -1;
-
-	/**
-	 * @return 用户自定义的属性。作用留给用户自己扩展
+	 * @return 自定义属性。作用留给开发者自己扩展
 	 */
 	String custom() default "";
 

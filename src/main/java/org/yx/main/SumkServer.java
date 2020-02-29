@@ -44,8 +44,6 @@ public final class SumkServer {
 	private static volatile boolean destoryed = false;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
-	private static volatile boolean dbStarted;
-	private static volatile boolean redisStarted;
 	private static long startTime;
 
 	public static long startTime() {
@@ -211,22 +209,6 @@ public final class SumkServer {
 		long period = AppInfo.getLong("sumk.threadpool.task.period", 10000);
 		SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(new ThreadPoolReSeter(), period, period,
 				TimeUnit.MILLISECONDS);
-	}
-
-	public static boolean isDbStarted() {
-		return dbStarted;
-	}
-
-	public static void setDbStarted(boolean dbStarted) {
-		SumkServer.dbStarted = dbStarted;
-	}
-
-	public static boolean isRedisStarted() {
-		return redisStarted;
-	}
-
-	public static void setRedisStarted(boolean redisStarted) {
-		SumkServer.redisStarted = redisStarted;
 	}
 
 }

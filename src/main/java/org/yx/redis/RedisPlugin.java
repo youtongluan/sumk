@@ -21,11 +21,11 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
+import org.yx.bean.Plugins;
 import org.yx.common.lock.Locker;
 import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
 
 @Bean
@@ -33,7 +33,7 @@ public class RedisPlugin implements Plugin {
 
 	@Override
 	public int order() {
-		return 0;
+		return 1;
 	}
 
 	@Override
@@ -58,7 +58,7 @@ public class RedisPlugin implements Plugin {
 			System.exit(1);
 		}
 		Locker.init();
-		SumkServer.setRedisStarted(true);
+		Plugins.setRedisStarted();
 	}
 
 	private static void initSeqUtilCounter() {

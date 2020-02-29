@@ -18,9 +18,9 @@ package org.yx.bean;
 import java.lang.annotation.Annotation;
 
 import org.yx.annotation.Box;
-import org.yx.annotation.Box.Transaction;
 import org.yx.common.AopExcutor;
-import org.yx.common.DBTransaction;
+import org.yx.db.exec.DBTransaction;
+import org.yx.exception.SumkException;
 
 public class AopExcutorFactory {
 	public static AopExcutor create(Integer key) {
@@ -29,14 +29,10 @@ public class AopExcutorFactory {
 			for (Annotation a : annotations) {
 				if (Box.class.isInstance(a)) {
 					Box b = (Box) a;
-					DBTransaction trans = null;
-					if (b.dbName().length() > 0 && b.transaction() != Transaction.NONE) {
-						trans = new DBTransaction(b.dbName(), b.dbType(), b.transaction() == Transaction.REQUIRES_NEW);
-					}
-					return new AopExcutor(trans);
+					return new AopExcutor(new DBTransaction(b.value(), b.dbType(), b.transaction()));
 				}
 			}
 		}
-		return new AopExcutor(null);
+		throw new SumkException(-3451435, "不支持aop");
 	}
 }

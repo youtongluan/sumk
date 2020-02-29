@@ -13,24 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.event;
+package org.yx.util;
 
-public enum DBOperate {
+public class ExceptionUtil {
 
-	INSERT,
-	/**
-	 * 更新整条记录
-	 */
-	UPDATE_WHOLE_RECORD, PART_UPDATE, DELETE,
-
-	OTHER_MODIFY,
-
-	GET,
-
-	LIST, COUNT;
-	public boolean isModify(String oprater) {
-		return this == INSERT || this == UPDATE_WHOLE_RECORD || this == PART_UPDATE || this == DELETE
-				|| this == OTHER_MODIFY;
+	public static RuntimeException toRuntimeException(Throwable e) {
+		if (RuntimeException.class.isInstance(e)) {
+			return (RuntimeException) e;
+		}
+		return new RuntimeException(e);
 	}
-
 }

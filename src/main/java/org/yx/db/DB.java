@@ -18,11 +18,15 @@ package org.yx.db;
 import java.sql.SQLException;
 
 import org.yx.db.conn.ConnectionPool;
+import org.yx.db.exec.DBExecutor;
+import org.yx.db.exec.DBTransaction;
+import org.yx.db.exec.Database;
 import org.yx.db.sql.DBFactory;
 import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
 import org.yx.db.sql.Select;
 import org.yx.db.sql.Update;
+import org.yx.util.ExceptionUtil;
 
 /**
  * ORM的入口。 本类如果使用Map做参数，map中的key一律是java字段名。<BR>
@@ -122,5 +126,21 @@ public final class DB {
 	public static void rollback() throws SQLException {
 		ConnectionPool pool = ConnectionPool.get();
 		pool.rollback();
+	}
+
+	public static <T> T execute(Database ds, DBExecutor<T> executor) throws RuntimeException {
+		DBTransaction tran = new DBTransaction(ds.getDbName(), ds.getType(), ds.getTransactionType());
+		T ret = null;
+		try {
+			tran.begin();
+			ret = executor.execute(ds);
+			tran.commit();
+		} catch (Exception e) {
+			tran.rollback(e);
+			throw ExceptionUtil.toRuntimeException(e);
+		} finally {
+			tran.close();
+		}
+		return ret;
 	}
 }

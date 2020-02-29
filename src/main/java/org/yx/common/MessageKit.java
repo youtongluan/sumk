@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.db;
+package org.yx.common;
 
-public enum UpdateType {
-	/**
-	 * 根据用户传入的值
-	 */
-	CUSTOM,
-	/**
-	 * 不能更新
-	 */
-	NONE,
-	/**
-	 * 仅用于自增长，这个选项仅针对数字类型才有效
-	 */
-	INCR,
-	/**
-	 * 将当前时间填入数据库，该选项仅针对日期类型
-	 */
-	CURRENT_TIME
+public final class MessageKit {
+
+	public static String buildMessage(String template, String param0) {
+		return template.replace("{0}", param0);
+	}
+
+	public static String buildMessage(String template, String param0, String param1) {
+		return template.replace("{0}", param0).replace("{1}", param1);
+	}
+
+	public static String buildMessage(String template, String... params) {
+		String s = template;
+		for (int i = 0; i < params.length; i++) {
+			s = s.replace("{" + i + "}", params[i]);
+		}
+		return s;
+	}
 }

@@ -15,39 +15,34 @@
  */
 package org.yx.common;
 
-import org.yx.exception.SumkException;
+import java.util.Objects;
+
+import org.yx.db.exec.DBTransaction;
+import org.yx.util.ExceptionUtil;
 
 public class AopExcutor {
 
-	private DBTransaction transaction;
+	private final DBTransaction transaction;
 
 	public AopExcutor(DBTransaction transaction) {
-		this.transaction = transaction;
+		this.transaction = Objects.requireNonNull(transaction);
 	}
 
 	public void before(Object[] params) {
-		if (this.transaction != null) {
-			transaction.begin();
-		}
+		transaction.begin();
 	}
 
 	public void onError(Throwable e) {
-		if (this.transaction != null) {
-			transaction.rollback(e);
-		}
-		throw new SumkException(345323, "业务执行出错", e);
+		transaction.rollback(e);
+		throw ExceptionUtil.toRuntimeException(e);
 	}
 
 	public void after(Object result) {
-		if (this.transaction != null) {
-			transaction.commit();
-		}
+		transaction.commit();
 	}
 
 	public void close() {
-		if (this.transaction != null) {
-			transaction.close();
-		}
+		transaction.close();
 	}
 
 }

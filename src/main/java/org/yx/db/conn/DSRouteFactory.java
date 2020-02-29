@@ -16,9 +16,7 @@
 package org.yx.db.conn;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
@@ -28,25 +26,25 @@ import org.yx.log.Logs;
 
 public class DSRouteFactory {
 
-	public static Map<DBType, WeightedDataSourceRoute> create(String dbName) throws Exception {
+	public static WeightedDataSourceRouteContainer create(String dbName) throws Exception {
 		List<DBConfig> configs = parseDBConfig(dbName);
-		List<WeightedDS> readDSList = new ArrayList<>(1);
-		List<WeightedDS> writeDSList = new ArrayList<>(1);
+		List<WeightedDataSource> readDSList = new ArrayList<>(1);
+		List<WeightedDataSource> writeDSList = new ArrayList<>(1);
 
 		for (DBConfig dc : configs) {
 			SumkDataSource ds = DSFactory.create(dbName, dc.type, dc.properties);
 			;
 			if (ds.getType().isWritable()) {
-				WeightedDS w = new WeightedDS(ds);
+				WeightedDataSource w = new WeightedDataSource(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
 				writeDSList.add(w);
 				if (ds.getType() == DBType.ANY) {
-					WeightedDS r = new WeightedDS(ds);
+					WeightedDataSource r = new WeightedDataSource(ds);
 					r.setWeight(dc.getReadWeight() > 0 ? dc.getReadWeight() : 1);
 					readDSList.add(r);
 				}
 			} else if (ds.getType().isReadable()) {
-				WeightedDS r = new WeightedDS(ds);
+				WeightedDataSource r = new WeightedDataSource(ds);
 				int w = dc.getReadWeight() > 0 ? dc.getReadWeight() : dc.getWeight();
 				r.setWeight(w > 0 ? w : 1);
 				readDSList.add(r);
@@ -69,10 +67,7 @@ public class DSRouteFactory {
 		}
 		WeightedDataSourceRoute read = new WeightedDataSourceRoute(readDSList);
 		WeightedDataSourceRoute write = new WeightedDataSourceRoute(writeDSList);
-		Map<DBType, WeightedDataSourceRoute> poolMap = new HashMap<>();
-		poolMap.put(DBType.READ, read);
-		poolMap.put(DBType.WRITE, write);
-		return poolMap;
+		return new WeightedDataSourceRouteContainer(write, read);
 	}
 
 	/**

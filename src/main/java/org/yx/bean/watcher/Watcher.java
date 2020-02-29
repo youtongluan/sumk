@@ -13,28 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.validate;
+package org.yx.bean.watcher;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.Param;
-import org.yx.exception.InvalidParamException;
+import org.yx.common.Ordered;
 
-@Bean
-public class MaxLengthValidator implements Validator {
-
-	@Override
-	public void valid(ParamInfo info, Object arg) throws InvalidParamException {
-		Param param = info.param;
-		if (param.maxLength() < 0) {
-			return;
-		}
-		if (!String.class.isInstance(arg)) {
-			return;
-		}
-		if (((String) arg).length() > param.maxLength()) {
-			throw new InvalidParamException("#长度超过" + param.maxLength(), info, arg);
-		}
-
-	}
-
+public interface Watcher extends Ordered {
 }

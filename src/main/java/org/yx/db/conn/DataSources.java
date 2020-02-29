@@ -16,20 +16,18 @@
 package org.yx.db.conn;
 
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
-
-import org.yx.exception.SumkException;
-import org.yx.util.Asserts;
 
 public final class DataSources {
 
-	private static final ConcurrentMap<String, DataSourceManager> factoryMap = new ConcurrentHashMap<>();
-	private static Function<String, DataSourceManager> managerFactory = name -> new DataSourceManagerImpl(name);
+	private static Function<String, DataSourceManager> managerFactory = new DefaultManagerContainer();
 
 	public static void setManagerFactory(Function<String, DataSourceManager> managerFactory) {
 		DataSources.managerFactory = Objects.requireNonNull(managerFactory);
+	}
+
+	public static Function<String, DataSourceManager> getManagerFactory() {
+		return managerFactory;
 	}
 
 	public static SumkDataSource writeDataSource(String dbName) {
@@ -41,42 +39,7 @@ public final class DataSources {
 	}
 
 	public static DataSourceManager getManager(String dbName) {
-		try {
-			Asserts.hasText(dbName, "db name can not be empty");
-			dbName = dbName.trim();
-			DataSourceManager factory = factoryMap.get(dbName);
-			if (factory != null) {
-				return factory;
-			}
-			synchronized (DataSources.class) {
-				factory = factoryMap.get(dbName);
-				if (factory != null) {
-					return factory;
-				}
-				factory = managerFactory.apply(dbName);
-				factoryMap.put(dbName, factory);
-			}
-			return factory;
-		} catch (Exception e) {
-			throw new SumkException(100234325, "create factory [" + dbName + "] failed", e);
-		}
-	}
-
-	public static synchronized void put(String dbName, DataSourceManager factory) {
-		factoryMap.put(dbName, factory);
-	}
-
-	public static void remove(String dbName) throws Exception {
-		Asserts.hasText(dbName, "db name can not be empty");
-		dbName = dbName.trim();
-		DataSourceManager factory = factoryMap.get(dbName);
-		if (factory == null) {
-			return;
-		}
-		DataSourceManager old = factoryMap.remove(dbName);
-		if (old != null) {
-			old.destroy();
-		}
+		return managerFactory.apply(dbName);
 	}
 
 }

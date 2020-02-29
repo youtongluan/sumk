@@ -23,7 +23,6 @@ import static org.yx.log.LogLevel.WARN;
 
 import org.slf4j.Logger;
 import org.slf4j.Marker;
-import org.yx.conf.AppInfo;
 
 public abstract class SumkLogger implements Logger {
 
@@ -34,10 +33,6 @@ public abstract class SumkLogger implements Logger {
 	 */
 	public String getName() {
 		return name;
-	}
-
-	public int maxLogNameLength() {
-		return AppInfo.getInt("sumk.log.maxLogNameLength", 32);
 	}
 
 	protected SumkLogger(String module) {

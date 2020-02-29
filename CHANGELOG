@@ -127,3 +127,9 @@ v2.7.0
 
 v2.7.1
 1、修复sumk-log与spring boot、阿波罗配置中心一起使用时，spring日志的堆栈溢出问题
+
+v2.7.2
+1、在2.7.0中，将jedis升级到2.10.x后，之前版本的jedis需要手工构建JedisPool对象。现修复这个问题
+2、@Box事务支持AutoCommit模式
+3、只是Pojo使用byte[]和String映射Blob和Clob类型
+4、修改@Column、@Param的一些属性名称

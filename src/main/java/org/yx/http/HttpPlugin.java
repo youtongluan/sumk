@@ -37,8 +37,8 @@ import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.RestType;
 import org.yx.http.invoke.WebHandler;
 import org.yx.http.start.WebAnnotationResolver;
-import org.yx.log.Logs;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
 
@@ -65,7 +65,7 @@ public class HttpPlugin implements Plugin {
 		return 10100;
 	}
 
-	protected void resolveWebAnnotation(Object[] beans) {
+	protected void resolveWebAnnotation(List<Object> beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
 			for (Object bean : beans) {
@@ -85,7 +85,7 @@ public class HttpPlugin implements Plugin {
 			HttpHeaderName.init();
 			HttpSettings.init();
 			HttpActions.init();
-			Object[] beans = StartContext.inst().getBeans();
+			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
 			this.addFusingObserver();

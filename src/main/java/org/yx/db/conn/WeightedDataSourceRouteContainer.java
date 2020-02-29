@@ -13,26 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.db.conn;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+public class WeightedDataSourceRouteContainer {
+	private final WeightedDataSourceRoute write;
+	private final WeightedDataSourceRoute read;
 
-import org.yx.rpc.codec.Protocols;
-
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
-
-	public static long feature() {
-		long v = version;
-		v <<= 32;
-		v |= Protocols.profile();
-		return v;
+	public WeightedDataSourceRouteContainer(WeightedDataSourceRoute write, WeightedDataSourceRoute read) {
+		this.write = write;
+		this.read = read;
 	}
 
-	public static String featureInHex() {
-		return Long.toHexString(feature());
+	public WeightedDataSourceRoute getWrite() {
+		return write;
+	}
+
+	public WeightedDataSourceRoute getRead() {
+		return read;
 	}
 
 }

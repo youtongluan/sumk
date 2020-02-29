@@ -15,40 +15,15 @@
  */
 package org.yx.db.exec;
 
-public class ResultContainer {
-	Object result;
+import org.yx.db.DBType;
+import org.yx.db.TransactionType;
 
-	private Object param;
-	private String db;
+public interface Database {
 
-	public static ResultContainer create(String db) {
-		return new ResultContainer(db, null);
-	}
+	String getDbName();
 
-	public static ResultContainer create(String db, Object param) {
-		return new ResultContainer(db, param);
-	}
+	DBType getType();
 
-	public ResultContainer(String db, Object param) {
-		super();
-		this.db = db;
-		this.param = param;
-	}
-
-	public String getDb() {
-		return db;
-	}
-
-	public Object getParam() {
-		return param;
-	}
-
-	public void setParam(Object param) {
-		this.param = param;
-	}
-
-	public Object getResult() {
-		return result;
-	}
+	TransactionType getTransactionType();
 
 }

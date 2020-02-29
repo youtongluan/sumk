@@ -25,7 +25,7 @@ import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.yx.annotation.Bean;
 import org.yx.annotation.Inject;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Profile;
+import org.yx.rpc.Profile;
 import org.yx.rpc.codec.encoders.SumkMinaEncoder;
 
 @Bean

@@ -27,7 +27,7 @@ import org.yx.asm.MethodParamInfo;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
-import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
 import org.yx.log.Log;
@@ -48,7 +48,7 @@ public class SoaAnnotationResolver {
 
 		String patterns = AppInfo.get("sumk.rpc.pattern", null);
 		if (patterns != null) {
-			this.matcher = MatcherFactory.createWildcardMatcher(patterns, 1);
+			this.matcher = Matchers.createWildcardMatcher(patterns, 1);
 		}
 		Logs.rpc().debug("soa matcher:{}", this.matcher);
 	}

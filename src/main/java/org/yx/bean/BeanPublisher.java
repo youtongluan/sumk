@@ -17,6 +17,7 @@ package org.yx.bean;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -25,8 +26,8 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.yx.annotation.Inject;
 import org.yx.asm.AsmUtils;
-import org.yx.bean.watcher.BeanCreate;
-import org.yx.bean.watcher.BeanWatcher;
+import org.yx.bean.watcher.BeanCreateWatcher;
+import org.yx.bean.watcher.BeanPropertiesWatcher;
 import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.StartConstants;
@@ -108,17 +109,18 @@ public final class BeanPublisher {
 
 	private static void autoWiredAll() {
 		Logger logger = Logs.ioc();
-		final Object[] beans = InnerIOC.beans().toArray(new Object[0]);
+		Object[] bs = InnerIOC.beans().toArray(new Object[0]);
+		final List<Object> beans = Arrays.asList(bs);
 		StartContext.inst().setBeans(beans);
 		logger.trace("after beans create...");
-		IOC.getBeans(BeanCreate.class).forEach(w -> w.afterCreate(beans));
+		IOC.getBeans(BeanCreateWatcher.class).forEach(w -> w.afterCreate(beans));
 		logger.trace("inject beans properties...");
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
 		logger.trace("after beans installed...");
-		IOC.getBeans(BeanWatcher.class).forEach(watcher -> {
-			watcher.afterInstalled(beans);
+		IOC.getBeans(BeanPropertiesWatcher.class).forEach(watcher -> {
+			watcher.afterInject(beans);
 		});
 		logger.trace("plugins starting...");
 		PluginHandler.instance.start();

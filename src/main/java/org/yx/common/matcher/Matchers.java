@@ -24,7 +24,7 @@ import java.util.function.Predicate;
 import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
 
-public class MatcherFactory {
+public class Matchers {
 
 	public static Predicate<String> createWildcardMatcher(String patterns, int minPatternLength) {
 

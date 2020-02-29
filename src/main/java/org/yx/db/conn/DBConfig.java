@@ -113,12 +113,10 @@ public class DBConfig {
 			return DBType.WRITE;
 		case "r":
 		case "read":
-		case "readonly":
-			return DBType.READ;
+			return DBType.READONLY;
 		case "wr":
 		case "rw":
 		case "any":
-		case "writeread":
 			return DBType.ANY;
 		default:
 			throw new SumkException(2342312, type + " is not correct db type");

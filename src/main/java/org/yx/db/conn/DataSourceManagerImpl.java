@@ -21,9 +21,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
-import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
@@ -54,11 +51,9 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public String status() {
-		Set<DataSource> set = new HashSet<>();
-		set.addAll(this.read.allDataSource());
-		set.addAll(this.write.allDataSource());
+		Set<SumkDataSource> set = this.allDataSources();
 		Map<String, Map<String, Integer>> statusMap = new HashMap<>();
-		for (DataSource datasource : set) {
+		for (SumkDataSource datasource : set) {
 			statusMap.put(datasource.toString(), DSFactory.factory().status(datasource));
 		}
 		return S.json.toJson(statusMap);
@@ -66,7 +61,6 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public void destroy() {
-
 	}
 
 	private void parseDatasource() throws Exception {
@@ -74,9 +68,9 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 			Logs.db().info("{} has inited datasource", this.db);
 			return;
 		}
-		Map<DBType, WeightedDataSourceRoute> map = DSRouteFactory.create(this.db);
-		this.write = map.get(DBType.WRITE);
-		this.read = map.get(DBType.READ);
+		WeightedDataSourceRouteContainer container = DSRouteFactory.create(this.db);
+		this.write = container.getWrite();
+		this.read = container.getRead();
 	}
 
 	@Override
@@ -92,6 +86,14 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 	@Override
 	public SumkDataSource readDataSource() {
 		return this.read.datasource();
+	}
+
+	@Override
+	public Set<SumkDataSource> allDataSources() {
+		Set<SumkDataSource> set = new HashSet<>();
+		set.addAll(this.read.allDataSource());
+		set.addAll(this.write.allDataSource());
+		return set;
 	}
 
 }

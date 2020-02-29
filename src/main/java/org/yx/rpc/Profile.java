@@ -13,12 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.rpc;
 
-/**
- * 只被调用一次
- */
-public interface BeanWatcher extends IOCWatcher {
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-	void afterInstalled(Object[] beans);
+import org.yx.rpc.codec.Protocols;
+
+public class Profile {
+	public final static Charset UTF8 = StandardCharsets.UTF_8;
+	public final static int version = 0x160;
+
+	public static long feature() {
+		long v = version;
+		v <<= 32;
+		v |= Protocols.profile();
+		return v;
+	}
+
+	public static String featureInHex() {
+		return Long.toHexString(feature());
+	}
+
 }

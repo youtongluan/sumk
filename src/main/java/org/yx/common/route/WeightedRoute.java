@@ -78,6 +78,21 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 		return w;
 	}
 
+	public List<T> getAllServers() {
+		return Arrays.asList(SERVERS);
+	}
+
+	public List<T> getAliveServers() {
+		List<T> list = new ArrayList<>(this.SERVER_COUNT);
+		for (T s : this.SERVERS) {
+			if (this.isDowned(s)) {
+				continue;
+			}
+			list.add(s);
+		}
+		return list;
+	}
+
 	public T getServer() {
 
 		if (SERVER_COUNT == 1) {

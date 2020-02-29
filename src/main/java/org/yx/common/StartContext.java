@@ -15,6 +15,7 @@
  */
 package org.yx.common;
 
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -32,12 +33,13 @@ public class StartContext {
 	private ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
 	private static final String KEY_BEANS = "key_beans";
 
-	public void setBeans(Object[] beans) {
+	public void setBeans(List<Object> beans) {
 		map.put(KEY_BEANS, beans);
 	}
 
-	public Object[] getBeans() {
-		return (Object[]) map.get(KEY_BEANS);
+	@SuppressWarnings("unchecked")
+	public List<Object> getBeans() {
+		return (List<Object>) map.get(KEY_BEANS);
 	}
 
 	public void put(String key, Object obj) {

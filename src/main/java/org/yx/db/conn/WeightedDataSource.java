@@ -18,16 +18,16 @@ package org.yx.db.conn;
 import org.yx.common.route.WeightedServer;
 import org.yx.exception.SumkException;
 
-class WeightedDS implements WeightedServer {
+public class WeightedDataSource implements WeightedServer {
 
-	public WeightedDS(SumkDataSource ds) {
+	private final SumkDataSource ds;
+	private int weight;
+
+	public WeightedDataSource(SumkDataSource ds) {
 		this.ds = ds;
 	}
 
-	private SumkDataSource ds;
-	private int weight;
-
-	public SumkDataSource getDs() {
+	public SumkDataSource getDdataSource() {
 		return ds;
 	}
 
@@ -42,4 +42,7 @@ class WeightedDS implements WeightedServer {
 		this.weight = weight;
 	}
 
+	public boolean enable() {
+		return ds.isEnable();
+	}
 }

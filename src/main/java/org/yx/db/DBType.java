@@ -19,7 +19,7 @@ public enum DBType {
 
 	WRITE(true, false),
 
-	READ(false, true),
+	READ_PREFER(false, true),
 
 	READONLY(false, true),
 

@@ -35,8 +35,6 @@ public @interface Web {
 
 	String cnName() default "";
 
-	String comment() default "";
-
 	boolean requireLogin() default false;
 
 	EncryptType requestEncrypt() default EncryptType.NONE;

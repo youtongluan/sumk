@@ -66,13 +66,13 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		return this;
 	}
 
-	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
+	public MapedSql toMapedSql() throws Exception {
 		this.checkIn();
 		this.pojoMeta = this.parsePojoMeta(true);
 		return batchInsert();
 	}
 
-	private MapedSql batchInsert() throws InstantiationException, IllegalAccessException {
+	private MapedSql batchInsert() throws Exception {
 		MapedSql ms = new MapedSql();
 		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");

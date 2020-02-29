@@ -15,6 +15,8 @@
  */
 package org.yx.db.conn;
 
+import java.util.Set;
+
 public interface DataSourceManager {
 
 	String status();
@@ -25,4 +27,5 @@ public interface DataSourceManager {
 
 	SumkDataSource readDataSource();
 
+	Set<SumkDataSource> allDataSources();
 }

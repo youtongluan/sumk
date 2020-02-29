@@ -35,22 +35,28 @@ import redis.clients.jedis.JedisSentinelPool;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.util.Pool;
 
-public abstract class Redis2x implements SeniorRedis {
+public abstract class Redis2 implements SeniorRedis {
 
 	private static final SumkException DIS_CONNECTION_EXCEPTION = new SimpleSumkException(400, "redis is disConnected");
 	protected final String hosts;
-	protected final int db;
 	protected final int tryCount;
 	protected final Pool<Jedis> pool;
 	protected boolean disConnected;
+	protected final RedisConfig config;
 
 	private static Function<RedisConfig, JedisPool> jedisPoolFactory = new Function<RedisConfig, JedisPool>() {
 		@Override
 		public JedisPool apply(RedisConfig conf) {
 			List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
 			Host h = hosts.get(0);
-			return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
-					conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
+			try {
+				return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
+						conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
+			} catch (Throwable e) {
+			}
+			Log.get(LOG_NAME).debug("can not support property connectionTimeout");
+			return new JedisPool(conf, h.ip(), h.port(), conf.getTimeout(), conf.getPassword(), conf.getDb(),
+					AppInfo.appId("sumk"));
 		}
 	};
 
@@ -73,7 +79,7 @@ public abstract class Redis2x implements SeniorRedis {
 	}
 
 	public static void setJedisPoolFactory(Function<RedisConfig, JedisPool> jedisPoolFactory) {
-		Redis2x.jedisPoolFactory = Objects.requireNonNull(jedisPoolFactory);
+		Redis2.jedisPoolFactory = Objects.requireNonNull(jedisPoolFactory);
 	}
 
 	public static Function<RedisConfig, JedisSentinelPool> getSentinelPoolFactory() {
@@ -81,14 +87,13 @@ public abstract class Redis2x implements SeniorRedis {
 	}
 
 	public static void setSentinelPoolFactory(Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory) {
-		Redis2x.sentinelPoolFactory = Objects.requireNonNull(sentinelPoolFactory);
+		Redis2.sentinelPoolFactory = Objects.requireNonNull(sentinelPoolFactory);
 	}
 
-	public Redis2x(RedisConfig config) {
-		Objects.requireNonNull(config);
+	public Redis2(RedisConfig config) {
+		this.config = Objects.requireNonNull(config);
 		this.tryCount = config.getTryCount();
 		this.hosts = config.hosts();
-		this.db = config.getDb();
 
 		String masterName = config.getMaster();
 		if (masterName == null) {
@@ -103,13 +108,13 @@ public abstract class Redis2x implements SeniorRedis {
 	}
 
 	@Override
-	public String hosts() {
-		return hosts;
+	public RedisConfig getRedisConfig() {
+		return this.config;
 	}
 
 	@Override
-	public int db() {
-		return db;
+	public String hosts() {
+		return hosts;
 	}
 
 	public Jedis jedis() {
@@ -211,6 +216,6 @@ public abstract class Redis2x implements SeniorRedis {
 
 	@Override
 	public String toString() {
-		return "[hosts=" + hosts + ", db=" + db + ", tryCount=" + tryCount + "]";
+		return "[hosts=" + hosts + ", db=" + config.getDb() + ", tryCount=" + tryCount + "]";
 	}
 }

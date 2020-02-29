@@ -33,7 +33,7 @@ public class PojoMetaListener extends AbstractBeanListener {
 			Class<?> clz = event.clz();
 			PojoMetaHolder.resolve(clz);
 		} catch (Throwable e) {
-			Logs.printStack(e);
+			Logs.printSQLException(e);
 		}
 
 	}

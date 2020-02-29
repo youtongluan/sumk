@@ -24,19 +24,19 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.yx.annotation.db.CacheType;
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
+import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.redis.Counter;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
-public class PojoMeta implements Cloneable {
+public final class PojoMeta implements Cloneable {
 
 	public static final String WILDCHAR = "?";
 	private static final char KEY_SPLIT = ':';

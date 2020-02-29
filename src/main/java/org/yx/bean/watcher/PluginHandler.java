@@ -22,6 +22,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
+import org.yx.bean.Plugins;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
@@ -71,6 +72,7 @@ public class PluginHandler {
 			Logs.system().error("receive InterruptedException in plugin starting", timeout);
 			System.exit(1);
 		}
+		Plugins.setAllStarted();
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();
 		}

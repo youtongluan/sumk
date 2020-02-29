@@ -17,5 +17,5 @@ package org.yx.common.sequence;
 
 public interface SeqCounter {
 
-	int count(String name) throws Exception;
+	int incr(String name) throws Exception;
 }

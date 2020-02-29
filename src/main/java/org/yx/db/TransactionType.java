@@ -13,16 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.db;
+package org.yx.db;
 
-public enum ValidRecord {
+public enum TransactionType {
 	/**
-	 * 在SoftDelete中，跟VALID相同的表示有效，其它都是无效
+	 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
 	 */
-	EQUAL_VALID,
+	REQUIRED,
 
 	/**
-	 * 在SoftDelete中，只要跟INVALID不同都是有效
+	 * 新事务
 	 */
-	NOT_INVALID
+	REQUIRES_NEW,
+
+	AUTO_COMMIT;
 }

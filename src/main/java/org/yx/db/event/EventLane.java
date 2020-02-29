@@ -16,10 +16,13 @@
 package org.yx.db.event;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.yx.log.Logs;
 
 public final class EventLane {
 	private static final ThreadLocal<Map<Connection, EventLane>> POOL = new ThreadLocal<Map<Connection, EventLane>>() {
@@ -42,7 +45,7 @@ public final class EventLane {
 		if (event == null) {
 			return;
 		}
-		if (ModifyEvent.class.isInstance(event)) {
+		if (ModifyEvent.class.isInstance(event) && !isAutoCommit(conn)) {
 			EventLane pool = pool(conn);
 			if (pool == null) {
 				pool = new EventLane();
@@ -51,6 +54,15 @@ public final class EventLane {
 			pool.events.add(event);
 		} else {
 			DBEventPublisher.publish(event);
+		}
+	}
+
+	private static boolean isAutoCommit(Connection conn) {
+		try {
+			return conn.getAutoCommit();
+		} catch (SQLException e) {
+			Logs.db().error("获取连接的autoCommit属性失败", e);
+			return false;
 		}
 	}
 

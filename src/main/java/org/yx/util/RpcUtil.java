@@ -15,8 +15,17 @@
  */
 package org.yx.util;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import org.yx.common.Host;
+
 import org.yx.common.context.ActionContext;
 import org.yx.rpc.RpcAttachment;
+import org.yx.rpc.client.route.Routes;
+import org.yx.rpc.client.route.RpcRoute;
+import org.yx.rpc.client.route.ServerMachine;
 
 public final class RpcUtil {
 
@@ -43,5 +52,21 @@ public final class RpcUtil {
 
 	public static void removeContext() {
 		ActionContext.remove();
+	}
+
+	public static List<Host> getServers(String api, boolean requireAlived) {
+		RpcRoute route = Routes.getRoute(api);
+		if (route == null) {
+			return Collections.emptyList();
+		}
+		List<ServerMachine> servers = requireAlived ? route.getAliveServers() : route.getAllServers();
+		if (servers == null || servers.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<Host> list = new ArrayList<>(servers.size());
+		for (ServerMachine s : servers) {
+			list.add(s.url);
+		}
+		return list;
 	}
 }

@@ -21,31 +21,18 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import org.yx.conf.Const;
 import org.yx.db.DBType;
+import org.yx.db.TransactionType;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Box {
-	public enum Transaction {
-		/**
-		 * 如果没有事务，就开启新事物。如果已经存在，就啥都不做
-		 */
-		REQUIRED,
 
-		/**
-		 * 新事务
-		 */
-		REQUIRES_NEW,
-		/**
-		 * 没有事务
-		 */
-		NONE;
-	}
-
-	String dbName() default "sumk";
+	String value() default Const.DEFAULT_DB_NAME;
 
 	DBType dbType() default DBType.ANY;
 
-	Transaction transaction() default Transaction.REQUIRED;
+	TransactionType transaction() default TransactionType.REQUIRED;
 }

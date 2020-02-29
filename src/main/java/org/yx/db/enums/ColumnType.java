@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.db;
+package org.yx.db.enums;
 
 /**
  * 无论是数据库主键，还是redis主键，都不允许为null

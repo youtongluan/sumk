@@ -76,18 +76,15 @@ public final class ActInfoUtil {
 			ParamInfo pi = node.paramInfos == null ? null : node.paramInfos[i];
 			if (pi != null) {
 				Param p = pi.getParam();
-				if (StringUtil.isNotEmpty(p.cnName())) {
-					param.put("cnName", p.cnName());
+				if (StringUtil.isNotEmpty(p.value())) {
+					param.put("cnName", p.value());
 				}
 				param.put("required", p.required());
-				if (p.length() > -1) {
-					param.put("length", p.length());
+				if (p.max() != Integer.MIN_VALUE) {
+					param.put("maxLength", p.max());
 				}
-				if (p.maxLength() > -1) {
-					param.put("maxLength", p.maxLength());
-				}
-				if (p.minLength() > -1) {
-					param.put("minLength", p.minLength());
+				if (p.min() != Integer.MIN_VALUE) {
+					param.put("minLength", p.min());
 				}
 				if (StringUtil.isNotEmpty(p.comment())) {
 					param.put("comment", p.comment());

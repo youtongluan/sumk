@@ -16,7 +16,7 @@
 package org.yx.db.exec;
 
 @FunctionalInterface
-public interface DBExecutor {
+public interface DBExecutor<T> {
 
-	void exec(ExeContext container) throws Exception;
+	T execute(Database d) throws Exception;
 }

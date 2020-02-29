@@ -24,10 +24,10 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.slf4j.Logger;
 import org.yx.bean.IOC;
-import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
+import org.yx.rpc.InnerRpcKit;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.ProtocolDeserializer;
@@ -98,7 +98,7 @@ public class ServerHandler implements IoHandler {
 			}
 			if (Request.class.isInstance(obj)) {
 				req = (Request) obj;
-				ActionContext.rpcContext(req, req.isTest());
+				InnerRpcKit.rpcContext(req, req.isTest());
 				for (RequestHandler h : handlers) {
 					if (h.handle(req, resp)) {
 						resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());

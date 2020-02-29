@@ -83,7 +83,7 @@ public class ProxyMethodWritor {
 
 		private final int aopExcutorIndex;
 
-		static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 32165));
+		private static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 12345));
 
 		private void jReturn() {
 			ProxyMethodWritor.jReturn(mv, returnType);

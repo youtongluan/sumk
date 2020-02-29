@@ -13,9 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.annotation.doc;
 
-import org.yx.common.Ordered;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public interface IOCWatcher extends Ordered {
+@Target({ ElementType.METHOD, ElementType.TYPE, ElementType.FIELD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Comment {
+
+	String value();
+
 }

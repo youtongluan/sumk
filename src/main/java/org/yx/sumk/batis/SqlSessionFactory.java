@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
@@ -40,7 +41,7 @@ import org.yx.util.Asserts;
 
 public class SqlSessionFactory {
 
-	private static Map<String, SqlSessionFactory> factoryMap = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, SqlSessionFactory> factoryMap = new ConcurrentHashMap<>();
 
 	private Configuration configuration;
 	private String db;
@@ -74,25 +75,27 @@ public class SqlSessionFactory {
 	}
 
 	public static SqlSessionFactory get(String dbName) {
+		SqlSessionFactory factory = factoryMap.get(dbName);
+		if (factory != null) {
+			return factory;
+		}
 		try {
-			Asserts.hasText(dbName, "db name can not be empty");
-			dbName = dbName.trim();
-			SqlSessionFactory factory = factoryMap.get(dbName);
+			factory = factoryMap.computeIfAbsent(dbName, name -> {
+				Logs.db().info("mybatis创建{}的SqlSessionFactory", name);
+				try {
+					return SqlSessionFactory.create(name);
+				} catch (Exception e) {
+					Logs.db().error("创建" + name + "的SqlSessionFactory失败", e);
+					return null;
+				}
+			});
 			if (factory != null) {
 				return factory;
 			}
-			synchronized (SqlSessionFactory.class) {
-				factory = factoryMap.get(dbName);
-				if (factory != null) {
-					return factory;
-				}
-				factory = SqlSessionFactory.create(dbName);
-				factoryMap.put(dbName, factory);
-			}
-			return factory;
+			return factoryMap.get(dbName);
 		} catch (Exception e) {
-			Logs.printStack(e);
-			SumkException.throwException(100234325, "create factory failed");
+			Logs.printSQLException(e);
+			SumkException.throwException(100234325, dbName + " create SqlSessionFactory failed");
 			return null;
 		}
 	}
@@ -130,6 +133,10 @@ public class SqlSessionFactory {
 			xmlMapperBuilder.parse();
 		}
 		return this;
+	}
+
+	public Configuration getConfiguration() {
+		return this.configuration;
 	}
 
 }

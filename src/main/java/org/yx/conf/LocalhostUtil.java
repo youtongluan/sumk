@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.yx.common.matcher.BooleanMatcher;
-import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.Matchers;
 import org.yx.common.matcher.WildcardMatcher;
 import org.yx.log.RawLog;
 import org.yx.util.StringUtil;
@@ -39,8 +39,8 @@ public final class LocalhostUtil {
 
 	private static Predicate<String> defaultMatcher() {
 
-		Predicate<String> m = MatcherFactory.createWildcardMatcher("10.*,172.*,16.*,192.*,168.*", 1);
-		Predicate<String> not1 = MatcherFactory.createWildcardMatcher("*.1", 1).negate();
+		Predicate<String> m = Matchers.createWildcardMatcher("10.*,172.*,16.*,192.*,168.*", 1);
+		Predicate<String> not1 = Matchers.createWildcardMatcher("*.1", 1).negate();
 		return m.and(not1);
 	}
 
@@ -58,7 +58,7 @@ public final class LocalhostUtil {
 		try {
 			ip = StringUtil.toLatin(ip).trim();
 			if (ip.contains(WildcardMatcher.WILDCARD) || ip.contains(",")) {
-				matcher = MatcherFactory.createWildcardMatcher(ip, 1);
+				matcher = Matchers.createWildcardMatcher(ip, 1);
 				resetLocalIp();
 				return true;
 			}

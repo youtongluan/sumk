@@ -20,11 +20,8 @@ import java.util.Map;
 
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.rpc.Attachable;
-import org.yx.rpc.client.Req;
-import org.yx.util.StringUtil;
 
-public final class ActionContext implements Attachable, Cloneable {
+public final class ActionContext implements org.yx.common.Attachable, Cloneable {
 
 	private static final String TEST = "sumk.test";
 
@@ -87,10 +84,9 @@ public final class ActionContext implements Attachable, Cloneable {
 		return c;
 	}
 
-	public static ActionContext rpcContext(Req req, boolean isTest) {
-		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
-		ActionContext c = new ActionContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
-				req.getAttachments());
+	public static ActionContext rpcContext(String act, String traceId, String spanId, String userId, boolean isTest,
+			Map<String, String> attachments) {
+		ActionContext c = new ActionContext(act, traceId, spanId, userId, isTest, attachments);
 		holder.set(c);
 		return c;
 	}

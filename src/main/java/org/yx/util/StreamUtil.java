@@ -19,6 +19,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 
 public final class StreamUtil {
 
@@ -27,6 +28,22 @@ public final class StreamUtil {
 		transferTo(in, out, closeInput);
 		out.close();
 		return out.toByteArray();
+	}
+
+	public static String extractReader(Reader in, boolean closeInput) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		int len;
+		char[] buf = new char[1024];
+		try {
+			while ((len = in.read(buf)) > 0) {
+				sb.append(buf, 0, len);
+			}
+		} finally {
+			if (closeInput) {
+				in.close();
+			}
+		}
+		return sb.toString();
 	}
 
 	public static int transferTo(InputStream in, OutputStream output, boolean closeInput) throws IOException {

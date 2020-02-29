@@ -16,6 +16,7 @@
 package org.yx.rpc.server;
 
 import java.lang.reflect.Constructor;
+import java.util.List;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
@@ -54,7 +55,7 @@ public class SoaPlugin implements Plugin {
 		}
 	}
 
-	protected void resolveSoaAnnotation(Object[] beans) {
+	protected void resolveSoaAnnotation(List<Object> beans) {
 		SoaAnnotationResolver factory = new SoaAnnotationResolver();
 		try {
 			for (Object bean : beans) {

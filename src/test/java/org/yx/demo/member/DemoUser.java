@@ -3,16 +3,16 @@ package org.yx.demo.member;
 import java.util.Date;
 
 import org.yx.annotation.db.Column;
-import org.yx.annotation.db.ColumnType;
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
+import org.yx.db.enums.ColumnType;
 import org.yx.util.SumkDate;
 
 @Table
-@SoftDelete(value = "enable", columnType = Byte.class)
+@SoftDelete(value = "enable", type = Byte.class)
 public class DemoUser {
 
-	@Column(columnType = ColumnType.ID_BOTH)
+	@Column(type = ColumnType.ID_BOTH)
 	private Long id;
 	private String name;
 	private Integer age;

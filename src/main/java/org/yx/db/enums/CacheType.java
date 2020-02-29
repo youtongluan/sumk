@@ -13,30 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.exec;
+package org.yx.db.enums;
 
-import org.yx.db.DBAction;
+public enum CacheType {
 
-public class ExeContext {
-	private Object result;
-	Object param;
+	NOCACHE,
 
-	DBAction action;
+	SINGLE,
 
-	public Object getParam() {
-		return param;
-	}
-
-	public Object getResult() {
-		return result;
-	}
-
-	public void setResult(Object result) {
-		this.result = result;
-	}
-
-	public DBAction getAction() {
-		return action;
-	}
-
+	LIST;
 }

@@ -16,7 +16,7 @@
 package org.yx.db.sql;
 
 import org.yx.annotation.db.SoftDelete;
-import org.yx.annotation.db.ValidRecord;
+import org.yx.db.enums.ValidRecord;
 import org.yx.exception.SumkException;
 
 public class SoftDeleteParserImpl implements SoftDeleteParser {
@@ -51,11 +51,11 @@ public class SoftDeleteParserImpl implements SoftDeleteParser {
 		if (sd == null) {
 			return null;
 		}
-		if (sd.columnType() == Boolean.class) {
-			return new SoftDeleteMeta(sd.value(), Boolean.TRUE, Boolean.FALSE, sd.columnType(), true);
+		if (sd.type() == Boolean.class) {
+			return new SoftDeleteMeta(sd.value(), Boolean.TRUE, Boolean.FALSE, sd.type(), true);
 		}
 		boolean equal = sd.whatIsValid() == ValidRecord.EQUAL_VALID;
-		return new SoftDeleteMeta(sd.value(), parseValue(sd.columnType(), sd.validValue()),
-				parseValue(sd.columnType(), sd.inValidValue()), sd.columnType(), equal);
+		return new SoftDeleteMeta(sd.value(), parseValue(sd.type(), sd.validValue()),
+				parseValue(sd.type(), sd.inValidValue()), sd.type(), equal);
 	}
 }

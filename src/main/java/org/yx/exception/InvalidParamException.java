@@ -28,12 +28,10 @@ public class InvalidParamException extends Exception {
 
 	private static final long serialVersionUID = 125465546L;
 
-	private Object param;
 	private ParamInfo info;
 
-	public InvalidParamException(String message, ParamInfo info, Object arg) {
+	public InvalidParamException(String message, ParamInfo info) {
 		super(message);
-		this.param = arg;
 		this.info = info;
 	}
 
@@ -41,18 +39,13 @@ public class InvalidParamException extends Exception {
 	public String getMessage() {
 		String ret = super.getMessage();
 		if (ret.contains("#")) {
-			return info != null && info.getParam() != null && StringUtil.isNotEmpty(info.getParam().cnName())
-					? ret.replace("#", info.getParam().cnName()) : ret.replace("#", "参数");
+			return info != null && info.getParam() != null && StringUtil.isNotEmpty(info.getParam().value())
+					? ret.replace("#", info.getParam().value()) : ret.replace("#", "参数");
 		}
 		return ret;
-	}
-
-	public Object getParam() {
-		return param;
 	}
 
 	public ParamInfo getInfo() {
 		return info;
 	}
-
 }

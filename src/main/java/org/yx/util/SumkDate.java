@@ -78,9 +78,9 @@ public final class SumkDate implements Comparable<SumkDate> {
 	}
 
 	public static SumkDate of(long timeInMillis) {
-		Calendar cal = Calendar.getInstance();
-		cal.setTimeInMillis(timeInMillis);
-		return of(cal);
+		Calendar.Builder builder = new Calendar.Builder();
+		builder.setInstant(timeInMillis);
+		return of(builder.build());
 	}
 
 	/**

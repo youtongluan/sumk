@@ -17,6 +17,7 @@ package org.yx.rpc;
 
 import java.util.Map;
 
+import org.yx.common.Attachable;
 import org.yx.common.context.ActionContext;
 
 public class RpcAttachment implements Attachable, AutoCloseable {

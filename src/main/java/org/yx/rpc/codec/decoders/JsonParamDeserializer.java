@@ -16,8 +16,8 @@
 package org.yx.rpc.codec.decoders;
 
 import org.yx.annotation.Bean;
-import org.yx.conf.Profile;
 import org.yx.exception.SumkException;
+import org.yx.rpc.Profile;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;

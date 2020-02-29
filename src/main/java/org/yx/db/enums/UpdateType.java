@@ -13,28 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.validate;
+package org.yx.db.enums;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.Param;
-import org.yx.exception.InvalidParamException;
-
-@Bean
-public class LengthValidator implements Validator {
-
-	@Override
-	public void valid(ParamInfo info, Object arg) throws InvalidParamException {
-		Param param = info.param;
-		if (param.length() < 0 || !String.class.isInstance(arg)) {
-			return;
-		}
-		if (param.length() < 1) {
-			return;
-		}
-		if (((String) arg).length() != param.length()) {
-			throw new InvalidParamException("#长度不正确", info, arg);
-		}
-
-	}
-
+public enum UpdateType {
+	/**
+	 * 根据用户传入的值
+	 */
+	CUSTOM,
+	/**
+	 * 不能更新
+	 */
+	NONE,
+	/**
+	 * 仅用于自增长，这个选项仅针对数字类型才有效
+	 */
+	INCR,
+	/**
+	 * 将当前时间填入数据库，该选项仅针对日期类型
+	 */
+	CURRENT_TIME
 }

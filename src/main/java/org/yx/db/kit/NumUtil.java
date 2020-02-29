@@ -24,27 +24,27 @@ public class NumUtil {
 		if (v.getClass() == type) {
 			return (T) v;
 		}
-		if (Byte.class == type) {
+		if (Byte.class == type || byte.class == type) {
 			return (T) Byte.valueOf(v.byteValue());
 		}
 
-		if (Short.class == type) {
+		if (Short.class == type || short.class == type) {
 			return (T) Short.valueOf(v.shortValue());
 		}
 
-		if (Integer.class == type) {
+		if (Integer.class == type || int.class == type) {
 			return (T) Integer.valueOf(v.intValue());
 		}
 
-		if (Long.class == type) {
+		if (Long.class == type || long.class == type) {
 			return (T) Long.valueOf(v.longValue());
 		}
 
-		if (Float.class == type) {
+		if (Float.class == type || float.class == type) {
 			return (T) Float.valueOf(v.floatValue());
 		}
 
-		if (Double.class == type) {
+		if (Double.class == type || double.class == type) {
 			return (T) Double.valueOf(v.doubleValue());
 		}
 		if (failIfNotSupport || !Number.class.isAssignableFrom(type)) {

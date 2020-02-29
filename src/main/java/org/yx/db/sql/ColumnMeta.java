@@ -16,17 +16,22 @@
 package org.yx.db.sql;
 
 import java.lang.reflect.Field;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.util.Map;
 
 import org.yx.annotation.db.Column;
-import org.yx.annotation.db.ColumnType;
-import org.yx.annotation.db.UpdateType;
 import org.yx.common.date.TimeUtil;
+import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
+import org.yx.db.enums.ColumnType;
+import org.yx.db.enums.UpdateType;
 import org.yx.db.kit.NumUtil;
+import org.yx.exception.SumkException;
+import org.yx.util.StreamUtil;
 import org.yx.util.StringUtil;
 
-public class ColumnMeta implements Comparable<ColumnMeta> {
+public final class ColumnMeta implements Comparable<ColumnMeta> {
 
 	public final Field field;
 
@@ -45,13 +50,13 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 	ColumnMeta(Field field, Column c) {
 		super();
 		this.field = field;
-		this.meta = c == null ? ColumnType.NORMAL : c.columnType();
+		this.meta = c == null ? ColumnType.NORMAL : c.type();
 		if (c == null) {
 			this.columnOrder = Const.DEFAULT_ORDER;
 			this.updateType = UpdateType.CUSTOM;
 			this.comment = null;
 		} else {
-			this.columnOrder = c.columnOrder();
+			this.columnOrder = c.order();
 			this.updateType = c.updateType();
 			this.comment = c.comment();
 		}
@@ -82,7 +87,7 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 		return field.get(owner);
 	}
 
-	void setValue(Object owner, Object value) throws IllegalArgumentException, IllegalAccessException {
+	void setValue(Object owner, final Object value) throws Exception {
 		if (Map.class.isInstance(owner)) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) owner;
@@ -93,12 +98,38 @@ public class ColumnMeta implements Comparable<ColumnMeta> {
 			field.set(owner, null);
 			return;
 		}
-		if (this.isNumber && Number.class.isInstance(value)) {
-			value = NumUtil.toType((Number) value, this.field.getType(), false);
-		} else if (this.isDate) {
-			value = TimeUtil.toType(value, this.field.getType(), false);
+		final Class<?> fieldType = this.field.getType();
+		if (this.isDate) {
+			Object v = TimeUtil.toType(value, fieldType, false);
+			field.set(owner, v);
+			return;
 		}
-		field.set(owner, value);
+
+		if (fieldType.isInstance(value)) {
+			field.set(owner, value);
+			return;
+		}
+		if (this.isNumber && Number.class.isInstance(value)) {
+			Number v = NumUtil.toType((Number) value, fieldType, false);
+			field.set(owner, v);
+			return;
+		}
+		if (fieldType == byte[].class && Blob.class.isInstance(value)) {
+			Blob v = (Blob) value;
+			byte[] bs = StreamUtil.extractData(v.getBinaryStream(), true);
+			field.set(owner, bs);
+			return;
+		}
+		if (fieldType == String.class && Clob.class.isInstance(value)) {
+			Clob v = (Clob) value;
+			String s = StreamUtil.extractReader(v.getCharacterStream(), true);
+			field.set(owner, s);
+			return;
+		}
+		if (AppInfo.getBoolean("sumk.db.fail.miss.type", true)) {
+			SumkException.throwException(345234543,
+					"字段类型是" + fieldType.getName() + ",参数对象的实际类型是:" + value.getClass().getName());
+		}
 	}
 
 	public String getFieldName() {

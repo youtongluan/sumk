@@ -24,8 +24,8 @@ import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.yx.annotation.Bean;
-import org.yx.conf.Profile;
 import org.yx.log.Logs;
+import org.yx.rpc.Profile;
 
 @Bean
 public class SumkProtocolDecoder extends CumulativeProtocolDecoder {

@@ -13,28 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.bean.watcher;
 
-import org.yx.common.sequence.SeqCounter;
+import java.util.List;
 
-public final class RedisCounter implements SeqCounter {
+/**
+ * 只被调用一次
+ */
+public interface BeanPropertiesWatcher extends Watcher {
 
-	private final Redis redis;
-
-	@Override
-	public int incr(String name) {
-		if (name == null || name.isEmpty()) {
-			return redis.incr("__SEQ_GLOBAL_FOR_ALL").intValue();
-		}
-		Redis r = RedisPool.getRedisExactly(name);
-		if (r == null) {
-			r = this.redis;
-		}
-		return r.incr(name).intValue();
-	}
-
-	public RedisCounter(Redis redis) {
-		this.redis = redis;
-	}
-
+	void afterInject(List<Object> beans);
 }

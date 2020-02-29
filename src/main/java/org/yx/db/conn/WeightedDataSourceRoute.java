@@ -19,35 +19,33 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.sql.DataSource;
-
 import org.yx.common.route.WeightedRoute;
 
-public class WeightedDataSourceRoute extends WeightedRoute<WeightedDS> {
+public class WeightedDataSourceRoute extends WeightedRoute<WeightedDataSource> {
 
-	public WeightedDataSourceRoute(Collection<WeightedDS> servers) {
-		super(servers.toArray(new WeightedDS[servers.size()]));
+	public WeightedDataSourceRoute(Collection<WeightedDataSource> servers) {
+		super(servers.toArray(new WeightedDataSource[servers.size()]));
 	}
 
-	public Set<DataSource> allDataSource() {
-		Set<DataSource> list = new HashSet<>();
-		for (WeightedDS ds : this.SERVERS) {
-			list.add(ds.getDs());
+	public Set<SumkDataSource> allDataSource() {
+		Set<SumkDataSource> set = new HashSet<>();
+		for (WeightedDataSource ds : this.SERVERS) {
+			set.add(ds.getDdataSource());
 		}
-		return list;
+		return set;
 	}
 
 	public SumkDataSource datasource() {
-		WeightedDS sm = this.getServer();
+		WeightedDataSource sm = this.getServer();
 		if (sm == null) {
 			return null;
 		}
-		return sm.getDs();
+		return sm.getDdataSource();
 	}
 
 	@Override
-	protected boolean isDowned(WeightedDS server) {
-		return false;
+	protected boolean isDowned(WeightedDataSource server) {
+		return !server.enable();
 	}
 
 }

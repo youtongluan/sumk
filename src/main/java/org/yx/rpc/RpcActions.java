@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.yx.annotation.doc.Comment;
 import org.yx.annotation.rpc.Soa;
 import org.yx.common.ActInfoUtil;
 import org.yx.main.SumkServer;
@@ -82,8 +83,9 @@ public class RpcActions {
 			if (rpc.action != null) {
 				Soa soa = rpc.action;
 				map.put("cnName", soa.cnName());
-				if (soa.comment().length() > 0) {
-					map.put("comment", soa.comment());
+				Comment comment = rpc.getAnnotation(Comment.class);
+				if (comment != null && comment.value().length() > 0) {
+					map.put("comment", comment.value());
 				}
 				if (soa.toplimit() > 0) {
 					map.put("toplimit", soa.toplimit());

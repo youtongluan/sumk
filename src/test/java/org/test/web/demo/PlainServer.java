@@ -33,7 +33,7 @@ public class PlainServer {
 	}
 
 	@Web(value = "base64", requestEncrypt = EncryptType.BASE64, responseEncrypt = EncryptType.BASE64)
-	public List<String> base64(@Param(maxLength = 20) String echo, List<String> names) {
+	public List<String> base64(@Param(max = 20) String echo, List<String> names) {
 		List<String> list = new ArrayList<>();
 		for (String name : names) {
 			list.add(echo + " " + name);

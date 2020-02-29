@@ -34,7 +34,7 @@ import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.yx.common.Host;
-import org.yx.common.matcher.MatcherFactory;
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
@@ -58,10 +58,10 @@ public final class ZkRouteParser {
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
 		String temp = AppInfo.getLatin("sumk.rpc.server.includes");
-		includes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
+		includes = StringUtil.isEmpty(temp) ? null : Matchers.createWildcardMatcher(temp, 1);
 
 		temp = AppInfo.getLatin("sumk.rpc.server.excludes");
-		excludes = StringUtil.isEmpty(temp) ? null : MatcherFactory.createWildcardMatcher(temp, 1);
+		excludes = StringUtil.isEmpty(temp) ? null : Matchers.createWildcardMatcher(temp, 1);
 		executor = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(10000),
 				SumkThreadPool.createThreadFactory("rpc-client-"), new ThreadPoolExecutor.DiscardPolicy());
 		executor.allowCoreThreadTimeOut(true);

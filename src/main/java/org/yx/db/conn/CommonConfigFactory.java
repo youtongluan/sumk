@@ -42,6 +42,9 @@ public class CommonConfigFactory implements DBConfigFactory {
 	public List<DBConfig> create(String name) throws Exception {
 		Map<String, Map<String, String>> maps = parseFromAppInfo(name);
 		List<DBConfig> list = new ArrayList<>();
+		if (maps == null || maps.isEmpty()) {
+			return list;
+		}
 		for (Map<String, String> map : maps.values()) {
 			list.add(DBConfig.create(map));
 		}

@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
+import org.yx.annotation.doc.Comment;
 import org.yx.annotation.http.Web;
 import org.yx.bean.Loader;
 import org.yx.common.ActInfoUtil;
@@ -100,8 +101,9 @@ public final class HttpActions {
 				if (web.toplimit() > 0) {
 					map.put("toplimit", web.toplimit());
 				}
-				if (web.comment().length() > 0) {
-					map.put("comment", web.comment());
+				Comment comment = http.getAnnotation(Comment.class);
+				if (comment != null && comment.value().length() > 0) {
+					map.put("comment", comment.value());
 				}
 				if (web.custom().length() > 0) {
 					map.put("custom", web.custom());

@@ -13,28 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.rpc;
 
-import org.yx.common.sequence.SeqCounter;
+import org.yx.common.context.ActionContext;
+import org.yx.rpc.client.Req;
+import org.yx.util.StringUtil;
 
-public final class RedisCounter implements SeqCounter {
+public class InnerRpcKit {
 
-	private final Redis redis;
-
-	@Override
-	public int incr(String name) {
-		if (name == null || name.isEmpty()) {
-			return redis.incr("__SEQ_GLOBAL_FOR_ALL").intValue();
-		}
-		Redis r = RedisPool.getRedisExactly(name);
-		if (r == null) {
-			r = this.redis;
-		}
-		return r.incr(name).intValue();
+	public static ActionContext rpcContext(Req req, boolean isTest) {
+		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
+		return ActionContext.rpcContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
+				req.getAttachments());
 	}
-
-	public RedisCounter(Redis redis) {
-		this.redis = redis;
-	}
-
 }

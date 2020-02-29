@@ -15,7 +15,9 @@
  */
 package org.yx.bean.watcher;
 
-public interface BeanCreate extends IOCWatcher {
+import java.util.List;
 
-	void afterCreate(Object[] beans);
+public interface BeanCreateWatcher extends Watcher {
+
+	void afterCreate(List<Object> beans);
 }

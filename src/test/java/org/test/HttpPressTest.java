@@ -38,7 +38,7 @@ import org.yx.util.S;
 public class HttpPressTest {
 	@Test
 	public void test() throws IOException, InterruptedException {
-		String charset = "GBK";
+		String charset = "utf-8";
 		HttpClient client = HttpClientBuilder.create().setMaxConnTotal(5000).setMaxConnPerRoute(1000).build();
 		ExecutorService executor=Executors.newFixedThreadPool(500);
 		HttpPost post = new HttpPost("http://localhost:8080/rest/echo");

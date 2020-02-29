@@ -24,7 +24,7 @@ public class SnowflakeCounter implements SeqCounter {
 	private final AtomicInteger seq;
 
 	@Override
-	public int count(String name) throws Exception {
+	public int incr(String name) throws Exception {
 		int random = seq.incrementAndGet() & 0xFFFF;
 		random <<= 8;
 		return snow | random;

@@ -37,6 +37,7 @@ import java.util.concurrent.Executor;
 import org.yx.common.context.ActionContext;
 import org.yx.db.event.EventLane;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class SumkConnection implements Connection {
 
@@ -44,7 +45,8 @@ public final class SumkConnection implements Connection {
 
 	final SumkDataSource dataSource;
 
-	private Boolean originAutoCommit;
+	private final boolean originAutoCommit;
+	private boolean autoCommit;
 
 	@Override
 	public boolean isReadOnly() throws SQLException {
@@ -54,6 +56,17 @@ public final class SumkConnection implements Connection {
 	public SumkConnection(Connection inner, SumkDataSource ds) {
 		this.inner = inner;
 		this.dataSource = ds;
+		this.originAutoCommit = originAutoCommit();
+	}
+
+	private boolean originAutoCommit() {
+		try {
+			this.autoCommit = inner.getAutoCommit();
+			return this.autoCommit;
+		} catch (SQLException e) {
+			Logs.db().error("获取原始的autoCommit失败", e);
+			return true;
+		}
 	}
 
 	public SumkDataSource dataSource() {
@@ -94,13 +107,17 @@ public final class SumkConnection implements Connection {
 	}
 
 	@Override
-	public void setAutoCommit(boolean autoCommit) throws SQLException {
-		inner.setAutoCommit(autoCommit);
+	public void setAutoCommit(boolean auto) throws SQLException {
+		if (auto == this.autoCommit) {
+			return;
+		}
+		inner.setAutoCommit(auto);
+		this.autoCommit = auto;
 	}
 
 	@Override
-	public boolean getAutoCommit() throws SQLException {
-		return inner.getAutoCommit();
+	public boolean getAutoCommit() {
+		return autoCommit;
 	}
 
 	@Override
@@ -379,17 +396,9 @@ public final class SumkConnection implements Connection {
 		return new SumkConnection(this.inner, this.dataSource);
 	}
 
-	public void disableAutoCommit() throws SQLException {
-		originAutoCommit = inner.getAutoCommit();
-		if (!originAutoCommit) {
-			return;
-		}
-		inner.setAutoCommit(false);
-	}
+	private void recoverAutoCommit() throws SQLException {
 
-	public void recoverAutoCommit() throws SQLException {
-
-		if (originAutoCommit == null || originAutoCommit.booleanValue() == inner.getAutoCommit()) {
+		if (originAutoCommit == this.getAutoCommit()) {
 			return;
 		}
 		Log.get("sumk.conn").trace("recover autoCommit to {}", originAutoCommit);

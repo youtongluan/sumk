@@ -38,7 +38,6 @@ public class RedisConfig extends GenericObjectPoolConfig {
 		setTestWhileIdle(true);
 		setMinEvictableIdleTimeMillis(60000);
 		setTimeBetweenEvictionRunsMillis(30000);
-		setNumTestsPerEvictionRun(-1);
 	}
 
 	public String getMaster() {

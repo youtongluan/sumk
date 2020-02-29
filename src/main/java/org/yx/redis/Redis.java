@@ -27,7 +27,12 @@ public interface Redis extends BinaryJedisCommand, JedisCommand, MultiKeyCommand
 	 */
 	String hosts();
 
-	int db();
+	/**
+	 * 返回的config只是用来查看，不要去修改它。对它的修改没有意义
+	 * 
+	 * @return 构造redis对象所使用的配置
+	 */
+	RedisConfig getRedisConfig();
 
 	void shutdownPool();
 

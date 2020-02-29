@@ -62,7 +62,7 @@ public abstract class AbstractSeq implements Seq {
 	protected int subNumber(String name) {
 		if (counter != null) {
 			try {
-				return counter.count(name);
+				return counter.incr(name);
 			} catch (Exception e) {
 				Logger log = Log.get("sumk.seq");
 				if (log.isTraceEnabled()) {

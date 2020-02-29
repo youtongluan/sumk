@@ -31,6 +31,7 @@ public class SumkDataSource implements DataSource {
 	private final String name;
 	private final DBType type;
 	private final DataSource proxy;
+	private boolean enable = true;
 
 	public SumkDataSource(String name, DBType type, DataSource ds) {
 		this.name = Objects.requireNonNull(name);
@@ -94,12 +95,21 @@ public class SumkDataSource implements DataSource {
 
 	@Override
 	public String toString() {
-		return "ds[" + name + "-" + type + "]";
+		return new StringBuilder("ds[").append(name).append("-")
+				.append(type.name().startsWith("READ") ? "READ" : type.name()).append("]").toString();
 	}
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
 		return new SumkConnection(proxy.getConnection(username, password), this);
+	}
+
+	public boolean isEnable() {
+		return enable;
+	}
+
+	public void setEnable(boolean enable) {
+		this.enable = enable;
 	}
 
 }

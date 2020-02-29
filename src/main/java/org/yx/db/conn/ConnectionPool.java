@@ -25,6 +25,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.db.DBType;
 import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.Asserts;
@@ -46,18 +47,20 @@ public final class ConnectionPool implements AutoCloseable {
 
 	private final DBType dbType;
 
+	private final boolean autoCommit;
+
 	private SumkConnection readConn;
 	private SumkConnection writeConn;
 
-	public static ConnectionPool create(String dbName, DBType dbType) {
-		if (ActionContext.get().isTest()) {
+	public static ConnectionPool create(String dbName, DBType dbType, boolean autoCommit) {
+		if (ActionContext.get().isTest() && !autoCommit) {
 			if (connectionHolder.get().size() > 0) {
 				return null;
 			}
 			dbType = DBType.WRITE;
 		}
 		List<ConnectionPool> list = connectionHolder.get();
-		ConnectionPool context = new ConnectionPool(dbName, dbType);
+		ConnectionPool context = new ConnectionPool(dbName, dbType, autoCommit);
 		list.add(0, context);
 		return context;
 	}
@@ -68,12 +71,13 @@ public final class ConnectionPool implements AutoCloseable {
 
 			return null;
 		}
-		return create(dbName, dbType);
+		return create(dbName, dbType, false);
 	}
 
-	private ConnectionPool(String dbName, DBType dbType) {
+	private ConnectionPool(String dbName, DBType dbType, boolean autoCommit) {
 		this.dbName = dbName;
 		this.dbType = dbType;
+		this.autoCommit = autoCommit;
 	}
 
 	public static ConnectionPool get() {
@@ -118,7 +122,7 @@ public final class ConnectionPool implements AutoCloseable {
 				throw new SimpleSumkException(5639234, "can not open write connection in readonly context");
 			}
 			return this.getReadConnection();
-		case READ:
+		case READ_PREFER:
 			if (type == DBType.WRITE) {
 				return this.getWriteConnection();
 			}
@@ -151,6 +155,9 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.readConn;
 		}
 		SumkDataSource dataSource = DataSources.readDataSource(dbName);
+		if (dataSource == null) {
+			SumkException.throwException(124234154, dbName + "没有可用的读数据源");
+		}
 		if (this.writeConn != null && this.writeConn.dataSource == dataSource) {
 			if (LOG_CONN.isTraceEnabled()) {
 				LOG_CONN.trace("{}写锁分身出读锁", this.dbName);
@@ -168,6 +175,9 @@ public final class ConnectionPool implements AutoCloseable {
 			return this.writeConn;
 		}
 		SumkDataSource dataSource = DataSources.writeDataSource(dbName);
+		if (dataSource == null) {
+			SumkException.throwException(124234153, dbName + "没有可用的写数据源");
+		}
 		if (this.readConn != null && this.readConn.dataSource == dataSource) {
 			this.writeConn = this.readConn.copy();
 			if (LOG_CONN.isTraceEnabled()) {
@@ -177,7 +187,7 @@ public final class ConnectionPool implements AutoCloseable {
 			this.writeConn = dataSource.getConnection();
 			LOG_CONN_OPEN.trace("open write connection:{}", writeConn);
 		}
-		this.writeConn.disableAutoCommit();
+		this.writeConn.setAutoCommit(this.autoCommit);
 		return writeConn;
 	}
 
@@ -201,14 +211,14 @@ public final class ConnectionPool implements AutoCloseable {
 			try {
 				this.writeConn.close();
 			} catch (Exception e) {
-				Logs.printStack(e);
+				Logs.printSQLException(e);
 			}
 		}
 		if (this.readConn != null && !this.readConn.isSameInnerConnection(this.writeConn)) {
 			try {
 				this.readConn.close();
 			} catch (Exception e) {
-				Logs.printStack(e);
+				Logs.printSQLException(e);
 			}
 		}
 		this.writeConn = null;

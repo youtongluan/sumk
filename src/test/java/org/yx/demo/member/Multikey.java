@@ -1,15 +1,15 @@
 package org.yx.demo.member;
 
 import org.yx.annotation.db.Column;
-import org.yx.annotation.db.ColumnType;
 import org.yx.annotation.db.Table;
+import org.yx.db.enums.ColumnType;
 
 @Table
 public class Multikey {
 
-	@Column(columnType = ColumnType.ID_BOTH, columnOrder = 1)
+	@Column(type = ColumnType.ID_BOTH, order = 1)
 	private String id1;
-	@Column(columnType = ColumnType.ID_BOTH, columnOrder = 2)
+	@Column(type = ColumnType.ID_BOTH, order = 2)
 	private String id2;
 	private String name;
 	private Integer age;

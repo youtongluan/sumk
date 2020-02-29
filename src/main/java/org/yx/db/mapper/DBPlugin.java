@@ -25,6 +25,7 @@ import java.util.Set;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
+import org.yx.bean.Plugins;
 import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.db.conn.DataSources;
@@ -33,15 +34,14 @@ import org.yx.db.listener.DBEventListener;
 import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.main.SumkServer;
 import org.yx.util.SumkDate;
 
 @Bean
-public class SumkDBPlugin implements Plugin {
+public class DBPlugin implements Plugin {
 
 	@Override
 	public int order() {
-		return 1;
+		return 2;
 	}
 
 	@Override
@@ -49,7 +49,7 @@ public class SumkDBPlugin implements Plugin {
 		DBSettings.register();
 		buildDBListeners();
 		loadSDBResources();
-		SumkServer.setDbStarted(true);
+		Plugins.setDbStarted();
 
 		preHotDataSource();
 	}
@@ -98,7 +98,7 @@ public class SumkDBPlugin implements Plugin {
 				Logs.db().info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
 				loadSql(load);
 			} catch (Exception e) {
-				Logs.printStack(e);
+				Logs.printSQLException(e);
 			}
 		});
 	}

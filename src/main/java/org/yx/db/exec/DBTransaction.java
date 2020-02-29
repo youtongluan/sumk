@@ -13,67 +13,72 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.db.exec;
 
 import java.sql.SQLException;
 
 import org.yx.db.DBType;
+import org.yx.db.TransactionType;
 import org.yx.db.conn.ConnectionPool;
-import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.log.Log;
 
-public class DBTransaction {
+public final class DBTransaction implements AutoCloseable {
 
 	private ConnectionPool dbCtx = null;
-	private boolean embed;
-	private String dbName;
-	private DBType dbType;
+	private final TransactionType transaction;
+	private final String dbName;
+	private final DBType dbType;
 
-	public DBTransaction(String dbName, DBType dbType, boolean embed) {
-		super();
-		this.embed = embed;
+	public DBTransaction(String dbName, DBType dbType, TransactionType transaction) {
+		this.transaction = transaction;
 		this.dbName = dbName;
 		this.dbType = dbType;
 	}
 
 	public void begin() {
-		Logs.db().trace("begin with embed:{}", embed);
+		switch (transaction) {
+		case AUTO_COMMIT:
+			dbCtx = ConnectionPool.create(dbName, dbType, true);
+			return;
+		case REQUIRES_NEW:
+			dbCtx = ConnectionPool.create(dbName, dbType, false);
+			return;
+		case REQUIRED:
 
-		dbCtx = embed ? ConnectionPool.create(dbName, dbType) : ConnectionPool.createIfAbsent(dbName, dbType);
+			dbCtx = ConnectionPool.createIfAbsent(dbName, dbType);
+			return;
+		default:
+			return;
+		}
+	}
+
+	public boolean isAutoCommit() {
+		return this.transaction == TransactionType.AUTO_COMMIT;
 	}
 
 	public void rollback(Throwable e) {
-		if (BizException.class.isInstance(e)) {
-			Log.get("sumk.error").warn(e.toString());
-		} else {
-			Logs.printStack(e);
-		}
-		if (dbCtx != null) {
+		if (dbCtx != null && !this.isAutoCommit()) {
 			try {
 				dbCtx.rollback();
 			} catch (SQLException e1) {
-				Logs.printStack(e1);
+				Logs.printSQLException(e1);
 			}
 		}
-		if (RuntimeException.class.isInstance(e)) {
-			throw (RuntimeException) e;
-		}
-		throw new SumkException(1076971, "业务执行出错", e);
 	}
 
 	public void commit() {
-		if (dbCtx == null) {
+		if (dbCtx == null || this.isAutoCommit()) {
 			return;
 		}
 		try {
 			this.dbCtx.commit();
 		} catch (SQLException e) {
-			Logs.printStack(e);
+			Logs.printSQLException(e);
 		}
 	}
 
+	@Override
 	public void close() {
 
 		if (dbCtx == null) {
@@ -84,6 +89,10 @@ public class DBTransaction {
 		} catch (Exception e) {
 			SumkException.throwException(7820198, "error in commit," + e.getMessage(), e);
 		}
+	}
+
+	public ConnectionPool getConnectionPool() {
+		return dbCtx;
 	}
 
 }

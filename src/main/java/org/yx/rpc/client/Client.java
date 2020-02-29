@@ -27,6 +27,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.log.Logs;
+import org.yx.rpc.InnerRpcKit;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
@@ -220,7 +221,7 @@ public final class Client {
 
 		ActionContext context = ActionContext.get().clone();
 		try {
-			ActionContext.rpcContext(request, context.isTest());
+			InnerRpcKit.rpcContext(request, context.isTest());
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
 			ActionContext.recover(context);

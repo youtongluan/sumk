@@ -13,13 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.db;
+package org.yx.db.enums;
 
-public enum CacheType {
+public enum ValidRecord {
+	/**
+	 * 在SoftDelete中，跟VALID相同的表示有效，其它都是无效
+	 */
+	EQUAL_VALID,
 
-	NOCACHE,
-
-	SINGLE,
-
-	LIST;
+	/**
+	 * 在SoftDelete中，只要跟INVALID不同都是有效
+	 */
+	NOT_INVALID
 }

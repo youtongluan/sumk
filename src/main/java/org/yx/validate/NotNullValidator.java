@@ -16,6 +16,7 @@
 package org.yx.validate;
 
 import org.yx.annotation.Bean;
+import org.yx.conf.AppInfo;
 import org.yx.exception.InvalidParamException;
 
 @Bean
@@ -24,9 +25,8 @@ public class NotNullValidator implements Validator {
 	@Override
 	public void valid(ParamInfo param, Object arg) throws InvalidParamException {
 		if (param.param.required() && arg == null) {
-			throw new InvalidParamException("#必填", param, arg);
+			throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), param);
 		}
-
 	}
 
 }

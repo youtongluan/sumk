@@ -29,8 +29,8 @@ import org.yx.common.Host;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Profile;
 import org.yx.log.Log;
+import org.yx.rpc.Profile;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.data.ZkDataOperators;
@@ -45,8 +45,7 @@ public class SoaServer implements Lifecycle {
 	private String zkUrl;
 	private Host host;
 	private boolean enable;
-	private final String SOA_ROOT = AppInfo.get("sumk.rpc.server.route", "sumk.rpc.server.zk.route",
-			ZKConst.SUMK_SOA_ROOT);
+	private final String SOA_ROOT;
 	private Logger logger = Log.get("sumk.rpc.server");
 
 	private static boolean soaServerEnable() {
@@ -101,6 +100,7 @@ public class SoaServer implements Lifecycle {
 	};
 
 	public SoaServer(int port) {
+		this.SOA_ROOT = AppInfo.get("sumk.rpc.server.route", "sumk.rpc.server.zk.route", ZKConst.SUMK_SOA_ROOT);
 		this.init(port);
 	}
 

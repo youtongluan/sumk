@@ -22,7 +22,7 @@ import org.slf4j.Logger;
  */
 public final class Logs {
 
-	public static void printStack(Throwable e) {
+	public static void printSQLException(Throwable e) {
 		Log.printStack("sumk.sql.error", e);
 	}
 

@@ -16,12 +16,12 @@
 package org.yx.exception;
 
 /**
- * rpc和http中有意义的错误码 3位数的错误码，为系统所保留。 应用系统的错误码，要避开这个区间。 1XX表示通用异常
+ * rpc和http中有意义的错误码 3位数的错误码，为系统所保留。 应用系统的错误码，要避开这个区间。 8XX表示通用异常
  */
 public interface ErrorCode {
 	/**
 	 * 线程数溢出
 	 */
-	int THREAD_THRESHOLD_OVER = 101;
+	int THREAD_THRESHOLD_OVER = 800;
 
 }
