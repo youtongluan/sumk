@@ -24,6 +24,7 @@ import java.util.function.Consumer;
 import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.context.ActionContext;
+import org.yx.common.route.Router;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
 import org.yx.log.Logs;
@@ -33,8 +34,7 @@ import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.client.route.HostChecker;
-import org.yx.rpc.client.route.Routes;
-import org.yx.rpc.client.route.RpcRoute;
+import org.yx.rpc.client.route.RpcRoutes;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
@@ -167,7 +167,7 @@ public final class Client {
 		}
 		if (url == null) {
 
-			RpcRoute route = Routes.getRoute(api);
+			Router<Host> route = RpcRoutes.getRoute(api);
 			RpcFuture future = this.tryLocalHandler(req, locker, route);
 			if (future != null) {
 				return future;
@@ -178,7 +178,7 @@ public final class Client {
 						(String) null);
 				return new ErrorRpcFuture(ex, locker);
 			}
-			url = route.getUrl();
+			url = route.select();
 		}
 		if (url == null) {
 			SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled",
@@ -202,7 +202,7 @@ public final class Client {
 		return new RpcFutureImpl(locker);
 	}
 
-	private RpcFuture tryLocalHandler(Req req, RpcLocker locker, RpcRoute route) {
+	private RpcFuture tryLocalHandler(Req req, RpcLocker locker, Router<Host> route) {
 		RpcActionNode node = RpcActions.getActionNode(api);
 		if (node == null) {
 			return null;

@@ -16,6 +16,8 @@
 package org.yx.common.expression;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import org.yx.exception.SumkException;
 
@@ -36,7 +38,8 @@ public class Expressions {
 		}
 	}
 
-	public static ParamExpression booleanExpression(Collection<ParamExpression> exps, boolean and) {
+	public static Predicate<Map<String, Object>> booleanExpression(Collection<Predicate<Map<String, Object>>> exps,
+			boolean and) {
 		if (exps == null || exps.isEmpty()) {
 			return null;
 		}
@@ -46,11 +49,11 @@ public class Expressions {
 		return and ? new AndExpression(exps) : new OrExpression(exps);
 	}
 
-	public static ParamExpression and(Collection<ParamExpression> exps) {
+	public static Predicate<Map<String, Object>> and(Collection<Predicate<Map<String, Object>>> exps) {
 		return booleanExpression(exps, true);
 	}
 
-	public static ParamExpression or(Collection<ParamExpression> exps) {
+	public static Predicate<Map<String, Object>> or(Collection<Predicate<Map<String, Object>>> exps) {
 		return booleanExpression(exps, false);
 	}
 }

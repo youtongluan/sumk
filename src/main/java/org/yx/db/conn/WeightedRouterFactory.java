@@ -19,55 +19,57 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.bean.IOC;
+import org.yx.common.route.Router;
+import org.yx.common.route.Routes;
+import org.yx.common.route.WeightedServer;
 import org.yx.conf.AppInfo;
 import org.yx.db.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 
-public class DSRouteFactory {
+public class WeightedRouterFactory implements RouterFactory {
 
-	public static WeightedDataSourceRouteContainer create(String dbName) throws Exception {
+	@Override
+	public RWDataSource create(String dbName) throws Exception {
 		List<DBConfig> configs = parseDBConfig(dbName);
-		List<WeightedDataSource> readDSList = new ArrayList<>(1);
-		List<WeightedDataSource> writeDSList = new ArrayList<>(1);
+		List<WeightedServer<SumkDataSource>> readDSList = new ArrayList<>(1);
+		List<WeightedServer<SumkDataSource>> writeDSList = new ArrayList<>(1);
 
 		for (DBConfig dc : configs) {
 			SumkDataSource ds = DSFactory.create(dbName, dc.type, dc.properties);
 			;
 			if (ds.getType().isWritable()) {
-				WeightedDataSource w = new WeightedDataSource(ds);
+				WeightedServer<SumkDataSource> w = new WeightedDataSource(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
 				writeDSList.add(w);
 				if (ds.getType() == DBType.ANY) {
-					WeightedDataSource r = new WeightedDataSource(ds);
+					WeightedServer<SumkDataSource> r = new WeightedDataSource(ds);
 					r.setWeight(dc.getReadWeight() > 0 ? dc.getReadWeight() : 1);
 					readDSList.add(r);
 				}
 			} else if (ds.getType().isReadable()) {
-				WeightedDataSource r = new WeightedDataSource(ds);
+				WeightedServer<SumkDataSource> r = new WeightedDataSource(ds);
 				int w = dc.getReadWeight() > 0 ? dc.getReadWeight() : dc.getWeight();
 				r.setWeight(w > 0 ? w : 1);
 				readDSList.add(r);
 			}
 		}
 
-		if (readDSList.isEmpty()) {
+		Router<SumkDataSource> read = createWeightedRouter(dbName, DBType.READ_PREFER, readDSList);
+		Router<SumkDataSource> write = createWeightedRouter(dbName, DBType.WRITE, writeDSList);
+		return new RWDataSource(write, read);
+	}
+
+	protected Router<SumkDataSource> createWeightedRouter(String name, DBType type,
+			List<WeightedServer<SumkDataSource>> wds) {
+		if (wds.isEmpty()) {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Logs.db().warn("you have not config any read datasource for [{}]", dbName);
+				Logs.db().warn("you have not config any read datasource for [{}]", name);
 			} else {
-				SumkException.throwException(83587871, "you have not config read datasource for " + dbName);
+				SumkException.throwException(83587871, "you have not config " + type + " datasource for " + name);
 			}
 		}
-		if (writeDSList.isEmpty()) {
-			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
-				Logs.db().warn("you have not config any write datasource for [{}]", dbName);
-			} else {
-				SumkException.throwException(83587872, "you have not config write datasource for " + dbName);
-			}
-		}
-		WeightedDataSourceRoute read = new WeightedDataSourceRoute(readDSList);
-		WeightedDataSourceRoute write = new WeightedDataSourceRoute(writeDSList);
-		return new WeightedDataSourceRouteContainer(write, read);
+		return Routes.createWeightedRouter(wds);
 	}
 
 	/**
@@ -75,7 +77,7 @@ public class DSRouteFactory {
 	 * @return
 	 * @throws Exception
 	 */
-	private static List<DBConfig> parseDBConfig(String db) throws Exception {
+	protected List<DBConfig> parseDBConfig(String db) throws Exception {
 		List<DBConfigFactory> factorys = IOC.getBeans(DBConfigFactory.class);
 		for (DBConfigFactory factory : factorys) {
 			List<DBConfig> configs = factory.create(db);

@@ -13,23 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.conn;
+package org.yx.bean;
 
-public class WeightedDataSourceRouteContainer {
-	private final WeightedDataSourceRoute write;
-	private final WeightedDataSourceRoute read;
-
-	public WeightedDataSourceRouteContainer(WeightedDataSourceRoute write, WeightedDataSourceRoute read) {
-		this.write = write;
-		this.read = read;
-	}
-
-	public WeightedDataSourceRoute getWrite() {
-		return write;
-	}
-
-	public WeightedDataSourceRoute getRead() {
-		return read;
-	}
+public interface ComplexBean {
 
 }

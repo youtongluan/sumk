@@ -18,9 +18,10 @@ package org.yx.common.route;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
-public abstract class WeightedRoute<T extends WeightedServer> {
+public class WeightedRouter<T> implements Router<T> {
 
 	protected int currentIndex = -1;
 
@@ -30,13 +31,15 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 
 	protected final int GCD_WEIGHT;
 
-	protected final T[] SERVERS;
+	protected final WeightedServer<T>[] SERVERS;
 
 	protected final int SERVER_COUNT;
 
-	protected WeightedRoute(T[] servers) {
-		Arrays.sort(servers, (a, b) -> b.getWeight() - a.getWeight());
-		SERVERS = servers;
+	public WeightedRouter(Collection<WeightedServer<T>> servers) {
+		@SuppressWarnings("unchecked")
+		WeightedServer<T>[] ws = servers.toArray(new WeightedServer[servers.size()]);
+		Arrays.sort(ws, (a, b) -> b.getWeight() - a.getWeight());
+		SERVERS = ws;
 		SERVER_COUNT = SERVERS.length;
 		MAX_WEIGHT = getMaxWeightForServers();
 		GCD_WEIGHT = getGCDForServers();
@@ -49,7 +52,7 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 
 	protected int getGCDForServers() {
 		List<BigInteger> list = new ArrayList<>(SERVERS.length);
-		for (T sm : SERVERS) {
+		for (WeightedServer<T> sm : SERVERS) {
 			int weight = sm.getWeight();
 			if (weight <= 0) {
 				continue;
@@ -70,7 +73,7 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 
 	protected int getMaxWeightForServers() {
 		int w = 0;
-		for (T s : SERVERS) {
+		for (WeightedServer<T> s : SERVERS) {
 			if (s.getWeight() > w) {
 				w = s.getWeight();
 			}
@@ -78,29 +81,29 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 		return w;
 	}
 
-	public List<T> getAllServers() {
-		return Arrays.asList(SERVERS);
-	}
-
-	public List<T> getAliveServers() {
+	@Override
+	public List<T> allSources() {
 		List<T> list = new ArrayList<>(this.SERVER_COUNT);
-		for (T s : this.SERVERS) {
-			if (this.isDowned(s)) {
-				continue;
-			}
-			list.add(s);
+		for (WeightedServer<T> s : this.SERVERS) {
+			list.add(s.getSource());
 		}
 		return list;
 	}
 
-	public T getServer() {
-
-		if (SERVER_COUNT == 1) {
-			if (isDowned(SERVERS[0])) {
-				return null;
+	@Override
+	public List<T> aliveSources() {
+		List<T> list = new ArrayList<>(this.SERVER_COUNT);
+		for (WeightedServer<T> s : this.SERVERS) {
+			if (!s.isEnable()) {
+				continue;
 			}
-			return SERVERS[0];
+			list.add(s.getSource());
 		}
+		return list;
+	}
+
+	@Override
+	public T select() {
 		int index = 0;
 
 		for (int i = 0; i < SERVER_COUNT; i++) {
@@ -113,25 +116,23 @@ public abstract class WeightedRoute<T extends WeightedServer> {
 				currentWeight = tempWeight < 1 ? MAX_WEIGHT : tempWeight;
 			}
 
-			T server = SERVERS[index];
+			WeightedServer<T> server = SERVERS[index];
 			if (server.getWeight() >= currentWeight) {
-				if (isDowned(server)) {
+				if (!server.isEnable()) {
 					continue;
 				}
-				return server;
+				return server.getSource();
 			}
 		}
 
 		for (int i = 0; i < SERVER_COUNT; i++) {
-			T server = SERVERS[i % SERVER_COUNT];
-			if (!isDowned(server)) {
-				return server;
+			WeightedServer<T> w = SERVERS[i % SERVER_COUNT];
+			if (w.isEnable()) {
+				return w.getSource();
 			}
 		}
 		return null;
 	}
-
-	protected abstract boolean isDowned(T server);
 
 	@Override
 	public String toString() {

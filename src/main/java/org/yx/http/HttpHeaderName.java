@@ -21,24 +21,19 @@ public final class HttpHeaderName {
 
 	public static final String CLIENT_PC = "PC";
 	private static String sessionId;
-	private static String token;
-	private static String type;
+	private static String userFlag;
 
 	public static void init() {
 		sessionId = AppInfo.get("sumk.http.name.sessionId", "sid");
-		token = AppInfo.get("sumk.http.name.token", "stoken");
-		type = AppInfo.get("sumk.http.name.token", "stype");
+		userFlag = AppInfo.get("sumk.http.name.userFlag", "userFlag");
 	}
 
 	public static String sessionId() {
 		return sessionId;
 	}
 
-	public static String token() {
-		return token;
+	public static String userFlag() {
+		return userFlag;
 	}
 
-	public static String type() {
-		return type;
-	}
 }

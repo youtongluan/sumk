@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.server;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -28,12 +28,16 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
+import org.yx.http.HttpContextHolder;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogs;
 import org.yx.log.Logs;
+import org.yx.util.M;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
@@ -55,22 +59,25 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			log.trace("raw act={}", rawAct);
 			if (rawAct == null || rawAct.isEmpty()) {
 				log.error("raw act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
-				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确");
+				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
+						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
 			}
 			String usedAct = HttpActions.solveAct(rawAct);
 			if (usedAct == null || rawAct.isEmpty()) {
 				log.error("act is empty for {}", rawAct);
-				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR, "请求格式不正确");
+				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
+						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
 			}
 			if (HttpSettings.getFusing().contains(usedAct)) {
 				log.error("{} is in fusing", usedAct);
-				throw BizException.create(HttpErrorCode.FUSING, AppInfo.get("sumk.http.errorcode.fusing", "请求出错"));
+				throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.errorcode.fusing", "请求出错", usedAct));
 			}
 			HttpActionInfo info = HttpActions.getHttpInfo(usedAct);
 			if (info == null) {
 				info = HttpActions.getDefaultInfo();
 				if (info == null) {
-					throw BizException.create(HttpErrorCode.ACT_NOT_FOUND, "接口不存在");
+					throw BizException.create(HttpErrorCode.ACT_NOT_FOUND,
+							M.get("sumk.http.error.act.notfound", "接口不存在", usedAct));
 				}
 			}
 			rawAct = info.rawAct();
@@ -90,10 +97,11 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;
 			HttpLogs.log(wc, req, ex, time);
-			HttpContextHolder.remove();
+			HttpContextHolder.clear();
 			ActionContext.remove();
 			if (wc != null) {
-				InnerHttpUtil.record(wc.rawAct(), time, ex == null);
+
+				InnerHttpUtil.record(wc.rawAct(), time, ex == null && !wc.isFailed());
 			}
 		}
 	}

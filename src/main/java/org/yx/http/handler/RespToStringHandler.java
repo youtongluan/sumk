@@ -16,7 +16,6 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 import org.yx.http.HttpGson;
 
 @Bean
@@ -28,31 +27,25 @@ public class RespToStringHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
+	public void handle(WebContext ctx) throws Throwable {
 		Object obj = ctx.result();
 		if (obj == null) {
 			if (ctx.httpNode().getReturnType() == void.class) {
 				ctx.result(new byte[0]);
-				return false;
+				return;
 			}
 			ctx.result(HttpGson.gson().toJson(obj));
-			return false;
+			return;
 		}
 		Class<?> clz = obj.getClass();
 		if (clz == byte[].class) {
-			return false;
+			return;
 		}
 		if (clz.isPrimitive() || clz.equals(String.class)) {
 			ctx.result(String.valueOf(obj));
-			return false;
+			return;
 		}
 		ctx.result(HttpGson.gson().toJson(obj));
-		return false;
 	}
 
 }

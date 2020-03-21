@@ -37,7 +37,7 @@ import org.yx.validate.ParamFactory;
 
 public final class WebAnnotationResolver {
 
-	private Predicate<String> matcher = BooleanMatcher.TRUE;
+	private Predicate<String> exclude = BooleanMatcher.FALSE;
 
 	private List<String> rawNames(Method m, Web web) {
 		String name = web.value();
@@ -55,17 +55,17 @@ public final class WebAnnotationResolver {
 	}
 
 	public WebAnnotationResolver() {
-		String patterns = AppInfo.get("sumk.http.pattern", null);
+		String patterns = AppInfo.get("sumk.http.exclude", null);
 		if (patterns != null) {
-			this.matcher = Matchers.createWildcardMatcher(patterns, 1);
+			this.exclude = Matchers.createWildcardMatcher(patterns, 1);
+			Logs.http().debug("web exclude:{}", this.exclude);
 		}
-		Logs.http().debug("web matcher:{}", this.matcher);
 	}
 
 	public void resolve(Object bean) throws Exception {
 
 		Class<?> clz = IOC.getTargetClassOfBean(bean);
-		if (!matcher.test(clz.getName())) {
+		if (exclude.test(clz.getName())) {
 			return;
 		}
 		Method[] methods = clz.getDeclaredMethods();
@@ -92,7 +92,7 @@ public final class WebAnnotationResolver {
 			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
 			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
-					ParamFactory.create(m), m, act);
+					ParamFactory.create(m), act);
 
 			List<String> names = rawNames(m, act);
 			if (names == null || names.isEmpty()) {

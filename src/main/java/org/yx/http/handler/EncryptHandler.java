@@ -13,36 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util.kit;
+package org.yx.http.handler;
 
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Set;
+import org.yx.annotation.Bean;
+import org.yx.http.HttpCiphers;
 
-public class CacheManager<K, V> {
-	private final Map<K, V> cache;
+@Bean
+public class EncryptHandler implements HttpHandler {
 
-	public static CacheManager<Class<?>, Field[]> create(BeanConverter bc) {
-		return new CacheManager<Class<?>, Field[]>(bc.getCache());
+	@Override
+	public int order() {
+		return 2300;
 	}
 
-	public CacheManager(Map<K, V> cache) {
-		this.cache = cache;
+	@Override
+	public void handle(WebContext ctx) throws Exception {
+		if (!ctx.web().responseEncrypt().isAes()) {
+			return;
+		}
+		byte[] bs = (byte[]) ctx.result();
+		byte[] data = HttpCiphers.getEncryptor().encrypt(bs, ctx);
+		ctx.result(data);
 	}
 
-	public void clear() {
-		this.cache.clear();
-	}
-
-	public V remove(K key) {
-		return this.cache.remove(key);
-	}
-
-	public Set<K> keySet(K key) {
-		return this.cache.keySet();
-	}
-
-	public int size() {
-		return this.cache.size();
-	}
 }

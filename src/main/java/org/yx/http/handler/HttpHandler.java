@@ -15,13 +15,11 @@
  */
 package org.yx.http.handler;
 
-import org.yx.annotation.http.Web;
 import org.yx.common.Ordered;
 
 public interface HttpHandler extends Ordered {
-	boolean accept(Web web);
 
-	boolean handle(WebContext ctx) throws Throwable;
+	void handle(WebContext ctx) throws Throwable;
 
 	default boolean supportRestType(RestType type) {
 		return true;

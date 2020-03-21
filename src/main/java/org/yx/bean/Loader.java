@@ -37,6 +37,13 @@ public final class Loader {
 		return newInstance(clazz);
 	}
 
+	public static Object newInstance(String clzName, Object[] params, Class<?>[] paramsType) throws Exception {
+		Class<?> clz = Class.forName(clzName);
+		Constructor<?> c = paramsType == null ? clz.getDeclaredConstructor() : clz.getDeclaredConstructor(paramsType);
+		c.setAccessible(true);
+		return c.newInstance(params);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T> T newInstanceFromAppKey(String key) {
 		String daoClz = AppInfo.get(key);

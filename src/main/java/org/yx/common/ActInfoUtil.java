@@ -81,10 +81,13 @@ public final class ActInfoUtil {
 				}
 				param.put("required", p.required());
 				if (p.max() != Integer.MIN_VALUE) {
-					param.put("maxLength", p.max());
+					param.put("max", p.max());
 				}
 				if (p.min() != Integer.MIN_VALUE) {
-					param.put("minLength", p.min());
+					param.put("min", p.min());
+				}
+				if (StringUtil.isNotEmpty(p.example())) {
+					param.put("example", p.example());
 				}
 				if (StringUtil.isNotEmpty(p.comment())) {
 					param.put("comment", p.comment());

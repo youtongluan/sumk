@@ -37,18 +37,18 @@ public abstract class CalleeNode {
 
 	public final Class<? extends ArgPojo> argClz;
 
-	private final int priority;
+	private final int toplimit;
 
 	protected final Method method;
 
 	public CalleeNode(Object owner, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
-			int priority) {
+			int toplimit) {
 		this.owner = Objects.requireNonNull(owner);
 		this.argClz = Objects.requireNonNull(argClz);
 		this.argNames = Objects.requireNonNull(argNames);
 		this.method = Objects.requireNonNull(method);
 		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
-		this.priority = priority;
+		this.toplimit = toplimit;
 		if (this.paramInfos != null) {
 			Class<?>[] argTypes = this.getParameterTypes();
 			for (int i = 0; i < this.paramInfos.length; i++) {
@@ -62,12 +62,12 @@ public abstract class CalleeNode {
 	}
 
 	public void checkThreshold() {
-		if (this.priority < SumkThreadPool.executor().threshold()) {
+		if (this.toplimit < SumkThreadPool.executor().threshold()) {
 			if (Log.get("sumk.thread").isDebugEnabled()) {
 				String msg = new StringBuilder().append("[")
 						.append(this.getClass().getSimpleName().replace("ActionNode", "")).append("] ")
 						.append(this.method.getDeclaringClass().getSimpleName()).append(".")
-						.append(this.method.getName()).append("() - priority=").append(priority)
+						.append(this.method.getName()).append("() - priority=").append(toplimit)
 						.append(" ,  threshold=").append(SumkThreadPool.executor().threshold()).toString();
 				Log.get("sumk.thread").debug(msg);
 			}
@@ -115,4 +115,7 @@ public abstract class CalleeNode {
 		return method.getAnnotatedReturnType();
 	}
 
+	public int toplimit() {
+		return this.toplimit;
+	}
 }

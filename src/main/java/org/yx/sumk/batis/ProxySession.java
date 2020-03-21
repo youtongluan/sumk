@@ -41,7 +41,7 @@ public class ProxySession implements SqlSession {
 	protected SqlSession readSession() {
 		ConnectionPool context = ConnectionPool.get();
 		try {
-			return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.READ_PREFER));
+			return SqlSessionFactory.get(context.getDbName()).openSession(context.connection(DBType.READ_PREFER));
 		} catch (SQLException e) {
 			Log.get("sumk.mybatis").error(e.getMessage(), e);
 			throw new SumkException(-345254, "创建mybatis的读session失败");
@@ -51,7 +51,7 @@ public class ProxySession implements SqlSession {
 	protected SqlSession writeSession() {
 		ConnectionPool context = ConnectionPool.get();
 		try {
-			return SqlSessionFactory.get(context.getDbName()).session(context.connection(DBType.WRITE));
+			return SqlSessionFactory.get(context.getDbName()).openSession(context.connection(DBType.WRITE));
 		} catch (SQLException e) {
 			Log.get("sumk.mybatis").error(e.getMessage(), e);
 			throw new SumkException(-345255, "创建mybatis的写session失败");

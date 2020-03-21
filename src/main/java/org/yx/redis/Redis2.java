@@ -44,34 +44,28 @@ public abstract class Redis2 implements SeniorRedis {
 	protected boolean disConnected;
 	protected final RedisConfig config;
 
-	private static Function<RedisConfig, JedisPool> jedisPoolFactory = new Function<RedisConfig, JedisPool>() {
-		@Override
-		public JedisPool apply(RedisConfig conf) {
-			List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
-			Host h = hosts.get(0);
-			try {
-				return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
-						conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
-			} catch (Throwable e) {
-			}
-			Log.get(LOG_NAME).debug("can not support property connectionTimeout");
-			return new JedisPool(conf, h.ip(), h.port(), conf.getTimeout(), conf.getPassword(), conf.getDb(),
-					AppInfo.appId("sumk"));
+	private static Function<RedisConfig, JedisPool> jedisPoolFactory = conf -> {
+		List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
+		Host h = hosts.get(0);
+		try {
+			return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
+					conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
+		} catch (Throwable e) {
 		}
+		Log.get(LOG_NAME).debug("can not support property connectionTimeout");
+		return new JedisPool(conf, h.ip(), h.port(), conf.getTimeout(), conf.getPassword(), conf.getDb(),
+				AppInfo.appId("sumk"));
 	};
 
-	private static Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory = new Function<RedisConfig, JedisSentinelPool>() {
-		@Override
-		public JedisSentinelPool apply(RedisConfig config) {
-			List<Host> hosts = ConfigKit.parseHosts(config.hosts());
-			Set<String> sentinels = new HashSet<>();
-			for (Host h : hosts) {
-				sentinels.add(h.toString());
-			}
-			Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, config.getDb());
-			return new JedisSentinelPool(config.getMaster(), sentinels, config, config.getConnectionTimeout(),
-					config.getTimeout(), config.getPassword(), config.getDb(), AppInfo.appId("sumk"));
+	private static Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory = config -> {
+		List<Host> hosts = ConfigKit.parseHosts(config.hosts());
+		Set<String> sentinels = new HashSet<>();
+		for (Host h : hosts) {
+			sentinels.add(h.toString());
 		}
+		Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, config.getDb());
+		return new JedisSentinelPool(config.getMaster(), sentinels, config, config.getConnectionTimeout(),
+				config.getTimeout(), config.getPassword(), config.getDb(), AppInfo.appId("sumk"));
 	};
 
 	public static Function<RedisConfig, JedisPool> getJedisPoolFactory() {
@@ -96,14 +90,7 @@ public abstract class Redis2 implements SeniorRedis {
 		this.hosts = config.hosts();
 
 		String masterName = config.getMaster();
-		if (masterName == null) {
-
-			this.pool = jedisPoolFactory.apply(config);
-			RedisChecker.get().addRedis(this);
-			return;
-		}
-
-		this.pool = sentinelPoolFactory.apply(config);
+		this.pool = masterName == null ? jedisPoolFactory.apply(config) : sentinelPoolFactory.apply(config);
 		RedisChecker.get().addRedis(this);
 	}
 

@@ -25,12 +25,12 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.yx.log.Log;
 
-public class RedisPool {
+public final class RedisPool {
 	private static final ConcurrentMap<String, Redis> map = new ConcurrentHashMap<>();
 
 	private static Redis _defaultRedis;
 
-	static void defaultRedis(Redis r) {
+	static void setDefaultRedis(Redis r) {
 		_defaultRedis = r;
 	}
 
@@ -42,16 +42,10 @@ public class RedisPool {
 		if (alias == null) {
 			return _defaultRedis;
 		}
-		alias = alias.toLowerCase();
-		Redis r = map.get(alias);
-		if (r != null) {
-			return r;
-		}
-		return _defaultRedis;
+		return map.getOrDefault(alias, _defaultRedis);
 	}
 
 	public static Redis getRedisExactly(String alias) {
-		alias = alias.toLowerCase();
 		return map.get(alias);
 	}
 
@@ -60,7 +54,7 @@ public class RedisPool {
 	}
 
 	public static void put(String alias, Redis redis) {
-		Redis old = map.put(alias.toLowerCase(), Objects.requireNonNull(redis));
+		Redis old = map.put(alias, Objects.requireNonNull(redis));
 		Log.get("sumk.redis").trace("redis name {} : {}", alias, redis);
 		if (old != null) {
 			old.shutdownPool();

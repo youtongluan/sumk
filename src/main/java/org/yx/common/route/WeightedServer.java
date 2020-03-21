@@ -15,7 +15,13 @@
  */
 package org.yx.common.route;
 
-public interface WeightedServer {
+public interface WeightedServer<T> {
 
 	int getWeight();
+
+	void setWeight(int weight);
+
+	T getSource();
+
+	boolean isEnable();
 }

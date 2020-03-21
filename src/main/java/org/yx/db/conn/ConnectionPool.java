@@ -15,7 +15,6 @@
  */
 package org.yx.db.conn;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +39,8 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 
 	};
-	private static final Logger LOG_CONN_OPEN = Log.get("sumk.conn.open");
-	public static final Logger LOG_CONN = Log.get("sumk.conn");
+	private final Logger LOG_CONN_OPEN = Log.get("sumk.conn.open");
+	private final Logger LOG_CONN = Log.get("sumk.conn");
 
 	private final String dbName;
 
@@ -99,40 +98,43 @@ public final class ConnectionPool implements AutoCloseable {
 			return;
 		}
 		try {
-			LOG_CONN.error("### connection leak:" + list.size());
+			Log.get("sumk.conn").error("### connection leak:" + list.size());
 			while (list.size() > 0) {
 				list.get(0).close();
 			}
 			connectionHolder.remove();
 		} catch (Exception e) {
-			LOG_CONN.error(e.getMessage(), e);
+			Log.get("sumk.conn").error(e.getMessage(), e);
 		}
 		EventLane.removeALL();
 	}
 
-	public Connection connection(DBType type) throws SQLException {
+	public SumkConnection connection(DBType userType) throws SQLException {
 		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
 		switch (this.dbType) {
 		case WRITE:
+			if (userType == DBType.READONLY) {
+				throw new SimpleSumkException(5639234, "can not open readOnly connection in write context");
+			}
 			return this.getWriteConnection();
 		case READONLY:
-			if (type == DBType.WRITE) {
+			if (userType == DBType.WRITE) {
 				throw new SimpleSumkException(5639234, "can not open write connection in readonly context");
 			}
 			return this.getReadConnection();
 		case READ_PREFER:
-			if (type == DBType.WRITE) {
+			if (userType == DBType.WRITE) {
 				return this.getWriteConnection();
 			}
 			return this.getReadConnection();
 		default:
-			return this.connectionByRequireType(type);
+			return this.connectionByUserType(userType);
 		}
 	}
 
-	private Connection connectionByRequireType(DBType type) throws SQLException {
+	private SumkConnection connectionByUserType(DBType type) throws SQLException {
 		if (ActionContext.get().isTest()) {
 			return this.getWriteConnection();
 		}
@@ -150,7 +152,7 @@ public final class ConnectionPool implements AutoCloseable {
 		return this.getReadConnection();
 	}
 
-	private Connection getReadConnection() throws SQLException {
+	private SumkConnection getReadConnection() throws SQLException {
 		if (this.readConn != null) {
 			return this.readConn;
 		}
@@ -170,7 +172,7 @@ public final class ConnectionPool implements AutoCloseable {
 		return readConn;
 	}
 
-	private Connection getWriteConnection() throws SQLException {
+	private SumkConnection getWriteConnection() throws SQLException {
 		if (this.writeConn != null) {
 			return this.writeConn;
 		}

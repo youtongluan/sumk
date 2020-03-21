@@ -16,7 +16,6 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 
 @Bean
 public class RespBodyHandler implements HttpHandler {
@@ -27,15 +26,9 @@ public class RespBodyHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
+	public void handle(WebContext ctx) throws Throwable {
 		byte[] data = (byte[]) ctx.result();
 		ctx.httpResponse().getOutputStream().write(data);
-		return false;
 	}
 
 }

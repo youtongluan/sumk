@@ -21,14 +21,16 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.yx.bean.IOC;
+import org.yx.common.route.Router;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
 
 public final class DataSourceManagerImpl implements DataSourceManager {
 
-	private WeightedDataSourceRoute read;
-	private WeightedDataSourceRoute write;
+	private Router<SumkDataSource> read;
+	private Router<SumkDataSource> write;
 
 	private final String db;
 
@@ -42,7 +44,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		}
 	}
 
-	public DataSourceManagerImpl(String dbName, WeightedDataSourceRoute write, WeightedDataSourceRoute read)
+	public DataSourceManagerImpl(String dbName, Router<SumkDataSource> write, Router<SumkDataSource> read)
 			throws Exception {
 		this.db = Objects.requireNonNull(dbName);
 		this.write = write;
@@ -68,7 +70,11 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 			Logs.db().info("{} has inited datasource", this.db);
 			return;
 		}
-		WeightedDataSourceRouteContainer container = DSRouteFactory.create(this.db);
+		RouterFactory factory = IOC.get(RouterFactory.class);
+		if (factory == null) {
+			factory = new WeightedRouterFactory();
+		}
+		RWDataSource container = factory.create(this.db);
 		this.write = container.getWrite();
 		this.read = container.getRead();
 	}
@@ -80,19 +86,19 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public SumkDataSource writeDataSource() {
-		return this.write.datasource();
+		return this.write.select();
 	}
 
 	@Override
 	public SumkDataSource readDataSource() {
-		return this.read.datasource();
+		return this.read.select();
 	}
 
 	@Override
 	public Set<SumkDataSource> allDataSources() {
 		Set<SumkDataSource> set = new HashSet<>();
-		set.addAll(this.read.allDataSource());
-		set.addAll(this.write.allDataSource());
+		set.addAll(this.read.allSources());
+		set.addAll(this.write.allSources());
 		return set;
 	}
 

@@ -28,7 +28,6 @@ import org.yx.util.StringUtil;
 
 public class RedisLoader {
 
-	public static final String DEFAULT = "default";
 	public static final String COUNTER = "count";
 	public static final String SESSION = "session";
 
@@ -61,8 +60,8 @@ public class RedisLoader {
 			Log.get(LOG_NAME).debug("{} : {}", name, config);
 
 			Redis redis = RedisFactory.create(config);
-			if (DEFAULT.equals(name)) {
-				RedisPool.defaultRedis(redis);
+			if ("*".equals(name) || "default".equals(name)) {
+				RedisPool.setDefaultRedis(redis);
 			} else {
 				RedisPool.put(name, redis);
 			}

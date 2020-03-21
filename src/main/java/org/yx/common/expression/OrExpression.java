@@ -18,23 +18,25 @@ package org.yx.common.expression;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import org.yx.exception.SumkException;
 
-public class OrExpression implements ParamExpression {
+public class OrExpression implements Predicate<Map<String, Object>> {
 
-	private final ParamExpression[] exps;
+	private final Predicate<Map<String, Object>>[] exps;
 
-	public OrExpression(Collection<ParamExpression> exps) {
+	@SuppressWarnings("unchecked")
+	public OrExpression(Collection<Predicate<Map<String, Object>>> exps) {
 		if (exps == null || exps.isEmpty()) {
 			throw new SumkException(-34554565, "ParamExpression列表不能为空");
 		}
-		this.exps = exps.toArray(new ParamExpression[exps.size()]);
+		this.exps = exps.toArray(new Predicate[exps.size()]);
 	}
 
 	@Override
 	public boolean test(Map<String, Object> map) {
-		for (ParamExpression exp : exps) {
+		for (Predicate<Map<String, Object>> exp : exps) {
 			if (exp.test(map)) {
 				return true;
 			}

@@ -54,7 +54,7 @@ public class PluginHandler {
 				try {
 					plugin.startAsync();
 					latch.countDown();
-					Logs.system().debug("{} startAsync finished", plugin.getClass().getSimpleName());
+					Logs.ioc().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
 					Log.printStack("sumk.error", e);
 					System.exit(1);
@@ -65,18 +65,18 @@ public class PluginHandler {
 		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 300);
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
-				Logs.system().error("plugins failed to start in {}ms", timeout);
+				Logs.ioc().error("plugins failed to start in {}ms", timeout);
 				System.exit(1);
 			}
 		} catch (InterruptedException e) {
-			Logs.system().error("receive InterruptedException in plugin starting", timeout);
+			Logs.ioc().error("receive InterruptedException in plugin starting", timeout);
 			System.exit(1);
 		}
 		Plugins.setAllStarted();
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();
 		}
-		Logs.system().debug("all plugin started");
+		Logs.ioc().debug("all plugin started");
 	}
 
 	private void preHotCoreThreads(SumkExecutorService executor) {

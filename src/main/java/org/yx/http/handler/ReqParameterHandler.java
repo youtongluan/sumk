@@ -18,7 +18,6 @@ package org.yx.http.handler;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 
 @Bean
 public class ReqParameterHandler implements HttpHandler {
@@ -29,19 +28,13 @@ public class ReqParameterHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
+	public void handle(WebContext ctx) throws Exception {
 		HttpServletRequest req = ctx.httpRequest();
 		ctx.sign(req.getParameter("sign"));
 		String data = req.getParameter("data");
 		if (data != null) {
 			ctx.data(data);
 		}
-		return false;
 	}
 
 }

@@ -54,11 +54,6 @@ public interface HttpErrorCode extends ErrorCode {
 	int VALIDATE_ERROR = 910;
 
 	/**
-	 * type类型错误
-	 */
-	int TYPE_ERROR = 920;
-
-	/**
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用
 	 */
 	int UPLOAD_DISABLED = 930;

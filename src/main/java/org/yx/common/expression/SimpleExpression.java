@@ -15,7 +15,10 @@
  */
 package org.yx.common.expression;
 
-public abstract class SimpleExpression implements ParamExpression {
+import java.util.Map;
+import java.util.function.Predicate;
+
+public abstract class SimpleExpression implements Predicate<Map<String, Object>> {
 
 	protected final String key;
 

@@ -25,24 +25,19 @@ import org.yx.log.Logs;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisLoader;
 import org.yx.redis.RedisPool;
+import org.yx.util.M;
 
 public class WebSessions {
-	static UserSession session;
+	private static UserSession session;
 
 	public static UserSession userSession() {
-		if (session == null) {
-			initSession();
-		}
 		return session;
 	}
 
 	public static UserSession loadUserSession() {
 		if (session == null) {
-			initSession();
-		}
-		if (session == null) {
 			Log.get("sumk.http.session").info("session has not created");
-			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆.");
+			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.session.unload", "请重新登陆."));
 		}
 		return session;
 	}
@@ -60,30 +55,25 @@ public class WebSessions {
 		session.removeSession(HttpContextHolder.sessionId());
 	}
 
-	public static boolean isSingleLogin(String type) {
-		boolean single = AppInfo.getBoolean("sumk.http.session.single", false);
-		if (type == null || type.isEmpty()) {
-			return single;
-		}
-		return AppInfo.getBoolean("sumk.http.session.single." + type, single);
+	public static boolean isSingleLogin() {
+		return AppInfo.getBoolean("sumk.http.session.single", false);
 	}
 
-	private static synchronized void initSession() {
+	public static synchronized void initSession() {
 		if (session != null) {
 			return;
 		}
 		HttpSessionFactory factory = IOC.get(HttpSessionFactory.class);
-		if (factory == null) {
-			factory = () -> {
-				try {
-					Redis redis = RedisPool.getRedisExactly(RedisLoader.SESSION);
-					return redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
-				} catch (NoClassDefFoundError e) {
-					Logs.http().debug("use local session because redis cannot load", e);
-					return new LocalUserSession();
-				}
-			};
+		session = factory != null ? factory.create() : createDefaultUserSession();
+	}
+
+	private static UserSession createDefaultUserSession() {
+		try {
+			Redis redis = RedisPool.getRedisExactly(RedisLoader.SESSION);
+			return redis == null ? new LocalUserSession() : new RemoteUserSession(redis);
+		} catch (NoClassDefFoundError e) {
+			Logs.http().debug("use local session because redis cannot load", e);
+			return new LocalUserSession();
 		}
-		session = factory.create();
 	}
 }

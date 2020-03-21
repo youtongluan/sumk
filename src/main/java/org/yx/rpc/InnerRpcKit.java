@@ -19,11 +19,23 @@ import org.yx.common.context.ActionContext;
 import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
-public class InnerRpcKit {
+public final class InnerRpcKit {
 
 	public static ActionContext rpcContext(Req req, boolean isTest) {
 		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
 		return ActionContext.rpcContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
 				req.getAttachments());
+	}
+
+	public static String parseClassName2Prefix(String name, int partCount) {
+		String[] names = name.split("\\.");
+		if (names.length <= partCount) {
+			return name + ".";
+		}
+		StringBuilder sb = new StringBuilder(name.length());
+		for (int i = names.length - partCount; i < names.length; i++) {
+			sb.append(StringUtil.uncapitalize(names[i])).append('.');
+		}
+		return sb.toString();
 	}
 }

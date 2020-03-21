@@ -157,7 +157,7 @@ public final class ZkRouteParser {
 			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
 			datas.put(d.host(), d);
 		}
-		Routes.refresh(datas.values());
+		RpcRoutes.refresh(datas.values());
 	}
 
 	private List<String> filter(List<String> currentChilds) {
@@ -210,13 +210,13 @@ public final class ZkRouteParser {
 				if (list.isEmpty()) {
 					return;
 				}
-				List<RouteInfo> data = Routes.currentDatas();
+				List<RouteInfo> data = RpcRoutes.currentDatas();
 				Map<Host, RouteInfo> map = new HashMap<>();
 				for (RouteInfo r : data) {
 					map.put(r.host(), r);
 				}
 				if (handleData(map, list) > 0) {
-					Routes.refresh(map.values());
+					RpcRoutes.refresh(map.values());
 				}
 			}
 		});

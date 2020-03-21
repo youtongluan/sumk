@@ -25,4 +25,8 @@ public interface Const {
 	int ASM_VERSION = Opcodes.ASM5;
 
 	String DEFAULT_DB_NAME = "sumk";
+
+	int DEFAULT_INTF_PREFIX_PART_COUNT = 3;
+
+	String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
 }

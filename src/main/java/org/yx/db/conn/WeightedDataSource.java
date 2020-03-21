@@ -15,34 +15,17 @@
  */
 package org.yx.db.conn;
 
-import org.yx.common.route.WeightedServer;
-import org.yx.exception.SumkException;
+import org.yx.common.route.AbstractWeightedServer;
 
-public class WeightedDataSource implements WeightedServer {
+public class WeightedDataSource extends AbstractWeightedServer<SumkDataSource> {
 
-	private final SumkDataSource ds;
-	private int weight;
-
-	public WeightedDataSource(SumkDataSource ds) {
-		this.ds = ds;
+	public WeightedDataSource(SumkDataSource source) {
+		super(source);
 	}
 
-	public SumkDataSource getDdataSource() {
-		return ds;
+	@Override
+	public boolean isEnable() {
+		return this.source.isEnable();
 	}
 
-	public int getWeight() {
-		return weight;
-	}
-
-	public void setWeight(int weight) {
-		if (weight < 0) {
-			SumkException.throwException(2454335, "db weight must big than or equals 0,but exact is " + weight);
-		}
-		this.weight = weight;
-	}
-
-	public boolean enable() {
-		return ds.isEnable();
-	}
 }

@@ -21,7 +21,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.kit.HttpSettings;
 
 /**
  * 这个类要在sumk-http中调用，不能在自定义的servlet中调用
@@ -86,22 +86,14 @@ public final class HttpContextHolder {
 		if (req == null) {
 			return null;
 		}
-		String type = fromHeaderOrCookie(req, name);
-		if (type != null) {
-			return type;
+		String v = fromHeaderOrCookie(req, name);
+		if (v != null) {
+			return v;
 		}
 		return req.getParameter(name);
 	}
 
-	public static String getType() {
-		return InnerHttpUtil.getType(_req.get());
-	}
-
-	static void remove() {
-		_req.remove();
-	}
-
-	public static String getToken() {
-		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeaderName.token());
+	public static String userFlag() {
+		return fromHeaderOrCookieOrParamter(_req.get(), HttpHeaderName.userFlag());
 	}
 }

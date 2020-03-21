@@ -25,7 +25,6 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Upload;
-import org.yx.annotation.http.Web;
 import org.yx.exception.HttpException;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
@@ -44,12 +43,7 @@ public class UploadHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
+	public void handle(WebContext ctx) throws Throwable {
 		HttpServletRequest request = ctx.httpRequest();
 		Upload uploadInfo = ctx.httpNode().upload;
 
@@ -91,7 +85,6 @@ public class UploadHandler implements HttpHandler {
 			}
 		}
 		UploadFileHolder.setFiles(files);
-		return false;
 	}
 
 }

@@ -18,7 +18,6 @@ package org.yx.http.handler;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.common.context.ActionContext;
-import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
@@ -26,6 +25,7 @@ import org.yx.http.user.SessionObject;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
+import org.yx.util.M;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
@@ -37,39 +37,41 @@ public class ReqUserHandler implements HttpHandler {
 		return 1000;
 	}
 
-	@Override
 	public boolean accept(Web web) {
 		return web.requireLogin() || web.requestEncrypt().isAes();
 	}
 
 	@Override
-	public boolean handle(WebContext ctx) throws Exception {
+	public void handle(WebContext ctx) throws Exception {
+		if (!this.accept(ctx.web())) {
+			return;
+		}
 		String sessionId = HttpContextHolder.sessionId();
 		UserSession session = WebSessions.loadUserSession();
-		byte[] key = session.getKey(sessionId);
+		if (!session.valid(sessionId)) {
+			Logs.http().info("session:{}, is not valid", sessionId);
+			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.token.invalid", "token无效"));
+		}
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
 
-		if (key == null || obj == null) {
-			String type = HttpContextHolder.getType();
-			if (WebSessions.isSingleLogin(type)) {
-				String userId = HttpContextHolder.getToken();
+		if (obj == null) {
+			if (WebSessions.isSingleLogin()) {
+				String userId = HttpContextHolder.userFlag();
 				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId)) {
-						int code = AppInfo.getInt("sumk.http.session.single.code", HttpErrorCode.LOGIN_AGAIN);
-						String msg = AppInfo.get("sumk.http.session.single.msg", "您已在其他地方登录！");
 						Logs.http().info("session:{}, login by other", sessionId);
-						BizException.throwException(code, msg);
+						BizException.throwException(HttpErrorCode.LOGIN_AGAIN,
+								M.get("sumk.http.error.single", "您已在其他地方登录！"));
 					}
 				}
 			}
 			Logs.http().info("session:{}, has expired", sessionId);
-			BizException.throwException(HttpErrorCode.SESSION_ERROR, "请重新登陆");
+			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.unlogin", "请重新登陆"));
 		}
-		ctx.key(key);
+		ctx.key(session.getKey(sessionId));
 		ActionContext.get().userId(obj.getUserId());
 		ActionContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
-		return false;
 	}
 
 }

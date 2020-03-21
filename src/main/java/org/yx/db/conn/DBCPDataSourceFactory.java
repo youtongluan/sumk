@@ -35,7 +35,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 		DEFAULT_PROPERTIES.put("driverClassName", "com.mysql.jdbc.Driver");
 
 		DEFAULT_PROPERTIES.put("maxTotal", "30");
-		DEFAULT_PROPERTIES.put("minIdle", "2");
+		DEFAULT_PROPERTIES.put("minIdle", "5");
 		DEFAULT_PROPERTIES.put("maxIdle", "10");
 		DEFAULT_PROPERTIES.put("maxWaitMillis", "10000");
 		DEFAULT_PROPERTIES.put("testOnBorrow", "false");

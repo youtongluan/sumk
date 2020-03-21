@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.server;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.exception.BizException;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
+import org.yx.util.M;
 
 /**
  * 
@@ -36,16 +38,19 @@ public class UploadServer extends AbstractHttpServer {
 	protected void handle(WebContext wc) throws Throwable {
 		if (HttpHandlerChain.upload == null) {
 			log.error("上传功能被禁用");
-			throw BizException.create(HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
+			throw BizException.create(HttpErrorCode.UPLOAD_DISABLED,
+					M.get("sumk.http.upload.error.disable", "上传功能暂时无法使用"));
 		}
 		String contextType = wc.httpRequest().getContentType();
 		if (contextType == null || !contextType.startsWith(MULTI)) {
 			log.error("the MIME of act is " + MULTI + ",not " + contextType);
-			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE, "ContentType不是" + MULTI);
+			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE,
+					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTI, wc.rawAct()));
 		}
 		if (wc.httpNode().upload == null) {
 			log.error("{}缺少 @upload", wc.rawAct());
-			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS, "缺少@Upload注解");
+			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS,
+					M.get("sumk.http.upload.error.annocation", "不是上传接口", wc.rawAct()));
 		}
 		HttpHandlerChain.upload.handle(wc);
 	}

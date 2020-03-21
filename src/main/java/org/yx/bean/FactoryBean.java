@@ -24,7 +24,7 @@ public interface FactoryBean {
 	/**
 	 * 返回的列表中的元素，可以是class类、NamedBean或实例化后的对象。Collection、Map类型的Object，不会对它做额外处理。<BR>
 	 * 如果是实例化后的对象，该对象中sumk相关的注解(@Web、@Bean、@Soa等)会被忽略<BR>
-	 * 无论是对象还是class，这里的bean中的@Inject和@Cached都能被正确注入 注意：<B>不要出现类名重复的对象</B>
+	 * 无论是对象还是class，这里的bean中的@Inject能被正确注入 注意：<B>不要出现类名重复的对象</B>
 	 * 
 	 * @return 可以为null或空list
 	 */

@@ -35,7 +35,7 @@ import org.yx.exception.TooManyBeanException;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
-final class BeanPool {
+public final class BeanPool {
 
 	private final ConcurrentMap<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
 

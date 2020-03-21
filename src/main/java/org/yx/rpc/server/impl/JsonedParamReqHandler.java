@@ -17,9 +17,8 @@ package org.yx.rpc.server.impl;
 
 import org.yx.annotation.Bean;
 import org.yx.common.BizExcutor;
-import org.yx.common.context.ActionContext;
-import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
@@ -44,8 +43,6 @@ public class JsonedParamReqHandler implements RequestHandler {
 			resp.json(RpcGson.toJson(ret));
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);
-		} finally {
-			ActionContext.remove();
 		}
 		return true;
 	}

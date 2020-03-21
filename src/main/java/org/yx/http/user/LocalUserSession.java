@@ -24,7 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpSettings;
+import org.yx.http.kit.HttpSettings;
 import org.yx.log.Logs;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.S;
@@ -127,6 +127,11 @@ public class LocalUserSession implements UserSession {
 	@Override
 	public int localCacheSize() {
 		return this.map.size();
+	}
+
+	@Override
+	public boolean valid(String sessionId) {
+		return true;
 	}
 
 }

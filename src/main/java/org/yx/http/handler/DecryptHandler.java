@@ -16,11 +16,10 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 import org.yx.http.HttpCiphers;
 
 @Bean
-public class AesDecodeHandler implements HttpHandler {
+public class DecryptHandler implements HttpHandler {
 
 	@Override
 	public int order() {
@@ -28,22 +27,16 @@ public class AesDecodeHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return web.requestEncrypt().isAes();
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		if (ctx.httpNode().argClz == null) {
-			return false;
+	public void handle(WebContext ctx) throws Exception {
+		if (!ctx.httpNode().action.requestEncrypt().isAes() || ctx.httpNode().argClz == null) {
+			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();
 		if (bs == null) {
-			return false;
+			return;
 		}
 		byte[] data = HttpCiphers.getEncryptor().decrypt(bs, ctx);
 		ctx.data(data);
-		return false;
 	}
 
 }

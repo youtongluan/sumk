@@ -16,9 +16,8 @@
 package org.yx.validate;
 
 import org.yx.annotation.Bean;
-import org.yx.common.MessageKit;
-import org.yx.conf.AppInfo;
 import org.yx.exception.InvalidParamException;
+import org.yx.util.M;
 
 @Bean
 public class MinValidator implements Validator {
@@ -39,15 +38,13 @@ public class MinValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() < expect) {
-				String template = AppInfo.get("sumk.valid.msg.minLength", "#的长度不能小于{0},实际却是{1}");
-				return MessageKit.buildMessage(template, String.valueOf(expect), String.valueOf(s.length()));
+				return M.get("sumk.valid.msg.minLength", "#的长度不能小于{0},实际却是{1}", expect, s.length());
 			}
 		}
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n < expect) {
-				String template = AppInfo.get("sumk.valid.msg.min", "#的值不能小于{0},实际却是{1}");
-				return MessageKit.buildMessage(template, String.valueOf(expect), arg.toString());
+				return M.get("sumk.valid.msg.min", "#的值不能小于{0},实际却是{1}", expect, arg);
 			}
 		}
 		return null;

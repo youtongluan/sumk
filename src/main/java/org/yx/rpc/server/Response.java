@@ -23,7 +23,7 @@ public class Response {
 	private String json;
 	private SoaException exception;
 
-	private Long ms;
+	private long ms = -1;
 
 	public String sn() {
 		return sn;
@@ -33,7 +33,7 @@ public class Response {
 		return json;
 	}
 
-	public Long serviceInvokeMilTime() {
+	public long serviceInvokeMilTime() {
 		return ms;
 	}
 
@@ -45,7 +45,7 @@ public class Response {
 		this.json = json;
 	}
 
-	public void serviceInvokeMilTime(Long ms) {
+	public void serviceInvokeMilTime(long ms) {
 		this.ms = ms;
 	}
 

@@ -17,7 +17,6 @@ package org.yx.http.invoke;
 
 import org.yx.asm.ArgPojo;
 import org.yx.common.BizExcutor;
-import org.yx.http.HttpGson;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.handler.WebContext;
 import org.yx.validate.ParamInfo;
@@ -27,19 +26,8 @@ public class WebVisitorImpl implements WebVisitor {
 	@Override
 	public Object visit(WebContext ctx) throws Throwable {
 		HttpActionNode http = ctx.httpNode();
-		ArgPojo argObj = parseArgPojo(http, ctx.data());
+		ArgPojo argObj = http.buildArgPojo(ctx.data());
 		return exec(argObj, http.owner, http.paramInfos);
-	}
-
-	private ArgPojo parseArgPojo(HttpActionNode http, Object reqData) throws Exception {
-		if (http.argNames.length == 0 || reqData == null) {
-			return http.getEmptyArgObj();
-		}
-		String data = (String) reqData;
-		if (data.isEmpty()) {
-			return http.getEmptyArgObj();
-		}
-		return HttpGson.gson().fromJson(data, http.argClz);
 	}
 
 	private Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos) throws Throwable {

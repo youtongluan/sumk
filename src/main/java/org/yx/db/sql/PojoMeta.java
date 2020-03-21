@@ -26,8 +26,8 @@ import java.util.Set;
 
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
-import org.yx.bean.IOC;
 import org.yx.bean.Loader;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
@@ -143,9 +143,13 @@ public final class PojoMeta implements Cloneable {
 				this.primaryIDs = pids.toArray(new ColumnMeta[pids.size()]);
 			}
 		}
-		this.softDelete = IOC.get(SoftDeleteParser.class).parse(this.pojoClz.getAnnotation(SoftDelete.class));
+		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class));
 		parseTable();
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
+	}
+
+	private SoftDeleteParser softDeleteParser() {
+		return (SoftDeleteParser) StartContext.inst().getOrCreate(SoftDeleteParser.class, new SoftDeleteParserImpl());
 	}
 
 	private void parseTable() {

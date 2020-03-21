@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.ParserConfigurationException;
@@ -30,8 +31,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.yx.common.expression.MatchType;
-import org.yx.common.expression.NotExpression;
-import org.yx.common.expression.ParamExpression;
 import org.yx.db.mapper.ForeachParser.Joiner;
 import org.yx.exception.SumkException;
 
@@ -88,7 +87,7 @@ public class SqlXmlParser {
 		}
 	}
 
-	private static ParamExpression paramExpression(Element el) {
+	private static Predicate<Map<String, Object>> paramExpression(Element el) {
 		return SqlParsers.createParamExpression(el.getAttribute("test"),
 				MatchType.matchTypeOrDefault(el.getAttribute("falseby")));
 	}
@@ -123,7 +122,7 @@ public class SqlXmlParser {
 				add(list, IFParser.create(paramExpression(el), parseSqlNode(el.getChildNodes())));
 				break;
 			case "ifnot":
-				add(list, IFParser.create(new NotExpression(paramExpression(el)), parseSqlNode(el.getChildNodes())));
+				add(list, IFParser.create(paramExpression(el).negate(), parseSqlNode(el.getChildNodes())));
 				break;
 			case "foreach":
 				add(list, forEach(el));

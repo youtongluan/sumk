@@ -21,16 +21,22 @@ import org.yx.db.TransactionType;
 
 public final class Databases {
 
+	public static final Database WRITE = new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.WRITE,
+			TransactionType.REQUIRED);
+	public static final Database READONLY = new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.READONLY,
+			TransactionType.REQUIRED);
+	public static final Database ANY = new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.ANY, TransactionType.REQUIRED);
+
 	public static Database write() {
-		return new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.WRITE, TransactionType.REQUIRED);
+		return WRITE;
 	}
 
 	public static Database readOnly() {
-		return new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.READONLY, TransactionType.REQUIRED);
+		return READONLY;
 	}
 
 	public static Database any() {
-		return new DefaultDatabase(Const.DEFAULT_DB_NAME, DBType.ANY, TransactionType.REQUIRED);
+		return ANY;
 	}
 
 	public static Database write(String dbName) {

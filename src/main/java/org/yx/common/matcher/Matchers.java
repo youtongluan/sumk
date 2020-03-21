@@ -26,8 +26,12 @@ import org.yx.util.StringUtil;
 
 public class Matchers {
 
-	public static Predicate<String> createWildcardMatcher(String patterns, int minPatternLength) {
+	/**
+	 * 表达式的分隔符
+	 */
+	public static final String SPLIT = ",";
 
+	public static Predicate<String> createWildcardMatcher(String patterns, int minPatternLength) {
 		if (patterns == null || patterns.isEmpty()) {
 			return BooleanMatcher.FALSE;
 		}
@@ -36,7 +40,7 @@ public class Matchers {
 		Set<String> matchEnd = new HashSet<>();
 		Set<String> matchContain = new HashSet<>();
 		patterns = StringUtil.toLatin(patterns);
-		String[] noProxyArray = patterns.split(",");
+		String[] noProxyArray = patterns.split(SPLIT);
 		String doubleWild = WILDCARD + WILDCARD;
 		for (String s : noProxyArray) {
 			if ((s = s.trim()).isEmpty()) {

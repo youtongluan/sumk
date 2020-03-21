@@ -13,31 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.annotation;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
-import org.yx.http.HttpCiphers;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-@Bean
-public class AesEncodeHandler implements HttpHandler {
-
-	@Override
-	public int order() {
-		return 2300;
-	}
-
-	@Override
-	public boolean accept(Web web) {
-		return web.responseEncrypt().isAes();
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		byte[] bs = (byte[]) ctx.result();
-		byte[] data = HttpCiphers.getEncryptor().encrypt(bs, ctx);
-		ctx.result(data);
-		return false;
-	}
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface Exclude {
 
 }

@@ -27,7 +27,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.ActStatis;
 import org.yx.conf.AppInfo;
 import org.yx.exception.HttpException;
-import org.yx.http.HttpSettings;
 import org.yx.http.handler.ReqBodyHandler;
 import org.yx.log.Logs;
 
@@ -69,10 +68,6 @@ public final class InnerHttpUtil {
 		byte[] bs = output.toByteArray();
 		output.close();
 		return extractData(bs);
-	}
-
-	public static String getType(HttpServletRequest req) {
-		return kit.getType(req);
 	}
 
 	public static Charset charset(HttpServletRequest req) {

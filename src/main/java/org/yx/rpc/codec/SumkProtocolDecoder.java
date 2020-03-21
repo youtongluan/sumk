@@ -24,6 +24,7 @@ import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.yx.annotation.Bean;
+import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 import org.yx.rpc.Profile;
 
@@ -33,6 +34,12 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 	protected boolean innerDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
 			throws CharacterCodingException, ProtocolDecoderException {
 		int protocol = in.getInt();
+		if ((protocol & 0xFF000000) != Protocols.MAGIC) {
+			if (Logs.rpc().isTraceEnabled()) {
+				Logs.rpc().trace(in.getString(Profile.UTF8.newDecoder()));
+			}
+			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));
+		}
 		int prefixLength = 0, maxDataLength = 0;
 		if ((protocol & Protocols.ONE) != 0) {
 			prefixLength = 1;
@@ -44,6 +51,9 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 			prefixLength = 4;
 			maxDataLength = Protocols.MAX_LENGTH;
 		} else {
+			if (AppInfo.getBoolean("sumk.rpc.log.code.error", true)) {
+				Logs.rpc().error("error byte length protocol," + Integer.toHexString(protocol));
+			}
 			throw new ProtocolDecoderException("error byte length protocol," + Integer.toHexString(protocol));
 		}
 
@@ -78,28 +88,15 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out)
 			throws ProtocolDecoderException, CharacterCodingException {
-		if (in.remaining() < 8) {
+		if (in.remaining() < 5) {
 			return false;
 		}
-		int pos = in.position();
-		int protocol = in.getInt(pos);
-		if ((protocol & 0xFF000000) != Protocols.MAGIC) {
-			int position = in.position();
-			if (Logs.rpc().isTraceEnabled()) {
-				Logs.rpc().trace(in.getString(Profile.UTF8.newDecoder()));
-			}
-			in.position(position);
-			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));
+		final int pos = in.position();
+		if (!this.innerDecode(session, in, out)) {
+			in.position(pos);
+			return false;
 		}
-		boolean ret = false;
-		try {
-			ret = this.innerDecode(session, in, out);
-		} finally {
-			if (!ret) {
-				in.position(pos);
-			}
-		}
-		return ret;
+		return true;
 	}
 
 }

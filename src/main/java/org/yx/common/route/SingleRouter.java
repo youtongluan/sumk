@@ -13,34 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.common.route;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
-import org.yx.exception.BizException;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.InnerHttpUtil;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
-@Bean
-public class ReqTypeChecker implements HttpHandler {
+public class SingleRouter<T> implements Router<T> {
 
-	@Override
-	public int order() {
-		return 1200;
+	private final WeightedServer<T> server;
+
+	public SingleRouter(WeightedServer<T> server) {
+		this.server = Objects.requireNonNull(server);
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
-		String type = InnerHttpUtil.getType(ctx.httpRequest());
-		if (!ctx.httpNode().acceptType(type)) {
-			BizException.throwException(HttpErrorCode.TYPE_ERROR, "客户端类别错误");
+	public T select() {
+		if (!this.server.isEnable()) {
+			return null;
 		}
-		return false;
+		return this.server.getSource();
+	}
+
+	@Override
+	public List<T> allSources() {
+		return Collections.singletonList(this.server.getSource());
+	}
+
+	@Override
+	public List<T> aliveSources() {
+		return server.isEnable() ? Collections.singletonList(this.server.getSource()) : Collections.emptyList();
 	}
 
 }

@@ -19,26 +19,23 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 import org.yx.annotation.Param;
-import org.yx.annotation.rpc.Soa;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
 import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
-import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
 
 public final class RpcActionNode extends CalleeNode {
-	public final Soa action;
+	private boolean publish;
 
 	public final Field[] fields;
 
 	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
-			Soa action) {
-		super(obj, method, argClz, argNames, params,
-				action.toplimit() > 0 ? action.toplimit() : AppInfo.getInt("sumk.rpc.thread.priority.default", 100000));
-		this.action = action;
+			int toplimit, boolean publish) {
+		super(obj, method, argClz, argNames, params, toplimit);
+		this.publish = publish;
 		if (argNames.length > 0) {
 			this.fields = new Field[argNames.length];
 			try {
@@ -53,6 +50,10 @@ public final class RpcActionNode extends CalleeNode {
 		} else {
 			this.fields = null;
 		}
+	}
+
+	public boolean publish() {
+		return this.publish;
 	}
 
 	public Object invokeByJsonArg(String args) throws Throwable {

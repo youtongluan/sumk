@@ -46,7 +46,7 @@ public class SoaServer implements Lifecycle {
 	private Host host;
 	private boolean enable;
 	private final String SOA_ROOT;
-	private Logger logger = Log.get("sumk.rpc.server");
+	private final Logger logger = Log.get("sumk.rpc.server");
 
 	private static boolean soaServerEnable() {
 		return AppInfo.getBoolean("sumk.rpc.server.register", true);

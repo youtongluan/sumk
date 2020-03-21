@@ -21,6 +21,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.annotation.http.Web;
 import org.yx.http.act.HttpActionNode;
 
 public class WebContext {
@@ -32,12 +33,15 @@ public class WebContext {
 	private String sign;
 	private Object data;
 
+	private int lowestOrder;
+
 	private Object result;
 	private byte[] key;
 	private transient String str_data;
 	private transient String str_resp;
 	private final long beginTime;
 	private transient Object attach;
+	private boolean failed;
 
 	public Object getAttach() {
 		return attach;
@@ -132,6 +136,26 @@ public class WebContext {
 
 	public String rawAct() {
 		return rawAct;
+	}
+
+	public int getLowestOrder() {
+		return lowestOrder;
+	}
+
+	public void setLowestOrder(int lowestOrder) {
+		this.lowestOrder = lowestOrder;
+	}
+
+	public Web web() {
+		return this.node.action;
+	}
+
+	public boolean isFailed() {
+		return failed;
+	}
+
+	public void setFailed(boolean failed) {
+		this.failed = failed;
 	}
 
 }

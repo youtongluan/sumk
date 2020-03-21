@@ -23,24 +23,17 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
-import org.yx.http.AbstractCommonHttpServlet;
-import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.server.AbstractCommonHttpServlet;
 import org.yx.log.Log;
 
 public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 1L;
 
-	private LoginServlet[] servs = new LoginServlet[0];
+	private LoginServlet serv;
 
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
-		String type = InnerHttpUtil.getType(req);
-		for (LoginServlet s : this.servs) {
-			if (s.acceptType(type)) {
-				s.service(req, resp);
-				return;
-			}
-		}
+		serv.service(req, resp);
 	}
 
 	@Override
@@ -52,10 +45,11 @@ public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 				Log.get("sumk.http.login").info("there is no LoginServlet");
 				return;
 			}
-			this.servs = ss.toArray(new LoginServlet[ss.size()]);
-			for (LoginServlet serv : ss) {
-				serv.init(config);
+			if (ss.size() > 0) {
+				Log.get("sumk.http.login").error("there is {} login servlet", ss.size());
 			}
+			this.serv = ss.get(0);
+			serv.init(config);
 		} catch (Exception e) {
 			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
 		}

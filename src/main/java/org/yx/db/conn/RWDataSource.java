@@ -13,21 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.db.conn;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.SumkServlet;
-import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.WebContext;
+import java.util.Objects;
 
-@Bean
-@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
-public class RestServer extends AbstractHttpServer {
+import org.yx.common.route.Router;
 
-	private static final long serialVersionUID = 7437235491L;
+public class RWDataSource {
+	private final Router<SumkDataSource> write;
+	private final Router<SumkDataSource> read;
 
-	@Override
-	protected void handle(WebContext wc) throws Throwable {
-		HttpHandlerChain.inst.handle(wc);
+	public RWDataSource(Router<SumkDataSource> write, Router<SumkDataSource> read) {
+		this.write = Objects.requireNonNull(write);
+		this.read = Objects.requireNonNull(read);
 	}
+
+	public Router<SumkDataSource> getWrite() {
+		return write;
+	}
+
+	public Router<SumkDataSource> getRead() {
+		return read;
+	}
+
 }

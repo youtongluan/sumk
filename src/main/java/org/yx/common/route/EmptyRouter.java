@@ -13,26 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.expression;
+package org.yx.common.route;
 
-import java.util.Map;
-import java.util.Objects;
+import java.util.Collections;
+import java.util.List;
 
-public class NotExpression implements ParamExpression {
+public class EmptyRouter<T> implements Router<T> {
 
-	private final ParamExpression expression;
-
-	public NotExpression(ParamExpression expression) {
-		this.expression = Objects.requireNonNull(expression);
+	@Override
+	public T select() {
+		return null;
 	}
 
 	@Override
-	public boolean test(Map<String, Object> param) {
-		return !expression.test(param);
+	public List<T> allSources() {
+		return Collections.emptyList();
 	}
 
 	@Override
-	public String toString() {
-		return "NOT[" + expression.toString() + "]";
+	public List<T> aliveSources() {
+		return Collections.emptyList();
 	}
+
 }

@@ -26,6 +26,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
+import org.yx.rpc.RpcSettings;
 import org.yx.rpc.server.impl.RpcHandler;
 import org.yx.rpc.server.start.SoaAnnotationResolver;
 
@@ -40,6 +41,7 @@ public class SoaPlugin implements Plugin {
 			return;
 		}
 		try {
+			RpcSettings.init();
 			resolveSoaAnnotation(StartContext.inst().getBeans());
 			RpcHandler.init();
 			int port = StartContext.soaPort();

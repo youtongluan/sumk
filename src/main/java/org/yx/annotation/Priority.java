@@ -13,11 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.expression;
+package org.yx.annotation;
 
-import java.util.Map;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-public interface ParamExpression {
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-	boolean test(Map<String, Object> map);
+@Target({ TYPE })
+@Retention(RUNTIME)
+@Documented
+public @interface Priority {
+
+	int value();
 }

@@ -23,7 +23,9 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
@@ -94,7 +96,25 @@ public final class AsmUtils {
 	}
 
 	public static List<MethodParamInfo> buildMethodInfos(List<Method> methods) throws IOException {
-		String classFullName = methods.get(0).getDeclaringClass().getName();
+		Map<Class<?>, List<Method>> map = new HashMap<>();
+		for (Method m : methods) {
+			List<Method> list = map.get(m.getDeclaringClass());
+			if (list == null) {
+				list = new ArrayList<>();
+				map.put(m.getDeclaringClass(), list);
+			}
+			list.add(m);
+		}
+		List<MethodParamInfo> ret = new ArrayList<>();
+		for (List<Method> ms : map.values()) {
+			ret.addAll(buildMethodInfos(ms.get(0).getDeclaringClass(), ms));
+		}
+		return ret;
+	}
+
+	private static List<MethodParamInfo> buildMethodInfos(Class<?> declaringClass, List<Method> methods)
+			throws IOException {
+		String classFullName = declaringClass.getName();
 		ClassReader cr = new ClassReader(openStreamForClass(classFullName));
 		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(methods);
 		cr.accept(cv, 0);

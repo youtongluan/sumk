@@ -16,9 +16,8 @@
 package org.yx.validate;
 
 import org.yx.annotation.Bean;
-import org.yx.common.MessageKit;
-import org.yx.conf.AppInfo;
 import org.yx.exception.InvalidParamException;
+import org.yx.util.M;
 
 @Bean
 public class MaxValidator implements Validator {
@@ -39,15 +38,13 @@ public class MaxValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() > expect) {
-				String template = AppInfo.get("sumk.valid.msg.maxLength", "#的长度不能超过{0},实际却是{1}");
-				return MessageKit.buildMessage(template, String.valueOf(expect), String.valueOf(s.length()));
+				return M.get("sumk.valid.msg.maxLength", "#的长度不能超过{0},实际却是{1}", expect, s.length());
 			}
 		}
 		if (Number.class.isAssignableFrom(clz)) {
 			int n = ((Number) arg).intValue();
 			if (n > expect) {
-				String template = AppInfo.get("sumk.valid.msg.max", "#的值不能大于{0},实际却是{1}");
-				return MessageKit.buildMessage(template, String.valueOf(expect), arg.toString());
+				return M.get("sumk.valid.msg.max", "#的值不能大于{0},实际却是{1}", expect, arg);
 			}
 		}
 		return null;

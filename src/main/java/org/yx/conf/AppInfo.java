@@ -265,4 +265,8 @@ public final class AppInfo {
 		}
 	}
 
+	public static SystemConfig config() {
+		return info;
+	}
+
 }

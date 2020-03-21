@@ -15,25 +15,19 @@
  */
 package org.yx.rpc.client.route;
 
-import java.util.Collection;
-
 import org.yx.common.Host;
-import org.yx.common.route.WeightedRoute;
+import org.yx.common.route.AbstractWeightedServer;
 
-public class RpcRoute extends WeightedRoute<ServerMachine> {
+public class WeightedHost extends AbstractWeightedServer<Host> {
 
-	public RpcRoute(Collection<ServerMachine> servers) {
-		super(servers.toArray(new ServerMachine[servers.size()]));
+	public WeightedHost(Host source, int weight) {
+		super(source);
+		this.setWeight(weight);
 	}
 
 	@Override
-	protected boolean isDowned(ServerMachine server) {
-		return HostChecker.get().isDowned(server.url);
-	}
-
-	public Host getUrl() {
-		ServerMachine server = this.getServer();
-		return server == null ? null : server.url;
+	public boolean isEnable() {
+		return !HostChecker.get().isDowned(this.source);
 	}
 
 }

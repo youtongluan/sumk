@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpSettings;
+import org.yx.http.kit.HttpSettings;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.redis.Redis;
@@ -31,7 +31,6 @@ import org.yx.util.StringUtil;
 public class RemoteUserSession implements UserSession {
 	private static final byte[] NX = { 'N', 'X' };
 	private static final byte[] PX = { 'P', 'X' };
-	private static final String SPLIT = "\n\n";
 	private Logger log = Log.get("sumk.http.session");
 
 	protected final ConcurrentMap<String, TimedCachedObject> cache = new ConcurrentHashMap<>();
@@ -69,14 +68,9 @@ public class RemoteUserSession implements UserSession {
 		}, seconds, seconds, TimeUnit.SECONDS);
 	}
 
-	protected TimedCachedObject load(byte[] bigKey, long now) {
+	protected TimedCachedObject load(byte[] bigKey, long refreshTime) {
 		byte[] bv = redis.get(bigKey);
-		if (bv == null) {
-			return null;
-		}
-		String value = new String(bv, AppInfo.UTF8);
-		String[] vs = value.split(SPLIT, 2);
-		return new TimedCachedObject(vs[0], S.base64.decode(vs[1]), now);
+		return TimedCachedObject.deserialize(bv, refreshTime);
 	}
 
 	protected TimedCachedObject loadUserObject(String sid) {
@@ -153,9 +147,8 @@ public class RemoteUserSession implements UserSession {
 		long sessionTimeout = HttpSettings.getHttpSessionTimeoutInMs();
 		byte[] bigKey = this.bigKey(sessionId);
 		String json = S.json.toJson(sessionObj);
-		String key2 = S.base64.encodeToString(key);
-		String value = String.join(SPLIT, json, key2);
-		String ret = redis.set(bigKey, value.getBytes(AppInfo.UTF8), NX, PX, sessionTimeout);
+		byte[] data = TimedCachedObject.toBytes(json, key);
+		String ret = redis.set(bigKey, data, NX, PX, sessionTimeout);
 		if (!"OK".equalsIgnoreCase(ret) && !"1".equals(ret)) {
 			return false;
 		}
@@ -176,6 +169,11 @@ public class RemoteUserSession implements UserSession {
 	@Override
 	public int localCacheSize() {
 		return this.cache.size();
+	}
+
+	@Override
+	public boolean valid(String sessionId) {
+		return true;
 	}
 
 }

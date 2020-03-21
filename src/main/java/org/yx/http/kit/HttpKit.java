@@ -25,8 +25,6 @@ import org.yx.common.ActStatis;
 
 public interface HttpKit {
 
-	String getType(HttpServletRequest req);
-
 	Charset charset(HttpServletRequest req);
 
 	void noCache(HttpServletResponse resp);

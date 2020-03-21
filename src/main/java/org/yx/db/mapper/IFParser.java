@@ -17,23 +17,23 @@ package org.yx.db.mapper;
 
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Predicate;
 
-import org.yx.common.expression.ParamExpression;
 import org.yx.db.sql.MapedSql;
 
 public class IFParser implements SqlParser {
 
 	private final SqlParser parser;
-	private final ParamExpression expression;
+	private final Predicate<Map<String, Object>> expression;
 
-	public static IFParser create(ParamExpression expression, SqlParser parser) {
+	public static IFParser create(Predicate<Map<String, Object>> expression, SqlParser parser) {
 		if (parser == null) {
 			return null;
 		}
 		return new IFParser(Objects.requireNonNull(expression), parser);
 	}
 
-	private IFParser(ParamExpression expression, SqlParser parser) {
+	private IFParser(Predicate<Map<String, Object>> expression, SqlParser parser) {
 		this.expression = expression;
 		this.parser = parser;
 	}

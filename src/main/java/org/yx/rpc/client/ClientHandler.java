@@ -21,10 +21,10 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.codec.ProtocolDeserializer;
-import org.yx.rpc.server.MinaServer;
 import org.yx.rpc.server.Response;
 
 public class ClientHandler implements IoHandler {
@@ -53,7 +53,7 @@ public class ClientHandler implements IoHandler {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
 		long time = System.currentTimeMillis() - session.getLastIoTime();
-		if (time > AppInfo.getLong(MinaServer.SOA_SESSION_IDLE, 60) * 1000) {
+		if (time > AppInfo.getLong(Const.SOA_SESSION_IDLE, 60) * 1000) {
 			Log.get("sumk.rpc.client").info("rpc session {} {} for {}ms,closed by this client", session.getId(), status,
 					session.getLastIoTime(), time);
 			session.closeOnFlush();

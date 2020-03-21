@@ -27,13 +27,13 @@ import org.yx.bean.Loader;
 
 public final class ClassScaner {
 
-	private static Function<String[], Collection<String>> scaner = new DefaultClassNameScaner();
+	private static Function<Collection<String>, Collection<String>> scaner = new DefaultClassNameScaner();
 
-	public static Function<String[], Collection<String>> getScaner() {
+	public static Function<Collection<String>, Collection<String>> getScaner() {
 		return scaner;
 	}
 
-	public static void setScaner(Function<String[], Collection<String>> scaner) {
+	public static void setScaner(Function<Collection<String>, Collection<String>> scaner) {
 		ClassScaner.scaner = Objects.requireNonNull(scaner);
 	}
 
@@ -44,7 +44,7 @@ public final class ClassScaner {
 
 	@SuppressWarnings("unchecked")
 	public static <T> Set<Class<? extends T>> list(String packageName, Class<T> baseClz) throws ClassNotFoundException {
-		Collection<String> clzNames = listClasses(packageName);
+		Collection<String> clzNames = listClasses(Collections.singletonList(packageName));
 		if (clzNames == null || clzNames.isEmpty()) {
 			return Collections.emptySet();
 		}
@@ -60,7 +60,7 @@ public final class ClassScaner {
 		return set;
 	}
 
-	public static Collection<String> listClasses(String... packageNames) {
+	public static Collection<String> listClasses(Collection<String> packageNames) {
 		return scaner.apply(packageNames);
 	}
 }

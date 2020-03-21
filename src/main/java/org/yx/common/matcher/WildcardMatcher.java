@@ -16,6 +16,9 @@
 package org.yx.common.matcher;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -72,6 +75,22 @@ public class WildcardMatcher implements Predicate<String> {
 			}
 		}
 		return false;
+	}
+
+	public Collection<String> exacts() {
+		return exacts == null ? null : Collections.unmodifiableSet(exacts);
+	}
+
+	public List<String> matchStarts() {
+		return matchStarts == null ? null : Arrays.asList(matchStarts);
+	}
+
+	public List<String> matchEnds() {
+		return matchEnds == null ? null : Arrays.asList(matchEnds);
+	}
+
+	public List<String> contains() {
+		return contains == null ? null : Arrays.asList(contains);
 	}
 
 	@Override

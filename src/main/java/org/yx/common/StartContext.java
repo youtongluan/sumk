@@ -58,16 +58,15 @@ public class StartContext {
 		return map.get(clz.getName());
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> T getOrCreate(String key, T t) {
+	public Object getOrCreate(String key, Object t) {
 		if (map.containsKey(key)) {
-			return (T) map.get(key);
+			return map.get(key);
 		}
-		map.put(key, t);
-		return t;
+		Object pre = map.putIfAbsent(key, t);
+		return pre == null ? t : pre;
 	}
 
-	public <T> T getOrCreate(Class<?> clz, T t) {
+	public Object getOrCreate(Class<?> clz, Object t) {
 		return this.getOrCreate(clz.getName(), t);
 	}
 

@@ -15,19 +15,19 @@
  */
 package org.yx.rpc.codec;
 
-public class Protocols {
+public final class Protocols {
 
-	public final static int ONE = 0x01;
-	public final static int TWO = 0x02;
-	public final static int FOUR = 0x04;
+	public static final int ONE = 0x01;
+	public static final int TWO = 0x02;
+	public static final int FOUR = 0x04;
 
-	public final static int FORMAT_JSON = 0x010000;
+	public static final int FORMAT_JSON = 0x010000;
 
-	public final static int RESPONSE_JSON = 0x1000;
+	public static final int RESPONSE_JSON = 0x1000;
 
-	public final static int REQ_PARAM_JSON = 0x0100;
+	public static final int REQ_PARAM_JSON = 0x0100;
 
-	public final static int REQ_PARAM_ORDER = 0x0200;
+	public static final int REQ_PARAM_ORDER = 0x0200;
 
 	public static int profile() {
 		return ONE | TWO | FOUR | FORMAT_JSON | REQ_PARAM_JSON | REQ_PARAM_ORDER | RESPONSE_JSON;
@@ -37,13 +37,13 @@ public class Protocols {
 		return (protocol & feature) != 0;
 	}
 
-	public final static int MAX_LENGTH = 0x3FFFFFFF;
+	public static final int MAX_LENGTH = 0x3FFFFFFF;
 
-	public final static int MAX_ONE = 0xFF;
-	public final static int MAX_TWO = 0xFFFF;
+	public static final int MAX_ONE = 0xFF;
+	public static final int MAX_TWO = 0xFFFF;
 
-	public final static String LINE_SPLIT = "\n";
+	public static final String LINE_SPLIT = "\n";
 
-	public final static int MAGIC = 0x8F000000;
+	public static final int MAGIC = 0x8F000000;
 
 }

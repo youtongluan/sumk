@@ -17,18 +17,17 @@ package org.yx.bean;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.yx.annotation.Inject;
 import org.yx.asm.AsmUtils;
 import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanPropertiesWatcher;
-import org.yx.bean.watcher.IntfImplement;
 import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
@@ -39,21 +38,22 @@ import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.util.kit.PriorityKits;
 
 public final class BeanPublisher {
 
 	private static ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
 
-	public static synchronized void publishBeans(List<String> packageNames) {
+	public static synchronized void publishBeans(List<String> packageNames) throws Exception {
 		if (packageNames.isEmpty()) {
-			Logs.system().warn("property [sumk.ioc] is empty");
+			Logs.ioc().warn("property [sumk.ioc] is empty");
 		}
 
 		packageNames.remove(StartConstants.INNER_PACKAGE);
 		packageNames.add(0, StartConstants.INNER_PACKAGE);
 
-		IntfImplement.beforeScan();
-		Collection<String> clzs = ClassScaner.listClasses(packageNames.toArray(new String[packageNames.size()]));
+		Collection<String> clzs = ClassScaner.listClasses(packageNames);
+		List<Class<?>> clazzList = new ArrayList<>(clzs.size());
 		for (String c : clzs) {
 			try {
 
@@ -62,18 +62,30 @@ public final class BeanPublisher {
 						|| clz.isLocalClass() || clz.isAnnotation() || clz.isEnum()) {
 					continue;
 				}
-				publish(new BeanEvent(clz));
-			} catch (Exception e) {
-				Log.printStack("sumk.error", e);
+				clazzList.add(clz);
 			} catch (NoClassDefFoundError e) {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
 				}
-				Logs.system().debug("{} ignored.{}", c, e.getMessage());
+				Logs.ioc().debug("{} ignored.{}", c, e.getMessage());
+			} catch (Exception e) {
+				Log.printStack("sumk.error", e);
 			}
 		}
-		if (AppInfo.getBoolean("sumk.ioc.showinfo", false)) {
-			Logs.system().debug(IOC.info());
+
+		clazzList = PriorityKits.sort(clazzList);
+		for (Class<?> clz : clazzList) {
+			try {
+				publish(new BeanEvent(clz));
+			} catch (Exception e) {
+				Log.printStack("sumk.error", e);
+			}
+		}
+		if (clazzList.size() > 5) {
+			Logs.ioc().debug("scan class size:{}, {} {}..{} {}", clazzList.size(), clazzList.get(0).getSimpleName(),
+					clazzList.get(1).getSimpleName(), clazzList.get(clazzList.size() - 2).getSimpleName(),
+					clazzList.get(clazzList.size() - 1).getSimpleName());
+			Logs.ioc().trace("ordered class:\n{}", clazzList);
 		}
 		autoWiredAll();
 	}
@@ -95,19 +107,15 @@ public final class BeanPublisher {
 		return IOC.get(clz);
 	}
 
-	private static void injectField(Field f, Object bean, Object target) {
+	private static void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
 		boolean access = f.isAccessible();
 		if (!access) {
 			f.setAccessible(true);
 		}
-		try {
-			f.set(bean, target);
-		} catch (Exception e) {
-			Log.printStack("sumk.error", e);
-		}
+		f.set(bean, target);
 	}
 
-	private static void autoWiredAll() {
+	private static void autoWiredAll() throws Exception {
 		Logger logger = Logs.ioc();
 		Object[] bs = InnerIOC.beans().toArray(new Object[0]);
 		final List<Object> beans = Arrays.asList(bs);
@@ -126,7 +134,7 @@ public final class BeanPublisher {
 		PluginHandler.instance.start();
 	}
 
-	private static void injectProperties(Object bean) {
+	private static void injectProperties(Object bean) throws Exception {
 		Class<?> tempClz = bean.getClass();
 		while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
@@ -134,7 +142,8 @@ public final class BeanPublisher {
 			for (Field f : fs) {
 				Inject inject = f.getAnnotation(Inject.class);
 				if (inject != null) {
-					Class<?> clz = inject.beanClz();
+					final Class<?> clz = inject.beanClz();
+					final Class<?> fieldType = f.getType();
 					Object target = null;
 					if (inject.handler().length() > 0) {
 						try {
@@ -144,12 +153,10 @@ public final class BeanPublisher {
 							throw new SimpleSumkException(-235435628, bean.getClass().getName() + "." + f.getName()
 									+ " cannot injected with " + inject.handler());
 						}
-					} else if (f.getType().isArray()) {
+					} else if (fieldType.isArray()) {
 						target = getArrayField(f, clz, bean);
-					} else if (List.class == f.getType()) {
+					} else if (List.class == fieldType || Collection.class == fieldType) {
 						target = getListField(f, clz, bean);
-					} else if (Set.class == f.getType()) {
-						target = getSetField(f, clz, bean);
 					} else {
 						target = getBean(f, clz);
 					}
@@ -165,33 +172,34 @@ public final class BeanPublisher {
 		}
 	}
 
-	private static Set<?> getSetField(Field f, Class<?> clz, Object bean) {
+	private static List<?> getListField(Field f, Class<?> clz, Object bean) throws ClassNotFoundException {
+		if (clz == null || clz == Object.class) {
+			String genericName = f.getGenericType().getTypeName();
+			if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
+				throw new SimpleSumkException(-239845611,
+						"" + bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
+			}
+			genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
+			clz = Class.forName(genericName);
+		}
 		if (clz == Object.class) {
 			throw new SimpleSumkException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
 					+ ": beanClz of @Inject in list type cannot be null");
 		}
 		List<?> target = IOC.getBeans(clz);
 		if (target == null || target.isEmpty()) {
-			return null;
-		}
-		return new HashSet<>(target);
-	}
-
-	private static List<?> getListField(Field f, Class<?> clz, Object bean) {
-		if (clz == Object.class) {
-			throw new SimpleSumkException(-23984568, "" + bean.getClass().getName() + "." + f.getName()
-					+ ": beanClz of @Inject in list type cannot be null");
-		}
-		List<?> target = IOC.getBeans(clz);
-		if (target == null || target.isEmpty()) {
-			return null;
+			return allowEmptyCollection() ? Collections.emptyList() : null;
 		}
 		return target;
 	}
 
+	private static boolean allowEmptyCollection() {
+		return AppInfo.getBoolean("sumk.ioc.inject.allowEmpty", true);
+	}
+
 	private static Object getArrayField(Field f, Class<?> clz, Object bean) {
 		Class<?> filedType = f.getType().getComponentType();
-		if (clz == Object.class) {
+		if (clz == null || clz == Object.class) {
 			clz = filedType;
 		} else if (!filedType.isAssignableFrom(clz)) {
 			throw new SimpleSumkException(-239864568, bean.getClass().getName() + "." + f.getName() + " is "
@@ -199,7 +207,7 @@ public final class BeanPublisher {
 		}
 		List<?> target = IOC.getBeans(clz);
 		if (target == null || target.isEmpty()) {
-			return null;
+			return allowEmptyCollection() ? Array.newInstance(filedType, 0) : null;
 		}
 		return target.toArray((Object[]) Array.newInstance(filedType, target.size()));
 	}

@@ -24,7 +24,9 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.slf4j.Logger;
 import org.yx.bean.IOC;
+import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.InnerRpcKit;
@@ -38,10 +40,11 @@ public class ServerHandler implements IoHandler {
 
 	private final ProtocolDeserializer deserializer;
 
-	private Logger log = Log.get("sumk.rpc.server");
+	private final Logger log;
 	private final RequestHandler[] handlers;
 
 	public ServerHandler(List<RequestHandler> handlers) {
+		this.log = Log.get("sumk.rpc.server");
 		this.handlers = handlers.toArray(new RequestHandler[0]);
 		deserializer = IOC.get(ProtocolDeserializer.class);
 	}
@@ -63,7 +66,7 @@ public class ServerHandler implements IoHandler {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
 		long time = System.currentTimeMillis() - session.getLastIoTime();
-		if (time > AppInfo.getLong(MinaServer.SOA_SESSION_IDLE, 60) * 1000) {
+		if (time > AppInfo.getLong(Const.SOA_SESSION_IDLE, 60) * 1000) {
 			log.info("rpc session {} {} for {}ms,closed by this server", session.getId(), status,
 					session.getLastIoTime(), time);
 			session.closeOnFlush();
@@ -113,9 +116,8 @@ public class ServerHandler implements IoHandler {
 			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 			session.write(RpcGson.toJson(resp));
 		} finally {
-			if (AppInfo.getBoolean("sumk.rpc.server.log", false)) {
-				RpcLogs.serverLog(req, resp);
-			}
+			RpcLogs.serverLog(req, resp);
+			ActionContext.remove();
 		}
 
 	}

@@ -75,10 +75,6 @@ public final class WebUtil {
 		return HttpContextHolder.sessionId();
 	}
 
-	public static String getType() {
-		return InnerHttpUtil.getType(getHttpRequest());
-	}
-
 	public static Charset charset() {
 		return InnerHttpUtil.charset(getHttpRequest());
 	}

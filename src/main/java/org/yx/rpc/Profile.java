@@ -20,9 +20,9 @@ import java.nio.charset.StandardCharsets;
 
 import org.yx.rpc.codec.Protocols;
 
-public class Profile {
-	public final static Charset UTF8 = StandardCharsets.UTF_8;
-	public final static int version = 0x160;
+public final class Profile {
+	public static final Charset UTF8 = StandardCharsets.UTF_8;
+	public static final int version = 0x160;
 
 	public static long feature() {
 		long v = version;

@@ -26,7 +26,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeaderName;
-import org.yx.http.HttpSettings;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogs;
 import org.yx.log.Log;
@@ -38,7 +38,6 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 
 	private static final String LOGIN_NAME = "*login*";
 	private UserSession session;
-	protected String type = "";
 
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) {
@@ -63,7 +62,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			boolean singleLogin = WebSessions.isSingleLogin(this.getType(req));
+			boolean singleLogin = WebSessions.isSingleLogin();
 			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
 				Log.get("sumk.http.login").debug("{} :sid:{} login failed", user, sid);
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
@@ -72,7 +71,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			String userId = obj.getSessionObject().getUserId();
 			resp.setHeader(HttpHeaderName.sessionId(), sid);
 			if (StringUtil.isNotEmpty(userId)) {
-				resp.setHeader(HttpHeaderName.token(), userId);
+				resp.setHeader(HttpHeaderName.userFlag(), userId);
 			}
 			outputKey(resp, key);
 			if (HttpSettings.isCookieEnable()) {
@@ -83,8 +82,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				}
 				String attr = ";Path=".concat(contextPath);
 				setSessionCookie(req, resp, sid, attr);
-				setTokenCookie(req, resp, userId, attr);
-				setTypeCookie(req, resp, attr);
+				setUserFlagCookie(req, resp, userId, attr);
 			}
 
 			resp.getOutputStream().write(new byte[] { '\t', '\n' });
@@ -125,10 +123,10 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		resp.addHeader("Set-Cookie", cookie.toString());
 	}
 
-	protected void setTokenCookie(HttpServletRequest req, HttpServletResponse resp, String userId, String attr) {
-		if (WebSessions.isSingleLogin(this.getType(req)) && StringUtil.isNotEmpty(userId)) {
+	protected void setUserFlagCookie(HttpServletRequest req, HttpServletResponse resp, String userId, String attr) {
+		if (WebSessions.isSingleLogin() && StringUtil.isNotEmpty(userId)) {
 			StringBuilder cookie = new StringBuilder();
-			cookie.append(HttpHeaderName.token()).append('=').append(userId).append(attr);
+			cookie.append(HttpHeaderName.userFlag()).append('=').append(userId).append(attr);
 			resp.addHeader("Set-Cookie", cookie.toString());
 		}
 	}
@@ -138,8 +136,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	}
 
 	protected byte[] createEncryptKey(HttpServletRequest req) {
-		byte[] key = UUIDSeed.seq().substring(4).getBytes();
-		return key;
+		return UUIDSeed.seq().substring(4).getBytes();
 	}
 
 	protected String createSessionId(HttpServletRequest req) {
@@ -165,27 +162,4 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	 * @return 登陆信息，无论成功与否，返回值不能是null
 	 */
 	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
-
-	@Override
-	public String getType(HttpServletRequest req) {
-		return type;
-	}
-
-	protected void setTypeCookie(HttpServletRequest req, HttpServletResponse resp, String attr) {
-		StringBuilder cookie = new StringBuilder();
-		String type = this.getType(req);
-		if (StringUtil.isNotEmpty(type)) {
-			cookie.append(HttpHeaderName.type()).append('=').append(type).append(attr);
-			resp.addHeader("Set-Cookie", cookie.toString());
-		}
-	}
-
-	@Override
-	public boolean acceptType(String type) {
-		if (StringUtil.isEmpty(type)) {
-			return StringUtil.isEmpty(this.type);
-		}
-		return type.equals(this.type);
-	}
-
 }

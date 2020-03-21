@@ -30,14 +30,15 @@ import java.util.jar.JarFile;
 
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.util.StringUtil;
 
-public final class DefaultClassNameScaner implements Function<String[], Collection<String>> {
+public final class DefaultClassNameScaner implements Function<Collection<String>, Collection<String>> {
 	private static final String DOT_CLASS = ".class";
 
 	@Override
-	public Collection<String> apply(final String[] packageNames) {
+	public Collection<String> apply(Collection<String> packageNames) {
 		Set<String> classNameList = new HashSet<>(240);
-		if (packageNames == null) {
+		if (packageNames == null || packageNames.isEmpty()) {
 			return classNameList;
 		}
 		String packagePath;
@@ -46,7 +47,10 @@ public final class DefaultClassNameScaner implements Function<String[], Collecti
 		URL url;
 		Enumeration<URL> eUrl;
 		for (String packageName : packageNames) {
-			packagePath = packageName.replace('.', '/');
+			packagePath = StringUtil.toLatin(packageName).trim().replace('.', '/');
+			if (packagePath.isEmpty()) {
+				continue;
+			}
 			if (!packagePath.endsWith("/")) {
 				packagePath += "/";
 			}

@@ -25,8 +25,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
-import org.apache.ibatis.executor.SimpleExecutor;
+import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.session.Configuration;
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.defaults.DefaultSqlSession;
 import org.apache.ibatis.transaction.Transaction;
@@ -46,7 +47,11 @@ public class SqlSessionFactory {
 	private Configuration configuration;
 	private String db;
 
-	static SqlSessionFactory create(String dbName) throws Exception {
+	private SqlSessionFactory() {
+
+	}
+
+	private static SqlSessionFactory create(String dbName) throws Exception {
 		SqlSessionFactory sessionFactory = new SqlSessionFactory();
 		sessionFactory.db = dbName;
 		List<ConfigurationFactory> confFactorys = IOC.getBeans(ConfigurationFactory.class);
@@ -59,7 +64,10 @@ public class SqlSessionFactory {
 				}
 			}
 		}
-		sessionFactory.configuration = new Configuration();
+		Configuration conf = new Configuration();
+		conf.setDefaultExecutorType(ExecutorType.SIMPLE);
+		conf.setCacheEnabled(false);
+		sessionFactory.configuration = conf;
 		return sessionFactory.sqlParse();
 	}
 
@@ -116,11 +124,11 @@ public class SqlSessionFactory {
 		old.destroy();
 	}
 
-	public SqlSession session(Connection conn) {
+	public SqlSession openSession(Connection conn) {
 
 		Transaction transaction = new ManagedTransaction(conn, false);
-		SimpleExecutor excutor = new SimpleExecutor(configuration, transaction);
-		return new DefaultSqlSession(configuration, excutor);
+		Executor executor = configuration.newExecutor(transaction);
+		return new DefaultSqlSession(configuration, executor);
 	}
 
 	SqlSessionFactory sqlParse() throws Exception {

@@ -13,28 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client;
+package org.yx.db.conn;
 
-import org.yx.annotation.Bean;
-import org.yx.bean.Plugin;
-import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
-import org.yx.conf.AppInfo;
+public interface RouterFactory {
 
-@Bean
-public class SoaClientPlugin implements Plugin {
-
-	@Override
-	public void startAsync() {
-		if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) == null
-				&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
-			Rpc.init();
-		}
-	}
-
-	@Override
-	public int order() {
-		return 9990;
-	}
-
+	RWDataSource create(String dbName) throws Exception;
 }

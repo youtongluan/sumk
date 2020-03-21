@@ -6,9 +6,10 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.yx.exception.BizException;
-import org.yx.http.HttpSettings;
 import org.yx.http.handler.WebContext;
+import org.yx.http.kit.HttpSettings;
 import org.yx.log.Log;
+import org.yx.util.StringUtil;
 
 public class PlainHttpLogHandler implements HttpLogHandler {
 	private Logger log = Log.get("sumk.http.log");
@@ -73,6 +74,7 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	}
 
 	protected String remoteAddr(HttpServletRequest req) {
-		return req.getRemoteAddr();
+		String ip = req.getHeader("X-Real-IP");
+		return StringUtil.isNotEmpty(ip) ? ip : req.getRemoteAddr();
 	}
 }

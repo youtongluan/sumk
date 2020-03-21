@@ -21,6 +21,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.UUIDSeed;
 
@@ -45,6 +46,7 @@ public final class Rpc {
 		try {
 			appId = AppInfo.appId("sumk");
 			DEFAULT_TIMEOUT = AppInfo.getInt("sumk.rpc.timeout", 30000);
+			RpcSettings.init();
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();

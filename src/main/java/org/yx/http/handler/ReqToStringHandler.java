@@ -16,7 +16,6 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 
 @Bean
 public class ReqToStringHandler implements HttpHandler {
@@ -27,23 +26,20 @@ public class ReqToStringHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
+	public void handle(WebContext ctx) throws Exception {
 		Object obj = ctx.data();
 		if (obj == null) {
-			return false;
+			return;
 		}
 		if (!byte[].class.isInstance(obj)) {
-			return false;
+			return;
+		}
+		if (ctx.httpNode().isRequestBody()) {
+			return;
 		}
 		byte[] bs = (byte[]) obj;
 		String data = new String(bs, ctx.charset());
 		ctx.data(data);
-		return false;
 	}
 
 }

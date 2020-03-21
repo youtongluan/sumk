@@ -19,7 +19,7 @@ import java.util.Objects;
 
 import org.yx.exception.SimpleSumkException;
 
-public class NamedBean {
+public final class NamedBean implements ComplexBean {
 	private final String beanName;
 	/**
 	 * 可以是class类，也可以包含实力化后的对象。但不能是NamedBean
@@ -37,23 +37,17 @@ public class NamedBean {
 		if (beanName.isEmpty()) {
 			throw new SimpleSumkException(233654645, "bean name can not be empty");
 		}
-		if (NamedBean.class.isInstance(bean)) {
-			throw new SimpleSumkException(233654645, "bean can not be a NamedBean object");
+		if (ComplexBean.class.isInstance(bean)) {
+			throw new SimpleSumkException(233654645, "bean can not be a ComplexBean object");
 		}
 		this.beanName = beanName;
-		this.bean = Objects.requireNonNull(bean, bean + " cannot be null");
+		this.bean = Objects.requireNonNull(bean);
 	}
 
-	/**
-	 * @return the beanName
-	 */
 	public String getBeanName() {
 		return beanName;
 	}
 
-	/**
-	 * @return the bean
-	 */
 	public Object getBean() {
 		return bean;
 	}

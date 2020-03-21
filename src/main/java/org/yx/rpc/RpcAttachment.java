@@ -20,7 +20,7 @@ import java.util.Map;
 import org.yx.common.Attachable;
 import org.yx.common.context.ActionContext;
 
-public class RpcAttachment implements Attachable, AutoCloseable {
+public class RpcAttachment implements Attachable {
 
 	private static final RpcAttachment inst = new RpcAttachment();
 
@@ -29,18 +29,6 @@ public class RpcAttachment implements Attachable, AutoCloseable {
 
 	public static RpcAttachment get() {
 		return inst;
-	}
-
-	public static void remove() {
-		ActionContext.remove();
-	}
-
-	/**
-	 * 这个方法跟remove()是等价的
-	 */
-	@Override
-	public void close() {
-		remove();
 	}
 
 	@Override

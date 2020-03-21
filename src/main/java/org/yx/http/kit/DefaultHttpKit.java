@@ -23,10 +23,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpGson;
-import org.yx.http.HttpHeaderName;
-import org.yx.http.HttpSettings;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
@@ -35,11 +32,6 @@ import com.google.gson.JsonObject;
 public class DefaultHttpKit implements HttpKit {
 
 	private final ActStatis actStatic = new ActStatis();
-
-	public String getType(HttpServletRequest req) {
-		String type = HttpContextHolder.fromHeaderOrCookieOrParamter(req, HttpHeaderName.type());
-		return type == null ? "" : type;
-	}
 
 	public Charset charset(HttpServletRequest req) {
 		String charsetName = req.getCharacterEncoding();

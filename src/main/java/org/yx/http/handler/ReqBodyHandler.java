@@ -20,7 +20,6 @@ import java.io.InputStream;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 
@@ -38,23 +37,17 @@ public class ReqBodyHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Exception {
+	public void handle(WebContext ctx) throws Exception {
 		if (ctx.data() != null) {
 			Logs.http().debug("data is not null");
-			return false;
+			return;
 		}
 		if (ctx.httpNode().argClz == null) {
-			return false;
+			return;
 		}
 		HttpServletRequest req = ctx.httpRequest();
 		InputStream in = req.getInputStream();
 		ctx.data(InnerHttpUtil.extractData(in));
-		return false;
 	}
 
 }

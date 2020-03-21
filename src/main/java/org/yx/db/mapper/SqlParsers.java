@@ -17,9 +17,10 @@ package org.yx.db.mapper;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import org.yx.common.expression.Expressions;
-import org.yx.common.expression.ParamExpression;
 import org.yx.common.expression.SimpleExpression;
 import org.yx.exception.SumkException;
 import org.yx.util.StringUtil;
@@ -38,7 +39,7 @@ public final class SqlParsers {
 		return new ComposeParser(parsers.toArray(new SqlParser[parsers.size()]));
 	}
 
-	public static ParamExpression createParamExpression(String test, String matchType) {
+	public static Predicate<Map<String, Object>> createParamExpression(String test, String matchType) {
 		if (test == null || test.isEmpty()) {
 			SumkException.throwException(-34645465, "if中的test不能为空");
 		}
@@ -51,9 +52,9 @@ public final class SqlParsers {
 		return createParamExpression(test, matchType, !or);
 	}
 
-	private static ParamExpression createParamExpression(String test, String matchType, boolean and) {
+	private static Predicate<Map<String, Object>> createParamExpression(String test, String matchType, boolean and) {
 		String[] ss = and ? test.split(SPLIT_AND) : test.split(SPLIT_OR);
-		List<ParamExpression> list = new ArrayList<>(ss.length);
+		List<Predicate<Map<String, Object>>> list = new ArrayList<>(ss.length);
 		for (String s : ss) {
 			s = s.trim();
 			if (s.isEmpty()) {

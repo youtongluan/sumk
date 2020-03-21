@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.kit;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -100,8 +100,8 @@ public final class HttpSettings {
 		AppInfo.addObserver(info -> {
 			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 1000);
 			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 1000);
-			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn", 3000);
-			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info", 1000);
+			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn.time", 3000);
+			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info.time", 1000);
 		});
 	}
 

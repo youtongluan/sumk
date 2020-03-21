@@ -26,7 +26,9 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Soa {
 	/**
-	 * @return 服务名称，如果为空。发布的服务名称=groupId.appId.methodName
+	 * 在@SoaClass注解中，这个参数会被忽略
+	 * 
+	 * @return 服务名称，如果为空。发布的服务名称=groupId.appId.methodName。
 	 */
 	String value() default "";
 

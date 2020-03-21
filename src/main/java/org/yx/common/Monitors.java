@@ -53,11 +53,11 @@ public class Monitors {
 				.append(LN);
 		String v = AppInfo.groupId(null);
 		if (v != null) {
-			sb.append("groupId").append(BLACK).append(ms).append(BLACK);
+			sb.append("groupId").append(BLACK).append(v).append(BLACK);
 		}
 		v = AppInfo.appId(null);
 		if (v != null) {
-			sb.append("appId").append(BLACK).append(ms);
+			sb.append("appId").append(BLACK).append(v);
 		}
 		return sb.toString();
 	}

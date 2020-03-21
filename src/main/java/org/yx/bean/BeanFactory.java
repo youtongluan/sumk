@@ -15,11 +15,14 @@
  */
 package org.yx.bean;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.yx.annotation.Bean;
 import org.yx.common.StartConstants;
+import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
@@ -32,8 +35,30 @@ public class BeanFactory extends AbstractBeanListener {
 	public BeanFactory() {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
 		this.valid = true;
-		excludeMatcher = Matchers.createWildcardMatcher(AppInfo.get("sumk.ioc.exclude", null), 2);
+		this.excludeMatcher = createExcludeMatcher();
 		Logs.ioc().info("bean exclude matcher:{}", excludeMatcher);
+	}
+
+	public Predicate<String> excludeMatcher() {
+		return this.excludeMatcher;
+	}
+
+	protected Predicate<String> createExcludeMatcher() {
+		final String name = "sumk.ioc.exclude";
+
+		List<String> list = new ArrayList<>(AppInfo.subMap(name + ".").values());
+		String exclude = AppInfo.get(name, null);
+		if (exclude != null) {
+			list.add(exclude);
+		}
+		if (list.isEmpty()) {
+			return BooleanMatcher.FALSE;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (String v : list) {
+			sb.append(v).append(Matchers.SPLIT);
+		}
+		return Matchers.createWildcardMatcher(sb.toString(), 2);
 	}
 
 	@Override
@@ -50,8 +75,7 @@ public class BeanFactory extends AbstractBeanListener {
 			if (b != null) {
 				if (FactoryBean.class.isAssignableFrom(clz)) {
 					FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
-					Collection<?> beans = factory.beans();
-					putFactoryBean(beans);
+					putFactoryBean(factory.beans());
 				} else {
 					InnerIOC.putClass(b.value(), clz);
 				}
@@ -86,6 +110,12 @@ public class BeanFactory extends AbstractBeanListener {
 		if (clz == NamedBean.class) {
 			NamedBean named = NamedBean.class.cast(obj);
 			this.putBean(named.getBeanName(), named.getBean());
+			return;
+		}
+
+		if (clz == InterfaceBean.class) {
+			InterfaceBean complex = InterfaceBean.class.cast(obj);
+			this.putBean(BeanPool.resloveBeanName(complex.getIntf()), complex.getBean());
 			return;
 		}
 

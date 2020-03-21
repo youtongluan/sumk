@@ -45,8 +45,6 @@ public @interface Web {
 
 	String custom() default "";
 
-	String[] type() default { "" };
-
 	int toplimit() default 0;
 
 }

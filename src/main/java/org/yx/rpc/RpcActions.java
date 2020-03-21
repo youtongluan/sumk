@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.yx.annotation.doc.Comment;
 import org.yx.annotation.rpc.Soa;
 import org.yx.common.ActInfoUtil;
+import org.yx.conf.AppInfo;
 import org.yx.main.SumkServer;
 
 public class RpcActions {
@@ -58,7 +59,7 @@ public class RpcActions {
 	public static List<String> publishSoaSet() {
 		List<String> list = new ArrayList<>(actMap.size());
 		actMap.forEach((method, v) -> {
-			if (v.action.publish()) {
+			if (AppInfo.getBoolean("sumk.rpc.server.zk.publish", v.publish())) {
 				list.add(method);
 			}
 		});
@@ -80,17 +81,15 @@ public class RpcActions {
 			Map<String, Object> map = ActInfoUtil.infoMap(name, rpc);
 			;
 			ret.add(map);
-			if (rpc.action != null) {
-				Soa soa = rpc.action;
+			Soa soa = rpc.getAnnotation(Soa.class);
+			if (soa != null) {
 				map.put("cnName", soa.cnName());
 				Comment comment = rpc.getAnnotation(Comment.class);
 				if (comment != null && comment.value().length() > 0) {
 					map.put("comment", comment.value());
 				}
-				if (soa.toplimit() > 0) {
-					map.put("toplimit", soa.toplimit());
-				}
 			}
+			map.put("toplimit", rpc.toplimit());
 		}
 		return ret;
 	}

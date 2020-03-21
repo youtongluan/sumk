@@ -52,5 +52,13 @@ public @interface Param {
 	 */
 	String custom() default "";
 
+	/**
+	 * @return 文档中的字段示例，也可用于扩展
+	 */
+	String example() default "";
+
+	/**
+	 * @return 文档中的备注信息，也可用于扩展
+	 */
 	String comment() default "";
 }

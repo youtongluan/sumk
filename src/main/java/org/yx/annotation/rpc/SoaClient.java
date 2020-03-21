@@ -13,23 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.annotation.rpc;
 
-public final class MessageKit {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-	public static String buildMessage(String template, String param0) {
-		return template.replace("{0}", param0);
-	}
+@Target({ ElementType.METHOD })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface SoaClient {
 
-	public static String buildMessage(String template, String param0, String param1) {
-		return template.replace("{0}", param0).replace("{1}", param1);
-	}
+	int timeout() default -1;
 
-	public static String buildMessage(String template, String... params) {
-		String s = template;
-		for (int i = 0; i < params.length; i++) {
-			s = s.replace("{" + i + "}", params[i]);
-		}
-		return s;
-	}
 }

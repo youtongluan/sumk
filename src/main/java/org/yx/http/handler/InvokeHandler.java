@@ -17,9 +17,7 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.ErrorHandler.ExceptionStrategy;
-import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
-import org.yx.exception.HttpException;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.invoke.WebHandler;
 import org.yx.log.Log;
@@ -33,16 +31,8 @@ public class InvokeHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
+	public void handle(WebContext ctx) throws Throwable {
 		HttpActionNode info = ctx.httpNode();
-		if (ctx.data() != null && !String.class.isInstance(ctx.data())) {
-			HttpException.throwException(this.getClass(), ctx.data().getClass().getName() + " is not String");
-		}
 		Object ret = null;
 		if (info.errorHandler != null) {
 			try {
@@ -59,7 +49,6 @@ public class InvokeHandler implements HttpHandler {
 			ret = WebHandler.handle(ctx);
 		}
 		ctx.result(ret);
-		return false;
 	}
 
 }

@@ -133,3 +133,10 @@ v2.7.2
 2、@Box事务支持AutoCommit模式
 3、只是Pojo使用byte[]和String映射Blob和Clob类型
 4、修改@Column、@Param的一些属性名称
+
+v2.7.3
+1、增加工具类M，一般用于消息提示，通过与AppInfo的搭配，也可以实现国际化的目的
+2、增加@RequestBody注解，用于支持http的流传输
+3、去掉了http的客户类型功能（即@Web的type），因为这个功能感觉很鸡肋
+4、增加类似dubbo那种，直接用接口注册和调用的微服务。目前对泛型返回值支持不好，如有需要，需借助JsonTypes工具
+

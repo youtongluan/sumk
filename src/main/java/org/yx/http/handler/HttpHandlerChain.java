@@ -18,10 +18,9 @@ package org.yx.http.handler;
 import java.util.List;
 
 import org.slf4j.Logger;
-import org.yx.annotation.http.Web;
 import org.yx.log.Log;
 
-public class HttpHandlerChain implements HttpHandler {
+public final class HttpHandlerChain implements HttpHandler {
 
 	private Logger LOG = Log.get("sumk.http.chain");
 	private HttpHandler[] handlers;
@@ -38,31 +37,24 @@ public class HttpHandlerChain implements HttpHandler {
 	}
 
 	@Override
-	public boolean accept(Web web) {
-		return true;
-	}
-
-	@Override
-	public boolean handle(WebContext ctx) throws Throwable {
+	public void handle(WebContext ctx) throws Throwable {
 		try {
 			for (HttpHandler h : this.handlers) {
-				if (h.accept(ctx.httpNode().action)) {
-					if (LOG.isTraceEnabled()) {
-						if (String.class.isInstance(ctx.data())) {
-							String s = ((String) ctx.data());
-							LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
-						} else {
-							LOG.trace("{} - {}", ctx.rawAct(), h.getClass().getSimpleName());
-						}
-					}
-					if (h.handle(ctx)) {
-						break;
+				if (h.order() < ctx.getLowestOrder()) {
+					continue;
+				}
+				if (LOG.isTraceEnabled()) {
+					if (String.class.isInstance(ctx.data())) {
+						String s = ((String) ctx.data());
+						LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
+					} else {
+						LOG.trace("{} - {}", ctx.rawAct(), h.getClass().getSimpleName());
 					}
 				}
+				h.handle(ctx);
 			}
 		} finally {
 			UploadFileHolder.remove();
 		}
-		return true;
 	}
 }

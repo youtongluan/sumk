@@ -36,7 +36,9 @@ import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.RestType;
 import org.yx.http.invoke.WebHandler;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.start.WebAnnotationResolver;
+import org.yx.http.user.WebSessions;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.main.SumkServer;
@@ -88,6 +90,7 @@ public class HttpPlugin implements Plugin {
 			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
+			WebSessions.initSession();
 			this.addFusingObserver();
 			this.buildHttpHandlers();
 			this.initServer();

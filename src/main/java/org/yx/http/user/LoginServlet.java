@@ -27,8 +27,4 @@ public interface LoginServlet extends Ordered {
 
 	void service(HttpServletRequest req, HttpServletResponse resp);
 
-	String getType(HttpServletRequest req);
-
-	boolean acceptType(String type);
-
 }
