@@ -22,8 +22,8 @@ import org.yx.util.Asserts;
 import org.yx.util.UUIDSeed;
 
 public final class SLock implements Lock {
-	static final Logger logger = Log.get("sumk.lock");
-	final static String sha = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
+	private final Logger logger = Log.get("sumk.lock");
+	private static final String SHA = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
 	private static final long CLOSED = -1;
 	private final String id;
 	private final String value;
@@ -102,7 +102,7 @@ public final class SLock implements Lock {
 		if (this.endTime == CLOSED) {
 			return;
 		}
-		Locker.redis(id).evalsha(sha, 1, id, value);
+		Locker.redis(id).evalsha(SHA, 1, id, value);
 		this.endTime = CLOSED;
 		Locker.inst.remove(this);
 		logger.debug("unlock: {}={}", id, value);

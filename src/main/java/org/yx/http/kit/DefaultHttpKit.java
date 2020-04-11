@@ -18,11 +18,13 @@ package org.yx.http.kit;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
+import org.yx.common.ActStatisImpl;
 import org.yx.http.HttpGson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -31,7 +33,18 @@ import com.google.gson.JsonObject;
 
 public class DefaultHttpKit implements HttpKit {
 
-	private final ActStatis actStatic = new ActStatis();
+	private static final int MAX_EXPECT_SIZE = 1024 * 1024;
+	private static final int MIN_EXPECT_SIZE = 64;
+
+	protected final ActStatis actStatic;
+
+	public DefaultHttpKit() {
+		this.actStatic = new ActStatisImpl();
+	}
+
+	public DefaultHttpKit(ActStatis actStatic) {
+		this.actStatic = Objects.requireNonNull(actStatic);
+	}
 
 	public Charset charset(HttpServletRequest req) {
 		String charsetName = req.getCharacterEncoding();
@@ -50,9 +63,8 @@ public class DefaultHttpKit implements HttpKit {
 	}
 
 	@Override
-	public void sendError(HttpServletResponse resp, int httpStatus, int code, String errorMsg, Charset charset)
-			throws IOException {
-		resp.setStatus(httpStatus);
+	public void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
+		resp.setStatus(HttpSettings.getErrorHttpStatus());
 		JsonObject jo = new JsonObject();
 		jo.addProperty("code", code);
 		jo.addProperty("message", errorMsg);
@@ -77,5 +89,19 @@ public class DefaultHttpKit implements HttpKit {
 	@Override
 	public void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException {
 		resp.setContentType("application/json;charset=" + charset.name());
+	}
+
+	@Override
+	public int expectReqDataSize(int expect) {
+		if (expect < 0) {
+			return 1024;
+		}
+		if (expect < MIN_EXPECT_SIZE) {
+			return MIN_EXPECT_SIZE;
+		}
+		if (expect > MAX_EXPECT_SIZE) {
+			return MAX_EXPECT_SIZE;
+		}
+		return expect;
 	}
 }

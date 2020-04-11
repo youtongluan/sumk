@@ -20,6 +20,7 @@ import org.yx.bean.Plugin;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 import org.yx.rpc.client.Rpc;
 
 @Bean
@@ -27,9 +28,14 @@ public class SoaClientPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
-		if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) == null
-				&& AppInfo.getBoolean("sumk.rpc.client.start", false)) {
+		if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) != null
+				|| !AppInfo.getBoolean("sumk.rpc.client.start", false) || AppInfo.getClinetZKUrl() == null) {
+			return;
+		}
+		try {
 			Rpc.init();
+		} catch (NoClassDefFoundError e) {
+			Logs.ioc().warn("soa client donot start because some class not found: {}", e.getLocalizedMessage());
 		}
 	}
 

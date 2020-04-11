@@ -29,14 +29,14 @@ public class Base64DecodeHandler implements HttpHandler {
 	@Override
 	public void handle(WebContext ctx) throws Exception {
 
-		if (!ctx.web().requestEncrypt().isBase64() || ctx.httpNode().argClz == null) {
+		if (!ctx.web().requestEncrypt().isBase64() || ctx.httpNode().isEmptyArgument()) {
 			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();
 		if (bs == null) {
 			return;
 		}
-		byte[] data = S.base64.decode(bs);
+		byte[] data = S.base64().decode(bs);
 		ctx.data(data);
 	}
 

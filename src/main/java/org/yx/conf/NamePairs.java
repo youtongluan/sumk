@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.yx.util.CollectionUtil;
+import org.yx.util.StringUtil;
 
 public final class NamePairs {
 
@@ -21,7 +22,8 @@ public final class NamePairs {
 
 	public NamePairs(final String data) {
 		this.data = data;
-		this.map = data == null ? Collections.emptyMap() : CollectionUtil.loadMapFromText(data, LN, "=");
+		this.map = StringUtil.isEmpty(data) ? Collections.emptyMap()
+				: CollectionUtil.loadMapFromText(data.trim().replace("\r\n", LN).replace("\r", LN), LN, "=");
 	}
 
 	public NamePairs(final Map<String, String> map) {

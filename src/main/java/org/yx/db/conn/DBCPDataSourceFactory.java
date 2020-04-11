@@ -43,7 +43,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 		DEFAULT_PROPERTIES.put("testWhileIdle", "true");
 		DEFAULT_PROPERTIES.put("removeAbandonedOnBorrow", "false");
 		DEFAULT_PROPERTIES.put("removeAbandonedOnMaintenance", "true");
-		DEFAULT_PROPERTIES.put("removeAbandonedTimeout", "30");
+		DEFAULT_PROPERTIES.put("removeAbandonedTimeout", "300");
 		DEFAULT_PROPERTIES.put("logAbandoned", "true");
 		DEFAULT_PROPERTIES.put("timeBetweenEvictionRunsMillis", "30000");
 		DEFAULT_PROPERTIES.put("softMinEvictableIdleTimeMillis", "60000");

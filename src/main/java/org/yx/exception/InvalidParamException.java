@@ -48,4 +48,9 @@ public class InvalidParamException extends Exception {
 	public ParamInfo getInfo() {
 		return info;
 	}
+
+	@Override
+	public Throwable fillInStackTrace() {
+		return this;
+	}
 }

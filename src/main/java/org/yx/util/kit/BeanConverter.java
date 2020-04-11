@@ -36,7 +36,7 @@ import org.yx.exception.SumkException;
 public class BeanConverter {
 	private static final String JAVA_PRE = "java";
 
-	private static final int NOT_PARSE = Modifier.STATIC | Modifier.TRANSIENT;
+	private static final int NOT_PARSE = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
 	private final ConcurrentMap<Class<?>, Field[]> cache = new ConcurrentHashMap<>();
 
 	private Field[] parseFields(Class<?> clz) {
@@ -116,13 +116,16 @@ public class BeanConverter {
 	 *            原始map
 	 * @param bean
 	 *            目标对象，它的属性会被填充进来
+	 * @return 返回目标对象
 	 */
-	public void fillBean(Map<String, Object> map, Object bean) {
+	@SuppressWarnings("unchecked")
+	public <T> T fillBean(Map<String, Object> map, T bean) {
 		if (map == null || bean == null) {
-			return;
+			return bean;
 		}
 		if (Map.class.isInstance(bean)) {
-			return;
+			Map.class.cast(bean).putAll(map);
+			return bean;
 		}
 		Field[] fields = getFields(bean.getClass());
 		try {
@@ -137,11 +140,12 @@ public class BeanConverter {
 		} catch (Exception e) {
 			throw new SumkException(35432541, "fillBean failed, because of " + e.getMessage(), e);
 		}
+		return bean;
 	}
 
-	public void copyFields(Object src, Object dest) {
+	public <T> T copyFields(Object src, T dest) {
 		if (src == null || dest == null) {
-			return;
+			return dest;
 		}
 		Class<?> srcClz = src.getClass();
 		if (!srcClz.isInstance(dest)) {
@@ -158,6 +162,7 @@ public class BeanConverter {
 		} catch (Exception e) {
 			throw new SumkException(35432542, "copyFields failed, because of " + e.getMessage(), e);
 		}
+		return dest;
 	}
 
 	public Object clone(Object src) {
@@ -170,8 +175,7 @@ public class BeanConverter {
 		} catch (Exception e) {
 			throw new SumkException(35432545, "clone failed, because of " + e.getMessage(), e);
 		}
-		this.copyFields(src, dest);
-		return dest;
+		return this.copyFields(src, dest);
 	}
 
 	ConcurrentMap<Class<?>, Field[]> getCache() {

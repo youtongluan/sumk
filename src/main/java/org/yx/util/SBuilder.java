@@ -17,28 +17,18 @@ package org.yx.util;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
+
+import org.yx.common.lock.Locker;
+import org.yx.common.thread.SumkExecutorService;
+import org.yx.util.kit.BeanConverter;
+import org.yx.util.secury.Base64;
+import org.yx.util.secury.Encryptor;
+import org.yx.util.secury.Hasher;
+
+import com.google.gson.Gson;
 
 public final class SBuilder {
-	public static boolean isMap(Object obj) {
-		return Map.class.isInstance(obj);
-	}
-
-	public static MapBuilder map() {
-		return new MapBuilder();
-	}
-
-	public static MapBuilder map(String key, Object value) {
-		return map().put(key, value);
-	}
-
-	public static StringMapBuilder stringMap() {
-		return new StringMapBuilder();
-	}
-
-	public static StringMapBuilder stringMap(String key, String value) {
-		return stringMap().put(key, value);
-	}
-
 	public static class MapBuilder {
 		private Map<String, Object> map = new HashMap<>();
 
@@ -64,7 +54,53 @@ public final class SBuilder {
 		public Map<String, String> toMap() {
 			return this.map;
 		}
-
 	}
 
+	public static boolean isMap(Object obj) {
+		return Map.class.isInstance(obj);
+	}
+
+	public static MapBuilder map() {
+		return new MapBuilder();
+	}
+
+	public static MapBuilder map(String key, Object value) {
+		return map().put(key, value);
+	}
+
+	public static StringMapBuilder stringMap() {
+		return new StringMapBuilder();
+	}
+
+	public static StringMapBuilder stringMap(String key, String value) {
+		return stringMap().put(key, value);
+	}
+
+	public static void setJson(Gson json) {
+		S.setJson(Objects.requireNonNull(json));
+	}
+
+	public static void setExecutor(SumkExecutorService executor) {
+		S.setExecutor(Objects.requireNonNull(executor));
+	}
+
+	public static void setBase64(Base64 base64) {
+		S.setBase64(Objects.requireNonNull(base64));
+	}
+
+	public static void setCipher(Encryptor cipher) {
+		S.setCipher(Objects.requireNonNull(cipher));
+	}
+
+	public static void setHash(Hasher hash) {
+		S.setHash(Objects.requireNonNull(hash));
+	}
+
+	public static void setLock(Locker lock) {
+		S.setLock(Objects.requireNonNull(lock));
+	}
+
+	public static void setBean(BeanConverter bean) {
+		S.setBean(Objects.requireNonNull(bean));
+	}
 }

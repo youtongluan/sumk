@@ -15,7 +15,6 @@
  */
 package org.yx.common;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -58,7 +57,7 @@ public class ByteArrayTypeAdapter extends TypeAdapter<byte[]> {
 			if (s.isEmpty()) {
 				return new byte[0];
 			}
-			return S.base64.decode(s.getBytes(StandardCharsets.UTF_8));
+			return S.base64().decode(s.getBytes(StandardCharsets.UTF_8));
 		}
 		if (token == JsonToken.BEGIN_ARRAY) {
 			return rawRead(in);
@@ -67,7 +66,8 @@ public class ByteArrayTypeAdapter extends TypeAdapter<byte[]> {
 	}
 
 	private byte[] rawRead(JsonReader in) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream(128);
+		@SuppressWarnings("resource")
+		UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(128);
 		in.beginArray();
 		try {
 			while (in.hasNext()) {

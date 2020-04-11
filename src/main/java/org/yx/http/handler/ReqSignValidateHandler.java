@@ -17,8 +17,9 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.conf.AppInfo;
-import org.yx.exception.HttpException;
 import org.yx.http.HttpCiphers;
+import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpException;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
@@ -45,13 +46,13 @@ public class ReqSignValidateHandler implements HttpHandler {
 		if (!ctx.web().sign()) {
 			return;
 		}
-		String sign = ctx.sign();
-		if (StringUtil.isEmpty(sign)) {
-			HttpException.throwException(this.getClass(), "签名不能为空");
-		}
 		byte[] bs = ctx.getDataInByteArray();
 		if (bs == null) {
 			return;
+		}
+		String sign = ctx.sign();
+		if (StringUtil.isEmpty(sign)) {
+			throw HttpException.create(HttpErrorCode.SIGN_EMPTY, "签名不能为空");
 		}
 		if (salt != null) {
 			byte[] temp = new byte[bs.length + salt.length];
@@ -62,7 +63,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		String sign1 = HttpCiphers.getSigner().sign(bs, ctx.httpRequest());
 		if (!sign.equals(sign1)) {
 			Logs.http().debug("client sign:{},computed is:{}", sign, sign1);
-			HttpException.throwException(this.getClass(), "签名验证错误");
+			throw HttpException.create(HttpErrorCode.SIGN_MISTAKE, "签名验证错误");
 		}
 	}
 

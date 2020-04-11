@@ -13,28 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.http.kit;
 
-import javax.servlet.http.HttpServletRequest;
+import org.yx.exception.BizException;
 
-import org.yx.annotation.Bean;
+public final class HttpException {
 
-@Bean
-public class ReqParameterHandler implements HttpHandler {
-
-	@Override
-	public int order() {
-		return 1100;
+	public static BizException create(int errorCode, String defaultMessage) {
+		return BizException.create(errorCode, defaultMessage);
 	}
-
-	@Override
-	public void handle(WebContext ctx) throws Exception {
-		HttpServletRequest req = ctx.httpRequest();
-		ctx.sign(req.getParameter("sign"));
-		String data = req.getParameter("data");
-		if (data != null) {
-			ctx.data(data);
-		}
-	}
-
 }

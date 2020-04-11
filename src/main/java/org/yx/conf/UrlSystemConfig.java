@@ -16,22 +16,15 @@
 package org.yx.conf;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.Set;
 
-import org.yx.log.RawLog;
-
-public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
-
-	public UrlSystemConfig(URL url) {
-		super(url);
-	}
+public class UrlSystemConfig extends AbstractUrlConfig {
 
 	protected NamePairs pairs = NamePairs.createByString(null);
 
-	@Override
-	protected void onStart() {
-		this.init();
-		RawLog.setLogger(RawLog.SLF4J_LOG);
+	public UrlSystemConfig(URL url) {
+		super(url);
 	}
 
 	@Override
@@ -50,8 +43,8 @@ public class UrlSystemConfig extends AbstractUrlConfig implements SystemConfig {
 	}
 
 	@Override
-	protected void notifyUpdate() {
-		AppInfo.notifyUpdate();
+	public Map<String, String> values() {
+		return pairs.values();
 	}
 
 }

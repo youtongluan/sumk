@@ -16,35 +16,12 @@
 package org.yx.common;
 
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
-public class ActStatis {
+public interface ActStatis {
 
-	private Map<String, Statis> actStatis = new ConcurrentHashMap<>();
+	void visit(String name, long time, boolean success);
 
-	public void visit(String name, long time, boolean success) {
-		Statis statis = actStatis.get(name);
-		if (statis == null) {
-			statis = new Statis(name);
-			Statis tmp = actStatis.putIfAbsent(name, statis);
-			if (tmp != null) {
-				statis = tmp;
-			}
-		}
-		if (success) {
-			statis.successVisit(time);
-		} else {
-			statis.failedVisit(time);
-		}
-	}
+	Map<String, Statis> getAndReset();
 
-	public Map<String, Statis> getAndReset() {
-		Map<String, Statis> tmp = this.actStatis;
-		actStatis = new ConcurrentHashMap<>();
-		return tmp;
-	}
-
-	public Map<String, Statis> getAll() {
-		return this.actStatis;
-	}
+	Map<String, Statis> getAll();
 }

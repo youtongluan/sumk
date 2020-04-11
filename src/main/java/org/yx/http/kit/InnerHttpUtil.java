@@ -15,7 +15,6 @@
  */
 package org.yx.http.kit;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -25,9 +24,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
+import org.yx.common.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
-import org.yx.exception.HttpException;
-import org.yx.http.handler.ReqBodyHandler;
+import org.yx.http.HttpErrorCode;
 import org.yx.log.Logs;
 
 public final class InnerHttpUtil {
@@ -41,33 +40,26 @@ public final class InnerHttpUtil {
 		InnerHttpUtil.kit = Objects.requireNonNull(kit);
 	}
 
-	static final int MAXLENGTH = 1024 * 1024 * 100;
-
-	public static byte[] extractData(byte[] bs) {
-
-		if (bs != null && bs.length > 4 && bs[0] == 100 && bs[1] == 97 && bs[2] == 116 && bs[3] == 97 && bs[4] == 61) {
-			byte[] temp = new byte[bs.length - 5];
-			System.arraycopy(bs, 5, temp, 0, temp.length);
-			return temp;
-		}
-		return bs;
-	}
-
-	public static byte[] extractData(InputStream in) throws IOException {
+	public static byte[] extractData(InputStream in, int expectSize) throws IOException {
 		int count = 0;
 		int n = 0;
-		byte[] temp = new byte[1024 * 4];
-		ByteArrayOutputStream output = new ByteArrayOutputStream();
+		expectSize = kit.expectReqDataSize(expectSize);
+		if (Logs.http().isTraceEnabled()) {
+			Logs.http().trace("expect request content length: {}", expectSize);
+		}
+		byte[] temp = new byte[512];
+		@SuppressWarnings("resource")
+		UnsafeByteArrayOutputStream output = new UnsafeByteArrayOutputStream(expectSize);
 		while (-1 != (n = in.read(temp))) {
 			output.write(temp, 0, n);
 			count += n;
-			if (count > MAXLENGTH) {
-				HttpException.throwException(ReqBodyHandler.class, "request body is too long");
+			if (count > HttpSettings.maxHttpBody()) {
+				throw HttpException.create(HttpErrorCode.BODY_TOO_BIG, "请求数据太长");
 			}
 		}
-		byte[] bs = output.toByteArray();
+		byte[] bs = output.extractRawData();
 		output.close();
-		return extractData(bs);
+		return bs;
 	}
 
 	public static Charset charset(HttpServletRequest req) {
@@ -97,7 +89,7 @@ public final class InnerHttpUtil {
 
 	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {
 		try {
-			kit.sendError(resp, HttpSettings.getErrorHttpStatus(), code, message, charset);
+			kit.sendError(resp, code, message, charset);
 		} catch (IOException e) {
 			Logs.http().error(e.getLocalizedMessage(), e);
 		}

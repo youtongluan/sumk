@@ -16,7 +16,6 @@
 package org.yx.db.visit;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +47,9 @@ public class PojoResultHandler implements ResultHandler {
 				if (ts == null || ts.length == 0) {
 					continue;
 				}
-				list.addAll(Arrays.asList(ts));
+				for (Object t : ts) {
+					list.add(t);
+				}
 				continue;
 			}
 

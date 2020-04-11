@@ -21,7 +21,6 @@ import java.lang.reflect.Method;
 import org.yx.annotation.Param;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
-import org.yx.common.BizExcutor;
 import org.yx.common.CalleeNode;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
@@ -30,7 +29,7 @@ import org.yx.util.S;
 public final class RpcActionNode extends CalleeNode {
 	private boolean publish;
 
-	public final Field[] fields;
+	private final Field[] fields;
 
 	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
 			int toplimit, boolean publish) {
@@ -57,18 +56,17 @@ public final class RpcActionNode extends CalleeNode {
 	}
 
 	public Object invokeByJsonArg(String args) throws Throwable {
-		if (argNames.length == 0) {
-			return BizExcutor.exec(this.getEmptyArgObj(), this.owner, new Object[0], this.paramInfos);
+		if (this.isEmptyArgument()) {
+			return this.execute(this.getEmptyArgObj());
 		}
 
-		ArgPojo argObj = S.json.fromJson(args, argClz);
-		Object[] params = argObj.params();
-		return BizExcutor.exec(argObj, owner, params, this.paramInfos);
+		ArgPojo argObj = S.json().fromJson(args, argClz);
+		return this.execute(argObj);
 	}
 
 	public Object invokeByOrder(String... args) throws Throwable {
-		if (argNames.length == 0) {
-			return BizExcutor.exec(this.getEmptyArgObj(), this.owner, new Object[0], this.paramInfos);
+		if (this.isEmptyArgument()) {
+			return this.execute(this.getEmptyArgObj());
 		}
 		if (args == null) {
 			SumkException.throwException(12012, method.getName() + "的参数不能为空");
@@ -85,7 +83,7 @@ public final class RpcActionNode extends CalleeNode {
 			Field f = fields[i];
 			f.set(pojo, RpcGson.fromJson(args[i], f.getGenericType()));
 		}
-		return BizExcutor.exec(pojo, this.owner, pojo.params(), this.paramInfos);
+		return this.execute(pojo);
 	}
 
 }

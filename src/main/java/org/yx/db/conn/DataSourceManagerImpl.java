@@ -58,7 +58,7 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		for (SumkDataSource datasource : set) {
 			statusMap.put(datasource.toString(), DSFactory.factory().status(datasource));
 		}
-		return S.json.toJson(statusMap);
+		return S.json().toJson(statusMap);
 	}
 
 	@Override

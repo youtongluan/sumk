@@ -17,16 +17,16 @@ package org.yx.conf;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.Set;
 
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
-import org.yx.common.StartOnceLifecycle;
 import org.yx.log.ConsoleLog;
 import org.yx.log.RawLog;
 import org.yx.util.ZkClientHelper;
 
-public abstract class AbstractZKConfig extends StartOnceLifecycle implements SystemConfig {
+public abstract class AbstractZKConfig extends AbstractRefreshableSystemConfig {
 
 	protected NamePairs zkInfo = new NamePairs((String) null);
 	private Charset charset = StandardCharsets.UTF_8;
@@ -37,7 +37,7 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 			try {
 				ConsoleLog.get("sumk.zk.data").debug("data in zk path {} changed", dataPath);
 				AbstractZKConfig.this.setZkInfo(new NamePairs(new String((byte[]) data, charset)));
-				AppInfo.notifyUpdate();
+				onRefresh();
 			} catch (Exception e) {
 				RawLog.error("sumk.conf", e);
 			}
@@ -46,7 +46,7 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 		@Override
 		public void handleDataDeleted(String dataPath) throws Exception {
 			AbstractZKConfig.this.setZkInfo(new NamePairs((String) null));
-			AppInfo.notifyUpdate();
+			onRefresh();
 		}
 
 	};
@@ -63,11 +63,11 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 		this.charset = charset;
 	}
 
-	protected void onStart() {
+	@Override
+	protected void init() {
 		String zkUrl = getZkUrl();
 		NamePairs info = ZKConfigHandler.readAndListen(zkUrl, getDataPath(), listener);
 		this.setZkInfo(info);
-		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	public void stop() {
@@ -93,5 +93,10 @@ public abstract class AbstractZKConfig extends StartOnceLifecycle implements Sys
 	@Override
 	public Set<String> keys() {
 		return zkInfo.keys();
+	}
+
+	@Override
+	public Map<String, String> values() {
+		return zkInfo.values();
 	}
 }

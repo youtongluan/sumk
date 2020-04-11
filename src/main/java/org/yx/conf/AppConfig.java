@@ -27,12 +27,11 @@ import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.yx.common.StartOnceLifecycle;
 import org.yx.log.RawLog;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 
-public class AppConfig extends StartOnceLifecycle implements SystemConfig {
+public class AppConfig extends AbstractRefreshableSystemConfig {
 
 	protected final String fileName;
 	protected final int periodTime;
@@ -76,17 +75,15 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 				if (this.showLog) {
 					RawLog.info("sumk.conf", fileName + " loaded");
 				}
-				onChange(conf);
+				boolean isFirst = this.map.isEmpty();
 				this.map = conf;
-				AppInfo.notifyUpdate();
+				if (!isFirst) {
+					this.onRefresh();
+				}
 			}
 		} catch (Exception e) {
 			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
-	}
-
-	protected void onChange(Map<String, String> newConf) {
-
 	}
 
 	public boolean isShowLog() {
@@ -98,11 +95,10 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 	}
 
 	@Override
-	protected void onStart() {
+	protected void init() {
 		this.handle();
 		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
 				this.periodTime, TimeUnit.MILLISECONDS);
-		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	@Override
@@ -126,6 +122,11 @@ public class AppConfig extends StartOnceLifecycle implements SystemConfig {
 	@Override
 	public String toString() {
 		return String.valueOf(map);
+	}
+
+	@Override
+	public Map<String, String> values() {
+		return Collections.unmodifiableMap(map);
 	}
 
 }

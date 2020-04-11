@@ -45,7 +45,7 @@ public class HttpPressTest {
 		Map<String, Object> json = new HashMap<>();
 		json.put("echo", "你好!!!");
 		json.put("names", Arrays.asList("小明", "小张"));
-		StringEntity se = new StringEntity(S.json.toJson(json), charset);
+		StringEntity se = new StringEntity(S.json().toJson(json), charset);
 		post.setEntity(se);
 		System.out.println("开始压测，请耐心等待10秒左右。。。");
 		long begin=System.currentTimeMillis();

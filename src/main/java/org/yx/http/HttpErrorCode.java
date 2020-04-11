@@ -34,14 +34,14 @@ public interface HttpErrorCode extends ErrorCode {
 	int SESSION_ERROR = 902;
 
 	/**
-	 * 没有访问权限。一般是指该角色的权限不足
-	 */
-	int AUTHORITY_ERROR = 903;
-
-	/**
 	 * 用户在其它地方登录了
 	 */
-	int LOGIN_AGAIN = 904;
+	int LOGIN_AGAIN = 903;
+
+	/**
+	 * 没有访问权限。一般是指该角色的权限不足
+	 */
+	int AUTHORITY_ERROR = 904;
 
 	/**
 	 * 熔断
@@ -52,6 +52,12 @@ public interface HttpErrorCode extends ErrorCode {
 	 * 参数验证错误
 	 */
 	int VALIDATE_ERROR = 910;
+
+	int BODY_TOO_BIG = 911;
+	int SIGN_EMPTY = 912;
+	int SIGN_MISTAKE = 913;
+	int FILE_MISS = 914;
+	int FILE_TYPE_MISS = 915;
 
 	/**
 	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用

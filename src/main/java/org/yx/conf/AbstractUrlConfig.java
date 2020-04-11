@@ -22,12 +22,11 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
-import org.yx.common.StartOnceLifecycle;
 import org.yx.log.RawLog;
 import org.yx.main.SumkServer;
 import org.yx.util.StreamUtil;
 
-public abstract class AbstractUrlConfig extends StartOnceLifecycle {
+public abstract class AbstractUrlConfig extends AbstractRefreshableSystemConfig {
 
 	protected final URL url;
 
@@ -56,6 +55,7 @@ public abstract class AbstractUrlConfig extends StartOnceLifecycle {
 	/**
 	 * 初始化
 	 */
+	@Override
 	public void init() {
 		extractData();
 		if (threadStarted) {
@@ -76,13 +76,11 @@ public abstract class AbstractUrlConfig extends StartOnceLifecycle {
 					return;
 				}
 				if (extractData()) {
-					notifyUpdate();
+					this.onRefresh();
 				}
 			}
 		}).start();
 	}
-
-	protected abstract void notifyUpdate();
 
 	protected boolean extractData() {
 		HttpURLConnection conn = null;

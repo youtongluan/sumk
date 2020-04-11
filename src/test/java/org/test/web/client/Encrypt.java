@@ -26,11 +26,11 @@ import org.yx.util.S;
 public class Encrypt {
 
 	public static byte[] encrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return S.cipher.encrypt(contentBytes, key);
+		return S.cipher().encrypt(contentBytes, key);
 	}
 
 	public static byte[] decrypt(byte[] contentBytes, byte[] key) throws Exception {
-		return S.cipher.decrypt(contentBytes, key);
+		return S.cipher().decrypt(contentBytes, key);
 	}
 
 	/**

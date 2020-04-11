@@ -13,41 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.redis;
+package org.yx.conf;
 
-public class Counter {
+import java.util.Map;
+import java.util.function.Consumer;
 
-	private long visitCount = 0;
+public interface RefreshableSystemConfig extends SystemConfig {
+	void setConsumer(Consumer<RefreshableSystemConfig> observer);
 
-	private long cacheCount = 0;
+	void onRefresh();
 
-	private int interval;
-
-	public Counter(int interval) {
-		super();
-		this.interval = interval;
-	}
-
-	public long getVisitCount() {
-		return visitCount;
-	}
-
-	public long getCachedCount() {
-		return cacheCount;
-	}
-
-	public boolean isCacheRefresh() {
-		++visitCount;
-		return interval > 0 && visitCount == interval;
-	}
-
-	public void incCached() {
-		cacheCount++;
-	}
-
-	@Override
-	public String toString() {
-		return "visitCount=" + visitCount + ", cacheCount=" + cacheCount;
-	}
-
+	Map<String, String> values();
 }

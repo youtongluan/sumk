@@ -62,7 +62,7 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 		if (req.getJsonedParam() != null) {
 			sb.append("   param(json): ").append(req.getJsonedParam());
 		} else {
-			sb.append("   param(array): ").append(S.json.toJson(req.getParamArray()));
+			sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
 		}
 		if (result != null) {
 			if (e == null) {
@@ -102,7 +102,7 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 			if (req.getJsonedParam() != null) {
 				sb.append("   param(json): ").append(req.getJsonedParam());
 			} else {
-				sb.append("   param(array): ").append(S.json.toJson(req.getParamArray()));
+				sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
 			}
 		}
 		String json = resp.json();

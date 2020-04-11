@@ -16,12 +16,14 @@
 package org.yx.http.user;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.common.UnsafeByteArrayOutputStream;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
@@ -73,7 +75,8 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			if (StringUtil.isNotEmpty(userId)) {
 				resp.setHeader(HttpHeaderName.userFlag(), userId);
 			}
-			outputKey(resp, key);
+			UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(256);
+			outputKey(out, key, req, resp);
 			if (HttpSettings.isCookieEnable()) {
 				String contextPath = req.getContextPath();
 
@@ -85,10 +88,11 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				setUserFlagCookie(req, resp, userId, attr);
 			}
 
-			resp.getOutputStream().write(new byte[] { '\t', '\n' });
+			out.write(new byte[] { '\t', '\n' });
 			if (obj.getResponseData() != null) {
-				resp.getOutputStream().write(obj.getResponseData().getBytes(charset));
+				out.write(obj.getResponseData().getBytes(charset));
 			}
+			resp.getOutputStream().write(out.toByteArray());
 		} catch (Throwable e) {
 			ex = e;
 			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
@@ -131,8 +135,9 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		}
 	}
 
-	protected void outputKey(HttpServletResponse resp, byte[] key) throws IOException {
-		resp.getOutputStream().write(S.base64.encode(key));
+	protected void outputKey(OutputStream out, byte[] key, HttpServletRequest req, HttpServletResponse resp)
+			throws IOException {
+		out.write(S.base64().encode(key));
 	}
 
 	protected byte[] createEncryptKey(HttpServletRequest req) {

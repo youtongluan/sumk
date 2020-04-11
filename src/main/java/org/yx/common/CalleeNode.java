@@ -17,25 +17,31 @@ package org.yx.common;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import org.yx.annotation.Param;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.validate.ParamInfo;
+import org.yx.validate.Validators;
 
 public abstract class CalleeNode {
 
-	public final String[] argNames;
+	protected final String[] argNames;
 
-	public final ParamInfo[] paramInfos;
+	protected final ParamInfo[] paramInfos;
 
-	public final Object owner;
+	protected final Object owner;
 
-	public final Class<? extends ArgPojo> argClz;
+	protected final Class<? extends ArgPojo> argClz;
 
 	private final int toplimit;
 
@@ -117,5 +123,56 @@ public abstract class CalleeNode {
 
 	public int toplimit() {
 		return this.toplimit;
+	}
+
+	public boolean isEmptyArgument() {
+		return this.argNames.length == 0;
+	}
+
+	public Object owner() {
+		return this.owner;
+	}
+
+	public Object execute(ArgPojo argObj) throws Throwable {
+		if (this.paramInfos != null) {
+			Object[] params = argObj.params();
+			for (int i = 0; i < paramInfos.length; i++) {
+				ParamInfo info = paramInfos[i];
+				if (info != null) {
+					Validators.check(info, params[i]);
+				}
+			}
+		}
+		try {
+			return argObj.invoke(owner);
+		} catch (Throwable e) {
+
+			if (InvocationTargetException.class.isInstance(e)) {
+				InvocationTargetException te = (InvocationTargetException) e;
+				if (te.getTargetException() != null) {
+					throw te.getTargetException();
+				}
+			}
+			throw e;
+		}
+	}
+
+	public static void checkNode(String api, CalleeNode node) {
+		if (node == null) {
+			SumkException.throwException(123546, "[" + api + "] is not a valid interface");
+		}
+		node.checkThreshold();
+	}
+
+	public List<String> argNames() {
+		return argNames == null ? Collections.emptyList() : Arrays.asList(argNames);
+	}
+
+	public List<ParamInfo> paramInfos() {
+		return paramInfos == null ? Collections.emptyList() : Arrays.asList(paramInfos);
+	}
+
+	public Class<? extends ArgPojo> argClz() {
+		return this.argClz;
 	}
 }

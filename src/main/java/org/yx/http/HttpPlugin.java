@@ -39,9 +39,9 @@ import org.yx.http.invoke.WebHandler;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.start.WebAnnotationResolver;
 import org.yx.http.user.WebSessions;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.main.SumkServer;
+import org.yx.util.ExceptionUtil;
 import org.yx.util.StringUtil;
 
 @Bean
@@ -80,7 +80,8 @@ public class HttpPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
-		if (!this.isHttpEnable()) {
+		int port = StartContext.httpPort();
+		if (!this.isHttpEnable() || port < 1) {
 			return;
 		}
 		try {
@@ -90,21 +91,15 @@ public class HttpPlugin implements Plugin {
 			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
-			WebSessions.initSession();
 			this.addFusingObserver();
 			this.buildHttpHandlers();
-			this.initServer();
-		} catch (Throwable e) {
-			Log.printStack("sumk.error", e);
-			System.exit(1);
+			this.initServer(port);
+		} catch (Exception e) {
+			throw ExceptionUtil.toRuntimeException(e);
 		}
 	}
 
-	protected void initServer() throws Exception {
-		int port = StartContext.httpPort();
-		if (port < 1) {
-			return;
-		}
+	protected void initServer(int port) throws Exception {
 		String nojetty = StartConstants.NOJETTY;
 		if (StartContext.inst().get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
 			return;
@@ -182,6 +177,7 @@ public class HttpPlugin implements Plugin {
 		if (!SumkServer.isHttpEnable() || server == null) {
 			return;
 		}
+		WebSessions.initSession();
 		server.start();
 	}
 

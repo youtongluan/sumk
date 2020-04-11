@@ -47,8 +47,6 @@ public final class HttpHandlerChain implements HttpHandler {
 					if (String.class.isInstance(ctx.data())) {
 						String s = ((String) ctx.data());
 						LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
-					} else {
-						LOG.trace("{} - {}", ctx.rawAct(), h.getClass().getSimpleName());
 					}
 				}
 				h.handle(ctx);

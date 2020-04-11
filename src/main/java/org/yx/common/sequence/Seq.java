@@ -15,6 +15,8 @@
  */
 package org.yx.common.sequence;
 
+import org.yx.util.SumkDate;
+
 public interface Seq {
 
 	void setCounter(SeqCounter counter);
@@ -27,4 +29,7 @@ public interface Seq {
 
 	long getDate(long seq);
 
+	long low(SumkDate date);
+
+	long high(SumkDate date);
 }

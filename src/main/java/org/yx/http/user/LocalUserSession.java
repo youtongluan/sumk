@@ -51,7 +51,7 @@ public class LocalUserSession implements UserSession {
 	@Override
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
 		long now = System.currentTimeMillis();
-		TimedCachedObject to = new TimedCachedObject(S.json.toJson(sessionObj), key, now);
+		TimedCachedObject to = new TimedCachedObject(S.json().toJson(sessionObj), key, now);
 		if (map.putIfAbsent(sessionId, to) != null) {
 			return false;
 		}
@@ -66,7 +66,7 @@ public class LocalUserSession implements UserSession {
 	}
 
 	public LocalUserSession() {
-		Logs.http().info("use local user session");
+		Logs.http().info("$$$use local user session");
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
 		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(
 				() -> CacheHelper.expire(map, HttpSettings.getHttpSessionTimeoutInMs()), seconds, seconds,
@@ -96,7 +96,7 @@ public class LocalUserSession implements UserSession {
 		if (to == null) {
 			return null;
 		}
-		return S.json.fromJson(to.getJson(), clz);
+		return S.json().fromJson(to.getJson(), clz);
 	}
 
 	@Override

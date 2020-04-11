@@ -39,4 +39,11 @@ public final class SeqUtil {
 		return SeqHolder.inst().getDate(seq);
 	}
 
+	public static long from(SumkDate date) {
+		return SeqHolder.inst().low(date);
+	}
+
+	public static long to(SumkDate date) {
+		return SeqHolder.inst().high(date);
+	}
 }

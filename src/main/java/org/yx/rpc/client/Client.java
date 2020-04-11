@@ -104,7 +104,7 @@ public final class Client {
 	}
 
 	public Client paramInMap(Map<String, ?> map) {
-		this.params = S.json.toJson(map);
+		this.params = S.json().toJson(map);
 		this.paramType = ParamType.JSON;
 		return this;
 	}

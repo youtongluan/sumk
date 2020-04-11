@@ -26,7 +26,7 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		if (json == null) {
 			return null;
 		}
-		return S.json.fromJson(json, clz);
+		return S.json().fromJson(json, clz);
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		if (json == null) {
 			return null;
 		}
-		return S.json.fromJson(json, clz);
+		return S.json().fromJson(json, clz);
 	}
 
 	@Override

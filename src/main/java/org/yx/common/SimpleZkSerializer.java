@@ -40,7 +40,7 @@ public class SimpleZkSerializer implements ZkSerializer {
 		if (String.class == data.getClass()) {
 			return ((String) data).getBytes(charset);
 		}
-		return S.json.toJson(data).getBytes(charset);
+		return S.json().toJson(data).getBytes(charset);
 	}
 
 	@Override

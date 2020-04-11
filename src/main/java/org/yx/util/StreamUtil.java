@@ -15,16 +15,17 @@
  */
 package org.yx.util;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 
+import org.yx.common.UnsafeByteArrayOutputStream;
+
 public final class StreamUtil {
 
 	public static byte[] extractData(InputStream in, boolean closeInput) throws IOException {
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(1024);
 		transferTo(in, out, closeInput);
 		out.close();
 		return out.toByteArray();

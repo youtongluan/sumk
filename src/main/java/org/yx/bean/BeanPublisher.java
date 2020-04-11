@@ -63,13 +63,13 @@ public final class BeanPublisher {
 					continue;
 				}
 				clazzList.add(clz);
-			} catch (NoClassDefFoundError e) {
+			} catch (LinkageError e) {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
 				}
 				Logs.ioc().debug("{} ignored.{}", c, e.getMessage());
 			} catch (Exception e) {
-				Log.printStack("sumk.error", e);
+				Logs.ioc().error(c + "加载失败", e);
 			}
 		}
 
@@ -77,8 +77,11 @@ public final class BeanPublisher {
 		for (Class<?> clz : clazzList) {
 			try {
 				publish(new BeanEvent(clz));
-			} catch (Exception e) {
-				Log.printStack("sumk.error", e);
+			} catch (LinkageError e) {
+				if (!clz.getName().startsWith("org.yx.")) {
+					throw e;
+				}
+				Logs.ioc().debug("{} ignored.{}", clz.getName(), e.getMessage());
 			}
 		}
 		if (clazzList.size() > 5) {

@@ -40,24 +40,24 @@ import org.yx.util.SumkDate;
 
 public class Monitors {
 
-	private static final String BLACK = "  ";
+	private static final String BLANK = "  ";
 
 	public static String serverInfo() {
 		long startTime = SumkServer.startTime();
 		long now = System.currentTimeMillis();
 		long ms = now - startTime;
 		StringBuilder sb = new StringBuilder();
-		sb.append("start").append(BLACK).append(SumkDate.of(startTime).to_yyyy_MM_dd_HH_mm_ss_SSS().replace(" ", "T"))
-				.append(BLACK).append("run(ms)").append(BLACK).append(ms).append(LN).append("localip").append(BLACK)
-				.append(AppInfo.getLocalIp()).append(BLACK).append("pid").append(BLACK).append(AppInfo.pid())
+		sb.append("start").append(BLANK).append(SumkDate.of(startTime).to_yyyy_MM_dd_HH_mm_ss_SSS().replace(" ", "T"))
+				.append(BLANK).append("run(ms)").append(BLANK).append(ms).append(LN).append("localip").append(BLANK)
+				.append(AppInfo.getLocalIp()).append(BLANK).append("pid").append(BLANK).append(AppInfo.pid())
 				.append(LN);
 		String v = AppInfo.groupId(null);
 		if (v != null) {
-			sb.append("groupId").append(BLACK).append(v).append(BLACK);
+			sb.append("groupId").append(BLANK).append(v).append(BLANK);
 		}
 		v = AppInfo.appId(null);
 		if (v != null) {
-			sb.append("appId").append(BLACK).append(v);
+			sb.append("appId").append(BLANK).append(v);
 		}
 		return sb.toString();
 	}
@@ -87,9 +87,9 @@ public class Monitors {
 			if (name == null || name.isEmpty()) {
 				continue;
 			}
-			sb.append(name).append(BLACK).append(f.format(mpmxb.getUsage().getInit())).append(BLACK)
-					.append(f.format(mpmxb.getUsage().getMax())).append(BLACK)
-					.append(f.format(mpmxb.getUsage().getCommitted())).append(BLACK)
+			sb.append(name).append(BLANK).append(f.format(mpmxb.getUsage().getInit())).append(BLANK)
+					.append(f.format(mpmxb.getUsage().getMax())).append(BLANK)
+					.append(f.format(mpmxb.getUsage().getCommitted())).append(BLANK)
 					.append(f.format(mpmxb.getUsage().getUsed())).append(LN);
 		}
 		return sb.toString();
@@ -102,7 +102,7 @@ public class Monitors {
 			sb.append(t.getName() + "  [id:" + t.getId() + "]").append(LN);
 			for (StackTraceElement e : st) {
 				if (sb.length() > 0) {
-					sb.append(BLACK);
+					sb.append(BLANK);
 				}
 				sb.append(e.getClassName() + "." + e.getMethodName() + "() ");
 				if (e.getLineNumber() > 0) {
@@ -117,13 +117,13 @@ public class Monitors {
 
 	public static String threadPoolInfo(ThreadPoolExecutor pool) {
 		StringBuilder sb = new StringBuilder();
-		sb.append("active").append(BLACK).append(pool.getActiveCount()).append(BLACK).append("size").append(BLACK)
-				.append(pool.getPoolSize()).append(BLACK).append("queue").append(BLACK).append(pool.getQueue().size())
-				.append(BLACK).append(LN).append("max").append(BLACK).append(pool.getMaximumPoolSize()).append(BLACK)
-				.append("keepAlive(ms)").append(BLACK).append(pool.getKeepAliveTime(TimeUnit.MILLISECONDS))
-				.append(BLACK)
+		sb.append("active").append(BLANK).append(pool.getActiveCount()).append(BLANK).append("size").append(BLANK)
+				.append(pool.getPoolSize()).append(BLANK).append("queue").append(BLANK).append(pool.getQueue().size())
+				.append(BLANK).append(LN).append("max").append(BLANK).append(pool.getMaximumPoolSize()).append(BLANK)
+				.append("keepAlive(ms)").append(BLANK).append(pool.getKeepAliveTime(TimeUnit.MILLISECONDS))
+				.append(BLANK)
 
-				.append("completed*").append(BLACK).append(pool.getCompletedTaskCount());
+				.append("completed*").append(BLANK).append(pool.getCompletedTaskCount());
 		return sb.toString();
 	}
 
@@ -147,4 +147,5 @@ public class Monitors {
 		});
 		return sb.toString();
 	}
+
 }

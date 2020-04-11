@@ -24,7 +24,7 @@ public abstract class WebFilter implements Ordered {
 
 	protected WebFilter next;
 
-	public void setNext(WebFilter next) {
+	public final void setNext(WebFilter next) {
 		this.next = Objects.requireNonNull(next);
 	}
 

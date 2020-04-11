@@ -34,9 +34,6 @@ public class ReqToStringHandler implements HttpHandler {
 		if (!byte[].class.isInstance(obj)) {
 			return;
 		}
-		if (ctx.httpNode().isRequestBody()) {
-			return;
-		}
 		byte[] bs = (byte[]) obj;
 		String data = new String(bs, ctx.charset());
 		ctx.data(data);

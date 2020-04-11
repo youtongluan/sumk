@@ -28,8 +28,8 @@ import org.yx.http.kit.HttpSettings;
  */
 public final class HttpContextHolder {
 
-	private static ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
-	private static ThreadLocal<HttpServletResponse> _resp = new ThreadLocal<>();
+	private static final ThreadLocal<HttpServletRequest> _req = new ThreadLocal<>();
+	private static final ThreadLocal<HttpServletResponse> _resp = new ThreadLocal<>();
 
 	public static void set(HttpServletRequest req, HttpServletResponse resp) {
 		_req.set(Objects.requireNonNull(req));

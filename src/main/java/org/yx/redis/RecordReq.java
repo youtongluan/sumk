@@ -15,9 +15,9 @@
  */
 package org.yx.redis;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -31,12 +31,12 @@ public final class RecordReq {
 	private static Logger logger = Log.get("sumk.db.redis");
 
 	public static String get(PojoMeta m, String id) {
-		if (m.getCounter().isCacheRefresh()) {
+		if (!m.getCounter().visit()) {
 			return null;
 		}
 		String s = _get(m, id);
 		if (s != null) {
-			m.getCounter().incCached();
+			m.getCounter().incCacheMeet();
 		}
 		return s;
 	}
@@ -91,18 +91,19 @@ public final class RecordReq {
 
 	public static List<String> getMultiValue(PojoMeta m, Collection<String> ids) {
 		if (ids == null || ids.isEmpty()) {
-			return new ArrayList<String>();
+			return Collections.emptyList();
 		}
-		String[] keys = getKeys(m, ids.toArray(new String[ids.size()]));
-		return RedisPool.get(m.getTableName()).mget(keys);
-	}
 
-	public static List<String> getMultiValue(PojoMeta m, String[] ids) {
-		if (ids == null || ids.length == 0) {
-			return new ArrayList<String>();
+		if (!m.getCounter().visit()) {
+			return Collections.emptyList();
 		}
-		String[] keys = getKeys(m, ids);
-		return RedisPool.get(m.getTableName()).mget(keys);
+
+		String[] keys = getKeys(m, ids.toArray(new String[ids.size()]));
+		List<String> ret = RedisPool.get(m.getTableName()).mget(keys);
+		if (ret != null && ret.size() > 0) {
+			m.getCounter().incCacheMeet();
+		}
+		return ret;
 	}
 
 	public static void setMultiValue(PojoMeta m, String[] ids, final String[] values) {

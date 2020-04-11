@@ -45,7 +45,7 @@ public @interface Table {
 	/**
 	 * @return 访问多少次之后刷新缓存，0表示使用全局默认，小于0表示不刷新
 	 */
-	int maxBeats() default 0;
+	int maxHit() default 0;
 
 	/**
 	 * @return 主键缓存都是SINGLE，外键缓存一般用LIST

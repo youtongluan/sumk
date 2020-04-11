@@ -18,14 +18,13 @@ package org.yx.http.handler;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Web;
 import org.yx.common.context.ActionContext;
-import org.yx.exception.BizException;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpException;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
-import org.yx.util.M;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
 
@@ -50,7 +49,7 @@ public class ReqUserHandler implements HttpHandler {
 		UserSession session = WebSessions.loadUserSession();
 		if (!session.valid(sessionId)) {
 			Logs.http().info("session:{}, is not valid", sessionId);
-			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.token.invalid", "token无效"));
+			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
 
@@ -61,13 +60,12 @@ public class ReqUserHandler implements HttpHandler {
 
 					if (session.isLogin(userId)) {
 						Logs.http().info("session:{}, login by other", sessionId);
-						BizException.throwException(HttpErrorCode.LOGIN_AGAIN,
-								M.get("sumk.http.error.single", "您已在其他地方登录！"));
+						throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
 					}
 				}
 			}
 			Logs.http().info("session:{}, has expired", sessionId);
-			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.unlogin", "请重新登陆"));
+			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登陆");
 		}
 		ctx.key(session.getKey(sessionId));
 		ActionContext.get().userId(obj.getUserId());

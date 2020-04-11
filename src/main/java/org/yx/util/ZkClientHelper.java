@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.I0Itec.zkclient.ZkClient;
 import org.yx.common.SimpleZkSerializer;
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 
 public final class ZkClientHelper {
 	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
@@ -39,7 +40,11 @@ public final class ZkClientHelper {
 				start = index;
 			}
 			if (!client.exists(path)) {
-				client.createPersistent(path);
+				try {
+					client.createPersistent(path);
+				} catch (Exception e) {
+					Logs.system().warn(path + " create failed.", e);
+				}
 			}
 
 			if (index < 0 || index == dataPath.length() - 1) {

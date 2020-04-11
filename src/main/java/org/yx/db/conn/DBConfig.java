@@ -87,8 +87,8 @@ public class DBConfig {
 			case "password":
 
 				if (AppInfo.getBoolean("sumk.db.password.encry", false)) {
-					byte[] bs = S.base64.decode(v.getBytes());
-					v = new String(S.cipher.decrypt(bs, new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97,
+					byte[] bs = S.base64().decode(v.getBytes());
+					v = new String(S.cipher().decrypt(bs, new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97,
 							110, 64, 115, 117, 109, 107 }));
 				}
 				properties.put(key, v);

@@ -88,7 +88,7 @@ public final class RpcResult {
 		if (this.json == null) {
 			return null;
 		}
-		return S.json.fromJson(json, clz);
+		return S.json().fromJson(json, clz);
 	}
 
 	@Override

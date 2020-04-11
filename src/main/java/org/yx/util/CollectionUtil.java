@@ -39,25 +39,15 @@ public final class CollectionUtil {
 	@SafeVarargs
 	public static <T> List<T> list(T... a) {
 		List<T> list = new ArrayList<>();
-		CollectionUtil.addAll(list, a);
+		Collections.addAll(list, a);
 		return list;
 	}
 
 	@SafeVarargs
 	public static <T> Set<T> hashSet(T... a) {
 		Set<T> set = new HashSet<>();
-		CollectionUtil.addAll(set, a);
+		Collections.addAll(set, a);
 		return set;
-	}
-
-	@SafeVarargs
-	public static <T> void addAll(Collection<T> col, T... a) {
-		if (a == null || a.length == 0) {
-			return;
-		}
-		for (T t : a) {
-			col.add(t);
-		}
 	}
 
 	public static Map<String, String> loadMap(InputStream in, boolean keepNullValue) throws IOException {
@@ -72,6 +62,9 @@ public final class CollectionUtil {
 		Map<String, String> map = new HashMap<>();
 		for (String entry : text.split(bigDelimiter)) {
 			entry = entry.trim();
+			if (StringUtil.isEmpty(entry)) {
+				continue;
+			}
 			String[] vs = entry.split(smallDelimiter, 2);
 			switch (vs.length) {
 			case 1:

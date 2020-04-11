@@ -411,24 +411,25 @@ public class Select extends SelectBuilder {
 				}
 			}
 
-			if (this.in != exchange.getLeftIn() && CollectionUtil.isNotEmpty(this.in)
-					&& CollectionUtil.isEmpty(exchange.getLeftIn())) {
+			if (CollectionUtil.isNotEmpty(this.in) && CollectionUtil.isEmpty(exchange.getLeftIn())) {
 				return list;
 			}
+
 			this.in = exchange.getLeftIn();
-			List<T> tmp = handler.parse(pojoMeta, this.accept(visitor));
+			List<T> dbData = handler.parse(pojoMeta, this.accept(visitor));
 			this.in = origin;
-			if (tmp == null || tmp.isEmpty()) {
+			if (dbData == null || dbData.isEmpty()) {
 				return list;
 			}
-			list.addAll(tmp);
-			List<Map<String, Object>> eventIn = fromCache ? exchange.getCanToRedis() : this.in;
+			list.addAll(dbData);
+			List<Map<String, Object>> eventIn = fromCache ? exchange.getLeftIn() : this.in;
 
 			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
 					&& (limit <= 0 || limit >= DBSettings.asNoLimit()) && CollectionUtil.isNotEmpty(eventIn)) {
+
 				QueryEvent event = new QueryEvent(this.parsePojoMeta(true).getTableName());
 				event.setIn(eventIn);
-				event.setResult(tmp);
+				event.setResult(dbData);
 				DBEventPublisher.publish(event);
 			}
 			if (this.limit > 0 && list.size() > this.limit) {

@@ -17,22 +17,11 @@ package org.yx.http;
 
 import java.util.Objects;
 
-import org.yx.http.handler.WebContext;
 import org.yx.util.S;
 
-public class HttpCiphers {
+public final class HttpCiphers {
 
-	private static HttpEncryptor encryptor = new HttpEncryptor() {
-		@Override
-		public byte[] encrypt(byte[] data, WebContext ctx) throws Exception {
-			return S.cipher.encrypt(data, ctx.key());
-		}
-
-		@Override
-		public byte[] decrypt(byte[] data, WebContext ctx) throws Exception {
-			return S.cipher.decrypt(data, ctx.key());
-		}
-	};
+	private static HttpEncryptor encryptor = new DefaultHttpEncryptor();
 
 	public static HttpEncryptor getEncryptor() {
 		return encryptor;
@@ -42,7 +31,7 @@ public class HttpCiphers {
 		HttpCiphers.encryptor = Objects.requireNonNull(encryptor);
 	}
 
-	private static Signer signer = (bs, httpServletRequest) -> S.hash.digestByteToString(bs);
+	private static Signer signer = (bs, httpServletRequest) -> S.hash().digestByteToString(bs);
 
 	public static Signer getSigner() {
 		return signer;

@@ -21,17 +21,9 @@ import org.yx.exception.SimpleSumkException;
 
 public final class InterfaceBean implements ComplexBean {
 	private final Class<?> intf;
-	/**
-	 * 可以是class类，也可以包含实力化后的对象。但不能是NamedBean
-	 */
+
 	private final Object bean;
 
-	/**
-	 * @param beanName
-	 *            bean的名称，不能为null或空串
-	 * @param bean
-	 *            可以是class类，也可以包含实力化后的对象。但不能是NamedBean
-	 */
 	public InterfaceBean(Class<?> intf, Object bean) {
 		this.intf = Objects.requireNonNull(intf);
 		if (ComplexBean.class.isInstance(bean)) {

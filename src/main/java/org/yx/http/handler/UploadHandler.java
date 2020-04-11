@@ -25,8 +25,9 @@ import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Upload;
-import org.yx.exception.HttpException;
-import org.yx.http.kit.InnerHttpUtil;
+import org.yx.common.UnsafeByteArrayOutputStream;
+import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpException;
 import org.yx.log.Logs;
 
 @Bean
@@ -53,14 +54,14 @@ public class UploadHandler implements HttpHandler {
 		upload.setHeaderEncoding(ctx.charset().name());
 		List<FileItem> list = upload.parseRequest(request);
 		if (list == null || list.isEmpty()) {
-			HttpException.throwException(this.getClass(), "没有文件");
+			throw HttpException.create(HttpErrorCode.FILE_MISS, "没有文件");
 		}
 		List<UploadFile> files = new ArrayList<>(list.size());
 		for (FileItem fi : list) {
 			String name = fi.getName();
 			if (name == null) {
 				if ("data".equals(fi.getFieldName())) {
-					ctx.data(InnerHttpUtil.extractData(fi.get()));
+					ctx.data(UnsafeByteArrayOutputStream.extractData(fi.get()));
 					continue;
 				}
 				continue;
@@ -81,7 +82,7 @@ public class UploadHandler implements HttpHandler {
 				}
 			}
 			if (!valid) {
-				HttpException.throwException(this.getClass(), name + "不是有效的文件类型");
+				throw HttpException.create(HttpErrorCode.FILE_TYPE_MISS, name + "不是有效的文件类型");
 			}
 		}
 		UploadFileHolder.setFiles(files);

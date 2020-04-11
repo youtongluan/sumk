@@ -28,7 +28,7 @@ public class ToBytesHandler implements HttpHandler {
 	@Override
 	public void handle(WebContext ctx) throws Exception {
 		Object result = ctx.result();
-		if (result.getClass() == byte[].class) {
+		if (result == null || result.getClass() == byte[].class) {
 			return;
 		}
 		String bs = (String) result;

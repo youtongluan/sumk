@@ -16,7 +16,7 @@
 package org.yx.rpc.server.impl;
 
 import org.yx.annotation.Bean;
-import org.yx.common.BizExcutor;
+import org.yx.common.CalleeNode;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcGson;
@@ -38,7 +38,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 		try {
 			String api = req.getApi();
 			RpcActionNode node = RpcActions.getActionNode(api);
-			BizExcutor.checkNode(api, node);
+			CalleeNode.checkNode(api, node);
 			Object ret = RpcHandler.handle(node, new OrderedRpcVisitor(req));
 			resp.json(RpcGson.toJson(ret));
 			resp.exception(null);

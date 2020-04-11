@@ -47,15 +47,15 @@ public class RpcTest {
 		// ret是json格式
 		String ret = Rpc.call(soaName("echo"), echo, names);
 		System.out.println("result:" + ret);
-		Assert.assertEquals(new EchoAction().echo(echo, names), S.json.fromJson(ret, List.class));
+		Assert.assertEquals(new EchoAction().echo(echo, names), S.json().fromJson(ret, List.class));
 		for (int i = 0; i < 5; i++) {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo);
 			map.put("names", names);
-			ret = Rpc.callInJson(soaName("echo"), S.json.toJson(map));
-			Assert.assertEquals(new EchoAction().echo(echo, names), S.json.fromJson(ret, List.class));
+			ret = Rpc.callInJson(soaName("echo"), S.json().toJson(map));
+			Assert.assertEquals(new EchoAction().echo(echo, names), S.json().fromJson(ret, List.class));
 			ret = Rpc.call(soaName("echo"), echo, names);
-			Assert.assertEquals(new EchoAction().echo(echo, names), S.json.fromJson(ret, List.class));
+			Assert.assertEquals(new EchoAction().echo(echo, names), S.json().fromJson(ret, List.class));
 			System.out.println("test:" + ret);
 		}
 	}
@@ -81,7 +81,7 @@ public class RpcTest {
 			String ret;
 			Map<String, Object> map = new HashMap<>();
 			map.put("users", list);
-			ret = Rpc.callInJson(soaName("add"), S.json.toJson(map));
+			ret = Rpc.callInJson(soaName("add"), S.json().toJson(map));
 			System.out.println("返回的信息：" + ret);
 			Assert.assertEquals(list.size() + "", ret);
 
@@ -104,16 +104,16 @@ public class RpcTest {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo + i);
 			map.put("names", names);
-			retList.add(Rpc.callInJsonAsync(soaName("echo"), S.json.toJson(map)));
+			retList.add(Rpc.callInJsonAsync(soaName("echo"), S.json().toJson(map)));
 			retList2.add(Rpc.callAsync(soaName("echo"), echo + i, names));
 		}
 
 		for (int i = 0; i < 5; i++) {
 			System.out.println(i + " 异步");
 			Assert.assertEquals(new EchoAction().echo(echo + i, names),
-					S.json.fromJson(retList.get(i).opt(), List.class));
+					S.json().fromJson(retList.get(i).opt(), List.class));
 			Assert.assertEquals(new EchoAction().echo(echo + i, names),
-					S.json.fromJson(retList2.get(i).opt(), List.class));
+					S.json().fromJson(retList2.get(i).opt(), List.class));
 		}
 	}
 

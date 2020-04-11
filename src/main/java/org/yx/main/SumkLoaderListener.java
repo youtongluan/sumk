@@ -75,7 +75,9 @@ public class SumkLoaderListener implements ServletContextListener {
 					loginPath = "/" + loginPath;
 				}
 				Logs.http().info("login path:{}", context.getContextPath() + loginPath);
-				context.addServlet(loginPath, HttpLoginWrapper.class).addMapping(loginPath);
+				ServletRegistration.Dynamic dynamic = context.addServlet(loginPath, HttpLoginWrapper.class);
+				dynamic.addMapping(loginPath);
+				dynamic.setLoadOnStartup(1);
 			}
 			addListeners(context);
 		} catch (Exception e) {

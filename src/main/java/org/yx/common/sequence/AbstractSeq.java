@@ -86,8 +86,8 @@ public abstract class AbstractSeq implements Seq {
 		return this.counter;
 	}
 
-	protected long shortNowMills() {
-		return System.currentTimeMillis() - fromMils;
+	protected final long shortMills(long time) {
+		return time - fromMils;
 	}
 
 	protected long fullTime(long time) {

@@ -15,34 +15,12 @@
  */
 package org.yx.util;
 
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class UUIDSeed {
 	private final static char[] LETTERS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
 	private final static int LEN = LETTERS.length;
-	private static Random[] RANDOMS;
-	private static final int RANDOM_LENGTH = 5;
-	private static int R_INDEX = 0;
-	static {
-		RANDOMS = new Random[RANDOM_LENGTH];
-		for (int i = 0; i < RANDOM_LENGTH; i++) {
-			RANDOMS[i] = new Random();
-		}
-	}
-
-	private static Random getRandom() {
-		int k = R_INDEX++;
-		int index = k % RANDOM_LENGTH;
-		if (k < 10000) {
-			return RANDOMS[index];
-		}
-		R_INDEX = ThreadLocalRandom.current().nextInt(RANDOM_LENGTH);
-		Random r = new Random();
-		RANDOMS[index] = r;
-		return r;
-	}
 
 	static void fill(char[] source, final int from, int bytes, long number) {
 		if (number < 0) {
@@ -101,12 +79,13 @@ public final class UUIDSeed {
 	}
 
 	static char[] seqChars() {
+		ThreadLocalRandom r = ThreadLocalRandom.current();
 		char[] ret = new char[20];
 		fill(ret, 0, 8, System.currentTimeMillis());
 		fill(ret, 8, 4, System.nanoTime());
-		fill(ret, 12, 2, ThreadLocalRandom.current().nextInt(DOUBLE_LEN));
+		fill(ret, 12, 2, r.nextInt(DOUBLE_LEN));
 
-		int addNum = getRandom().nextInt(LEN) + 1;
+		int addNum = r.nextInt(LEN) + 1;
 		int next = current.addAndGet(addNum);
 		if (next > 1000000000) {
 			current = new AtomicInteger(next % (DOUBLE_LEN * DOUBLE_LEN) + DOUBLE_LEN);
@@ -114,7 +93,7 @@ public final class UUIDSeed {
 
 		fill(ret, 14, 4, next);
 		fill(ret, 18, 1, addNum);
-		fill(ret, 19, 1, getRandom().nextInt(LEN));
+		fill(ret, 19, 1, r.nextInt(LEN));
 		return ret;
 	}
 

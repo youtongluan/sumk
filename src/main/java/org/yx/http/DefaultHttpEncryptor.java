@@ -13,27 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.http;
 
-import org.yx.annotation.Bean;
+import java.util.Objects;
+
+import org.yx.http.handler.WebContext;
 import org.yx.util.S;
+import org.yx.util.secury.Encryptor;
 
-@Bean
-public class Base64EncodeHandler implements HttpHandler {
+public class DefaultHttpEncryptor implements HttpEncryptor {
+
+	private Encryptor cipher = S.cipher();
 
 	@Override
-	public int order() {
-		return 2400;
+	public byte[] encrypt(byte[] data, WebContext ctx) throws Exception {
+		return cipher.encrypt(data, ctx.key());
 	}
 
 	@Override
-	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().responseEncrypt().isBase64()) {
-			return;
-		}
-		byte[] bs = (byte[]) ctx.result();
-		byte[] data = S.base64().encode(bs);
-		ctx.result(data);
+	public byte[] decrypt(byte[] data, WebContext ctx) throws Exception {
+		return cipher.decrypt(data, ctx.key());
 	}
 
+	public Encryptor getCipher() {
+		return cipher;
+	}
+
+	public void setCipher(Encryptor cipher) {
+		this.cipher = Objects.requireNonNull(cipher);
+	}
 }

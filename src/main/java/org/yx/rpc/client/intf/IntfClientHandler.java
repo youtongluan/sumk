@@ -79,8 +79,8 @@ public class IntfClientHandler implements InvocationHandler {
 		String gen = method.getGenericReturnType().getTypeName();
 		Type type = JsonTypes.get(gen);
 		if (type == null) {
-			return S.json.fromJson(json, method.getReturnType());
+			return S.json().fromJson(json, method.getReturnType());
 		}
-		return S.json.fromJson(json, type);
+		return S.json().fromJson(json, type);
 	}
 }

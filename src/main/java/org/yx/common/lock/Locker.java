@@ -20,11 +20,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
+import org.yx.main.SumkThreadPool;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
@@ -33,36 +35,25 @@ public final class Locker {
 	private static final int REDIS_LEN = 16;
 	private static final String[] nodeKey = new String[REDIS_LEN];
 
-	public static void init() {
-		try {
-			for (int i = 0; i < REDIS_LEN; i++) {
-				nodeKey[i] = "lock_" + i;
-			}
-			String script = StringUtil.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
-			Set<Redis> set = new HashSet<>();
-			for (String key : nodeKey) {
-				Redis redis = RedisPool.get(key);
-				if (redis == null || !set.add(redis)) {
-					continue;
-				}
-				redis.scriptLoad(script);
-			}
-		} catch (Exception e) {
-			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
-			Log.printStack("sumk.lock", e);
-			if (AppInfo.getBoolean("sumk.shutdown.if.lock", false)) {
-				System.exit(1);
-			}
+	public static synchronized void init() {
+		if (nodeKey[0] != null) {
+			return;
 		}
+		for (int i = 0; i < REDIS_LEN; i++) {
+			nodeKey[i] = "lock_" + i;
+		}
+		ensureScriptRunner.run();
+		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(ensureScriptRunner,
+				AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600),
+				AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600), TimeUnit.MILLISECONDS);
 	}
 
 	private Locker() {
-
 	}
 
 	public static final Locker inst = new Locker();
 
-	public static Redis redis(String id) {
+	static Redis redis(String id) {
 		int index = id.hashCode() & (REDIS_LEN - 1);
 		Redis redis = RedisPool.get(nodeKey[index]);
 		if (redis == null) {
@@ -176,4 +167,24 @@ public final class Locker {
 		return null;
 	}
 
+	private static final Runnable ensureScriptRunner = () -> {
+		try {
+			String script = StringUtil.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
+			Set<Redis> set = new HashSet<>();
+			for (String key : nodeKey) {
+				Redis redis = RedisPool.get(key);
+				if (redis == null || !set.add(redis)) {
+					continue;
+				}
+				Log.get("sumk.lock").debug("init lock script", redis);
+				redis.scriptLoad(script);
+			}
+		} catch (Exception e) {
+			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
+			Log.printStack("sumk.lock", e);
+			if (AppInfo.getBoolean("sumk.shutdown.if.lock.failed", false)) {
+				System.exit(1);
+			}
+		}
+	};
 }

@@ -25,7 +25,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import org.yx.annotation.doc.Comment;
-import org.yx.annotation.http.RequestBody;
 import org.yx.annotation.http.Web;
 import org.yx.bean.Loader;
 import org.yx.common.ActInfoUtil;
@@ -109,10 +108,6 @@ public final class HttpActions {
 				Comment comment = http.getAnnotation(Comment.class);
 				if (comment != null && comment.value().length() > 0) {
 					map.put("comment", comment.value());
-				}
-
-				if (http.getAnnotation(RequestBody.class) != null) {
-					map.put("requestBody", "true");
 				}
 			}
 			map.put("upload", http.upload != null);

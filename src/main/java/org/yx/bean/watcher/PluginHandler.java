@@ -25,7 +25,6 @@ import org.yx.bean.Plugin;
 import org.yx.bean.Plugins;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
@@ -56,7 +55,7 @@ public class PluginHandler {
 					latch.countDown();
 					Logs.ioc().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
-					Log.printStack("sumk.error", e);
+					Logs.ioc().warn("{} start failed", e);
 					System.exit(1);
 				}
 			});

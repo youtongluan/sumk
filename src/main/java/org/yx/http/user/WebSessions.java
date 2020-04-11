@@ -17,17 +17,16 @@ package org.yx.http.user;
 
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
-import org.yx.exception.BizException;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisLoader;
 import org.yx.redis.RedisPool;
-import org.yx.util.M;
 
-public class WebSessions {
+public final class WebSessions {
 	private static UserSession session;
 
 	public static UserSession userSession() {
@@ -37,7 +36,7 @@ public class WebSessions {
 	public static UserSession loadUserSession() {
 		if (session == null) {
 			Log.get("sumk.http.session").info("session has not created");
-			BizException.throwException(HttpErrorCode.SESSION_ERROR, M.get("sumk.http.error.session.unload", "请重新登陆."));
+			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登陆");
 		}
 		return session;
 	}

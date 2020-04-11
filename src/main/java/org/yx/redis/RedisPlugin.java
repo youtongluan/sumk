@@ -65,7 +65,7 @@ public class RedisPlugin implements Plugin {
 		if (SeqHolder.inst().getCounter() != null) {
 			return;
 		}
-		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", RedisLoader.COUNTER));
+		Redis redis = RedisPool.getRedisExactly(AppInfo.get("sumk.counter.name", RedisLoader.SEQ));
 		if (redis == null) {
 			redis = RedisPool.getRedisExactly("session");
 		}

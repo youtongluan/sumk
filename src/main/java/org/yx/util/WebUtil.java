@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.handler.UploadFile;
 import org.yx.http.handler.UploadFileHolder;
+import org.yx.http.kit.HttpKit;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
@@ -89,5 +90,13 @@ public final class WebUtil {
 
 	public static List<UploadFile> getUploadFiles() {
 		return UploadFileHolder.getFiles();
+	}
+
+	public static HttpKit getKit() {
+		return InnerHttpUtil.getKit();
+	}
+
+	public static void setKit(HttpKit kit) {
+		InnerHttpUtil.setKit(kit);
 	}
 }

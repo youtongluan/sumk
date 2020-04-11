@@ -16,21 +16,35 @@
 package org.yx.util.secury;
 
 import javax.crypto.Cipher;
+import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 
 public class AESEncryptor implements Encryptor {
 
-	private String c = "AES/ECB/ISO10126Padding";
-	private String algorithm = "AES";
+	private static final String AES = "AES";
+
+	private String c = "AES/CBC/PKCS5Padding";
 
 	public AESEncryptor() {
-		String s = AppInfo.get("sumk.encry.aes.cipher");
-		if (s != null && s.length() > 1) {
-			this.c = s;
-			this.algorithm = c.split("/")[0];
+	}
+
+	public AESEncryptor(String cipher) {
+		if (cipher != null && cipher.length() > 1) {
+			this.c = cipher;
+			Logs.system().info("aes cipher:{}", this.c);
 		}
+	}
+
+	private Cipher getCipher(int mode, byte[] key) throws Exception {
+		Cipher cipher = Cipher.getInstance(c);
+		if (c.contains("ECB")) {
+			cipher.init(mode, new SecretKeySpec(key, AES));
+		} else {
+			cipher.init(mode, new SecretKeySpec(key, AES), new IvParameterSpec(key));
+		}
+		return cipher;
 	}
 
 	@Override
@@ -38,11 +52,7 @@ public class AESEncryptor implements Encryptor {
 		if (contentBytes == null || contentBytes.length == 0) {
 			return contentBytes;
 		}
-		SecretKeySpec skeySpec = new SecretKeySpec(key, algorithm);
-		Cipher cipher = Cipher.getInstance(c);
-		cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
-		byte[] encryptResult = cipher.doFinal(contentBytes);
-		return encryptResult;
+		return getCipher(Cipher.ENCRYPT_MODE, key).doFinal(contentBytes);
 	}
 
 	@Override
@@ -50,11 +60,7 @@ public class AESEncryptor implements Encryptor {
 		if (contentBytes == null || contentBytes.length == 0) {
 			return contentBytes;
 		}
-		SecretKeySpec skeySpec = new SecretKeySpec(key, algorithm);
-		Cipher cipher = Cipher.getInstance(c);
-		cipher.init(Cipher.DECRYPT_MODE, skeySpec);
-		return cipher.doFinal(contentBytes);
-
+		return getCipher(Cipher.DECRYPT_MODE, key).doFinal(contentBytes);
 	}
 
 }

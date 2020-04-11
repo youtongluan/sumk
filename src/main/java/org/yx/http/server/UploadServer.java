@@ -21,6 +21,7 @@ import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
+import org.yx.http.kit.HttpException;
 import org.yx.util.M;
 
 /**
@@ -38,8 +39,7 @@ public class UploadServer extends AbstractHttpServer {
 	protected void handle(WebContext wc) throws Throwable {
 		if (HttpHandlerChain.upload == null) {
 			log.error("上传功能被禁用");
-			throw BizException.create(HttpErrorCode.UPLOAD_DISABLED,
-					M.get("sumk.http.upload.error.disable", "上传功能暂时无法使用"));
+			throw HttpException.create(HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
 		}
 		String contextType = wc.httpRequest().getContentType();
 		if (contextType == null || !contextType.startsWith(MULTI)) {

@@ -24,7 +24,7 @@ import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 
 @Bean
-public class ReqBodyHandler implements HttpHandler {
+public class ReqDataHandler implements HttpHandler {
 
 	@Override
 	public int order() {
@@ -42,12 +42,18 @@ public class ReqBodyHandler implements HttpHandler {
 			Logs.http().debug("data is not null");
 			return;
 		}
-		if (ctx.httpNode().argClz == null) {
+		if (ctx.httpNode().isEmptyArgument()) {
 			return;
 		}
 		HttpServletRequest req = ctx.httpRequest();
+		ctx.sign(req.getParameter("sign"));
+		String data = req.getParameter("data");
+		if (data != null) {
+			ctx.data(data);
+			return;
+		}
 		InputStream in = req.getInputStream();
-		ctx.data(InnerHttpUtil.extractData(in));
+		ctx.data(InnerHttpUtil.extractData(in, req.getContentLength()));
 	}
 
 }

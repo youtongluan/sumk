@@ -13,12 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.http.server;
 
 import static org.yx.conf.AppInfo.LN;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +39,8 @@ import org.yx.common.Statis;
 import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.http.server.AbstractCommonHttpServlet;
+import org.yx.http.user.UserSession;
+import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcActions;
@@ -55,21 +57,22 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		InnerHttpUtil.noCache(resp);
 		resp.setContentType("text/plain;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.union.monitor", "sumk.http.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
+		String md5 = AppInfo.get("sumk.http.monitor", "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
 		if (sign == null) {
 			Logs.http().debug("sign is empty");
 			return;
 		}
 		try {
-			String signed = S.hash.digest(sign, StandardCharsets.UTF_8);
+			String signed = S.hash().digest(sign, StandardCharsets.UTF_8);
 			if (!md5.equalsIgnoreCase(signed)) {
 				Logs.http().debug("signed:{},need:{}", signed, md5);
 				return;
 			}
 		} catch (Exception e) {
 		}
-		PrintWriter writer = resp.getWriter();
+
+		StringWriter writer = new StringWriter();
 
 		this.outputServerInfo(req, writer);
 		this.outputActs(req, writer);
@@ -81,33 +84,54 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		this.outputThreadPool(req, writer);
 		this.outputSchedulePool(req, writer);
 		this.outputLogLevels(req, writer);
+		this.outputLocalSessions(req, writer);
+
+		writer.flush();
+		String ret = writer.toString();
+		resp.getOutputStream().write(ret.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private void outputServerInfo(HttpServletRequest req, PrintWriter writer) {
+	private String localSessions() {
+		UserSession userSession = WebSessions.userSession();
+		if (userSession == null) {
+			return "";
+		}
+		return new StringBuilder("#localSessions:").append("  ").append(userSession.localCacheSize()).toString();
+	}
+
+	private void outputLocalSessions(HttpServletRequest req, StringWriter writer) {
+		if (!"1".equals(req.getParameter("localSessions"))) {
+			return;
+		}
+		writer.append(localSessions());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputServerInfo(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("server"))) {
 			return;
 		}
-		writer.write(Monitors.serverInfo());
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.serverInfo());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputActs(HttpServletRequest req, PrintWriter writer) {
+	private void outputActs(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("acts"))) {
 			return;
 		}
-		writer.write(Arrays.toString(HttpActions.acts()));
-		writer.write(TYPE_SPLIT);
+		writer.append(Arrays.toString(HttpActions.acts()));
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputRpcActs(HttpServletRequest req, PrintWriter writer) {
+	private void outputRpcActs(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("acts.rpc"))) {
 			return;
 		}
-		writer.write(RpcActions.soaSet().toString());
-		writer.write(TYPE_SPLIT);
+		writer.append(RpcActions.soaSet().toString());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputStatis(HttpServletRequest req, PrintWriter writer) {
+	private void outputStatis(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("statis"))) {
 			return;
 		}
@@ -121,55 +145,55 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		for (Statis v : values) {
 			sb.append(v.toSimpleString()).append(LN);
 		}
-		writer.write(sb.toString());
-		writer.write(TYPE_SPLIT);
+		writer.append(sb.toString());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputSystem(HttpServletRequest req, PrintWriter writer) {
+	private void outputSystem(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("system"))) {
 			return;
 		}
-		writer.write(Monitors.systemInfo());
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.systemInfo());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputJvmInfo(HttpServletRequest req, PrintWriter writer) {
+	private void outputJvmInfo(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("jvm"))) {
 			return;
 		}
-		writer.write(Monitors.jvmInfo());
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.jvmInfo());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputAllTrack(HttpServletRequest req, PrintWriter writer) {
+	private void outputAllTrack(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("stack"))) {
 			return;
 		}
-		writer.write(Monitors.allTrack());
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.allTrack());
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputThreadPool(HttpServletRequest req, PrintWriter writer) {
+	private void outputThreadPool(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("threadpool"))) {
 			return;
 		}
-		writer.write(Monitors.threadPoolInfo((ThreadPoolExecutor) SumkThreadPool.executor()));
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.threadPoolInfo((ThreadPoolExecutor) SumkThreadPool.executor()));
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputSchedulePool(HttpServletRequest req, PrintWriter writer) {
+	private void outputSchedulePool(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("schedulepool"))) {
 			return;
 		}
-		writer.write(Monitors.threadPoolInfo(SumkThreadPool.scheduledExecutor()));
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.threadPoolInfo(SumkThreadPool.scheduledExecutor()));
+		writer.append(TYPE_SPLIT);
 	}
 
-	private void outputLogLevels(HttpServletRequest req, PrintWriter writer) {
+	private void outputLogLevels(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("logLevel"))) {
 			return;
 		}
-		writer.write(Monitors.logLevels());
-		writer.write(TYPE_SPLIT);
+		writer.append(Monitors.logLevels());
+		writer.append(TYPE_SPLIT);
 	}
 }

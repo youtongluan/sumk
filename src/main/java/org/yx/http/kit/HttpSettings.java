@@ -37,6 +37,7 @@ public final class HttpSettings {
 	private static int warnTime;
 	private static int infoTime;
 	private static Charset defaultCharset = StandardCharsets.UTF_8;
+	private static int maxHttpBody;
 
 	public static int getErrorHttpStatus() {
 		return errorHttpStatus;
@@ -44,6 +45,10 @@ public final class HttpSettings {
 
 	public static Set<String> getFusing() {
 		return fusing;
+	}
+
+	public static int maxHttpBody() {
+		return maxHttpBody;
 	}
 
 	public static long getHttpSessionTimeoutInMs() {
@@ -102,6 +107,7 @@ public final class HttpSettings {
 			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 1000);
 			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn.time", 3000);
 			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info.time", 1000);
+			HttpSettings.maxHttpBody = AppInfo.getInt("sumk.http.body.maxLength", 1024 * 1024 * 100);
 		});
 	}
 

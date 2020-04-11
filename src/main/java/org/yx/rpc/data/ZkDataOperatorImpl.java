@@ -67,7 +67,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 			}
 		});
 		if (logger.isTraceEnabled()) {
-			logger.trace("反序列化:  {}\nzk上的数据: {}\ninfo:  {}", data.name(), v, S.json.toJson(info));
+			logger.trace("反序列化:  {}\nzk上的数据: {}\ninfo:  {}", data.name(), v, S.json().toJson(info));
 		}
 		return info;
 	}

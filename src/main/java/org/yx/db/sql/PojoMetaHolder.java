@@ -16,7 +16,6 @@
 package org.yx.db.sql;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -41,9 +40,8 @@ public class PojoMetaHolder {
 		return tableMetas.get(table);
 	}
 
-	public static PojoMeta[] allPojoMeta() {
-		Collection<PojoMeta> pms = pojoMetas.values();
-		return pms.toArray(new PojoMeta[0]);
+	public static List<PojoMeta> allPojoMeta() {
+		return new ArrayList<>(pojoMetas.values());
 	}
 
 	public static PojoMeta getPojoMeta(PojoMeta pm, String sub) {
@@ -94,12 +92,9 @@ public class PojoMetaHolder {
 			return;
 		}
 
-		Field[] fs = S.bean.getFields(pojoClz);
+		Field[] fs = S.bean().getFields(pojoClz);
 		Map<String, Field> map = new HashMap<>();
 		for (Field f : fs) {
-			if (Modifier.isFinal(f.getModifiers())) {
-				continue;
-			}
 			map.putIfAbsent(f.getName(), f);
 		}
 		Collection<Field> set = map.values();

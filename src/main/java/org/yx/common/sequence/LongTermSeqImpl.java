@@ -15,6 +15,8 @@
  */
 package org.yx.common.sequence;
 
+import org.yx.util.SumkDate;
+
 public final class LongTermSeqImpl extends AbstractSeq {
 
 	public LongTermSeqImpl() {
@@ -26,17 +28,30 @@ public final class LongTermSeqImpl extends AbstractSeq {
 	}
 
 	public long next(String name) {
-		long num = shortNowMills();
-		num &= 0x1FFFFFFFFFFL;
-		num <<= 23;
 		int sub = subNumber(name) & 0x7FFFFF;
-		return num | sub;
+		return prefix(System.currentTimeMillis()) | sub;
+	}
+
+	private long prefix(long time) {
+		long num = shortMills(time);
+		num &= 0x1FFFFFFFFFFL;
+		return num << 23;
 	}
 
 	public long getDate(long seq) {
 		long num = seq & 0xFFFFFFFFFF800000L;
 		num >>>= 23;
 		return fullTime(num);
+	}
+
+	@Override
+	public long low(SumkDate date) {
+		return prefix(date.getTimeInMils());
+	}
+
+	@Override
+	public long high(SumkDate date) {
+		return prefix(date.getTimeInMils()) | 0x7FFFFF;
 	}
 
 }

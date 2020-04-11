@@ -28,7 +28,7 @@ import org.yx.util.StringUtil;
 
 public class RedisLoader {
 
-	public static final String COUNTER = "count";
+	public static final String SEQ = "seq";
 	public static final String SESSION = "session";
 
 	static final String LOG_NAME = "sumk.redis";

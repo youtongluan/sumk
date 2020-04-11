@@ -15,24 +15,15 @@
  */
 package org.yx.http.invoke;
 
-import org.yx.asm.ArgPojo;
-import org.yx.common.BizExcutor;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.handler.WebContext;
-import org.yx.validate.ParamInfo;
 
 public class WebVisitorImpl implements WebVisitor {
 
 	@Override
 	public Object visit(WebContext ctx) throws Throwable {
 		HttpActionNode http = ctx.httpNode();
-		ArgPojo argObj = http.buildArgPojo(ctx.data());
-		return exec(argObj, http.owner, http.paramInfos);
-	}
-
-	private Object exec(ArgPojo argObj, Object owner, ParamInfo[] paramInfos) throws Throwable {
-		Object[] params = argObj.params();
-		return BizExcutor.exec(argObj, owner, params, paramInfos);
+		return http.execute(http.buildArgPojo(ctx.data()));
 	}
 
 }

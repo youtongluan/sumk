@@ -40,9 +40,7 @@ public class RemoteUserSession implements UserSession {
 	private final Redis redis;
 
 	protected final String singleKey(String userId) {
-		StringBuilder sb = new StringBuilder();
-		sb.append("_SINGLE_SES_").append(userId);
-		return sb.toString();
+		return "_SINGLE_SES_".concat(userId);
 	}
 
 	protected final byte[] bigKey(String sessionId) {
@@ -56,6 +54,7 @@ public class RemoteUserSession implements UserSession {
 		this.redis = redis;
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
 		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
+
 			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
 			if (duration > HttpSettings.getHttpSessionTimeoutInMs()) {
 				duration = HttpSettings.getHttpSessionTimeoutInMs();
@@ -121,7 +120,7 @@ public class RemoteUserSession implements UserSession {
 		if (obj == null) {
 			return null;
 		}
-		return S.json.fromJson(obj.json, clz);
+		return S.json().fromJson(obj.json, clz);
 	}
 
 	@Override
@@ -146,7 +145,7 @@ public class RemoteUserSession implements UserSession {
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
 		long sessionTimeout = HttpSettings.getHttpSessionTimeoutInMs();
 		byte[] bigKey = this.bigKey(sessionId);
-		String json = S.json.toJson(sessionObj);
+		String json = S.json().toJson(sessionObj);
 		byte[] data = TimedCachedObject.toBytes(json, key);
 		String ret = redis.set(bigKey, data, NX, PX, sessionTimeout);
 		if (!"OK".equalsIgnoreCase(ret) && !"1".equals(ret)) {

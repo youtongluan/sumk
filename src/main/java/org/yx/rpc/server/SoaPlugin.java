@@ -37,20 +37,20 @@ public class SoaPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
-		if (!SumkServer.isRpcEnable()) {
+		int port = StartContext.soaPort();
+
+		if (!SumkServer.isRpcEnable() || port < 0) {
 			return;
 		}
 		try {
 			RpcSettings.init();
 			resolveSoaAnnotation(StartContext.inst().getBeans());
 			RpcHandler.init();
-			int port = StartContext.soaPort();
-			if (port > -1) {
-				String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
-				Class<?> clz = Class.forName(clzName);
-				Constructor<?> c = clz.getConstructor(int.class);
-				server = (Lifecycle) c.newInstance(port);
-			}
+
+			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
+			Class<?> clz = Class.forName(clzName);
+			Constructor<?> c = clz.getConstructor(int.class);
+			server = (Lifecycle) c.newInstance(port);
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
 			System.exit(1);

@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
@@ -32,7 +33,6 @@ import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.redis.Counter;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
@@ -52,7 +52,7 @@ public final class PojoMeta implements Cloneable {
 
 	private ColumnMeta[] primaryIDs;
 
-	private Counter counter;
+	private VisitCounter counter;
 	private int ttlSec;
 
 	private String pre;
@@ -112,7 +112,7 @@ public final class PojoMeta implements Cloneable {
 		this.lastHitTime = lastHitTime;
 	}
 
-	public Counter getCounter() {
+	public VisitCounter getCounter() {
 		return counter;
 	}
 
@@ -161,12 +161,10 @@ public final class PojoMeta implements Cloneable {
 		} else {
 			this.ttlSec = -1;
 		}
-		int beats = table.maxBeats();
-		if (beats == 0) {
-			this.counter = new Counter(AppInfo.getInt("sumk.cache.count", 500));
-		} else {
-			this.counter = new Counter(Integer.MAX_VALUE);
-		}
+		int maxHit = table.maxHit();
+		@SuppressWarnings("unchecked")
+		IntFunction<VisitCounter> factory = (IntFunction<VisitCounter>) StartContext.inst().get(VisitCounter.class);
+		this.counter = factory != null ? factory.apply(maxHit) : new DefaultVisitCounter(maxHit);
 
 		String _pre = table.preInCache();
 

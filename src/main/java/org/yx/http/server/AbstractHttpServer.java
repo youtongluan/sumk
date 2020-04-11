@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
-import org.yx.exception.HttpException;
 import org.yx.exception.InvalidParamException;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
@@ -70,7 +69,7 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			}
 			if (HttpSettings.getFusing().contains(usedAct)) {
 				log.error("{} is in fusing", usedAct);
-				throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.errorcode.fusing", "请求出错", usedAct));
+				throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.error.fusing", "请求出错", usedAct));
 			}
 			HttpActionInfo info = HttpActions.getHttpInfo(usedAct);
 			if (info == null) {
@@ -129,10 +128,6 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 		if (InvocationTargetException.class.isInstance(temp)) {
 			temp = ((InvocationTargetException) temp).getTargetException();
 		}
-		if (HttpException.class.isInstance(temp)) {
-			sendError(req, resp, HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
-			return temp;
-		}
 		if (InvalidParamException.class.isInstance(temp)) {
 			sendError(req, resp, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
 			return temp;
@@ -141,12 +136,17 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 		do {
 			if (BizException.class.isInstance(temp)) {
 				BizException be = (BizException) temp;
+				String msg2 = AppInfo.get("sumk.http.error." + be.getCode(), null);
+				if (msg2 != null && msg2.length() > 0) {
+					be = BizException.create(be.getCode(), msg2);
+				}
 				sendError(req, resp, be.getCode(), be.getMessage());
 				return be;
 			}
 		} while ((temp = temp.getCause()) != null);
 
-		sendError(req, resp, HttpErrorCode.HANDLE_ERROR, "请求处理异常");
+		sendError(req, resp, HttpErrorCode.HANDLE_ERROR,
+				M.get("sumk.http.error." + HttpErrorCode.HANDLE_ERROR, "请求处理异常"));
 		return root;
 	}
 }

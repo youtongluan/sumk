@@ -24,7 +24,7 @@ public abstract class RpcFilter implements Ordered {
 
 	protected RpcFilter next;
 
-	public void setNext(RpcFilter next) {
+	public final void setNext(RpcFilter next) {
 		this.next = Objects.requireNonNull(next);
 	}
 

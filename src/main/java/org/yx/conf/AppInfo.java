@@ -62,7 +62,7 @@ public final class AppInfo {
 		}
 		if (info == null) {
 			try {
-				setConfig(new AppConfig());
+				setConfig(ComposedSystemConfig.createSystemConfig(new AppConfig()));
 			} catch (Exception e) {
 				RawLog.error("sumk.conf", e);
 				System.exit(1);
