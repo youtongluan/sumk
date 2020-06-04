@@ -11,13 +11,13 @@ namespace CDATA #IMPLIED
 id ID #REQUIRED
 >
 
-<!ELEMENT if (#PCDATA | foreach)*>
+<!ELEMENT if (#PCDATA | foreach | if | ifnot)*>
 <!ATTLIST if
 test CDATA #REQUIRED
 falseby (null|nokey|empty) #IMPLIED
 >
 
-<!ELEMENT ifnot (#PCDATA | foreach)*>
+<!ELEMENT ifnot (#PCDATA | foreach | if | ifnot)*>
 <!ATTLIST ifnot
 test CDATA #REQUIRED
 falseby (null|nokey|empty) #IMPLIED
