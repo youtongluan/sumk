@@ -40,7 +40,6 @@ public class LocalRequestHandler {
 	}
 
 	public Response handler(Request request, RpcActionNode action) {
-		request.protocol(request.paramProtocol());
 		Response resp = new Response();
 		try {
 			for (RequestHandler h : this.handlers) {

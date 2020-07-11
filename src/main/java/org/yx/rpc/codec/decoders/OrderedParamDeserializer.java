@@ -17,8 +17,9 @@ package org.yx.rpc.codec.decoders;
 
 import org.yx.annotation.Bean;
 import org.yx.rpc.Profile;
-import org.yx.rpc.RpcGson;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 
 @Bean
@@ -26,26 +27,30 @@ public class OrderedParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public boolean accept(int protocol) {
-		return Protocols.hasFeature(protocol, Protocols.REQ_PARAM_ORDER);
+		return Protocols.hasFeature(protocol, ReqParamType.REQ_PARAM_ORDER);
 	}
 
 	@Override
 	public Request decode(int protocol, byte[] data) {
-		String message = new String(data, Profile.UTF8);
-		String argLength = message.substring(0, 2);
-		message = message.substring(2);
-		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
-
-		Request req = RpcGson.fromJson(msgs[0], Request.class);
-		int len = Integer.parseInt(argLength);
+		int splitIndex = DeserializeKits.nextSplitIndex(data, 0);
+		String reqJson = new String(data, 0, splitIndex, Profile.UTF8);
+		Request req = RpcJson.operator().fromJson(reqJson, Request.class);
+		splitIndex = DeserializeKits.nextSplitIndex(data, splitIndex + 1);
+		int len = data[++splitIndex];
 		String[] params = new String[len];
 		if (len > 0) {
 			for (int i = 0; i < len; i++) {
-				params[i] = msgs[i + 1];
+				int startIndex = splitIndex + 1;
+				if (startIndex >= data.length) {
+					break;
+				}
+				splitIndex = DeserializeKits.nextSplitIndex(data, startIndex);
+
+				params[i] = splitIndex == startIndex ? ""
+						: new String(data, startIndex, splitIndex - startIndex, Profile.UTF8);
 			}
 		}
-		req.setParamArray(params);
-		req.protocol(protocol);
+		req.setParams(ReqParamType.REQ_PARAM_ORDER, params);
 		return req;
 	}
 

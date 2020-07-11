@@ -63,7 +63,7 @@ public class VisitServer extends AbstractCommonHttpServlet {
 
 	public static String visitInfo() {
 		List<PojoMeta> list = PojoMetaHolder.allPojoMeta();
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(32);
 		sb.append("##tableName").append(BLANK).append("visitCount").append(BLANK).append("cachedMeeted")
 				.append(AppInfo.LN);
 		for (PojoMeta p : list) {

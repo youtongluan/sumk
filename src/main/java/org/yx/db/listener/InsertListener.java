@@ -19,21 +19,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
-import org.yx.db.DBGson;
+import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.InsertEvent;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 
 @Bean
 public class InsertListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!InsertEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !InsertEvent.class.isInstance(ev)) {
 			return;
 		}
 		InsertEvent event = InsertEvent.class.cast(ev);
@@ -49,10 +50,10 @@ public class InsertListener implements DBEventListener {
 					continue;
 				}
 				if (pm.cacheType() == CacheType.LIST) {
-					RecordReq.del(pm, id);
+					RecordRepository.del(pm, id);
 					return;
 				}
-				RecordReq.set(pm, id, DBGson.toJson(map));
+				RecordRepository.set(pm, id, DBJson.operator().toJson(map));
 			}
 		} catch (Exception e) {
 			Log.printStack("sumk.db.listener", e);

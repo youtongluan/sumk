@@ -51,11 +51,7 @@ public class Monitors {
 				.append(BLANK).append("run(ms)").append(BLANK).append(ms).append(LN).append("localip").append(BLANK)
 				.append(AppInfo.getLocalIp()).append(BLANK).append("pid").append(BLANK).append(AppInfo.pid())
 				.append(LN);
-		String v = AppInfo.groupId(null);
-		if (v != null) {
-			sb.append("groupId").append(BLANK).append(v).append(BLANK);
-		}
-		v = AppInfo.appId(null);
+		String v = AppInfo.appId(null);
 		if (v != null) {
 			sb.append("appId").append(BLANK).append(v);
 		}

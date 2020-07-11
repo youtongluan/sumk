@@ -15,33 +15,37 @@
  */
 package org.yx.rpc.codec;
 
+import static org.yx.rpc.codec.ReqParamType.REQ_PARAM_BYTES;
+import static org.yx.rpc.codec.ReqParamType.REQ_PARAM_JSON;
+import static org.yx.rpc.codec.ReqParamType.REQ_PARAM_ORDER;
+
 public final class Protocols {
 
-	public static final int ONE = 0x01;
-	public static final int TWO = 0x02;
-	public static final int FOUR = 0x04;
+	public static final int REQUEST = 0x80_00;
 
-	public static final int FORMAT_JSON = 0x010000;
+	public static final int RESPONSE = 0x80_00_00;
 
-	public static final int RESPONSE_JSON = 0x1000;
+	public static final int RESPONSE_FULL_TYPES = 0x7F_00_00;
 
-	public static final int REQ_PARAM_JSON = 0x0100;
+	public static final int RESPONSE_SPLIT = 0x1_00_00;
 
-	public static final int REQ_PARAM_ORDER = 0x0200;
+	public static final int REQUEST_PARAM_TYPES = REQ_PARAM_JSON | REQ_PARAM_ORDER | REQ_PARAM_BYTES;
+
+	public static final int RESPONSE_ACCEPT_TYPES = RESPONSE_SPLIT;
+
+	public static final int TEST = 0xF0;
 
 	public static int profile() {
-		return ONE | TWO | FOUR | FORMAT_JSON | REQ_PARAM_JSON | REQ_PARAM_ORDER | RESPONSE_JSON;
+		return REQUEST | RESPONSE | REQUEST_PARAM_TYPES | RESPONSE_ACCEPT_TYPES;
 	}
 
 	public static boolean hasFeature(int protocol, int feature) {
-		return (protocol & feature) != 0;
+		return (protocol & feature) == feature;
 	}
 
 	public static final int MAX_LENGTH = 0x3FFFFFFF;
 
-	public static final int MAX_ONE = 0xFF;
-	public static final int MAX_TWO = 0xFFFF;
-
+	public static final byte LINE_SPLIT_BYTE = '\n';
 	public static final String LINE_SPLIT = "\n";
 
 	public static final int MAGIC = 0x8F000000;

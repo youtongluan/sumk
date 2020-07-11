@@ -52,6 +52,10 @@ public class MapConfig implements SystemConfig {
 		return this;
 	}
 
+	public String remove(String key) {
+		return this.map.remove(key);
+	}
+
 	public MapConfig putKV(String kv) {
 		map.put(kv.split("=")[0].trim(), kv.split("=")[1].trim());
 		return this;
@@ -65,6 +69,11 @@ public class MapConfig implements SystemConfig {
 	@Override
 	public void stop() {
 
+	}
+
+	@Override
+	public String toString() {
+		return "MapConfig " + map;
 	}
 
 }

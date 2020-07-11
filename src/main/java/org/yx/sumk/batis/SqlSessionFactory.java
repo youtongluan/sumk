@@ -37,6 +37,7 @@ import org.yx.conf.AppInfo;
 import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.Asserts;
 
@@ -102,14 +103,13 @@ public class SqlSessionFactory {
 			}
 			return factoryMap.get(dbName);
 		} catch (Exception e) {
-			Logs.printSQLException(e);
+			Log.printStack("sumk.sql.error", e);
 			SumkException.throwException(100234325, dbName + " create SqlSessionFactory failed");
 			return null;
 		}
 	}
 
 	void destroy() {
-
 	}
 
 	public static void reload(String dbName) throws Exception {

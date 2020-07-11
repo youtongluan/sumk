@@ -23,8 +23,8 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.UnsafeByteArrayOutputStream;
 import org.yx.common.context.ActionContext;
+import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeaderName;
@@ -164,7 +164,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	 *            对应于http parameter的username
 	 * @param req
 	 *            用户请求的HttpServletRequest对象
-	 * @return 登陆信息，无论成功与否，返回值不能是null
+	 * @return 登录信息，无论成功与否，返回值不能是null
 	 */
 	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
 }

@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.http.HttpGson;
+import org.yx.http.HttpJson;
 
 @Bean
 public class RespToStringHandler implements HttpHandler {
@@ -34,7 +34,7 @@ public class RespToStringHandler implements HttpHandler {
 				ctx.result(new byte[0]);
 				return;
 			}
-			ctx.result(HttpGson.gson().toJson(obj));
+			ctx.result(HttpJson.operator().toJson(obj));
 			return;
 		}
 		Class<?> clz = obj.getClass();
@@ -45,7 +45,7 @@ public class RespToStringHandler implements HttpHandler {
 			ctx.result(String.valueOf(obj));
 			return;
 		}
-		ctx.result(HttpGson.gson().toJson(obj));
+		ctx.result(HttpJson.operator().toJson(obj));
 	}
 
 }

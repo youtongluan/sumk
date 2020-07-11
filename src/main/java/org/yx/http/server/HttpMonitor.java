@@ -18,7 +18,6 @@ package org.yx.http.server;
 import static org.yx.conf.AppInfo.LN;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -36,6 +35,7 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.common.ActStatis;
 import org.yx.common.Monitors;
 import org.yx.common.Statis;
+import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
@@ -72,7 +72,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		} catch (Exception e) {
 		}
 
-		StringWriter writer = new StringWriter();
+		UnsafeStringWriter writer = new UnsafeStringWriter(512);
 
 		this.outputServerInfo(req, writer);
 		this.outputActs(req, writer);
@@ -82,7 +82,6 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		this.outputJvmInfo(req, writer);
 		this.outputAllTrack(req, writer);
 		this.outputThreadPool(req, writer);
-		this.outputSchedulePool(req, writer);
 		this.outputLogLevels(req, writer);
 		this.outputLocalSessions(req, writer);
 
@@ -99,7 +98,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		return new StringBuilder("#localSessions:").append("  ").append(userSession.localCacheSize()).toString();
 	}
 
-	private void outputLocalSessions(HttpServletRequest req, StringWriter writer) {
+	private void outputLocalSessions(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("localSessions"))) {
 			return;
 		}
@@ -139,12 +138,26 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		String reset = req.getParameter("statis.reset");
 		Map<String, Statis> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
 		List<Statis> values = new ArrayList<>(map.values());
-		values.sort((a, b) -> Long.compare(b.time.get(), a.time.get()));
+		values.sort((a, b) -> Long.compare(b.getSuccessTime(), a.getSuccessTime()));
+		long totalSuccessCount = 0;
+		long totalSuccessTime = 0;
+		long totalFailCount = 0;
+		long totalFailTime = 0;
 		StringBuilder sb = new StringBuilder();
 		sb.append("##").append(Statis.header()).append(LN);
 		for (Statis v : values) {
 			sb.append(v.toSimpleString()).append(LN);
+			totalSuccessCount += v.getSuccessCount();
+			totalSuccessTime += v.getSuccessTime();
+			totalFailCount += v.getFailedCount();
+			totalFailTime += v.getFailedTime();
 		}
+		long c = totalSuccessCount;
+		long t = totalSuccessTime;
+		double avg = c == 0 ? 0 : t * 1d / c;
+		String total = String.join("   ", "**TOTAL**", String.valueOf(c), String.valueOf(t),
+				String.valueOf(Math.round(avg)), String.valueOf(totalFailCount), String.valueOf(totalFailTime));
+		sb.append(total).append(LN);
 		writer.append(sb.toString());
 		writer.append(TYPE_SPLIT);
 	}
@@ -178,14 +191,6 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		writer.append(Monitors.threadPoolInfo((ThreadPoolExecutor) SumkThreadPool.executor()));
-		writer.append(TYPE_SPLIT);
-	}
-
-	private void outputSchedulePool(HttpServletRequest req, Writer writer) throws IOException {
-		if (!"1".equals(req.getParameter("schedulepool"))) {
-			return;
-		}
-		writer.append(Monitors.threadPoolInfo(SumkThreadPool.scheduledExecutor()));
 		writer.append(TYPE_SPLIT);
 	}
 

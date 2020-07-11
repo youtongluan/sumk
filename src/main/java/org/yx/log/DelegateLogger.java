@@ -21,7 +21,7 @@ import org.yx.main.SumkServer;
 
 public final class DelegateLogger implements Logger {
 
-	private volatile Logger delegate;
+	private Logger delegate;
 
 	private DelegateLogger(String name) {
 		this.delegate = ConsoleLog.get(name);
@@ -45,7 +45,7 @@ public final class DelegateLogger implements Logger {
 	}
 
 	public String getName() {
-		return delegate.getName();
+		return delegate().getName();
 	}
 
 	public boolean isTraceEnabled() {

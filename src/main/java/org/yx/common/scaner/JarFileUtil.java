@@ -64,7 +64,7 @@ public class JarFileUtil {
 				if (tester != null && !tester.test(entityName)) {
 					continue;
 				}
-				byte[] bs = StreamUtil.extractData(jarFile.getInputStream(entry), true);
+				byte[] bs = StreamUtil.readAllBytes(jarFile.getInputStream(entry), true);
 				map.put(entityName, bs);
 			}
 		} finally {

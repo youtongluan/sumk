@@ -16,6 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
+import org.yx.annotation.ErrorHandler;
 import org.yx.annotation.ErrorHandler.ExceptionStrategy;
 import org.yx.exception.BizException;
 import org.yx.http.act.HttpActionNode;
@@ -35,17 +36,18 @@ public class InvokeHandler implements HttpHandler {
 	public void handle(WebContext ctx) throws Throwable {
 		HttpActionNode info = ctx.httpNode();
 		Object ret = null;
-		if (info.errorHandler != null) {
+		if (info.errorHandler() != null) {
+			ErrorHandler errorHandler = info.errorHandler();
 			try {
 				ret = WebHandler.handle(ctx);
 			} catch (Exception e) {
 				if (BizException.class.isInstance(e)
-						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == info.errorHandler.strategy()) {
+						&& ExceptionStrategy.IF_NO_BIZEXCEPTION == errorHandler.strategy()) {
 					throw e;
 				}
 				Log.get("sumk.http.error").error("业务处理含有原始异常", e);
 
-				throw HttpException.create(info.errorHandler.code(), info.errorHandler.message());
+				throw HttpException.create(errorHandler.code(), errorHandler.message());
 			}
 		} else {
 			ret = WebHandler.handle(ctx);

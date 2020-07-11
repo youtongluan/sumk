@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
 import org.yx.common.ActStatisImpl;
-import org.yx.http.HttpGson;
+import org.yx.http.HttpJson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
@@ -68,7 +68,7 @@ public class DefaultHttpKit implements HttpKit {
 		JsonObject jo = new JsonObject();
 		jo.addProperty("code", code);
 		jo.addProperty("message", errorMsg);
-		resp.getOutputStream().write(HttpGson.gson().toJson(jo).getBytes(charset));
+		resp.getOutputStream().write(HttpJson.operator().toJson(jo).getBytes(charset));
 	}
 
 	public void noCache(HttpServletResponse resp) {

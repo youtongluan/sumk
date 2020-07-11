@@ -22,10 +22,6 @@ import org.slf4j.Logger;
  */
 public final class Logs {
 
-	public static void printSQLException(Throwable e) {
-		Log.printStack("sumk.sql.error", e);
-	}
-
 	public static Logger http() {
 		return Log.get("sumk.http");
 	}
@@ -40,6 +36,10 @@ public final class Logs {
 
 	public static Logger db() {
 		return Log.get("sumk.db");
+	}
+
+	public static Logger redis() {
+		return Log.get("sumk.redis");
 	}
 
 	public static Logger ioc() {

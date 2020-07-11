@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.codec;
 
+import java.nio.ByteOrder;
 import java.nio.charset.CharacterCodingException;
 
 import org.apache.mina.core.buffer.IoBuffer;
@@ -24,7 +25,6 @@ import org.apache.mina.filter.codec.ProtocolEncoderException;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.yx.annotation.Bean;
 import org.yx.annotation.Inject;
-import org.yx.conf.AppInfo;
 import org.yx.rpc.Profile;
 import org.yx.rpc.codec.encoders.SumkMinaEncoder;
 
@@ -34,15 +34,9 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 	@Inject
 	private SumkMinaEncoder[] encoders;
 
-	private static int CHAR_BYTE = AppInfo.getInt("sumk.rpc.charbyte", 3);
-
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		if (message == null) {
-			return;
-		}
-		if (String.class.isInstance(message)) {
-			encodeString(0, session, (String) message, out);
 			return;
 		}
 		Class<?> clz = message.getClass();
@@ -55,39 +49,12 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 		throw new ProtocolEncoderException(message.getClass().getName() + " not support in ProtocolEncoder");
 	}
 
-	private static void putProtocol(int code, IoBuffer buffer, int prefixLength) throws ProtocolEncoderException {
-		switch (prefixLength) {
-		case 1:
-			buffer.putInt(Protocols.ONE | code | Protocols.MAGIC);
-
-			break;
-		case 2:
-			buffer.putInt(Protocols.TWO | code | Protocols.MAGIC);
-
-			break;
-		case 4:
-			buffer.putInt(Protocols.FOUR | code | Protocols.MAGIC);
-
-			break;
-		default:
-			throw new ProtocolEncoderException("error size");
-		}
+	public static void putRequestProtocol(int code, IoBuffer buffer) throws ProtocolEncoderException {
+		buffer.putInt(Protocols.MAGIC | Protocols.REQUEST | code);
 	}
 
-	public static void encodeString(int code, IoSession session, CharSequence message, ProtocolEncoderOutput out)
-			throws CharacterCodingException, ProtocolEncoderException {
-		code = code | Protocols.FORMAT_JSON;
-		int size = message.length();
-		int prefixLength = size <= (Protocols.MAX_ONE / CHAR_BYTE) ? 1
-				: size <= (Protocols.MAX_TWO / CHAR_BYTE) ? 2 : 4;
-
-		IoBuffer buffer = IoBuffer.allocate((int) (size * 1.5) + 10).setAutoExpand(true);
-		putProtocol(code, buffer, prefixLength);
-
-		buffer.putPrefixedString(message, prefixLength, Profile.UTF8.newEncoder());
-		buffer.flip();
-
-		out.write(buffer);
+	public static void putResponseProtocol(int code, IoBuffer buffer) throws ProtocolEncoderException {
+		buffer.putInt(Protocols.MAGIC | Protocols.RESPONSE | code);
 	}
 
 	@Override
@@ -95,4 +62,16 @@ public class SumkProtocolEncoder implements ProtocolEncoder {
 
 	}
 
+	public static void putPrefixedString(CharSequence msg, IoBuffer buffer) throws CharacterCodingException {
+		if (msg == null) {
+			buffer.putInt(Integer.MIN_VALUE);
+			return;
+		}
+		buffer.putPrefixedString(msg, 4, Profile.UTF8.newEncoder());
+	}
+
+	public static IoBuffer createIoBuffer(int strLength) {
+
+		return IoBuffer.allocate(Math.max(strLength, strLength << 1)).setAutoExpand(true).order(ByteOrder.BIG_ENDIAN);
+	}
 }

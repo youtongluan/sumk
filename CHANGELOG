@@ -1,4 +1,4 @@
-v2.3.1
+、v2.3.1
 1、将JsonUtil改为S.json
 2、sdb和mybatis的配置文件可以打包到jar中
 
@@ -153,3 +153,29 @@ v2.7.5
 v.2.7.6
 1、将工具类S的属性改为方法
 2、AES默认加密方式改为CBC
+3、默认的配置管理增加对System参数的读取，但不监听System中参数的变更
+
+v2.7.7
+1、新增@CreateTime注解，它的作用是新增记录的时候，会自动传入创建时间，并且与id保持一致
+2、统一日志独立为特殊日志，并且有纯配置方式改为代码与配置相结合的方式
+3、优化了日志输出的方式
+4、优化了作业调度并提供Task类
+5、redis支持原生cluster模式
+6、去掉了groupId。appId使用分隔符方式可以起到groupId一样的效果
+
+v2.7.8
+1、增加慢sql的耗时日志
+
+v2.7.9
+1、SDB的xml增加items标签
+2、SDB增加builder方法
+
+v2.8.0
+1、rpc的协议做了变更，不能与2.8之前的微服务进行交互
+2、优化SumkDate性能
+3、WebFileter和RpcFilter调用下一个Filter方法改为callNextFilter
+4、Redis增加mute()方法，调用之后，如果发生异常，会用null来代替抛出异常
+
+v2.8.1
+1、文件上传改为基于servlet3的MultiPart模式，而不是commons-upload。同时去掉对commons-upload的依赖。相应的，WebUtil的getUploadFiles()改名为getMultiParts，UploadFile类改为MultipartItem
+2、StreamUtil的extractData改名为readAllBytes

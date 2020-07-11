@@ -25,15 +25,14 @@ import java.util.concurrent.TimeUnit;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
-import org.yx.main.SumkThreadPool;
+import org.yx.util.Task;
 
 public class HostChecker {
 
 	private static final HostChecker holder = new HostChecker();
 
 	private HostChecker() {
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(new Checker(), 5,
-				AppInfo.getInt("sumk.rpc.hosts.check.period", 3), TimeUnit.SECONDS);
+		Task.scheduleAtFixedRate(new Checker(), 5, AppInfo.getInt("sumk.rpc.hosts.check.period", 3), TimeUnit.SECONDS);
 	}
 
 	public static HostChecker get() {

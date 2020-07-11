@@ -29,4 +29,6 @@ public interface Const {
 	int DEFAULT_INTF_PREFIX_PART_COUNT = 3;
 
 	String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
+
+	String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
 }

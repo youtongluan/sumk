@@ -15,8 +15,6 @@
  */
 package org.yx.redis;
 
-import static org.yx.redis.RedisLoader.LOG_NAME;
-
 import java.util.concurrent.TimeUnit;
 
 import org.yx.annotation.Bean;
@@ -25,8 +23,9 @@ import org.yx.bean.Plugins;
 import org.yx.common.lock.Locker;
 import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
-import org.yx.log.Log;
-import org.yx.main.SumkThreadPool;
+import org.yx.exception.SumkException;
+import org.yx.log.Logs;
+import org.yx.util.Task;
 
 @Bean
 public class RedisPlugin implements Plugin {
@@ -44,18 +43,18 @@ public class RedisPlugin implements Plugin {
 		try {
 			Class.forName("redis.clients.jedis.Jedis");
 		} catch (Throwable e) {
-			Log.get(LOG_NAME).warn("Jedis is not in use because of " + e.getMessage());
+			Logs.redis().warn("Jedis is not in use because of " + e.getMessage());
 			return;
 		}
 		try {
-			Log.get(LOG_NAME).debug("redis pool init");
+			Logs.redis().debug("redis pool init");
 			RedisLoader.init();
 			initSeqUtilCounter();
-			SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(RedisChecker.get(), 5,
-					AppInfo.getInt("sumk.redis.check.period", 5), TimeUnit.SECONDS);
+			Task.scheduleAtFixedRate(RedisChecker.get(), 5, AppInfo.getInt("sumk.redis.check.period", 5),
+					TimeUnit.SECONDS);
 		} catch (Exception e) {
-			Log.get(LOG_NAME).error(e.getMessage(), e);
-			System.exit(1);
+			Logs.redis().error(e.getMessage(), e);
+			throw new SumkException(-35345436, "redis启动失败");
 		}
 		Locker.init();
 		Plugins.setRedisStarted();
@@ -70,7 +69,7 @@ public class RedisPlugin implements Plugin {
 			redis = RedisPool.getRedisExactly("session");
 		}
 		if (redis != null) {
-			Log.get(LOG_NAME).debug("use redis counter");
+			Logs.redis().debug("use redis counter");
 			SeqHolder.inst().setCounter(new RedisCounter(redis));
 		}
 	}

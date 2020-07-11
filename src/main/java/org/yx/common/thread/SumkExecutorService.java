@@ -19,4 +19,19 @@ import java.util.concurrent.ExecutorService;
 
 public interface SumkExecutorService extends ExecutorService, ThresholdExecutor {
 
+	int getCorePoolSize();
+
+	void setCorePoolSize(int size);
+
+	int getMaximumPoolSize();
+
+	void setMaximumPoolSize(int size);
+
+	boolean allowsCoreThreadTimeOut();
+
+	void allowCoreThreadTimeOut(boolean allowCoreTimeout);
+
+	int getPoolSize();
+
+	int getQueued();
 }

@@ -28,6 +28,7 @@ public final class SeqImpl extends AbstractSeq {
 	}
 
 	public long next(String name) {
+
 		int sub = subNumber(name) & 0xFFFFFF;
 		return prefix(System.currentTimeMillis()) | sub;
 	}
@@ -38,7 +39,7 @@ public final class SeqImpl extends AbstractSeq {
 		return num << 24;
 	}
 
-	public long getDate(long seq) {
+	public long getDateTime(long seq) {
 		long num = seq & 0xFFFFFFFFFF000000L;
 		num >>>= 24;
 		return fullTime(num);

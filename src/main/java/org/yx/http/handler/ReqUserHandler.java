@@ -65,9 +65,8 @@ public class ReqUserHandler implements HttpHandler {
 				}
 			}
 			Logs.http().info("session:{}, has expired", sessionId);
-			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登陆");
+			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
-		ctx.key(session.getKey(sessionId));
 		ActionContext.get().userId(obj.getUserId());
 		ActionContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
 	}

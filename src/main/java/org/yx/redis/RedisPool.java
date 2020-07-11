@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class RedisPool {
 	private static final ConcurrentMap<String, Redis> map = new ConcurrentHashMap<>();
@@ -55,10 +55,10 @@ public final class RedisPool {
 
 	public static void put(String alias, Redis redis) {
 		Redis old = map.put(alias, Objects.requireNonNull(redis));
-		Log.get("sumk.redis").trace("redis name {} : {}", alias, redis);
+		Logs.redis().trace("redis name {} : {}", alias, redis);
 		if (old != null) {
 			old.shutdownPool();
-			Log.get("sumk.redis").info("shutdown old redis {} : {}", alias, redis);
+			Logs.redis().info("shutdown old redis {} : {}", alias, redis);
 		}
 	}
 

@@ -18,14 +18,22 @@ package org.yx.rpc.server;
 import java.util.Objects;
 
 import org.yx.common.Ordered;
+import org.yx.exception.SumkException;
 import org.yx.rpc.RpcActionNode;
 
 public abstract class RpcFilter implements Ordered {
 
-	protected RpcFilter next;
+	private RpcFilter next;
 
 	public final void setNext(RpcFilter next) {
+		if (this.next != null) {
+			SumkException.throwException(23431, "next已经赋值了，它是" + this.next);
+		}
 		this.next = Objects.requireNonNull(next);
+	}
+
+	protected final Object callNextFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable {
+		return this.next.doFilter(node, visitor);
 	}
 
 	public abstract Object doFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable;

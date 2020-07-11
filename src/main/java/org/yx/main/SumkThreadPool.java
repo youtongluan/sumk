@@ -15,14 +15,14 @@
  */
 package org.yx.main;
 
-import java.nio.channels.ClosedByInterruptException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
-import org.yx.common.JobStep;
+import org.slf4j.Logger;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
 import org.yx.conf.AppInfo;
@@ -30,14 +30,12 @@ import org.yx.exception.BizException;
 import org.yx.exception.ErrorCode;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
+import org.yx.log.RawLog;
+import org.yx.util.Asserts;
 
 public final class SumkThreadPool {
 
 	private static boolean daemon;
-
-	public static boolean isDaemon() {
-		return daemon;
-	}
 
 	public static void setDaemon(boolean daemon) {
 		SumkThreadPool.daemon = daemon;
@@ -49,8 +47,7 @@ public final class SumkThreadPool {
 
 			@Override
 			public Thread newThread(Runnable r) {
-				Thread t = new Thread(r);
-				t.setName(pre + threadNumber.getAndIncrement());
+				Thread t = new Thread(r, pre + threadNumber.getAndIncrement());
 				t.setDaemon(daemon);
 				if (t.getPriority() != Thread.NORM_PRIORITY) {
 					t.setPriority(Thread.NORM_PRIORITY);
@@ -60,10 +57,17 @@ public final class SumkThreadPool {
 		};
 	}
 
-	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(2,
-			createThreadFactory("sumk-task-"));
+	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
+			Integer.getInteger("sumk.thread.schedule.size", 1), r -> {
+				Thread t = new Thread(r, "sumk-task");
+				t.setDaemon(true);
+				if (t.getPriority() != Thread.NORM_PRIORITY) {
+					t.setPriority(Thread.NORM_PRIORITY);
+				}
+				return t;
+			});
 
-	public static ScheduledThreadPoolExecutor scheduledExecutor() {
+	static ScheduledThreadPoolExecutor scheduledExecutor() {
 		return scheduledExecutor;
 	}
 
@@ -74,53 +78,148 @@ public final class SumkThreadPool {
 	public static final BizException THREAD_THRESHOLD_OVER = BizException.create(ErrorCode.THREAD_THRESHOLD_OVER,
 			"系统限流降级");
 
-	private static final List<Thread> jobThreads = new ArrayList<>();
-
-	public static synchronized void loop(JobStep step, String threadName) {
+	public static ScheduledFuture<?> scheduleAtFixedRate(Runnable job, long delayMS, long periodMS) {
 		if (SumkServer.isDestoryed()) {
-			return;
+			return null;
 		}
-		Runnable r = () -> {
-			while (true) {
-				if (SumkServer.isDestoryed()) {
-					break;
-				}
-				try {
-					if (!step.run()) {
-						break;
-					}
-				} catch (Exception e) {
-					if (InterruptedException.class.isInstance(e) || ClosedByInterruptException.class.isInstance(e)) {
-						Thread.interrupted();
-						continue;
-					}
-					Log.printStack("sumk.error", e);
-				}
+		Asserts.isTrue(periodMS > 0, "delayMils要大于0 才行");
+		if (periodMS < 100) {
+			RawLog.warn("sumk.thread", job + "加入到作业中(短作业)，定时间隔为" + periodMS + "ms");
+		} else {
+			RawLog.info("sumk.thread", job + "加入到作业中，定时间隔为" + periodMS + "ms");
+		}
+		SynchronizedRunner single = new SynchronizedRunner(job);
+		Runnable task = () -> {
+
+			if (single.isBusy()) {
+				return;
 			}
 			try {
-				Thread.interrupted();
-				step.close();
+				executor().execute(single);
+				single.working = 1;
 			} catch (Exception e) {
-				ConsoleLog.get("sumk.sys").warn(e.getLocalizedMessage(), e);
+				ConsoleLog.get("sumk.thread").error("添加定时任务失败", e);
 			}
-			ConsoleLog.get("sumk.sys").info("{} stoped", threadName);
 		};
-		Thread t = new Thread(r, threadName);
-		t.setDaemon(daemon);
-		t.start();
-		jobThreads.add(t);
+		return scheduledExecutor.scheduleAtFixedRate(task, delayMS, periodMS, TimeUnit.MILLISECONDS);
+	}
+
+	public static ScheduledFuture<?> schedule(Runnable job, long delayMS) {
+		return scheduledExecutor.schedule(() -> executor().execute(job), delayMS, TimeUnit.MILLISECONDS);
 	}
 
 	public static void shutdown() {
 		scheduledExecutor.shutdown();
 		executor().shutdown();
-		jobThreads.forEach(t -> t.interrupt());
-		jobThreads.forEach(t -> {
-			try {
-				t.join(AppInfo.getLong("sumk.thread.jointime", 3000));
-			} catch (InterruptedException e) {
+	}
+
+	public static Runnable synchronize(Runnable target) {
+		return new SynchronizedRunner(target);
+	}
+
+	private static final class SynchronizedRunner implements Runnable {
+
+		private final ReentrantLock lock;
+		private final Runnable target;
+
+		int working;
+
+		public SynchronizedRunner(Runnable target) {
+			this.target = target;
+			this.lock = new ReentrantLock();
+		}
+
+		@Override
+		public void run() {
+			if (!lock.tryLock()) {
+				this.working = 0;
+				return;
 			}
-		});
-		jobThreads.clear();
+
+			try {
+				target.run();
+			} finally {
+				this.working = 0;
+				lock.unlock();
+			}
+		}
+
+		public boolean isBusy() {
+			if (lock.isLocked()) {
+				return true;
+			}
+			if (this.working != 0) {
+				this.working++;
+				if (this.working > 50) {
+					this.working = 0;
+				}
+				return true;
+			}
+			return false;
+		}
+	}
+
+	static void scheduleThreadPoolMonitor() {
+		if (SumkServer.isRpcEnable() || SumkServer.isHttpEnable()) {
+			SumkThreadPool.executor().setCorePoolSize(200);
+		}
+		long period = AppInfo.getLong("sumk.threadpool.task.period", 10_000);
+
+		scheduledExecutor.scheduleAtFixedRate(new ThreadPoolReSeter(), period, period, TimeUnit.MILLISECONDS);
+	}
+
+	private static class ThreadPoolReSeter implements Runnable {
+
+		private Logger logger = Log.get("sumk.thread");
+
+		@Override
+		public void run() {
+			try {
+				resetCurrentThreshold();
+				resetThreadPoolSize();
+			} catch (Exception e) {
+				logger.error(e.getLocalizedMessage(), e);
+			}
+		}
+
+		private void resetCurrentThreshold() {
+
+			int threshold = AppInfo.getInt("sumk.core.threadpool.threshold", 0);
+			SumkExecutorService executor = SumkThreadPool.executor();
+			if (threshold > 0) {
+				executor.threshold(threshold);
+				return;
+			}
+
+			threshold = executor.getPoolSize() + executor.getQueued();
+			executor.threshold(threshold);
+			logger.trace("set pool threshold to {}", threshold);
+		}
+
+		private void resetThreadPoolSize() {
+			SumkExecutorService pool = SumkThreadPool.executor();
+			int size = AppInfo.getInt("sumk.core.threadpool.core", 0);
+			if (size > 0 && pool.getCorePoolSize() != size) {
+				logger.info("change ThreadPool size from {} to {}", pool.getCorePoolSize(), size);
+				pool.setCorePoolSize(size);
+			}
+
+			size = AppInfo.getInt("sumk.core.threadpool.max", 0);
+			if (size > 0 && pool.getMaximumPoolSize() != size) {
+				logger.info("change ThreadPool max size from {} to {}", pool.getMaximumPoolSize(), size);
+				pool.setMaximumPoolSize(size);
+			}
+
+			String v = AppInfo.get("sumk.core.threadpool.allowCoreThreadTimeOut", null);
+			if (v != null) {
+				boolean allowCoreTimeout = "1".equals(v) || "true".equalsIgnoreCase(v);
+				if (allowCoreTimeout != pool.allowsCoreThreadTimeOut()) {
+					logger.info("change ThreadPool allowsCoreThreadTimeOut from {} to {}",
+							pool.allowsCoreThreadTimeOut(), allowCoreTimeout);
+					pool.allowCoreThreadTimeOut(allowCoreTimeout);
+				}
+			}
+		}
+
 	}
 }

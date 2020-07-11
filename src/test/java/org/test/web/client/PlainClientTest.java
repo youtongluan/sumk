@@ -132,7 +132,7 @@ public class PlainClientTest {
 
 		MultipartEntity reqEntity = new MultipartEntity();
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
-		reqEntity.addPart("data", StringBody.create(req, "text/plain", Charset.forName(charset)));
+		reqEntity.addPart("param", StringBody.create(req, "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("img", new FileBody(new File("logo_bluce.jpg")));
 
 		post.setEntity(reqEntity);

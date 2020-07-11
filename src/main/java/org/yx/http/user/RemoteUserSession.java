@@ -23,10 +23,10 @@ import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
 import org.yx.log.Log;
-import org.yx.main.SumkThreadPool;
 import org.yx.redis.Redis;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
+import org.yx.util.Task;
 
 public class RemoteUserSession implements UserSession {
 	private static final byte[] NX = { 'N', 'X' };
@@ -53,7 +53,7 @@ public class RemoteUserSession implements UserSession {
 	public RemoteUserSession(Redis redis) {
 		this.redis = redis;
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(() -> {
+		Task.scheduleAtFixedRate(() -> {
 
 			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
 			if (duration > HttpSettings.getHttpSessionTimeoutInMs()) {

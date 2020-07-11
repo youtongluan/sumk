@@ -16,6 +16,8 @@
 package org.yx.main;
 
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.EventListener;
@@ -24,11 +26,13 @@ import java.util.List;
 import javax.servlet.DispatcherType;
 import javax.servlet.Filter;
 import javax.servlet.FilterRegistration;
+import javax.servlet.MultipartConfigElement;
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+import javax.servlet.annotation.MultipartConfig;
 
 import org.yx.annotation.http.SumkFilter;
 import org.yx.annotation.http.SumkServlet;
@@ -36,6 +40,7 @@ import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.user.HttpLoginWrapper;
 import org.yx.http.user.LoginServlet;
 import org.yx.log.Log;
@@ -44,7 +49,7 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 /**
- * 如果使用tomcat等外部容器启动sumk，请在web.xml中添加：<BR>
+ * 如果使用tomcat等外部容器启动sumk，需要将sumk.http.nojetty设为1，并在web.xml中添加：<BR>
  * &lt;listener&gt;<br>
  * &nbsp;&nbsp;
  * &lt;listener-class&gt;org.yx.main.SumkLoaderListener&lt;/listener-class&gt;
@@ -108,8 +113,45 @@ public class SumkLoaderListener implements ServletContextListener {
 				values = StringUtil.toLatin(value).split(",");
 			}
 			dynamic.addMapping(values);
+
+			if (HttpSettings.isUploadEnable()) {
+				this.handleUpload(dynamic, targetClz, values);
+			}
 			Logs.http().trace("add web mapping : {} - {} -{}", name, bean.getClass().getSimpleName(),
 					Arrays.toString(values));
+		}
+	}
+
+	private void handleUpload(ServletRegistration.Dynamic dynamic, Class<?> targetClz, String[] paths) {
+		try {
+			MultipartConfig mc = targetClz.getAnnotation(MultipartConfig.class);
+			if (mc == null) {
+				return;
+			}
+			String location = mc.location();
+			if (StringUtil.isEmpty(location)) {
+				location = AppInfo.get("sumk.http.multipart.location", null);
+				if (location == null) {
+					Path p = Files.createTempDirectory("multi");
+					location = p.toFile().getAbsolutePath();
+				}
+			}
+			long maxFileSize = mc.maxFileSize() > 0 ? mc.maxFileSize()
+					: AppInfo.getLong("sumk.http.multipart.maxFileSize", 1024L * 1024 * 10);
+			long maxRequestSize = mc.maxRequestSize() > 0 ? mc.maxRequestSize()
+					: AppInfo.getLong("sumk.http.multipart.maxRequestSize", 1024L * 1024 * 50);
+
+			int fileSizeThreshold = mc.fileSizeThreshold() > 0 ? mc.fileSizeThreshold()
+					: AppInfo.getInt("sumk.http.multipart.fileSizeThreshold", 1024 * 10);
+			MultipartConfigElement c = new MultipartConfigElement(location, maxFileSize, maxRequestSize,
+					fileSizeThreshold);
+			dynamic.setMultipartConfig(c);
+			if (Logs.http().isInfoEnabled()) {
+				Logs.http().info("{} location={},maxFileSize={},maxRequestSize={},fileSizeThreshold={}",
+						Arrays.toString(paths), location, maxFileSize, maxRequestSize, fileSizeThreshold);
+			}
+		} catch (Throwable e) {
+			Logs.http().warn("不支持文件上传!!!", e);
 		}
 	}
 

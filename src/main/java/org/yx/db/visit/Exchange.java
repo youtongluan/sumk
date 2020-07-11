@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.yx.db.sql.PojoMeta;
 import org.yx.log.Log;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
@@ -66,7 +66,7 @@ public class Exchange {
 			if (redisList.isEmpty()) {
 				return;
 			}
-			List<String> redisData = RecordReq.getMultiValue(pm, redisList);
+			List<String> redisData = RecordRepository.getMultiValue(pm, redisList);
 			if (redisData == null || redisData.isEmpty()) {
 				return;
 			}

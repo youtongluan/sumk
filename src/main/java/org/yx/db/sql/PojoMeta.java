@@ -17,6 +17,8 @@ package org.yx.db.sql;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,49 +27,60 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.IntFunction;
 
+import org.yx.annotation.db.CreateTime;
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
+import org.yx.annotation.doc.Comment;
 import org.yx.bean.Loader;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.redis.RedisPool;
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public final class PojoMeta implements Cloneable {
 
 	public static final String WILDCHAR = "?";
 	private static final char KEY_SPLIT = ':';
-	final Table table;
 
-	final ColumnMeta[] fieldMetas;
+	final List<ColumnMeta> fieldMetas;
 	/**
 	 * 数据库表所对应的java pojo类
 	 */
-	public final Class<?> pojoClz;
+	final Class<?> pojoClz;
 
-	private ColumnMeta[] redisIDs;
+	final List<ColumnMeta> redisIDs;
 
-	private ColumnMeta[] primaryIDs;
+	final List<ColumnMeta> primaryIDs;
 
 	private VisitCounter counter;
 	private int ttlSec;
 
 	private String pre;
 
+	private final CacheType cacheType;
+
 	private long lastHitTime;
 	private String tableName;
 	final SoftDeleteMeta softDelete;
 
-	private Map<String, ColumnMeta> columnDBNameMap = new HashMap<>();
-	private Map<String, ColumnMeta> filedNameMap = new HashMap<>();
+	private final Map<String, ColumnMeta> columnDBNameMap = new HashMap<>();
+	private final Map<String, ColumnMeta> filedNameMap = new HashMap<>();
 
-	private Type pojoArrayClz;
+	final List<ColumnMeta> createColumns;
+
+	final Type pojoArrayClz;
 
 	public Type pojoArrayClz() {
 		return this.pojoArrayClz;
+	}
+
+	public List<ColumnMeta> fieldMetas() {
+		return this.fieldMetas;
 	}
 
 	public ColumnMeta getByColumnDBName(String columnDBName) {
@@ -85,18 +98,18 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	public boolean isNoCache() {
-		return table.cacheType() == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.redisIDs.length == 0;
+		return cacheType == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.redisIDs.isEmpty();
 	}
 
 	public CacheType cacheType() {
-		return table.cacheType();
+		return cacheType;
 	}
 
 	public boolean isPrimeKeySameWithReids() {
 		return primaryIDs == redisIDs;
 	}
 
-	public ColumnMeta[] getPrimaryIDs() {
+	public List<ColumnMeta> getPrimaryIDs() {
 		return primaryIDs;
 	}
 
@@ -120,13 +133,13 @@ public final class PojoMeta implements Cloneable {
 		return ttlSec;
 	}
 
-	PojoMeta(Table table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
-		super();
-		this.table = table;
-		this.fieldMetas = fieldMetas;
+	public PojoMeta(Table table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
+		this.cacheType = table.cacheType();
+		this.fieldMetas = CollectionUtil.unmodifyList(fieldMetas);
 		this.pojoClz = pojoClz;
 		List<ColumnMeta> rids = new ArrayList<>(4);
 		List<ColumnMeta> pids = new ArrayList<>(4);
+		List<ColumnMeta> ctimes = new ArrayList<>(2);
 		for (ColumnMeta m : this.fieldMetas) {
 			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
 			filedNameMap.put(m.getFieldName().toLowerCase(), m);
@@ -136,15 +149,20 @@ public final class PojoMeta implements Cloneable {
 			if (m.isDBID()) {
 				pids.add(m);
 			}
-			this.redisIDs = rids.toArray(new ColumnMeta[rids.size()]);
-			if (pids.equals(rids)) {
-				this.primaryIDs = this.redisIDs;
-			} else {
-				this.primaryIDs = pids.toArray(new ColumnMeta[pids.size()]);
+			if (m.field.isAnnotationPresent(CreateTime.class)) {
+				if (m.isDate && !timeOnly(m.field.getType())) {
+					ctimes.add(m);
+				} else {
+					Logs.db().warn("{}.{}的类型{}不是@CreateTime支持的类型", pojoClz.getSimpleName(), m.field.getName(),
+							m.field.getType());
+				}
 			}
 		}
+		this.redisIDs = CollectionUtil.unmodifyList(rids, ColumnMeta.class);
+		this.primaryIDs = pids.equals(rids) ? this.redisIDs : CollectionUtil.unmodifyList(pids, ColumnMeta.class);
+		this.createColumns = CollectionUtil.unmodifyList(ctimes, ColumnMeta.class);
 		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class));
-		parseTable();
+		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}
 
@@ -152,7 +170,7 @@ public final class PojoMeta implements Cloneable {
 		return (SoftDeleteParser) StartContext.inst().getOrCreate(SoftDeleteParser.class, new SoftDeleteParserImpl());
 	}
 
-	private void parseTable() {
+	private void parseTable(Table table) {
 		int ttl = table.duration();
 		if (ttl > 0) {
 			this.ttlSec = ttl;
@@ -161,7 +179,7 @@ public final class PojoMeta implements Cloneable {
 		} else {
 			this.ttlSec = -1;
 		}
-		int maxHit = table.maxHit();
+		int maxHit = AppInfo.getInt("sumk.db.table.cache.maxHit", table.maxHit());
 		@SuppressWarnings("unchecked")
 		IntFunction<VisitCounter> factory = (IntFunction<VisitCounter>) StartContext.inst().get(VisitCounter.class);
 		this.counter = factory != null ? factory.apply(maxHit) : new DefaultVisitCounter(maxHit);
@@ -194,7 +212,7 @@ public final class PojoMeta implements Cloneable {
 		if (Map.class.isInstance(condition)) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) condition;
-			if (map.size() != this.redisIDs.length) {
+			if (map.size() != this.redisIDs.size()) {
 				return false;
 			}
 			Set<Map.Entry<String, Object>> set = map.entrySet();
@@ -214,7 +232,7 @@ public final class PojoMeta implements Cloneable {
 
 	}
 
-	public ColumnMeta[] getRedisIDs() {
+	public List<ColumnMeta> getRedisIDs() {
 		return this.redisIDs;
 	}
 
@@ -227,6 +245,10 @@ public final class PojoMeta implements Cloneable {
 		for (Entry<String, Object> en : set) {
 			String key = en.getKey();
 			ColumnMeta m = this.getByColumnDBName(key);
+			if (m == null) {
+				Logs.db().warn("数据库字段{}找不到对应的属性", key);
+				continue;
+			}
 			m.setValue(ret, en.getValue());
 		}
 		return ret;
@@ -360,4 +382,20 @@ public final class PojoMeta implements Cloneable {
 		return this.tableName.replace(WILDCHAR, sub);
 	}
 
+	public List<ColumnMeta> createColumns() {
+		return createColumns;
+	}
+
+	private static boolean timeOnly(Class<?> type) {
+		return type == Time.class || type == LocalTime.class;
+	}
+
+	public Class<?> pojoClz() {
+		return this.pojoClz;
+	}
+
+	public String getComment() {
+		Comment c = this.pojoClz.getAnnotation(Comment.class);
+		return c == null ? "" : c.value();
+	}
 }

@@ -19,8 +19,8 @@ import org.yx.annotation.Bean;
 import org.yx.common.CalleeNode;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
-import org.yx.rpc.RpcGson;
-import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.RpcJson;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
@@ -31,7 +31,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 
 	@Override
 	public boolean handle(final Request req, Response resp) {
-		if (!Protocols.hasFeature(req.protocol(), Protocols.REQ_PARAM_JSON)) {
+		if (!req.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
 			return false;
 		}
 		resp.sn(req.getSn());
@@ -40,7 +40,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			RpcActionNode node = RpcActions.getActionNode(api);
 			CalleeNode.checkNode(api, node);
 			Object ret = RpcHandler.handle(node, new JsonedRpcVisitor(req));
-			resp.json(RpcGson.toJson(ret));
+			resp.json(RpcJson.operator().toJson(ret));
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);
 		}

@@ -19,7 +19,7 @@ import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
 import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
-import org.yx.log.Logs;
+import org.yx.log.Log;
 
 public class PojoMetaListener extends AbstractBeanListener {
 
@@ -33,7 +33,7 @@ public class PojoMetaListener extends AbstractBeanListener {
 			Class<?> clz = event.clz();
 			PojoMetaHolder.resolve(clz);
 		} catch (Throwable e) {
-			Logs.printSQLException(e);
+			Log.printStack("sumk.sql.error", e);
 		}
 
 	}

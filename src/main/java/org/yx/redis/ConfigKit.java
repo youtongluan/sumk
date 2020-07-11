@@ -20,8 +20,6 @@ import java.util.List;
 
 import org.yx.common.Host;
 
-import redis.clients.jedis.Protocol;
-
 public final class ConfigKit {
 	public static List<Host> parseHosts(String host) {
 		host = host.replace('　', ' ').replace('，', ',').replace('：', ':').replaceAll("\\s", "");
@@ -33,7 +31,7 @@ public final class ConfigKit {
 				continue;
 			}
 			if (!addr.contains(":")) {
-				hosts.add(Host.create(addr, Protocol.DEFAULT_PORT));
+				hosts.add(Host.create(addr, 6379));
 				continue;
 			}
 			hosts.add(Host.create(addr));

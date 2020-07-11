@@ -17,6 +17,7 @@ package org.yx.bean;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,7 +26,6 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.annotation.Inject;
-import org.yx.asm.AsmUtils;
 import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanPropertiesWatcher;
 import org.yx.bean.watcher.PluginHandler;
@@ -58,8 +58,10 @@ public final class BeanPublisher {
 			try {
 
 				Class<?> clz = Loader.loadClassExactly(c);
-				if (AsmUtils.notPublicOnly(clz.getModifiers()) || clz.isInterface() || clz.isAnonymousClass()
-						|| clz.isLocalClass() || clz.isAnnotation() || clz.isEnum()) {
+				int modify = clz.getModifiers();
+				if ((modify & (Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PUBLIC
+						| Modifier.INTERFACE)) != Modifier.PUBLIC || clz.isAnonymousClass() || clz.isLocalClass()
+						|| clz.isAnnotation() || clz.isEnum()) {
 					continue;
 				}
 				clazzList.add(clz);

@@ -150,7 +150,7 @@ public final class AsmUtils {
 					fos.flush();
 				}
 			} catch (Exception e) {
-				if (Log.isTraceEnable("proxy")) {
+				if (Log.isTraceEnable("sumk.asm")) {
 					Log.printStack("sumk.error", e);
 				}
 			}
@@ -177,7 +177,8 @@ public final class AsmUtils {
 	public static final int BADMODIFIERS = Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PRIVATE;
 
 	public static boolean notPublicOnly(int modifiers) {
-		return (modifiers & Modifier.PUBLIC) == 0 || (modifiers & BADMODIFIERS) != 0;
+
+		return (modifiers & (Modifier.PUBLIC | BADMODIFIERS)) != Modifier.PUBLIC;
 	}
 
 	public static boolean canProxy(int modifiers) {

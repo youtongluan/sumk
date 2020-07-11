@@ -62,7 +62,7 @@ public final class ZkRouteParser {
 
 		temp = AppInfo.getLatin("sumk.rpc.server.excludes");
 		excludes = StringUtil.isEmpty(temp) ? null : Matchers.createWildcardMatcher(temp, 1);
-		executor = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(10000),
+		executor = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1000),
 				SumkThreadPool.createThreadFactory("rpc-client-"), new ThreadPoolExecutor.DiscardPolicy());
 		executor.allowCoreThreadTimeOut(true);
 	}
@@ -157,7 +157,7 @@ public final class ZkRouteParser {
 			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
 			datas.put(d.host(), d);
 		}
-		RpcRoutes.refresh(datas.values());
+		RpcRoutes.refresh(datas);
 	}
 
 	private List<String> filter(List<String> currentChilds) {
@@ -210,13 +210,9 @@ public final class ZkRouteParser {
 				if (list.isEmpty()) {
 					return;
 				}
-				List<RouteInfo> data = RpcRoutes.currentDatas();
-				Map<Host, RouteInfo> map = new HashMap<>();
-				for (RouteInfo r : data) {
-					map.put(r.host(), r);
-				}
+				Map<Host, RouteInfo> map = new HashMap<>(RpcRoutes.currentDatas());
 				if (handleData(map, list) > 0) {
-					RpcRoutes.refresh(map.values());
+					RpcRoutes.refresh(map);
 				}
 			}
 		});

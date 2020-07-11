@@ -18,6 +18,7 @@ package org.yx.db.sql;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -294,7 +295,7 @@ public class Select extends SelectBuilder {
 	 * 如果为false，查出的结果将不会用于更新缓存
 	 * 
 	 * @param toCache
-	 *            默认为true。sumk.sql.toCache=false可以将全局参数设为false
+	 *            该参数设为true的实际意义不大
 	 * @return 当前对象
 	 */
 	public Select toCache(boolean toCache) {
@@ -371,15 +372,13 @@ public class Select extends SelectBuilder {
 			return this;
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
-		ColumnMeta[] cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
-		Asserts.isTrue(cms != null && cms.length == 1,
+		List<ColumnMeta> cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
+		Asserts.isTrue(cms != null && cms.size() == 1,
 				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "redis") + " key table");
-		String key = cms[0].getFieldName();
-		Arrays.asList(ids).forEach(id -> {
-			Map<String, Object> map = new HashMap<>();
-			map.put(key, id);
-			addEqual(map);
-		});
+		String key = cms.get(0).getFieldName();
+		for (Object id : ids) {
+			addEqual(Collections.singletonMap(key, id));
+		}
 		return this;
 	}
 

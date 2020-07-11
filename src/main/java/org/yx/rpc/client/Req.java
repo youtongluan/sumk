@@ -15,14 +15,17 @@
  */
 package org.yx.rpc.client;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
 import java.util.StringJoiner;
 
-import org.yx.rpc.ReqProtocol;
 import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.codec.ReqParamType;
 
-public class Req {
+public class Req implements Serializable {
+
+	private static final long serialVersionUID = 123L;
 
 	public Req() {
 
@@ -38,23 +41,19 @@ public class Req {
 
 	private transient String traceId;
 
-	private transient String j;
-
-	private transient String[] p;
+	private transient Object params;
 
 	private String a;
 
-	private String secret;
-
-	private String sign;
-
-	private String src;
+	private String f;
 
 	private long s;
 
-	private int z;
+	protected int z;
 
-	private Map<String, String> attachments;
+	private transient int serverProtocol;
+
+	private Map<String, String> t;
 
 	private void parseSn() {
 		if (n == null) {
@@ -79,19 +78,25 @@ public class Req {
 	}
 
 	public String getJsonedParam() {
-		return j;
+		return this.hasFeature(ReqParamType.REQ_PARAM_JSON) ? (String) params : null;
 	}
 
-	public void setJsonedParam(String jsonedParam) {
-		this.j = jsonedParam;
+	public void setParams(int type, Object params) {
+		this.setParamType(type & Protocols.REQUEST_PARAM_TYPES);
+		this.params = params;
+	}
+
+	private void setParamType(int type) {
+		int p = this.z & (~Protocols.REQUEST_PARAM_TYPES);
+		this.z = p | type;
+	}
+
+	public Object getParams() {
+		return this.params;
 	}
 
 	public String[] getParamArray() {
-		return p;
-	}
-
-	public void setParamArray(String[] paramArray) {
-		this.p = paramArray;
+		return this.hasFeature(ReqParamType.REQ_PARAM_ORDER) ? (String[]) params : null;
 	}
 
 	public long getStart() {
@@ -131,36 +136,32 @@ public class Req {
 		this.a = api;
 	}
 
-	public String getSign() {
-		return sign;
+	public String getFrom() {
+		return f;
 	}
 
-	public void setSign(String sign) {
-		this.sign = sign;
+	public void setFrom(String src) {
+		this.f = src;
 	}
 
-	public String getSrc() {
-		return src;
+	public void addFeature(int feature) {
+		this.z |= feature;
 	}
 
-	public void setSrc(String src) {
-		this.src = src;
+	public boolean hasFeature(int feature) {
+		return Protocols.hasFeature(z, feature);
 	}
 
-	public String getSecret() {
-		return secret;
-	}
-
-	public void setSecret(String secret) {
-		this.secret = secret;
+	public int protocol() {
+		return this.z;
 	}
 
 	public void setTest(boolean b) {
-		this.z = z | ReqProtocol.TEST;
+		addFeature(Protocols.TEST);
 	}
 
 	public boolean isTest() {
-		return (z & ReqProtocol.TEST) != 0;
+		return hasFeature(Protocols.TEST);
 	}
 
 	public String getUserId() {
@@ -172,18 +173,28 @@ public class Req {
 	}
 
 	public Map<String, String> getAttachments() {
-		return attachments;
+		return t;
 	}
 
 	public void setAttachments(Map<String, String> attachments) {
-		this.attachments = attachments;
+		this.t = attachments;
 	}
 
-	public int paramProtocol() {
-		if (this.j != null) {
-			return Protocols.REQ_PARAM_JSON;
-		}
-		return Protocols.REQ_PARAM_ORDER;
+	public void initAcceptResponseTypes(int protocol) {
+		protocol &= Protocols.RESPONSE_FULL_TYPES;
+		this.z |= protocol;
+	}
+
+	public int getAcceptResponseTypes() {
+		return this.z & Protocols.RESPONSE_FULL_TYPES;
+	}
+
+	public int getServerProtocol() {
+		return serverProtocol;
+	}
+
+	public void setServerProtocol(int serverProtocol) {
+		this.serverProtocol = serverProtocol;
 	}
 
 }

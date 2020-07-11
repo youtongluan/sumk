@@ -80,7 +80,14 @@ public class ItemJoiner {
 		if (!forcePreAndSubFix && !hasDelimiter) {
 			return sb;
 		}
-		StringBuilder ret = new StringBuilder();
+		int len = sb.length();
+		if (this.prefix != null) {
+			len += this.prefix.length();
+		}
+		if (this.suffix != null) {
+			len += this.suffix.length();
+		}
+		StringBuilder ret = new StringBuilder(len);
 		if (this.prefix != null) {
 			ret.append(this.prefix);
 		}

@@ -25,11 +25,16 @@ public class RedisConfig extends GenericObjectPoolConfig {
 	private final String hosts;
 	private int db = 0;
 	private int connectionTimeout = 5000;
-	private int timeout = 3000;
+	private int timeout = 2000;
 	private String password;
-	private int tryCount = 3;
+	private int maxAttempts = 3;
 	private String master;
 	private String alias;
+
+	/**
+	 * 1 cluster 2 sentinel 其它是普通
+	 */
+	private String type;
 
 	public RedisConfig(String host) {
 		Asserts.notEmpty(host, "redis host cannot be empty");
@@ -76,12 +81,12 @@ public class RedisConfig extends GenericObjectPoolConfig {
 		this.db = db;
 	}
 
-	public int getTryCount() {
-		return tryCount;
+	public int getMaxAttempts() {
+		return maxAttempts;
 	}
 
-	public void setTryCount(int tryCount) {
-		this.tryCount = tryCount;
+	public void setMaxAttempts(int maxAttempts) {
+		this.maxAttempts = maxAttempts;
 	}
 
 	public String getAlias() {
@@ -102,8 +107,16 @@ public class RedisConfig extends GenericObjectPoolConfig {
 
 	@Override
 	public String toString() {
-		return "hosts=" + hosts + ", db=" + db + ", password=" + password + ", timeout=" + timeout + ", tryCount="
-				+ tryCount + " , " + super.toString();
+		return "hosts=" + hosts + ", db=" + db + ", password=" + password + ", timeout=" + timeout + ", maxAttempts="
+				+ maxAttempts + " , " + super.toString();
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
 	}
 
 }

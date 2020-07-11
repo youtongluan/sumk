@@ -27,7 +27,7 @@ public final class Profile {
 	public static long feature() {
 		long v = version;
 		v <<= 32;
-		v |= Protocols.profile();
+		v |= Protocols.profile() & 0xFFFFFFFFL;
 		return v;
 	}
 

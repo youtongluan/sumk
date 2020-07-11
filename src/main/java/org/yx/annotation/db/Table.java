@@ -51,6 +51,4 @@ public @interface Table {
 	 * @return 主键缓存都是SINGLE，外键缓存一般用LIST
 	 */
 	CacheType cacheType() default CacheType.SINGLE;
-
-	String comment() default "";
 }

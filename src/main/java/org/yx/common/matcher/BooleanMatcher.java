@@ -2,14 +2,13 @@ package org.yx.common.matcher;
 
 import java.util.function.Predicate;
 
-public class BooleanMatcher implements Predicate<String> {
+public enum BooleanMatcher implements Predicate<String> {
 
-	public static final BooleanMatcher TRUE = new BooleanMatcher(true);
-	public static final BooleanMatcher FALSE = new BooleanMatcher(false);
+	TRUE(true), FALSE(false);
 
 	private boolean matched;
 
-	BooleanMatcher(boolean matched) {
+	private BooleanMatcher(boolean matched) {
 		this.matched = matched;
 	}
 
@@ -18,8 +17,4 @@ public class BooleanMatcher implements Predicate<String> {
 		return matched;
 	}
 
-	@Override
-	public String toString() {
-		return "BooleanMatcher [" + matched + "]";
-	}
 }

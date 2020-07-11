@@ -19,17 +19,17 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
 import org.yx.annotation.Param;
+import org.yx.annotation.doc.Comment;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
+import org.yx.util.CollectionUtil;
 import org.yx.validate.ParamInfo;
 import org.yx.validate.Validators;
 
@@ -165,14 +165,19 @@ public abstract class CalleeNode {
 	}
 
 	public List<String> argNames() {
-		return argNames == null ? Collections.emptyList() : Arrays.asList(argNames);
+		return CollectionUtil.unmodifyList(argNames);
 	}
 
 	public List<ParamInfo> paramInfos() {
-		return paramInfos == null ? Collections.emptyList() : Arrays.asList(paramInfos);
+		return CollectionUtil.unmodifyList(paramInfos);
 	}
 
 	public Class<? extends ArgPojo> argClz() {
 		return this.argClz;
+	}
+
+	public String comment() {
+		Comment c = getAnnotation(Comment.class);
+		return c == null ? "" : c.value();
 	}
 }

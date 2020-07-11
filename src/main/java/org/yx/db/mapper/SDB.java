@@ -18,6 +18,7 @@ package org.yx.db.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.db.kit.SDBuilder;
 import org.yx.db.sql.InsertResult;
 import org.yx.exception.SumkException;
 
@@ -55,4 +56,11 @@ public class SDB {
 		return list.get(0);
 	}
 
+	public static SDBuilder builder() {
+		return new SDBuilder();
+	}
+
+	public static SDBuilder builder(String name, Map<String, Object> param) {
+		return new SDBuilder(name, param);
+	}
 }

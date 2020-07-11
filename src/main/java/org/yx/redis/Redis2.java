@@ -15,194 +15,78 @@
  */
 package org.yx.redis;
 
-import static org.yx.redis.RedisLoader.LOG_NAME;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.function.Function;
 
-import org.yx.common.Host;
-import org.yx.conf.AppInfo;
-import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.JedisPool;
-import redis.clients.jedis.JedisSentinelPool;
-import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.util.Pool;
 
-public abstract class Redis2 implements SeniorRedis {
+public abstract class Redis2 implements Redis, Cloneable {
 
-	private static final SumkException DIS_CONNECTION_EXCEPTION = new SimpleSumkException(400, "redis is disConnected");
-	protected final String hosts;
-	protected final int tryCount;
-	protected final Pool<Jedis> pool;
-	protected boolean disConnected;
-	protected final RedisConfig config;
+	protected final Jedis2Executor jedis2Executor;
+	private boolean mute;
+	private transient Redis2 muteConnectionExceptionRedis;
 
-	private static Function<RedisConfig, JedisPool> jedisPoolFactory = conf -> {
-		List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
-		Host h = hosts.get(0);
-		try {
-			return new JedisPool(conf, h.ip(), h.port(), conf.getConnectionTimeout(), conf.getTimeout(),
-					conf.getPassword(), conf.getDb(), AppInfo.appId("sumk"));
-		} catch (Throwable e) {
+	public Redis2(Jedis2Executor executor) {
+		this.jedis2Executor = executor;
+		if (Checkable.class.isInstance(this.jedis2Executor)) {
+			RedisChecker.get().addRedis(Checkable.class.cast(this.jedis2Executor));
 		}
-		Log.get(LOG_NAME).debug("can not support property connectionTimeout");
-		return new JedisPool(conf, h.ip(), h.port(), conf.getTimeout(), conf.getPassword(), conf.getDb(),
-				AppInfo.appId("sumk"));
-	};
-
-	private static Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory = config -> {
-		List<Host> hosts = ConfigKit.parseHosts(config.hosts());
-		Set<String> sentinels = new HashSet<>();
-		for (Host h : hosts) {
-			sentinels.add(h.toString());
-		}
-		Log.get(LOG_NAME).info("create sentinel redis pool,sentinels={},db={}", sentinels, config.getDb());
-		return new JedisSentinelPool(config.getMaster(), sentinels, config, config.getConnectionTimeout(),
-				config.getTimeout(), config.getPassword(), config.getDb(), AppInfo.appId("sumk"));
-	};
-
-	public static Function<RedisConfig, JedisPool> getJedisPoolFactory() {
-		return jedisPoolFactory;
-	}
-
-	public static void setJedisPoolFactory(Function<RedisConfig, JedisPool> jedisPoolFactory) {
-		Redis2.jedisPoolFactory = Objects.requireNonNull(jedisPoolFactory);
-	}
-
-	public static Function<RedisConfig, JedisSentinelPool> getSentinelPoolFactory() {
-		return sentinelPoolFactory;
-	}
-
-	public static void setSentinelPoolFactory(Function<RedisConfig, JedisSentinelPool> sentinelPoolFactory) {
-		Redis2.sentinelPoolFactory = Objects.requireNonNull(sentinelPoolFactory);
-	}
-
-	public Redis2(RedisConfig config) {
-		this.config = Objects.requireNonNull(config);
-		this.tryCount = config.getTryCount();
-		this.hosts = config.hosts();
-
-		String masterName = config.getMaster();
-		this.pool = masterName == null ? jedisPoolFactory.apply(config) : sentinelPoolFactory.apply(config);
-		RedisChecker.get().addRedis(this);
 	}
 
 	@Override
 	public RedisConfig getRedisConfig() {
-		return this.config;
+		return this.jedis2Executor.getRedisConfig();
 	}
 
 	@Override
 	public String hosts() {
-		return hosts;
-	}
-
-	public Jedis jedis() {
-		return pool.getResource();
-	}
-
-	@Override
-	public int tryCount() {
-		return tryCount;
-	}
-
-	@Override
-	public <T> T exec(Function<Jedis, T> callback, int totalCount) {
-		if (totalCount < 1) {
-			totalCount = 1;
-		}
-		Jedis jedis = null;
-		Exception e1 = null;
-		for (int i = 0; i < totalCount; i++) {
-			if (this.disConnected) {
-				if (this.returnNullForConnectionException()) {
-					return null;
-				}
-				throw DIS_CONNECTION_EXCEPTION;
-			}
-			try {
-				e1 = null;
-				jedis = this.jedis();
-				return callback.apply(jedis);
-			} catch (Exception e) {
-				if (isConnectException(e)) {
-					Log.get(LOG_NAME).warn("redis连接错误！({})" + e.getMessage(), hosts);
-					if (jedis != null) {
-						jedis.close();
-						jedis = null;
-					}
-					e1 = e;
-					continue;
-				}
-				Log.get(LOG_NAME).error("redis执行错误！({})" + e.getMessage(), hosts);
-				if (jedis != null) {
-					jedis.close();
-					jedis = null;
-				}
-				SumkException.throwException(12342411, e.getMessage(), e);
-			} finally {
-				if (jedis != null) {
-					jedis.close();
-				}
-			}
-		}
-		if (e1 != null) {
-
-			if (returnNullForConnectionException() && isConnectException(e1)) {
-				return null;
-			}
-			throw new SumkException(12342422, e1.getMessage(), e1);
-		}
-		throw new SumkException(12342423, "未知redis异常");
+		return jedis2Executor.hosts();
 	}
 
 	public <T> T execAndRetry(Function<Jedis, T> callback) {
-		return this.exec(callback, this.tryCount);
-	}
-
-	protected boolean returnNullForConnectionException() {
-		return AppInfo.getBoolean("sumk.redis.disconnect.null", false);
+		return this.jedis2Executor.execAndRetry(callback, mute);
 	}
 
 	public void shutdownPool() {
-		this.pool.close();
+		this.jedis2Executor.shutdownPool();
+		if (Checkable.class.isInstance(this.jedis2Executor)) {
+			RedisChecker.get().remove(Checkable.class.cast(this.jedis2Executor));
+		}
 	}
 
-	@Override
-	public boolean aliveCheck() {
-		final String HELLO = "hello";
-		for (int i = 0; i < 3; i++) {
-			try (Jedis jedis = jedis()) {
-				String ret = jedis.ping(HELLO);
-				if (HELLO.equals(ret)) {
-					this.disConnected = false;
-					return true;
-				}
-				Log.get(LOG_NAME).warn("redis answer {} for {}", ret, HELLO);
-			} catch (Exception e) {
-				if (!isConnectException(e)) {
-					Log.get(LOG_NAME).error(e.getMessage(), e);
-				}
-			}
-		}
-		this.disConnected = true;
+	public boolean isCluster() {
 		return false;
 	}
 
-	private static boolean isConnectException(Exception e) {
-		return JedisConnectionException.class.isInstance(e)
-				|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()));
+	@Override
+	public Redis mute() {
+		Redis2 r = this.muteConnectionExceptionRedis;
+		if (r != null) {
+			return r;
+		}
+		if (this.mute) {
+			return this;
+		}
+		try {
+			r = (Redis2) super.clone();
+		} catch (Exception e) {
+			Logs.redis().error(e.toString(), e);
+			throw new SumkException(345345, this.getClass().getName() + "无法clone");
+		}
+		r.mute = true;
+		this.muteConnectionExceptionRedis = r;
+		return r;
+	}
+
+	@Override
+	public boolean isMuted() {
+		return mute;
 	}
 
 	@Override
 	public String toString() {
-		return "[hosts=" + hosts + ", db=" + config.getDb() + ", tryCount=" + tryCount + "]";
+		return "Redis[" + this.jedis2Executor + "]";
 	}
 }

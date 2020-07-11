@@ -15,12 +15,9 @@
  */
 package org.yx.rpc.client.route;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -32,18 +29,27 @@ import org.yx.log.Log;
 import org.yx.rpc.data.RouteInfo;
 
 public final class RpcRoutes {
-	private final Map<String, Router<Host>> rpcRoutes;
-	private final List<RouteInfo> zkDatas;
 
-	private RpcRoutes(List<RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
+	private final Map<String, Router<Host>> rpcRoutes;
+	private final Map<Host, RouteInfo> zkDatas;
+
+	private RpcRoutes(Map<Host, RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
 		this.zkDatas = Objects.requireNonNull(zkDatas);
 		this.rpcRoutes = Objects.requireNonNull(routes);
 	}
 
-	private static volatile RpcRoutes ROUTE = new RpcRoutes(Collections.emptyList(), Collections.emptyMap());
+	private static volatile RpcRoutes ROUTE = new RpcRoutes(Collections.emptyMap(), Collections.emptyMap());
 
-	public static List<RouteInfo> currentDatas() {
-		return Collections.unmodifiableList(ROUTE.zkDatas);
+	public static Map<Host, RouteInfo> currentDatas() {
+		return Collections.unmodifiableMap(ROUTE.zkDatas);
+	}
+
+	public static int getServerProtocol(Host url) {
+		RouteInfo info = ROUTE.zkDatas.get(url);
+		if (info == null) {
+			return 0;
+		}
+		return info.getFeature();
 	}
 
 	public static Router<Host> getRoute(String api) {
@@ -54,22 +60,22 @@ public final class RpcRoutes {
 		return ROUTE.rpcRoutes.size();
 	}
 
-	private static void _refresh(Collection<RouteInfo> rawData, Map<String, Router<Host>> route) {
-		List<RouteInfo> data = new ArrayList<>(rawData);
+	private static void _refresh(Map<Host, RouteInfo> rawData, Map<String, Router<Host>> route) {
+		Map<Host, RouteInfo> data = new HashMap<>(rawData);
 		RpcRoutes r = new RpcRoutes(data, route);
 		RpcRoutes.ROUTE = r;
 		if (Log.get("sumk.rpc.client").isTraceEnabled()) {
 			StringBuilder sb = new StringBuilder("微服务源:");
-			for (RouteInfo d : data) {
+			for (RouteInfo d : data.values()) {
 				sb.append("  ").append(d.host());
 			}
 			Log.get("sumk.rpc.client").trace(sb.toString());
 		}
 	}
 
-	public static synchronized void refresh(Collection<RouteInfo> datas) {
+	public static synchronized void refresh(Map<Host, RouteInfo> datas) {
 		Map<String, Set<WeightedServer<Host>>> map = new HashMap<>();
-		for (RouteInfo r : datas) {
+		for (RouteInfo r : datas.values()) {
 			Map<String, WeightedServer<Host>> ms = createServerMachine(r);
 			ms.forEach((m, serverMachine) -> {
 				Set<WeightedServer<Host>> server = map.get(m);

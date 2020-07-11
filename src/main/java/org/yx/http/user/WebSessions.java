@@ -36,7 +36,7 @@ public final class WebSessions {
 	public static UserSession loadUserSession() {
 		if (session == null) {
 			Log.get("sumk.http.session").info("session has not created");
-			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登陆");
+			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
 		return session;
 	}

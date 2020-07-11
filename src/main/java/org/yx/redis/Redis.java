@@ -36,5 +36,15 @@ public interface Redis extends BinaryJedisCommand, JedisCommand, MultiKeyCommand
 
 	void shutdownPool();
 
-	boolean aliveCheck();
+	boolean isCluster();
+
+	/**
+	 * 如果发生了异常，返回null代替抛出异常。 一般而言它只对普通redis起作用，对于redis集群，该方法不一定有作用。
+	 * 通过isMuted()可以判断是否生效
+	 * 
+	 * @return Redis对象，不为null
+	 */
+	Redis mute();
+
+	boolean isMuted();
 }

@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.ActStatis;
-import org.yx.common.UnsafeByteArrayOutputStream;
+import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Logs;
@@ -57,7 +57,7 @@ public final class InnerHttpUtil {
 				throw HttpException.create(HttpErrorCode.BODY_TOO_BIG, "请求数据太长");
 			}
 		}
-		byte[] bs = output.extractRawData();
+		byte[] bs = output.extractHttpBodyData();
 		output.close();
 		return bs;
 	}

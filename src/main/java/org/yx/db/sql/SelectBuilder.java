@@ -63,7 +63,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	public MapedSql toMapedSql() throws Exception {
 		List<Object> paramters = new ArrayList<>(10);
 		this.pojoMeta = parsePojoMeta(true);
-		StringBuilder sql = new StringBuilder();
+		StringBuilder sql = new StringBuilder(32);
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
 		if (StringUtil.isEmpty(where) && !this.allowEmptyWhere) {

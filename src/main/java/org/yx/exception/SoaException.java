@@ -17,9 +17,9 @@ package org.yx.exception;
 
 import java.io.PrintStream;
 import java.io.PrintWriter;
-import java.io.StringWriter;
 
 import org.yx.conf.AppInfo;
+import org.yx.util.ExceptionUtil;
 
 public class SoaException extends CodeException {
 
@@ -54,13 +54,12 @@ public class SoaException extends CodeException {
 			return null;
 		}
 		if (AppInfo.getBoolean("sumk.rpc.detailError", false)) {
-			StringWriter sw = new StringWriter();
-			PrintWriter w = new PrintWriter(sw);
-			e.printStackTrace(w);
-			if (sw.toString().length() >= 4000) {
-				return sw.toString().substring(0, 4000);
+			StringBuilder sb = new StringBuilder(64);
+			ExceptionUtil.printStackTrace(sb, e);
+			if (sb.length() >= 4000) {
+				return sb.substring(0, 4000);
 			}
-			return sw.toString();
+			return sb.toString();
 		}
 		return e.getMessage();
 	}

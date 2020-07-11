@@ -16,7 +16,6 @@
 package org.yx.http.start;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.nio.channels.ServerSocketChannel;
 import java.util.Arrays;
 import java.util.EventListener;
@@ -39,8 +38,9 @@ import org.yx.bean.IOC;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
-import org.yx.log.Logs;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.main.SumkLoaderListener;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -70,21 +70,21 @@ public class JettyServer implements Lifecycle {
 				IOException ex = null;
 				try {
 					return super.openAcceptChannel();
-				} catch (BindException e) {
+				} catch (IOException e) {
 					ex = e;
 				}
 
 				for (int i = 0; i < AppInfo.getInt("sumk.jetty.bind.retry", 100); i++) {
 					try {
-						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 1000));
+						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 2000));
 					} catch (InterruptedException e1) {
 						Logs.http().error("showdown because of InterruptedException");
 						System.exit(1);
 					}
-					Logs.http().warn("{} was occupied,begin retry {}", this.getPort(), i);
+					Logs.http().warn("{} was occupied({}),begin retry {}", this.getPort(), ex.getMessage(), i);
 					try {
 						return super.openAcceptChannel();
-					} catch (BindException e) {
+					} catch (IOException e) {
 						if (isInheritChannel()) {
 							throw e;
 						}
@@ -107,7 +107,7 @@ public class JettyServer implements Lifecycle {
 			buildJettyProperties();
 			server = new Server(new ExecutorThreadPool(HttpExcutors.getThreadPool()));
 			ServerConnector connector = this.createConnector();
-			Logs.http().info("listen port: {}", port);
+			Logs.http().info("listen at port: {}", port);
 			String host = StartContext.httpHost();
 			if (host != null && host.length() > 0) {
 				connector.setHost(host);
@@ -137,7 +137,7 @@ public class JettyServer implements Lifecycle {
 			server.setHandler(context);
 		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
-			System.exit(1);
+			StartContext.startFail();
 		}
 
 	}
@@ -160,7 +160,7 @@ public class JettyServer implements Lifecycle {
 			started = true;
 		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
-			System.exit(1);
+			throw new SumkException(234234, "jetty启动失败");
 		}
 
 	}

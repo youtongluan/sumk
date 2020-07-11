@@ -15,33 +15,37 @@
  */
 package org.yx.common.thread;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.Log;
+import org.yx.main.SumkThreadPool;
 
 public class ThreadPools {
 
-	public static final SumkExecutorService DEFAULT_EXECUTOR = ThreadPools.create("sumk", 50, 500, 30000);
+	public static final SumkExecutorService DEFAULT_EXECUTOR = ThreadPools.create("sumk", 50, 500,
+			Integer.getInteger("sumk.thread.pool.keepAliveTime", 30000));
 
 	public static SumkExecutorService create(String name, int core, int max, int aliveTime) {
 		AbortPolicyQueue abortPolicyQueue = new AbortPolicyQueue(AppInfo.getInt("sumk.threadpool.maxqueue", 100000),
 				core);
 		ThresholdThreadPool pool = new ThresholdThreadPool(core, max, aliveTime, TimeUnit.MILLISECONDS,
-				abortPolicyQueue, new DefaultThreadFactory(name), abortPolicyQueue, 0);
+				abortPolicyQueue, SumkThreadPool.createThreadFactory(name + "-"), abortPolicyQueue, 0);
 		abortPolicyQueue.pool = pool;
 		return pool;
 	}
 
-	private static class AbortPolicyQueue extends LinkedBlockingQueue<Runnable> implements RejectedExecutionHandler {
+	private static final class AbortPolicyQueue extends LinkedBlockingQueue<Runnable>
+			implements RejectedExecutionHandler {
 
-		private SumkExecutorService pool;
 		private static final long serialVersionUID = 1L;
+		private SumkExecutorService pool;
 		private int softCapacity;
 
 		AbortPolicyQueue(int capacity, int softCapacity) {
@@ -51,8 +55,7 @@ public class ThreadPools {
 
 		@Override
 		public boolean offer(Runnable r) {
-			int size = this.size();
-			if (size > softCapacity) {
+			if (this.size() > softCapacity) {
 				return false;
 			}
 
@@ -79,24 +82,52 @@ public class ThreadPools {
 		}
 	}
 
-	private static class DefaultThreadFactory implements ThreadFactory {
-		private final ThreadGroup group;
-		private final AtomicInteger threadNumber = new AtomicInteger(1);
-		private final String namePrefix;
+	private static class ThresholdThreadPool extends ThreadPoolExecutor implements SumkExecutorService {
 
-		DefaultThreadFactory(String type) {
-			SecurityManager s = System.getSecurityManager();
-			group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-			namePrefix = type + "-";
+		private int threshold;
+
+		public ThresholdThreadPool(int corePoolSize, int maximumPoolSize, long keepAliveTime, TimeUnit unit,
+				BlockingQueue<Runnable> workQueue, ThreadFactory threadFactory, RejectedExecutionHandler handler,
+				int threshold) {
+			super(corePoolSize, maximumPoolSize, keepAliveTime, unit, workQueue, threadFactory, handler);
+			this.threshold = threshold;
+		}
+
+		public void execute(Runnable command, int toplimit) {
+			if (toplimit < threshold) {
+				String msg = new StringBuilder().append("Task ").append(toString())
+						.append(" discarded, because toplimit ").append(toplimit).append(" lower than ")
+						.append(threshold).toString();
+				Log.get("sumk.thread").warn(msg);
+				return;
+			}
+			this.execute(command);
 		}
 
 		@Override
-		public Thread newThread(Runnable r) {
-			Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement());
-			t.setDaemon(true);
-			if (t.getPriority() != Thread.NORM_PRIORITY)
-				t.setPriority(Thread.NORM_PRIORITY);
-			return t;
+		public int threshold() {
+			return threshold;
+		}
+
+		@Override
+		public void threshold(int threshold) {
+			this.threshold = threshold;
+		}
+
+		@Override
+		public void setThreadFactory(ThreadFactory threadFactory) {
+		}
+
+		@Override
+		public void setCorePoolSize(int corePoolSize) {
+			super.setCorePoolSize(corePoolSize);
+			AbortPolicyQueue q = (AbortPolicyQueue) this.getQueue();
+			q.softCapacity = (int) (corePoolSize * 0.7);
+		}
+
+		@Override
+		public int getQueued() {
+			return this.getQueue().size();
 		}
 	}
 }

@@ -24,5 +24,5 @@ public enum RestType {
 	/**
 	 * 文件上传
 	 */
-	UPLOAD
+	MULTI_PART
 }

@@ -96,7 +96,7 @@ public abstract class AbstractUrlConfig extends AbstractRefreshableSystemConfig 
 				return false;
 			}
 			InputStream in = conn.getInputStream();
-			byte[] data = StreamUtil.extractData(in, true);
+			byte[] data = StreamUtil.readAllBytes(in, true);
 			if (Arrays.equals(rawData, data)) {
 				return false;
 			}

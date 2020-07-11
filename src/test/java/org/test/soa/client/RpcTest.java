@@ -31,9 +31,6 @@ public class RpcTest {
 
 	public static String soaName(String soaName){
 		StringBuilder sb=new StringBuilder();
-		if(AppInfo.groupId(null)!=null){
-			sb.append(AppInfo.groupId(null)).append('.');
-		}
 		if(AppInfo.appId(null)!=null){
 			sb.append(AppInfo.appId(null)).append('.');
 		}

@@ -31,7 +31,6 @@ import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.InnerRpcKit;
 import org.yx.rpc.RpcErrorCode;
-import org.yx.rpc.RpcGson;
 import org.yx.rpc.codec.ProtocolDeserializer;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.log.RpcLogs;
@@ -99,8 +98,10 @@ public class ServerHandler implements IoHandler {
 			if (obj == null) {
 				return;
 			}
+			message = null;
 			if (Request.class.isInstance(obj)) {
 				req = (Request) obj;
+				resp.setClientAcceptedProtocol(req.getAcceptResponseTypes());
 				InnerRpcKit.rpcContext(req, req.isTest());
 				for (RequestHandler h : handlers) {
 					if (h.handle(req, resp)) {
@@ -111,10 +112,15 @@ public class ServerHandler implements IoHandler {
 				}
 			}
 		} catch (Throwable e) {
-			long begin = req == null ? 0 : req.getStartInServer();
+			Log.get("sumk.rpc.server").error(e.toString(), e);
+			long begin = 0;
+			if (req != null) {
+				begin = req.getStartInServer();
+				resp.sn(req.getSn());
+			}
 			resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);
 			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
-			session.write(RpcGson.toJson(resp));
+			session.write(resp);
 		} finally {
 			RpcLogs.serverLog(req, resp);
 			ActionContext.remove();

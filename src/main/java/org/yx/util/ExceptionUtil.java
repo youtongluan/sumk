@@ -15,12 +15,22 @@
  */
 package org.yx.util;
 
-public class ExceptionUtil {
+import java.io.PrintWriter;
+
+import org.yx.common.sumk.UnsafeStringWriter;
+
+public final class ExceptionUtil {
 
 	public static RuntimeException toRuntimeException(Throwable e) {
 		if (RuntimeException.class.isInstance(e)) {
 			return (RuntimeException) e;
 		}
 		return new RuntimeException(e);
+	}
+
+	public static void printStackTrace(StringBuilder sb, Throwable e) {
+		UnsafeStringWriter sw = new UnsafeStringWriter(sb);
+		PrintWriter w = new PrintWriter(sw);
+		e.printStackTrace(w);
 	}
 }

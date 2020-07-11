@@ -18,14 +18,22 @@ package org.yx.http;
 import java.util.Objects;
 
 import org.yx.common.Ordered;
+import org.yx.exception.SumkException;
 import org.yx.http.handler.WebContext;
 
 public abstract class WebFilter implements Ordered {
 
-	protected WebFilter next;
+	private WebFilter next;
 
 	public final void setNext(WebFilter next) {
+		if (this.next != null) {
+			SumkException.throwException(2343, "next已经赋值了，它是" + this.next);
+		}
 		this.next = Objects.requireNonNull(next);
+	}
+
+	protected final Object callNextFilter(WebContext ctx) throws Throwable {
+		return this.next.doFilter(ctx);
 	}
 
 	public abstract Object doFilter(WebContext ctx) throws Throwable;

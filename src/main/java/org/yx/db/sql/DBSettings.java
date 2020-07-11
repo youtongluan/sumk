@@ -26,6 +26,22 @@ public final class DBSettings {
 
 	private static int LIMIT_AS_NO_LIMIT;
 
+	private static int UNION_LOG_TIME;
+	private static boolean UNION_LOG_ENABLE;
+	private static int DEBUG_LOG_SPEND_TIME;
+
+	public static int debugLogSpendTime() {
+		return DEBUG_LOG_SPEND_TIME;
+	}
+
+	public static int unionLogTime() {
+		return UNION_LOG_TIME;
+	}
+
+	public static boolean isUnionLogEnable() {
+		return UNION_LOG_ENABLE;
+	}
+
 	public static boolean failIfPropertyNotMapped() {
 		return FAIL_IF_PROPERTY_NOT_MAPPED;
 	}
@@ -57,6 +73,9 @@ public final class DBSettings {
 				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
 				LIMIT_AS_NO_LIMIT = AppInfo.getInt("sumk.db.asnolimit", 5000);
 				MAX_LOG_PARAM_LENGTH = AppInfo.getInt("sumk.sql.param.maxlength", 5000);
+				UNION_LOG_TIME = AppInfo.getInt("sumk.unionlog.sql.time", 0);
+				UNION_LOG_ENABLE = AppInfo.getBoolean("sumk.unionlog.sql.enable", true);
+				DEBUG_LOG_SPEND_TIME = AppInfo.getInt("sumk.sql.debug.spendTime", 100);
 			} catch (Exception e) {
 				Logs.db().info(e.getMessage(), e);
 			}

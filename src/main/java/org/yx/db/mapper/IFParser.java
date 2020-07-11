@@ -30,12 +30,12 @@ public class IFParser implements SqlParser {
 		if (parser == null) {
 			return null;
 		}
-		return new IFParser(Objects.requireNonNull(expression), parser);
+		return new IFParser(expression, parser);
 	}
 
-	private IFParser(Predicate<Map<String, Object>> expression, SqlParser parser) {
-		this.expression = expression;
-		this.parser = parser;
+	protected IFParser(Predicate<Map<String, Object>> expression, SqlParser parser) {
+		this.expression = Objects.requireNonNull(expression);
+		this.parser = Objects.requireNonNull(parser);
 	}
 
 	@Override

@@ -26,7 +26,7 @@ public final class HttpHandlerChain implements HttpHandler {
 	private HttpHandler[] handlers;
 
 	public static final HttpHandlerChain inst = new HttpHandlerChain();
-	public static final HttpHandlerChain upload = new HttpHandlerChain();
+	public static final HttpHandlerChain multipart = new HttpHandlerChain();
 
 	private HttpHandlerChain() {
 
@@ -52,7 +52,7 @@ public final class HttpHandlerChain implements HttpHandler {
 				h.handle(ctx);
 			}
 		} finally {
-			UploadFileHolder.remove();
+			MultipartHolder.remove();
 		}
 	}
 }

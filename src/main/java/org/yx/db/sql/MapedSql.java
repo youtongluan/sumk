@@ -15,17 +15,12 @@
  */
 package org.yx.db.sql;
 
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import org.yx.common.ItemJoiner;
-import org.yx.db.DBGson;
 import org.yx.db.event.DBEvent;
-import org.yx.log.LogKits;
-
-import com.google.gson.stream.JsonWriter;
 
 public class MapedSql {
 
@@ -78,31 +73,10 @@ public class MapedSql {
 		return sql + " -- " + paramters;
 	}
 
-	public static interface JsonWriterVisitor {
-		void visit(JsonWriter writer) throws Exception;
-	}
-
-	public String toJson(JsonWriterVisitor visitor) throws Exception {
-		StringWriter stringWriter = new StringWriter();
-		JsonWriter writer = new JsonWriter(stringWriter);
-		writer.setSerializeNulls(true);
-		writer.beginObject();
-		writer.name("sql").value(sql);
-		writer.name("hash").value(sql.hashCode());
-		String params = DBGson.toJson(paramters);
-		params = LogKits.shorterSubfix(params, DBSettings.maxSqlParamLength());
-		writer.name("paramters").value(params);
-		if (visitor != null) {
-			visitor.visit(writer);
-		}
-		writer.endObject();
-		writer.flush();
-		writer.close();
-		return stringWriter.toString();
-
-	}
-
 	public static MapedSql merge(List<MapedSql> mapeds, ItemJoiner joiner) {
+		if (mapeds == null || mapeds.isEmpty()) {
+			return null;
+		}
 		List<Object> params = new ArrayList<>();
 		for (MapedSql maped : mapeds) {
 			joiner.item().append(maped.sql);

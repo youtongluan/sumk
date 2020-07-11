@@ -22,18 +22,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.METHOD })
+/**
+ * 与@Web一起使用，表示该请求是multipart/form-data类型，一般而言就是文件上传。<BR>
+ * 其中名字为paramName()的那个part，会解析成方法的参数
+ */
+@Target({ ElementType.METHOD, ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
 public @interface Upload {
 
-	int maxSize() default 1024 * 1024 * 10;
-
-	int maxFiles() default 1;
-
-	String[] exts() default { ".rar", ".doc", ".docx", ".zip", ".pdf", ".txt", ".gif", ".png", ".jpg", ".jpeg",
-			".bmp" };
-
-	String custom() default "";
+	String paramName() default "param";
 }

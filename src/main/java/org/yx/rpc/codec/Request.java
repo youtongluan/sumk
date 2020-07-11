@@ -15,30 +15,29 @@
  */
 package org.yx.rpc.codec;
 
-import org.yx.exception.SumkException;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.client.Req;
 
 public class Request extends Req {
+
+	private static final long serialVersionUID = 123L;
+
 	/**
 	 * 服务器端接收到req请求的时间
 	 */
 	private long startInServer = System.currentTimeMillis();
 
-	private int protocol;
-
-	public int protocol() {
-		return this.protocol;
-	}
-
-	public void protocol(int protocol) {
-		if (this.protocol != 0) {
-			SumkException.throwException(34526546, "protocol has value already,value is " + this.protocol);
-		}
-		this.protocol = protocol;
-	}
-
 	public long getStartInServer() {
 		return startInServer;
+	}
+
+	public static Request from(Req req) {
+
+		String json = RpcJson.operator().toJson(req);
+		Request request = RpcJson.operator().fromJson(json, Request.class);
+
+		request.setParams(req.protocol(), req.getParams());
+		return request;
 	}
 
 }

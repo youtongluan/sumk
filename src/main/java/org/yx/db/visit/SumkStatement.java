@@ -26,8 +26,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.MapedSql;
-import org.yx.db.sql.MapedSql.JsonWriterVisitor;
+import org.yx.db.sql.SqlLog;
 import org.yx.exception.SumkException;
 import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
@@ -35,9 +36,21 @@ import org.yx.log.Logs;
 
 public class SumkStatement {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
-	private static SqlLog sqlLog = new SqlLogImpl();
+	private static SqlLog sqlLog = (a, b, c) -> {
+	};
 	private static CodeLineMarker marker = new CodeLineMarker("org.yx.db.");
 
+	private final AtomicReference<PreparedStatement> statement;
+	private final MapedSql maped;
+	private final long beginTime;
+	private int sqlTime;
+	private int modifyCount = -1;
+
+	/**
+	 * 非空
+	 * 
+	 * @return marker实例
+	 */
 	public static CodeLineMarker getMarker() {
 		return marker;
 	}
@@ -49,12 +62,6 @@ public class SumkStatement {
 	public static void setSqlLog(SqlLog sqlLog) {
 		SumkStatement.sqlLog = Objects.requireNonNull(sqlLog);
 	}
-
-	private final AtomicReference<PreparedStatement> statement;
-	private final MapedSql maped;
-	private final long beginTime;
-	private int sqlTime;
-	private int modifyCount = -1;
 
 	static SumkStatement create(Connection conn, MapedSql maped) throws Exception {
 		return new SumkStatement(conn.prepareStatement(maped.getSql()), maped);
@@ -111,11 +118,10 @@ public class SumkStatement {
 			return;
 		}
 		try {
-			sqlLog.log(maped, writer -> {
-				writer.name("sqlTime").value(sqlTime);
-				writer.name("error").value(e.getMessage());
-			});
 			statement.close();
+			if (DBSettings.isUnionLogEnable()) {
+				sqlLog.log(this, -1, e);
+			}
 		} catch (SQLException e1) {
 			Logs.db().error(e1.getMessage(), e1);
 		}
@@ -126,19 +132,35 @@ public class SumkStatement {
 		if (statement == null) {
 			return;
 		}
-		int totalTime = (int) (System.currentTimeMillis() - beginTime);
 		try {
-			sqlLog.log(maped, writer -> {
-				writer.name("sqlTime").value(sqlTime);
-				writer.name("totalTime").value(totalTime);
-				if (modifyCount > -1) {
-					writer.name("modifyCount").value(modifyCount);
-				}
-			});
 			statement.close();
+			int totalTime = (int) (System.currentTimeMillis() - beginTime);
+			if (DBSettings.isUnionLogEnable() && totalTime >= DBSettings.unionLogTime()) {
+				sqlLog.log(this, totalTime, null);
+			}
+			this.logSpendTime();
 		} catch (SQLException e1) {
 			Logs.db().error(e1.getMessage(), e1);
 		}
+	}
+
+	private void logSpendTime() {
+		if (LOG.isDebugEnabled()) {
+			if (this.sqlTime > DBSettings.debugLogSpendTime()) {
+				LOG.debug(marker, this.buildTimeLog());
+			} else if (LOG.isTraceEnabled()) {
+				LOG.trace(marker, this.buildTimeLog());
+			}
+		}
+	}
+
+	private String buildTimeLog() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("$耗时(ms):").append(this.sqlTime);
+		if (this.modifyCount >= 0) {
+			sb.append(",修改的记录数:").append(this.modifyCount);
+		}
+		return sb.toString();
 	}
 
 	private void attachParams() throws Exception {
@@ -185,20 +207,15 @@ public class SumkStatement {
 		return statement.getGeneratedKeys();
 	}
 
-	private static class SqlLogImpl implements SqlLog {
+	public int getSqlTime() {
+		return sqlTime;
+	}
 
-		private static final Logger LOG_SQL_JSON = Log.get("sumk.sql.json");
+	public int getModifyCount() {
+		return modifyCount;
+	}
 
-		@Override
-		public void log(MapedSql maped, JsonWriterVisitor visitor) {
-			if (LOG_SQL_JSON.isTraceEnabled()) {
-				try {
-					LOG_SQL_JSON.trace(marker, maped.toJson(visitor));
-				} catch (Exception e2) {
-					Log.get("sumk.db.error").error(e2.getMessage(), e2);
-				}
-			}
-		}
-
+	public MapedSql getMaped() {
+		return maped;
 	}
 }

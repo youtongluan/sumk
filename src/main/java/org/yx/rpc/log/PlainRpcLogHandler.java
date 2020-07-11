@@ -23,6 +23,7 @@ import org.yx.log.Log;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.client.RpcResult;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.Response;
 import org.yx.util.S;
@@ -43,27 +44,35 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 				|| (logger.isWarnEnabled() && totalTime >= RpcSettings.warnTime());
 	}
 
+	protected void appendParam(StringBuilder sb, Req req) {
+		if (req.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
+			sb.append("   param(json): ").append(req.getJsonedParam());
+		} else {
+			sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
+		}
+	}
+
 	@Override
 	public void clientLog(RpcLog rpcLog) {
 		if (RpcSettings.isClientLogDisable() || rpcLog == null) {
 			return;
 		}
-		Logger logger = Log.get("sumk.rpc.log.client");
 		Req req = rpcLog.getReq();
+		String api = req == null ? null : req.getApi();
+		if (api == null || api.isEmpty() || api.startsWith("$")) {
+			return;
+		}
+		Logger logger = Log.get("sumk.rpc.log.client");
 		long totalTime = rpcLog.getReceiveTime() - req.getStart();
 		RpcResult result = rpcLog.getResult();
 		Exception e = result != null ? result.exception() : null;
 		if (!this.isLogEnable(logger, totalTime, e)) {
 			return;
 		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(req.getApi()).append("   server:").append(rpcLog.getServer()).append("   totalTime:")
-				.append(totalTime).append(LN);
-		if (req.getJsonedParam() != null) {
-			sb.append("   param(json): ").append(req.getJsonedParam());
-		} else {
-			sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
-		}
+		StringBuilder sb = new StringBuilder(64);
+		sb.append(api).append("   server:").append(rpcLog.getServer()).append("   totalTime:").append(totalTime)
+				.append(LN);
+		this.appendParam(sb, req);
 		if (result != null) {
 			if (e == null) {
 				sb.append(LN).append("   result: ").append(result.json());
@@ -96,21 +105,17 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 		if (!this.isLogEnable(logger, totalTime, e)) {
 			return;
 		}
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(64);
 		if (req != null) {
 			sb.append(req.getApi()).append("   serverTime:").append(totalTime).append(LN);
-			if (req.getJsonedParam() != null) {
-				sb.append("   param(json): ").append(req.getJsonedParam());
-			} else {
-				sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
-			}
+			this.appendParam(sb, req);
 		}
-		String json = resp.json();
+		String json = resp != null ? resp.json() : null;
 		if (e == null) {
 			sb.append(LN).append("   result: ").append(json);
 		}
 
-		if (resp.isSuccess()) {
+		if (resp != null && resp.isSuccess()) {
 			if (totalTime >= RpcSettings.warnTime()) {
 				logger.warn(sb.toString());
 			} else if (totalTime > RpcSettings.infoTime()) {

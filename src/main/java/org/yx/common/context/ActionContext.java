@@ -156,7 +156,7 @@ public final class ActionContext implements org.yx.common.Attachable, Cloneable 
 		if (sp == null) {
 			return String.valueOf(seed);
 		}
-		return new StringBuilder().append(lc.spanId).append('.').append(seed).toString();
+		return new StringBuilder(lc.spanId).append('.').append(seed).toString();
 	}
 
 	public static void recover(ActionContext context) {

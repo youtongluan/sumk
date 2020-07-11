@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.yx.common.SimpleZkSerializer;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
@@ -43,7 +44,9 @@ public final class ZkClientHelper {
 				try {
 					client.createPersistent(path);
 				} catch (Exception e) {
-					Logs.system().warn(path + " create failed.", e);
+					if (!(e instanceof ZkNodeExistsException)) {
+						Logs.system().warn(path + " create failed.", e);
+					}
 				}
 			}
 

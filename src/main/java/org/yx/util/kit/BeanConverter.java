@@ -18,13 +18,13 @@ package org.yx.util.kit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
@@ -37,16 +37,26 @@ public class BeanConverter {
 	private static final String JAVA_PRE = "java";
 
 	private static final int NOT_PARSE = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
-	private final ConcurrentMap<Class<?>, Field[]> cache = new ConcurrentHashMap<>();
+
+	private Map<Class<?>, Field[]> cache = Collections
+			.synchronizedMap(new LinkedHashMap<Class<?>, Field[]>(32, 0.75f, true) {
+				private static final long serialVersionUID = 1L;
+
+				@Override
+				protected boolean removeEldestEntry(Entry<Class<?>, Field[]> eldest) {
+					return this.size() > 500;
+				}
+
+			});
 
 	private Field[] parseFields(Class<?> clz) {
 		List<Field> list = new ArrayList<>();
 		Class<?> tempClz = clz;
-		while (tempClz != null && !tempClz.getName().startsWith(JAVA_PRE)) {
+		while (tempClz != null && tempClz != Object.class) {
 
 			Field[] fs = cache.get(tempClz);
 			if (fs != null) {
-				list.addAll(Arrays.asList(fs));
+				Collections.addAll(list, fs);
 				break;
 			}
 			fs = tempClz.getDeclaredFields();
@@ -98,7 +108,7 @@ public class BeanConverter {
 			Map<String, Object> map = new HashMap<>();
 			for (Field f : fields) {
 				Object v = f.get(bean);
-				if (!keepNull && v == null) {
+				if (v == null && !keepNull) {
 					continue;
 				}
 				map.putIfAbsent(f.getName(), v);
@@ -110,7 +120,48 @@ public class BeanConverter {
 	}
 
 	/**
-	 * 根据map的内容填充bean的属性。只转义第一层的key。
+	 * 根据map的内容填充bean的属性。只转义第一层的key。<BR>
+	 * 对大小写和下划线不敏感
+	 * 
+	 * @param map
+	 *            原始map
+	 * @param bean
+	 *            目标对象，它的属性会被填充进来
+	 * @return 返回目标对象
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> T fillBeanIgnoreCaseAndUnderLine(Map<String, Object> map, T bean) {
+		if (map == null || bean == null || map.isEmpty()) {
+			return bean;
+		}
+		if (Map.class.isInstance(bean)) {
+			Map.class.cast(bean).putAll(map);
+			return bean;
+		}
+		Map<String, Object> tmp = new HashMap<>();
+		map.forEach((k, v) -> {
+			if (k == null || v == null) {
+				return;
+			}
+			tmp.put(k.toLowerCase().replace("_", ""), v);
+		});
+		map = tmp;
+		Field[] fields = getFields(bean.getClass());
+		try {
+			for (Field f : fields) {
+				String fName = f.getName().toLowerCase().replace("_", "");
+				if (map.containsKey(fName)) {
+					f.set(bean, map.get(fName));
+				}
+			}
+		} catch (Exception e) {
+			throw new SumkException(35432541, "fillBean failed, because of " + e.getMessage(), e);
+		}
+		return bean;
+	}
+
+	/**
+	 * 根据map的内容填充bean的属性。只转义第一层的key。<BR>
 	 * 
 	 * @param map
 	 *            原始map
@@ -120,7 +171,7 @@ public class BeanConverter {
 	 */
 	@SuppressWarnings("unchecked")
 	public <T> T fillBean(Map<String, Object> map, T bean) {
-		if (map == null || bean == null) {
+		if (map == null || bean == null || map.isEmpty()) {
 			return bean;
 		}
 		if (Map.class.isInstance(bean)) {
@@ -130,9 +181,6 @@ public class BeanConverter {
 		Field[] fields = getFields(bean.getClass());
 		try {
 			for (Field f : fields) {
-				if (Modifier.isFinal(f.getModifiers())) {
-					continue;
-				}
 				if (map.containsKey(f.getName())) {
 					f.set(bean, map.get(f.getName()));
 				}
@@ -154,9 +202,6 @@ public class BeanConverter {
 		Field[] fields = getFields(srcClz);
 		try {
 			for (Field f : fields) {
-				if (Modifier.isFinal(f.getModifiers())) {
-					continue;
-				}
 				f.set(dest, f.get(src));
 			}
 		} catch (Exception e) {
@@ -178,8 +223,11 @@ public class BeanConverter {
 		return this.copyFields(src, dest);
 	}
 
-	ConcurrentMap<Class<?>, Field[]> getCache() {
-		return this.cache;
+	public Map<Class<?>, Field[]> getCache() {
+		return cache;
 	}
 
+	public void setCache(Map<Class<?>, Field[]> threadSaftMap) {
+		this.cache = Objects.requireNonNull(threadSaftMap);
+	}
 }

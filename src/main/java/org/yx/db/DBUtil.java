@@ -17,7 +17,7 @@ package org.yx.db;
 
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 import org.yx.util.StringUtil;
 
 public class DBUtil {
@@ -50,7 +50,7 @@ public class DBUtil {
 			if (StringUtil.isEmpty(id)) {
 				continue;
 			}
-			RecordReq.del(pm, id);
+			RecordRepository.del(pm, id);
 			total++;
 		}
 		return total;

@@ -22,7 +22,7 @@ import java.util.Map;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -31,7 +31,6 @@ public class RedisLoader {
 	public static final String SEQ = "seq";
 	public static final String SESSION = "session";
 
-	static final String LOG_NAME = "sumk.redis";
 	private static final String CONFIG_PREFIX = "s.redis.";
 
 	public static synchronized void init() throws Exception {
@@ -48,16 +47,16 @@ public class RedisLoader {
 			configMap.putAll(CollectionUtil.subMap(map, key + "."));
 			initRedis(key, StringUtil.toLatin(map.get(key).trim()), configMap);
 		}
-		if (Log.get(LOG_NAME).isDebugEnabled()) {
-			Log.get(LOG_NAME).debug("redis的主键列表{},默认redis: {}", RedisPool.keys(), RedisPool.defaultRedis());
+		if (Logs.redis().isDebugEnabled()) {
+			Logs.redis().debug("redis的主键列表{},默认redis: {}", RedisPool.keys(), RedisPool.defaultRedis());
 		}
 	}
 
 	private static void initRedis(final String name, String host, Map<String, String> configMap) {
-		Log.get(LOG_NAME).info("开始初始化redis：{}={}", name, host);
+		Logs.redis().info("开始初始化redis：{}={}", name, host);
 		try {
 			RedisConfig config = createConfig(host, configMap);
-			Log.get(LOG_NAME).debug("{} : {}", name, config);
+			Logs.redis().debug("{} : {}", name, config);
 
 			Redis redis = RedisFactory.create(config);
 			if ("*".equals(name) || "default".equals(name)) {
@@ -74,10 +73,10 @@ public class RedisLoader {
 						continue;
 					}
 					if (RedisPool.getRedisExactly(s) != null) {
-						Log.get(LOG_NAME).warn("{}的redis配置已经存在了", s);
+						Logs.redis().warn("{}的redis配置已经存在了", s);
 						continue;
 					}
-					Log.get(LOG_NAME).debug("设置别名{} -> {}", s, name);
+					Logs.redis().debug("设置别名{} -> {}", s, name);
 					RedisPool.put(s, redis);
 				}
 			}
@@ -93,7 +92,7 @@ public class RedisLoader {
 			try {
 				SimpleBeanUtil.copyProperties(config, configMap);
 			} catch (Exception e) {
-				Log.get(LOG_NAME).error(e.getLocalizedMessage(), e);
+				Logs.redis().error(e.getLocalizedMessage(), e);
 			}
 		}
 		return config;

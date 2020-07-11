@@ -25,7 +25,7 @@ import org.yx.exception.ErrorCode;
  */
 public interface HttpErrorCode extends ErrorCode {
 	/**
-	 * 登陆失败
+	 * 登录失败
 	 */
 	int LOGINFAILED = 901;
 	/**
@@ -57,10 +57,9 @@ public interface HttpErrorCode extends ErrorCode {
 	int SIGN_EMPTY = 912;
 	int SIGN_MISTAKE = 913;
 	int FILE_MISS = 914;
-	int FILE_TYPE_MISS = 915;
 
 	/**
-	 * http.upload.enable被设置为false，<code>@upload</code>注解被禁用
+	 * sumk.http.upload.enable被设置为false，<code>@upload</code>注解被禁用
 	 */
 	int UPLOAD_DISABLED = 930;
 

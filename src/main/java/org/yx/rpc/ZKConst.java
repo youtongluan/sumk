@@ -18,7 +18,7 @@ package org.yx.rpc;
 public interface ZKConst {
 	String SUMK_SOA_ROOT = "/sumk_soa";
 
-	String METHODS = "methods";
+	String METHODS = "$.";
 	String METHOD_SPLIT = "#";
 	String FEATURE = "feature";
 	String WEIGHT = "weight";

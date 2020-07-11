@@ -35,8 +35,8 @@ public final class SeqUtil {
 		return Long.toString(next(name), Character.MAX_RADIX);
 	}
 
-	public static long getDate(long seq) {
-		return SeqHolder.inst().getDate(seq);
+	public static long getDateTime(long seq) {
+		return SeqHolder.inst().getDateTime(seq);
 	}
 
 	public static long from(SumkDate date) {

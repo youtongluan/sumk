@@ -16,13 +16,11 @@
 package org.yx.main;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
@@ -79,7 +77,7 @@ public final class SumkServer {
 	public static void start(String... args) {
 		Set<String> argSet = new HashSet<>();
 		if (args != null && args.length > 0) {
-			argSet.addAll(Arrays.asList(args));
+			Collections.addAll(argSet, args);
 		}
 		start(argSet);
 	}
@@ -120,7 +118,7 @@ public final class SumkServer {
 				httpEnable = true;
 			}
 			BeanPublisher.publishBeans(allPackage(ps));
-			scheduleThreadPoolReseting();
+			SumkThreadPool.scheduleThreadPoolMonitor();
 			StartContext.clear();
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
@@ -204,11 +202,4 @@ public final class SumkServer {
 		SumkThreadPool.shutdown();
 		Logs.system().info("sumk server stoped!!!");
 	}
-
-	private static void scheduleThreadPoolReseting() {
-		long period = AppInfo.getLong("sumk.threadpool.task.period", 10000);
-		SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(new ThreadPoolReSeter(), period, period,
-				TimeUnit.MILLISECONDS);
-	}
-
 }

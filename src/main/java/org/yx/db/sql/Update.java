@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.yx.common.ItemJoiner;
@@ -155,8 +156,8 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
 	protected MapedSql _toMapedSql() throws Exception {
 		MapedSql ms = new MapedSql();
-		StringBuilder sb = new StringBuilder();
-		ColumnMeta[] fms = pojoMeta.fieldMetas;
+		StringBuilder sb = new StringBuilder(32);
+		List<ColumnMeta> fms = pojoMeta.fieldMetas;
 		SoftDeleteMeta softDelete = pojoMeta.softDelete;
 		sb.append("UPDATE ").append(pojoMeta.getTableName());
 		boolean notFirst = false;
@@ -234,7 +235,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	}
 
 	protected void addDBIDs2Where() throws Exception {
-		ColumnMeta[] whereColumns = this.pojoMeta.getPrimaryIDs();
+		List<ColumnMeta> whereColumns = this.pojoMeta.getPrimaryIDs();
 		Map<String, Object> paramMap = new HashMap<>();
 		for (ColumnMeta fm : whereColumns) {
 			String fieldName = fm.getFieldName();

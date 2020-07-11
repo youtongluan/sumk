@@ -15,21 +15,33 @@
  */
 package org.yx.rpc.codec.encoders;
 
+import java.nio.charset.CharacterCodingException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.codec.ProtocolEncoderException;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.slf4j.Logger;
 import org.yx.annotation.Bean;
+import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
-import org.yx.rpc.RpcGson;
+import org.yx.rpc.Profile;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.SumkProtocolEncoder;
 
 @Bean
 public class ReqEncoder implements SumkMinaEncoder {
 
 	private Logger log = Logs.rpc();
+
+	private String NULL = "null";
 
 	@Override
 	public boolean accept(Class<?> messageClz) {
@@ -41,29 +53,64 @@ public class ReqEncoder implements SumkMinaEncoder {
 		Req req = Req.class.cast(message);
 		String jsonedArg = req.getJsonedParam();
 		String[] params = req.getParamArray();
-		int paramProtocal = req.paramProtocol();
 
-		if (paramProtocal == Protocols.REQ_PARAM_JSON) {
-			String json_req = String.join(Protocols.LINE_SPLIT, RpcGson.toJson(req), jsonedArg);
-			if (Log.isON(log)) {
-				log.trace("req in json: {}", json_req);
-			}
-			SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
+		if (req.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
+			this.encodeRequestString(ReqParamType.REQ_PARAM_JSON, out, new String[] { RpcJson.operator().toJson(req),
+					Protocols.LINE_SPLIT + Protocols.LINE_SPLIT, jsonedArg });
 			return;
 		}
 
 		if (params == null) {
 			params = new String[0];
 		}
-		StringBuilder json_req = new StringBuilder();
-		json_req.append(String.format("%02d", params.length)).append(RpcGson.toJson(req));
-		for (String p : params) {
-			json_req.append(Protocols.LINE_SPLIT).append(p);
+		int paramLength = params.length;
+		List<String> order_req = new ArrayList<>(paramLength * 2 + 3);
+		if (paramLength > 99) {
+			throw new SumkException(456543, "微服务参数太多，最多只有99个");
+		}
+		order_req.add(RpcJson.operator().toJson(req));
+		order_req.add(Protocols.LINE_SPLIT + Protocols.LINE_SPLIT);
+		String strParamLength = new String(new byte[] { (byte) paramLength }, AppInfo.UTF8);
+		order_req.add(strParamLength);
+		for (int i = 0; i < paramLength; i++) {
+			order_req.add(params[i]);
+			if (i != paramLength - 1) {
+				order_req.add(Protocols.LINE_SPLIT);
+			}
 		}
 		if (Log.isON(log)) {
-			log.trace("req in array: {}", json_req);
+			log.trace("req in array: {}", order_req);
 		}
-		SumkProtocolEncoder.encodeString(paramProtocal, session, json_req, out);
+		this.encodeRequestString(ReqParamType.REQ_PARAM_ORDER, out, order_req.toArray(new String[order_req.size()]));
+	}
+
+	protected void encodeRequestString(int code, ProtocolEncoderOutput out, CharSequence[] message)
+			throws CharacterCodingException, ProtocolEncoderException {
+		int strLength = 0;
+
+		for (CharSequence m : message) {
+			strLength += m == null ? NULL.length() : m.length();
+		}
+
+		IoBuffer buffer = SumkProtocolEncoder.createIoBuffer(strLength);
+		SumkProtocolEncoder.putRequestProtocol(code, buffer);
+		buffer.position(8);
+
+		for (CharSequence m : message) {
+			if (m == null) {
+				buffer.putString(NULL, Profile.UTF8.newEncoder());
+				continue;
+			}
+
+			buffer.putString(m, Profile.UTF8.newEncoder());
+		}
+		int pos = buffer.position();
+		buffer.position(4);
+		buffer.putInt(pos - 8);
+		buffer.position(pos);
+		buffer.flip();
+
+		out.write(buffer);
 	}
 
 }

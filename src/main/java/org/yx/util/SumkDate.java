@@ -17,6 +17,7 @@ package org.yx.util;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
 
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -40,7 +41,9 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
-public final class SumkDate implements Comparable<SumkDate> {
+public final class SumkDate implements Comparable<SumkDate>, Serializable {
+	private static final long serialVersionUID = 100L;
+
 	private static final String LOG_NAME = "sumk.date";
 
 	public static final String yyyy_MM_dd_HH_mm_ss = "yyyy-MM-dd HH:mm:ss";
@@ -56,6 +59,7 @@ public final class SumkDate implements Comparable<SumkDate> {
 	public static final int ERROR_CODE = 912753954;
 
 	private static final int MIL_TO_NANO = 1000_000;
+	private static volatile CacheDate CACHED;
 	private static final SumkDateFormater[] formaters = { FullDateTimeFormater.inst, DateTimeFormater.inst,
 			DateFormater.inst };
 
@@ -63,7 +67,23 @@ public final class SumkDate implements Comparable<SumkDate> {
 	 * @return 当前时间
 	 */
 	public static SumkDate now() {
-		return of(LocalDateTime.now());
+		final long ms = System.currentTimeMillis();
+		final long sec = ms / 1000;
+		CacheDate cache = CACHED;
+		if (cache != null) {
+			if (sec == cache.second) {
+				return cache.date.withMilSecond((int) (ms % 1000));
+			}
+		}
+		SumkDate sd = _create(ms);
+		CACHED = new CacheDate(sec, sd);
+		return sd;
+	}
+
+	private static SumkDate _create(long timeInMillis) {
+		Calendar.Builder builder = new Calendar.Builder();
+		builder.setInstant(timeInMillis);
+		return of(builder.build());
 	}
 
 	public static SumkDate of(Calendar cal) {
@@ -78,9 +98,14 @@ public final class SumkDate implements Comparable<SumkDate> {
 	}
 
 	public static SumkDate of(long timeInMillis) {
-		Calendar.Builder builder = new Calendar.Builder();
-		builder.setInstant(timeInMillis);
-		return of(builder.build());
+		CacheDate cache = CACHED;
+		if (cache != null) {
+			long sec = timeInMillis / 1000;
+			if (sec == cache.second) {
+				return cache.date.withMilSecond((int) (timeInMillis % 1000));
+			}
+		}
+		return _create(timeInMillis);
 	}
 
 	/**
@@ -657,5 +682,15 @@ public final class SumkDate implements Comparable<SumkDate> {
 
 	public static String stringOf(LocalDateTime d) {
 		return d == null ? "null" : of(d).toString();
+	}
+
+	private static class CacheDate {
+		final long second;
+		final SumkDate date;
+
+		CacheDate(long second, SumkDate date) {
+			this.second = second;
+			this.date = date;
+		}
 	}
 }

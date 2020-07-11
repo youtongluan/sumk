@@ -22,15 +22,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.exception.CodeException;
 import org.yx.log.Log;
-import org.yx.main.SumkThreadPool;
 import org.yx.rpc.server.Response;
+import org.yx.util.Task;
 
 public final class LockHolder {
 	private static final ConcurrentHashMap<String, RpcLocker> locks = new ConcurrentHashMap<>();
 
 	static final LockTimeoutMonitor monitor = new LockTimeoutMonitor();
 	static {
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(monitor, 1000, 500, TimeUnit.MILLISECONDS);
+		Task.scheduleAtFixedRate(monitor, 1000, 500);
 	}
 
 	static void register(RpcLocker r, long endTime) {
@@ -91,7 +91,7 @@ public final class LockHolder {
 
 	private static class DelayedObject implements Delayed {
 
-		private long endTime;
+		private final long endTime;
 		final String sn;
 
 		public DelayedObject(String sn, long endTime) {

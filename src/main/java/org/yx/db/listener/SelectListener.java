@@ -20,21 +20,22 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
-import org.yx.db.DBGson;
+import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.QueryEvent;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 
 @Bean
 public class SelectListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!QueryEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !QueryEvent.class.isInstance(ev)) {
 			return;
 		}
 		QueryEvent event = QueryEvent.class.cast(ev);
@@ -68,13 +69,13 @@ public class SelectListener implements DBEventListener {
 			}
 
 			if (pm.cacheType() == CacheType.LIST) {
-				RecordReq.set(pm, id, DBGson.toJson(list));
+				RecordRepository.set(pm, id, DBJson.operator().toJson(list));
 				return;
 			}
 			if (list.size() != 1 || list.get(0) == null) {
 				return;
 			}
-			RecordReq.set(pm, id, DBGson.toJson(list.get(0)));
+			RecordRepository.set(pm, id, DBJson.operator().toJson(list.get(0)));
 		} catch (Exception e) {
 			Log.printStack("sumk.db.listener", e);
 		}

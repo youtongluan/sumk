@@ -1,5 +1,6 @@
 package org.test;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -46,6 +47,15 @@ public class RpcPressTest {
 		AtomicInteger failCount=new AtomicInteger();
 		CountDownLatch down=new CountDownLatch(count);
 		Rpc.call("a.b.repeat", "预热");
+		char[] cs=new char[1200];
+		Arrays.fill(cs, 't');
+		Arrays.fill(cs, 100,200,'好');
+		cs[5]='啊';
+		cs[45]='1';
+		cs[59]='o';
+		cs[115]='是';
+		cs[800]='是';
+		String pre=new String(cs);
 		long begin=System.currentTimeMillis();
 		AtomicLong totalRT=new AtomicLong();
 		for(int i=0;i<threadCount;i++){
@@ -54,7 +64,7 @@ public class RpcPressTest {
 					long t=0;
 					for(int i=0;i<count/threadCount;i++){
 						//收发1k左右的数据量
-						String msg="这些文字是发送到服务器端的，服务器端会返回一样的文本，然后判断返回的文本是否跟现在一致aasfjksjgoiejgireojgiergjklfdjjjjjjfjggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddtttttttttttttttttttttttttttttttttttttttttiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyygdfghrthtrghgggggggggyyyyyyyyyyyyyyyiiiiiiiiiiiiiiwerwetertgegrabcdertyzsdfertertrehrthrhfdhdfsgfdgez-"+i;
+						String msg=pre+i;
 						long b2=System.currentTimeMillis();
 						String msg2=Rpc.create("a.b.repeat").paramInArray(msg).timeout(30000).execute().getOrException();
 						t+=System.currentTimeMillis()-b2;

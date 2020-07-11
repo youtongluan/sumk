@@ -122,7 +122,15 @@ public final class DateAdapters {
 				return null;
 			}
 			String v = in.nextString();
-			return SumkDate.of(v);
+			try {
+				return SumkDate.of(v);
+			} catch (Exception e) {
+				String num = v;
+				if (num.contains(".")) {
+					num = num.substring(0, num.indexOf("."));
+				}
+				return SumkDate.of(Long.parseLong(num));
+			}
 		}
 	};
 

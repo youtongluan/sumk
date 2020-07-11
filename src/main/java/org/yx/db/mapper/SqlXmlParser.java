@@ -31,7 +31,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 import org.yx.common.expression.MatchType;
-import org.yx.db.mapper.ForeachParser.Joiner;
 import org.yx.exception.SumkException;
 
 public class SqlXmlParser {
@@ -64,7 +63,7 @@ public class SqlXmlParser {
 			if (!el.hasChildNodes()) {
 				continue;
 			}
-			SqlParser parser = parseSqlNode(el.getChildNodes());
+			SqlParser parser = compose(parseSqlNode(el.getChildNodes()));
 			if (parser != null) {
 				if (map.putIfAbsent(name(namespace, el.getAttribute(ID)), parser) != null) {
 					SumkException.throwException(435436,
@@ -92,7 +91,17 @@ public class SqlXmlParser {
 				MatchType.matchTypeOrDefault(el.getAttribute("falseby")));
 	}
 
-	private static SqlParser parseSqlNode(NodeList sqlNodeList)
+	private static SqlParser compose(List<SqlParser> list) {
+		if (list.isEmpty()) {
+			return null;
+		}
+		if (list.size() == 1) {
+			return list.get(0);
+		}
+		return ItemsParser.create(list, JoinerFactory.create(null, null, null));
+	}
+
+	private static List<SqlParser> parseSqlNode(NodeList sqlNodeList)
 			throws SAXException, IOException, ParserConfigurationException {
 		if (sqlNodeList == null) {
 			return null;
@@ -119,33 +128,38 @@ public class SqlXmlParser {
 			Element el = (Element) tmp;
 			switch (el.getTagName()) {
 			case "if":
-				add(list, IFParser.create(paramExpression(el), parseSqlNode(el.getChildNodes())));
+				add(list, IFParser.create(paramExpression(el), compose(parseSqlNode(el.getChildNodes()))));
 				break;
 			case "ifnot":
-				add(list, IFParser.create(paramExpression(el).negate(), parseSqlNode(el.getChildNodes())));
+				add(list, IFParser.create(paramExpression(el).negate(), compose(parseSqlNode(el.getChildNodes()))));
+				break;
+			case "items":
+				add(list, items(el));
 				break;
 			case "foreach":
 				add(list, forEach(el));
 				break;
 			default:
-				throw new SumkException(-1874546534, el.getTagName() + "不是有效的tag");
+				throw new SumkException(-1874546534, el + "不是有效的tag");
 			}
 		}
-		if (list.isEmpty()) {
-			return null;
-		}
-		if (list.size() == 1) {
-			return list.get(0);
-		}
-		return SqlParsers.compose(list);
+		return list;
 	}
 
 	private static SqlParser forEach(Element el) {
 		String collection = el.getAttribute("collection");
 		String itemName = el.getAttribute("item");
 		String template = el.getTextContent();
-		Joiner joiner = new Joiner(el.getAttribute("separator"), el.getAttribute("open"), el.getAttribute("close"));
+		JoinerFactory joiner = JoinerFactory.create(el.getAttribute("separator"), el.getAttribute("open"),
+				el.getAttribute("close"));
 		return ForeachParser.create(collection, itemName, template, joiner);
+	}
+
+	private static SqlParser items(Element el) throws SAXException, IOException, ParserConfigurationException {
+		JoinerFactory joiner = JoinerFactory.create(el.getAttribute("separator"), el.getAttribute("open"),
+				el.getAttribute("close"));
+		List<SqlParser> list = parseSqlNode(el.getChildNodes());
+		return ItemsParser.create(list, joiner);
 	}
 
 }

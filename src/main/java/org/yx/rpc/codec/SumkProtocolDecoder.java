@@ -24,7 +24,6 @@ import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.yx.annotation.Bean;
-import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 import org.yx.rpc.Profile;
 
@@ -40,38 +39,12 @@ public class SumkProtocolDecoder extends CumulativeProtocolDecoder {
 			}
 			throw new ProtocolDecoderException("error magic," + Integer.toHexString(protocol));
 		}
-		int prefixLength = 0, maxDataLength = 0;
-		if ((protocol & Protocols.ONE) != 0) {
-			prefixLength = 1;
-			maxDataLength = 0xFF;
-		} else if ((protocol & Protocols.TWO) != 0) {
-			prefixLength = 2;
-			maxDataLength = 0xFFFF;
-		} else if ((protocol & Protocols.FOUR) != 0) {
-			prefixLength = 4;
-			maxDataLength = Protocols.MAX_LENGTH;
-		} else {
-			if (AppInfo.getBoolean("sumk.rpc.log.code.error", true)) {
-				Logs.rpc().error("error byte length protocol," + Integer.toHexString(protocol));
-			}
-			throw new ProtocolDecoderException("error byte length protocol," + Integer.toHexString(protocol));
-		}
+		int prefixLength = 4, maxDataLength = Protocols.MAX_LENGTH;
 
 		if (in.remaining() < prefixLength) {
 			return false;
 		}
-		int dataSize = 0;
-		switch (prefixLength) {
-		case 1:
-			dataSize = in.getUnsigned();
-			break;
-		case 2:
-			dataSize = in.getUnsignedShort();
-			break;
-		case 4:
-			dataSize = in.getInt();
-			break;
-		}
+		int dataSize = in.getInt();
 		if (dataSize < 0 || dataSize > maxDataLength) {
 			throw new BufferDataException("dataLength: " + dataSize);
 		}

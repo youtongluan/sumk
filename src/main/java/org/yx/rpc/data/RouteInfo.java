@@ -27,6 +27,8 @@ public class RouteInfo {
 	private int clientCount;
 	private final Host host;
 
+	private int feature;
+
 	public RouteInfo(Host url) {
 		this.host = url;
 	}
@@ -63,5 +65,13 @@ public class RouteInfo {
 
 	public Host host() {
 		return host;
+	}
+
+	public int getFeature() {
+		return feature;
+	}
+
+	void setFeature(int feature) {
+		this.feature = feature;
 	}
 }

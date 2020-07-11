@@ -22,7 +22,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.annotation.http.Web;
+import org.yx.http.HttpContextHolder;
 import org.yx.http.act.HttpActionNode;
+import org.yx.http.user.WebSessions;
 
 public class WebContext {
 	private final String rawAct;
@@ -36,7 +38,6 @@ public class WebContext {
 	private int lowestOrder;
 
 	private Object result;
-	private byte[] key;
 	private transient String str_data;
 	private transient String str_resp;
 	private final long beginTime;
@@ -127,11 +128,11 @@ public class WebContext {
 	}
 
 	public byte[] key() {
-		return key;
-	}
-
-	void key(byte[] key) {
-		this.key = key;
+		String sessionId = HttpContextHolder.sessionId();
+		if (sessionId == null) {
+			return null;
+		}
+		return WebSessions.loadUserSession().getKey(sessionId);
 	}
 
 	public String rawAct() {
@@ -147,7 +148,7 @@ public class WebContext {
 	}
 
 	public Web web() {
-		return this.node.action;
+		return this.node.action();
 	}
 
 	public boolean isFailed() {

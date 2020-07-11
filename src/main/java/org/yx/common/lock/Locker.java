@@ -20,16 +20,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
-import org.yx.main.SumkThreadPool;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
+import org.yx.util.Task;
 
 public final class Locker {
 	private static final int REDIS_LEN = 16;
@@ -43,9 +42,8 @@ public final class Locker {
 			nodeKey[i] = "lock_" + i;
 		}
 		ensureScriptRunner.run();
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(ensureScriptRunner,
-				AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600),
-				AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600), TimeUnit.MILLISECONDS);
+		Task.scheduleAtFixedRate(ensureScriptRunner, AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600),
+				AppInfo.getLong("sumk.lock.schedule.delay", 1000L * 600));
 	}
 
 	private Locker() {
@@ -177,6 +175,7 @@ public final class Locker {
 					continue;
 				}
 				Log.get("sumk.lock").debug("init lock script", redis);
+
 				redis.scriptLoad(script);
 			}
 		} catch (Exception e) {

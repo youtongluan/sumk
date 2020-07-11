@@ -29,6 +29,7 @@ import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.matcher.WildcardMatcher;
 import org.yx.log.RawLog;
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public final class LocalhostUtil {
@@ -160,6 +161,6 @@ public final class LocalhostUtil {
 	}
 
 	public static List<String> getLocalIPList() {
-		return Arrays.asList(getLocalIps());
+		return CollectionUtil.unmodifyList(getLocalIps());
 	}
 }

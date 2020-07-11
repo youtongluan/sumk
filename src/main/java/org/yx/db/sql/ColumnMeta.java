@@ -21,11 +21,11 @@ import java.sql.Clob;
 import java.util.Map;
 
 import org.yx.annotation.db.Column;
+import org.yx.annotation.doc.Comment;
 import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.db.enums.ColumnType;
-import org.yx.db.enums.UpdateType;
 import org.yx.db.kit.NumUtil;
 import org.yx.exception.SumkException;
 import org.yx.util.StreamUtil;
@@ -33,32 +33,25 @@ import org.yx.util.StringUtil;
 
 public final class ColumnMeta implements Comparable<ColumnMeta> {
 
-	public final Field field;
+	final Field field;
 
-	public final ColumnType meta;
+	final ColumnType meta;
 	final byte columnOrder;
 
-	public final String dbColumn;
-	public final UpdateType updateType;
+	final String dbColumn;
 
-	public final boolean isNumber;
+	final boolean isNumber;
 
-	public final boolean isDate;
+	final boolean isDate;
 
-	public final String comment;
-
-	ColumnMeta(Field field, Column c) {
+	public ColumnMeta(Field field, Column c) {
 		super();
 		this.field = field;
 		this.meta = c == null ? ColumnType.NORMAL : c.type();
 		if (c == null) {
 			this.columnOrder = Const.DEFAULT_ORDER;
-			this.updateType = UpdateType.CUSTOM;
-			this.comment = null;
 		} else {
 			this.columnOrder = c.order();
-			this.updateType = c.updateType();
-			this.comment = c.comment();
 		}
 		this.dbColumn = (c == null || StringUtil.isEmpty(c.value()))
 				? DBNameResolvers.getResolver().resolveColumnName(field.getName()) : c.value();
@@ -116,13 +109,13 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		}
 		if (fieldType == byte[].class && Blob.class.isInstance(value)) {
 			Blob v = (Blob) value;
-			byte[] bs = StreamUtil.extractData(v.getBinaryStream(), true);
+			byte[] bs = StreamUtil.readAllBytes(v.getBinaryStream(), true);
 			field.set(owner, bs);
 			return;
 		}
 		if (fieldType == String.class && Clob.class.isInstance(value)) {
 			Clob v = (Clob) value;
-			String s = StreamUtil.extractReader(v.getCharacterStream(), true);
+			String s = StreamUtil.readAll(v.getCharacterStream(), true);
 			field.set(owner, s);
 			return;
 		}
@@ -148,6 +141,35 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	public String toString() {
 		return "ColumnMeta [field=" + field.getName() + ", meta=" + meta + ", columnOrder=" + columnOrder
 				+ ", dbColumn=" + dbColumn + "]";
+	}
+
+	public Field getField() {
+		return field;
+	}
+
+	public ColumnType getMeta() {
+		return meta;
+	}
+
+	public byte getColumnOrder() {
+		return columnOrder;
+	}
+
+	public String getDbColumn() {
+		return dbColumn;
+	}
+
+	public boolean isNumber() {
+		return isNumber;
+	}
+
+	public boolean isDate() {
+		return isDate;
+	}
+
+	public String getComment() {
+		Comment c = this.field.getAnnotation(Comment.class);
+		return c == null ? "" : c.value();
 	}
 
 }

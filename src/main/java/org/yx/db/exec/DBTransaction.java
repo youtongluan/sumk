@@ -21,7 +21,7 @@ import org.yx.db.DBType;
 import org.yx.db.TransactionType;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.exception.SumkException;
-import org.yx.log.Logs;
+import org.yx.log.Log;
 
 public final class DBTransaction implements AutoCloseable {
 
@@ -62,7 +62,7 @@ public final class DBTransaction implements AutoCloseable {
 			try {
 				dbCtx.rollback();
 			} catch (SQLException e1) {
-				Logs.printSQLException(e1);
+				Log.printStack("sumk.sql.error", e1);
 			}
 		}
 	}
@@ -74,7 +74,7 @@ public final class DBTransaction implements AutoCloseable {
 		try {
 			this.dbCtx.commit();
 		} catch (SQLException e) {
-			Logs.printSQLException(e);
+			Log.printStack("sumk.sql.error", e);
 		}
 	}
 

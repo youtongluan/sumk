@@ -15,15 +15,21 @@
  */
 package org.yx.rpc.server;
 
+import java.io.Serializable;
+
 import org.yx.exception.SoaException;
 
-public class Response {
+public class Response implements Serializable {
+
+	private static final long serialVersionUID = 45678L;
 
 	private String sn;
 	private String json;
 	private SoaException exception;
 
 	private long ms = -1;
+
+	private int clientAcceptedProtocol;
 
 	public String sn() {
 		return sn;
@@ -66,6 +72,14 @@ public class Response {
 
 	public boolean isSuccess() {
 		return this.exception == null;
+	}
+
+	public int getClientAcceptedProtocol() {
+		return clientAcceptedProtocol;
+	}
+
+	public void setClientAcceptedProtocol(int clientAcceptedProtocol) {
+		this.clientAcceptedProtocol = clientAcceptedProtocol;
 	}
 
 }

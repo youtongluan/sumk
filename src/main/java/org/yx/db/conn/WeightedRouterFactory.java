@@ -37,7 +37,6 @@ public class WeightedRouterFactory implements RouterFactory {
 
 		for (DBConfig dc : configs) {
 			SumkDataSource ds = DSFactory.create(dbName, dc.type, dc.properties);
-			;
 			if (ds.getType().isWritable()) {
 				WeightedServer<SumkDataSource> w = new WeightedDataSource(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
@@ -72,11 +71,6 @@ public class WeightedRouterFactory implements RouterFactory {
 		return Routes.createWeightedRouter(wds);
 	}
 
-	/**
-	 * @param db
-	 * @return
-	 * @throws Exception
-	 */
 	protected List<DBConfig> parseDBConfig(String db) throws Exception {
 		List<DBConfigFactory> factorys = IOC.getBeans(DBConfigFactory.class);
 		for (DBConfigFactory factory : factorys) {

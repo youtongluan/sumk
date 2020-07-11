@@ -30,6 +30,7 @@ import org.yx.common.Lifecycle;
 import org.yx.common.StartConstants;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.HttpHandler;
@@ -48,11 +49,6 @@ import org.yx.util.StringUtil;
 public class HttpPlugin implements Plugin {
 
 	protected Lifecycle server;
-
-	public static final String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
-
-	private static final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
-	private static final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
 
 	@Override
 	public void stop() {
@@ -104,7 +100,10 @@ public class HttpPlugin implements Plugin {
 		if (StartContext.inst().get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
 			return;
 		}
-		String httpServerClass = StringUtil.isEmpty(AppInfo.get(KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
+
+		final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
+		final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
+		String httpServerClass = StringUtil.isEmpty(AppInfo.get(Const.KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
 				: HTTPS_SERVER_CLASS;
 		String hs = AppInfo.get("sumk.http.starter.class", httpServerClass);
 		if (!hs.contains(".")) {
@@ -123,7 +122,7 @@ public class HttpPlugin implements Plugin {
 			if (h.supportRestType(RestType.PLAIN)) {
 				restHandlers.add(h);
 			}
-			if (h.supportRestType(RestType.UPLOAD)) {
+			if (h.supportRestType(RestType.MULTI_PART)) {
 				uploadHandlers.add(h);
 			}
 		}
@@ -133,7 +132,7 @@ public class HttpPlugin implements Plugin {
 			logger.debug("rest  handlers:{}", this.buildString(restHandlers));
 		}
 		if (HttpSettings.isUploadEnable()) {
-			HttpHandlerChain.upload.setHandlers(uploadHandlers);
+			HttpHandlerChain.multipart.setHandlers(uploadHandlers);
 			if (logger.isDebugEnabled()) {
 				logger.debug("upload handlers:{}", this.buildString(uploadHandlers));
 			}

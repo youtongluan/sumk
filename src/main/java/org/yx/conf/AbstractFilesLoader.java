@@ -20,7 +20,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-import org.yx.main.SumkThreadPool;
+import org.yx.util.Task;
 
 public abstract class AbstractFilesLoader implements MultiResourceLoader, Runnable {
 	protected Consumer<MultiResourceLoader> consumer;
@@ -39,9 +39,12 @@ public abstract class AbstractFilesLoader implements MultiResourceLoader, Runnab
 			return false;
 		}
 		this.consumer = consumer;
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(this, 60, AppInfo.getLong("sumk.db.sdb.delay", 60),
-				TimeUnit.SECONDS);
+		Task.scheduleAtFixedRate(this, 60, getRefreshDelay(), TimeUnit.SECONDS);
 		return true;
+	}
+
+	protected long getRefreshDelay() {
+		return AppInfo.getLong("sumk.file.refresh.delay", 60);
 	}
 
 	@Override

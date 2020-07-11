@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
+import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.util.S;
 
 import com.google.gson.JsonSyntaxException;

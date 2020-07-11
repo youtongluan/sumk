@@ -41,6 +41,14 @@ public final class M {
 		return buildMessage(template, param0, param1);
 	}
 
+	public static String get(String name, String defaultV, Object param0, Object param1, Object param2) {
+		String template = AppInfo.get(name, defaultV);
+		if (template == null) {
+			return null;
+		}
+		return buildMessage(template, param0, param1, param2);
+	}
+
 	public static String get(String name, String defaultV, Object... params) {
 		String template = AppInfo.get(name, defaultV);
 		if (template == null) {
@@ -55,6 +63,11 @@ public final class M {
 
 	public static String buildMessage(String template, Object param0, Object param1) {
 		return template.replace("{0}", String.valueOf(param0)).replace("{1}", String.valueOf(param1));
+	}
+
+	public static String buildMessage(String template, Object param0, Object param1, Object param2) {
+		return template.replace("{0}", String.valueOf(param0)).replace("{1}", String.valueOf(param1)).replace("{2}",
+				String.valueOf(param2));
 	}
 
 	public static String buildMessage(String template, Object... params) {

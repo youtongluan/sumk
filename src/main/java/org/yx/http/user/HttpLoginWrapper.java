@@ -45,8 +45,8 @@ public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 				Log.get("sumk.http.login").info("there is no LoginServlet");
 				return;
 			}
-			if (ss.size() > 0) {
-				Log.get("sumk.http.login").error("there is {} login servlet", ss.size());
+			if (ss.size() > 1) {
+				Log.get("sumk.http.login").warn("there is {} login servlet", ss.size());
 			}
 			this.serv = ss.get(0);
 			serv.init(config);

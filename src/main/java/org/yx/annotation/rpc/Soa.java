@@ -28,18 +28,11 @@ public @interface Soa {
 	/**
 	 * 在@SoaClass注解中，这个参数会被忽略
 	 * 
-	 * @return 服务名称，如果为空。发布的服务名称=groupId.appId.methodName。
+	 * @return 服务名称，如果为空。发布的服务名称=appId.methodName。
 	 */
 	String value() default "";
 
 	String cnName() default "";
-
-	/**
-	 * 发布的服务名称是否加上groupId前缀，只在groupId不为空的时候才有作用
-	 * 
-	 * @return groupId前缀
-	 */
-	boolean groupPrefix() default true;
 
 	/**
 	 * 发布的服务名称是否加上appId前缀，只在appId不为空的时候才有作用

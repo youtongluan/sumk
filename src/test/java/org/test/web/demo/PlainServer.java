@@ -7,7 +7,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.yx.annotation.Bean;
 import org.yx.annotation.Param;
@@ -15,9 +14,9 @@ import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.http.EncryptType;
-import org.yx.http.handler.UploadFile;
-import org.yx.http.handler.UploadFileHolder;
+import org.yx.http.handler.MultipartItem;
 import org.yx.http.user.WebSessions;
+import org.yx.util.StreamUtil;
 import org.yx.util.WebUtil;
 
 @Bean
@@ -46,11 +45,11 @@ public class PlainServer {
 	public String upload(String name, @Param(required = true) Integer age) throws FileNotFoundException, IOException {
 		Assert.assertEquals("张三", name);
 		Assert.assertEquals(Integer.valueOf(23), age);
-		List<UploadFile> files=UploadFileHolder.getFiles();
-		Assert.assertEquals(1, files.size());
-		UploadFile f=files.get(0);
-		Assert.assertEquals("logo_bluce.jpg", f.getName());
-		byte[] data=IOUtils.toByteArray(f.getInputStream());
+		List<MultipartItem> files=WebUtil.getMultiParts();
+		Assert.assertEquals(2, files.size());
+		MultipartItem f=WebUtil.getPart("img");
+		Assert.assertEquals("logo_bluce.jpg", f.getSubmittedFileName());
+		byte[] data=StreamUtil.readAllBytes(f.getInputStream(),false);
 		byte[] exp=Files.readAllBytes(new File("logo_bluce.jpg").toPath());
 		Assert.assertArrayEquals(exp, data);
 		return "姓名:"+name+",年龄:"+age;

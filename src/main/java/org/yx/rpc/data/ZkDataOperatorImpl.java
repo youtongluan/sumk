@@ -24,9 +24,11 @@ import org.yx.common.Host;
 import org.yx.conf.AppInfo;
 import org.yx.conf.NamePairs;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.ZKConst;
 import org.yx.util.CollectionUtil;
 import org.yx.util.S;
+import org.yx.util.StringUtil;
 
 public class ZkDataOperatorImpl implements ZkDataOperator {
 
@@ -37,7 +39,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 	public RouteInfo deserialize(ZKPathData data) throws IOException {
 		final String v = new String(data.data(), AppInfo.UTF8);
 		Map<String, String> map = NamePairs.createByString(v).values();
-		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS + ".");
+		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS);
 		if (methodMap.isEmpty()) {
 			return null;
 		}
@@ -53,6 +55,16 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 			}
 		}
 		RouteInfo info = new RouteInfo(host);
+		String f = map.get(ZKConst.FEATURE);
+		if (StringUtil.isNotEmpty(f)) {
+			try {
+				long fv = Long.parseLong(f, 16);
+				int reqProtocol = (int) fv;
+				info.setFeature(reqProtocol);
+			} catch (Exception e) {
+				Logs.rpc().info(f + "不能解析为数字", e);
+			}
+		}
 		info.setWeight(map.get(ZKConst.WEIGHT));
 		methodMap.forEach((m, value) -> {
 			if (m.length() == 0) {
@@ -85,6 +97,6 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 
 	@Override
 	public String getName(Host host) {
-		return host.toString();
+		return String.join("@", AppInfo.appId(""), host.toString());
 	}
 }

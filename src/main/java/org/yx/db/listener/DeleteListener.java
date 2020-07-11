@@ -20,18 +20,19 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.db.event.DeleteEvent;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 
 @Bean
 public class DeleteListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!DeleteEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !DeleteEvent.class.isInstance(ev)) {
 			return;
 		}
 		DeleteEvent event = DeleteEvent.class.cast(ev);
@@ -46,7 +47,7 @@ public class DeleteListener implements DBEventListener {
 			}
 			for (Map<String, Object> src : wheres) {
 				String id = pm.getRedisID(src, true);
-				RecordReq.del(pm, id);
+				RecordRepository.del(pm, id);
 			}
 		} catch (Exception e) {
 			Log.printStack("sumk.db.listener", e);

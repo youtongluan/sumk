@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.yx.util.CollectionUtil;
+
 public class WildcardMatcher implements Predicate<String> {
 
 	public static final String WILDCARD = "*";
@@ -82,15 +84,15 @@ public class WildcardMatcher implements Predicate<String> {
 	}
 
 	public List<String> matchStarts() {
-		return matchStarts == null ? null : Arrays.asList(matchStarts);
+		return matchStarts == null ? null : CollectionUtil.unmodifyList(matchStarts);
 	}
 
 	public List<String> matchEnds() {
-		return matchEnds == null ? null : Arrays.asList(matchEnds);
+		return matchEnds == null ? null : CollectionUtil.unmodifyList(matchEnds);
 	}
 
 	public List<String> contains() {
-		return contains == null ? null : Arrays.asList(contains);
+		return contains == null ? null : CollectionUtil.unmodifyList(contains);
 	}
 
 	@Override

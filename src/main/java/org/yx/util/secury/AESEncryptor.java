@@ -37,7 +37,7 @@ public class AESEncryptor implements Encryptor {
 		}
 	}
 
-	private Cipher getCipher(int mode, byte[] key) throws Exception {
+	protected Cipher getCipher(int mode, byte[] key) throws Exception {
 		Cipher cipher = Cipher.getInstance(c);
 		if (c.contains("ECB")) {
 			cipher.init(mode, new SecretKeySpec(key, AES));

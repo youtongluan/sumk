@@ -47,7 +47,7 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	}
 
 	protected void logError(WebContext wc, Throwable ex, long time) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(64);
 		sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(wc.httpRequest())).append("   time:").append(time)
 				.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()));
 		logError(sb.toString(), ex);
@@ -62,7 +62,7 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	}
 
 	protected String buildLogMsg(WebContext wc, HttpServletRequest req, long time) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder(64);
 		if (wc != null) {
 			sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time)
 					.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()))

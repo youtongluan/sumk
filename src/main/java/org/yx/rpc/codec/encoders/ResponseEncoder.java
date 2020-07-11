@@ -15,10 +15,12 @@
  */
 package org.yx.rpc.codec.encoders;
 
+import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.yx.annotation.Bean;
-import org.yx.rpc.RpcGson;
+import org.yx.rpc.Profile;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
 import org.yx.rpc.server.Response;
@@ -33,7 +35,35 @@ public class ResponseEncoder implements SumkMinaEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		SumkProtocolEncoder.encodeString(Protocols.RESPONSE_JSON, session, RpcGson.toJson(message), out);
+		Response resp = Response.class.cast(message);
+		String sn = resp.sn();
+		if (sn == null) {
+			sn = "";
+		}
+		String json = resp.json();
+		String strException = resp.exception() == null ? null : RpcJson.operator().toJson(resp.exception());
+		int strLength = sn.length();
+		if (json != null) {
+			strLength += json.length();
+		}
+		if (strException != null) {
+			strLength += strException.length();
+		}
+
+		IoBuffer buffer = SumkProtocolEncoder.createIoBuffer(strLength);
+		SumkProtocolEncoder.putResponseProtocol(Protocols.RESPONSE_SPLIT, buffer);
+		buffer.position(8);
+
+		buffer.putString(sn, Profile.UTF8.newEncoder()).put(Protocols.LINE_SPLIT_BYTE);
+		SumkProtocolEncoder.putPrefixedString(json, buffer);
+		SumkProtocolEncoder.putPrefixedString(strException, buffer);
+		int limit = buffer.limit();
+		buffer.position(4);
+		buffer.putInt(limit - 8);
+		buffer.position(limit);
+		buffer.flip();
+
+		out.write(buffer);
 	}
 
 }

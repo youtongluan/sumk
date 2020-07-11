@@ -62,7 +62,7 @@ public final class AppInfo {
 		}
 		if (info == null) {
 			try {
-				setConfig(ComposedSystemConfig.createSystemConfig(new AppConfig()));
+				setConfig(ComposedConfig.createSystemConfig(new AppConfig()));
 			} catch (Exception e) {
 				RawLog.error("sumk.conf", e);
 				System.exit(1);
@@ -127,17 +127,6 @@ public final class AppInfo {
 	}
 
 	/**
-	 * @param defaultValue
-	 *            如果没有设置的话，就返回这个默认值
-	 * @return 大系统的id
-	 */
-	public static String groupId(String defaultValue) {
-		return get("sumk.groupId", defaultValue);
-	}
-
-	/**
-	 * 
-	 * 
 	 * @param name
 	 *            name
 	 * @return name不存在的话，返回null

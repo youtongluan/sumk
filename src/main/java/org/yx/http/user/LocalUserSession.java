@@ -26,9 +26,9 @@ import java.util.concurrent.TimeUnit;
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
 import org.yx.log.Logs;
-import org.yx.main.SumkThreadPool;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
+import org.yx.util.Task;
 
 public class LocalUserSession implements UserSession {
 
@@ -68,9 +68,8 @@ public class LocalUserSession implements UserSession {
 	public LocalUserSession() {
 		Logs.http().info("$$$use local user session");
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
-		SumkThreadPool.scheduledExecutor().scheduleWithFixedDelay(
-				() -> CacheHelper.expire(map, HttpSettings.getHttpSessionTimeoutInMs()), seconds, seconds,
-				TimeUnit.SECONDS);
+		Task.scheduleAtFixedRate(() -> CacheHelper.expire(map, HttpSettings.getHttpSessionTimeoutInMs()), seconds,
+				seconds, TimeUnit.SECONDS);
 	}
 
 	protected TimedCachedObject loadUserObject(String sid) {

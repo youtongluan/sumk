@@ -32,7 +32,7 @@ import org.yx.rpc.InnerRpcKit;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
-import org.yx.rpc.RpcGson;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.RpcRoutes;
 import org.yx.rpc.codec.Request;
@@ -41,13 +41,7 @@ import org.yx.rpc.server.Response;
 import org.yx.util.Asserts;
 import org.yx.util.S;
 
-import com.google.gson.JsonElement;
-
 public final class Client {
-
-	private static enum ParamType {
-		JSONARRAY, JSON
-	}
 
 	private static final Host LOCAL = Host.create("local", 0);
 	private final String api;
@@ -90,7 +84,7 @@ public final class Client {
 	public Client paramInArray(Object... args) {
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
-			params[i] = RpcGson.toJson(args[i]);
+			params[i] = RpcJson.operator().toJson(args[i]);
 		}
 		this.params = params;
 		this.paramType = ParamType.JSONARRAY;
@@ -104,9 +98,7 @@ public final class Client {
 	}
 
 	public Client paramInMap(Map<String, ?> map) {
-		this.params = S.json().toJson(map);
-		this.paramType = ParamType.JSON;
-		return this;
+		return paramInJson(S.json().toJson(map));
 	}
 
 	/**
@@ -120,11 +112,7 @@ public final class Client {
 		Objects.requireNonNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
 		Req req = Rpc.req(this.api);
-		if (this.paramType == ParamType.JSONARRAY) {
-			req.setParamArray((String[]) this.params);
-		} else {
-			req.setJsonedParam((String) this.params);
-		}
+		req.setParams(this.paramType.protocol(), this.params);
 		if (this.totalTimeout < 1) {
 			this.totalTimeout = AppInfo.getInt("sumk.rpc.timeout", 30000);
 		}
@@ -186,6 +174,7 @@ public final class Client {
 			return new ErrorRpcFuture(ex, locker);
 		}
 		locker.url(url);
+		req.setServerProtocol(RpcRoutes.getServerProtocol(url));
 		WriteFuture f = null;
 		try {
 			ReqSession session = ReqSessionHolder.getSession(url);
@@ -212,11 +201,7 @@ public final class Client {
 			return null;
 		}
 
-		JsonElement json = RpcGson.getGson().toJsonTree(req);
-		Request request = RpcGson.getGson().fromJson(json, Request.class);
-
-		request.setJsonedParam(req.getJsonedParam());
-		request.setParamArray(req.getParamArray());
+		Request request = Request.from(req);
 		req = null;
 
 		ActionContext context = ActionContext.get().clone();

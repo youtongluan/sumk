@@ -29,16 +29,6 @@ public final class SqlParsers {
 	private static final String SPLIT_AND = ",";
 	private static final String SPLIT_OR = "\\|";
 
-	public static SqlParser compose(List<SqlParser> parsers) {
-		if (parsers == null || parsers.isEmpty()) {
-			return null;
-		}
-		if (parsers.size() == 1) {
-			return parsers.get(0);
-		}
-		return new ComposeParser(parsers.toArray(new SqlParser[parsers.size()]));
-	}
-
 	public static Predicate<Map<String, Object>> createParamExpression(String test, String matchType) {
 		if (test == null || test.isEmpty()) {
 			SumkException.throwException(-34645465, "if中的test不能为空");

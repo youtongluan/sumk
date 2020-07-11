@@ -61,6 +61,9 @@ public final class RpcActionNode extends CalleeNode {
 		}
 
 		ArgPojo argObj = S.json().fromJson(args, argClz);
+		if (argObj == null) {
+			argObj = this.getEmptyArgObj();
+		}
 		return this.execute(argObj);
 	}
 
@@ -72,7 +75,7 @@ public final class RpcActionNode extends CalleeNode {
 			SumkException.throwException(12012, method.getName() + "的参数不能为空");
 		}
 		if (args.length != argNames.length) {
-			Logs.rpc().debug(method.getName() + "需要传递" + argNames.length + "个参数，实际传递" + args.length + "个");
+			Logs.rpc().debug("{}需要传递{}个参数，实际传递{}个", method.getName(), argNames.length, args.length);
 		}
 
 		ArgPojo pojo = Loader.newInstance(this.argClz);
@@ -81,7 +84,7 @@ public final class RpcActionNode extends CalleeNode {
 				continue;
 			}
 			Field f = fields[i];
-			f.set(pojo, RpcGson.fromJson(args[i], f.getGenericType()));
+			f.set(pojo, RpcJson.operator().fromJson(args[i], f.getGenericType()));
 		}
 		return this.execute(pojo);
 	}

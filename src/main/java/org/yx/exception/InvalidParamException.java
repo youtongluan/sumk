@@ -15,6 +15,7 @@
  */
 package org.yx.exception;
 
+import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
 import org.yx.validate.ParamInfo;
 
@@ -38,11 +39,17 @@ public class InvalidParamException extends Exception {
 	@Override
 	public String getMessage() {
 		String ret = super.getMessage();
-		if (ret.contains("#")) {
-			return info != null && info.getParam() != null && StringUtil.isNotEmpty(info.getParam().value())
-					? ret.replace("#", info.getParam().value()) : ret.replace("#", "参数");
+		if (ret.indexOf("#") < 0) {
+			return ret;
 		}
-		return ret;
+		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && info != null && info.getParam() != null
+				&& StringUtil.isNotEmpty(info.getParam().value())) {
+			return ret.replace("#", info.getParam().value());
+		}
+		if (AppInfo.getBoolean("sumk.valid.name.raw", true)) {
+			return ret.replace("#", info.getParamName());
+		}
+		return ret.replace("#", "参数");
 	}
 
 	public ParamInfo getInfo() {

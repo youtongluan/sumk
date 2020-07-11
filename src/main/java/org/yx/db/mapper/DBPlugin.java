@@ -33,6 +33,7 @@ import org.yx.db.event.DBEventPublisher;
 import org.yx.db.listener.DBEventListener;
 import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.SumkDate;
 
@@ -98,7 +99,7 @@ public class DBPlugin implements Plugin {
 				Logs.db().info("local sql changed at {}", SumkDate.now().to_yyyy_MM_dd_HH_mm_ss());
 				loadSql(load);
 			} catch (Exception e) {
-				Logs.printSQLException(e);
+				Log.printStack("sumk.sql.error", e);
 			}
 		});
 	}
@@ -117,7 +118,7 @@ public class DBPlugin implements Plugin {
 					continue;
 				}
 
-				SqlXmlParser.parseXml(sqlMap, SqlHolder.documentBuilderFactory().create(), fileName,
+				SqlXmlParser.parseXml(sqlMap, SqlHolder.documentBuilderFactory().get(), fileName,
 						new ByteArrayInputStream(bs));
 			}
 		} catch (Exception e) {

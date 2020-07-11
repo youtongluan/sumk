@@ -25,7 +25,6 @@ public class ParamInfo {
 	final Class<?> type;
 
 	public ParamInfo(Param param, String paramName, Class<?> type) {
-		super();
 		this.param = param;
 		this.paramName = paramName;
 		this.type = type;
@@ -42,5 +41,4 @@ public class ParamInfo {
 	public Class<?> getType() {
 		return type;
 	}
-
 }

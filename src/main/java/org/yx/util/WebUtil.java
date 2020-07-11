@@ -22,8 +22,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.HttpContextHolder;
-import org.yx.http.handler.UploadFile;
-import org.yx.http.handler.UploadFileHolder;
+import org.yx.http.handler.MultipartItem;
+import org.yx.http.handler.MultipartHolder;
 import org.yx.http.kit.HttpKit;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.SessionObject;
@@ -88,8 +88,33 @@ public final class WebUtil {
 		return obj.getUserId();
 	}
 
-	public static List<UploadFile> getUploadFiles() {
-		return UploadFileHolder.getFiles();
+	/**
+	 * 如果是文件上传的接口，用这个方法获取上传项
+	 * 
+	 * @return 除了参数外所有的multipart
+	 */
+	public static List<MultipartItem> getMultiParts() {
+		return MultipartHolder.get();
+	}
+
+	/**
+	 * 根据name获取对应的MultipartItem
+	 * 
+	 * @param name
+	 *            MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
+	 * @return 对应的MultipartItem，如果不存在就返回null
+	 */
+	public static MultipartItem getPart(String name) {
+		List<MultipartItem> list = MultipartHolder.get();
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		for (MultipartItem p : list) {
+			if (name.equals(p.getName())) {
+				return p;
+			}
+		}
+		return null;
 	}
 
 	public static HttpKit getKit() {

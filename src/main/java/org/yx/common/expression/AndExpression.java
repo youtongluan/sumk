@@ -46,7 +46,6 @@ public class AndExpression implements Predicate<Map<String, Object>> {
 
 	@Override
 	public String toString() {
-
 		return "AND" + Arrays.toString(exps);
 	}
 

@@ -16,7 +16,6 @@
 package org.yx.asm;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +31,7 @@ public class ProxyClassFactory {
 
 		Method[] bethods = clz.getMethods();
 		for (Method m : bethods) {
+
 			if (!AsmUtils.canProxy(m.getModifiers()) || m.getDeclaringClass().isInterface()) {
 				continue;
 			}
@@ -46,8 +46,7 @@ public class ProxyClassFactory {
 
 		bethods = clz.getDeclaredMethods();
 		for (Method m : bethods) {
-
-			if (!AsmUtils.canProxy(m.getModifiers()) || (m.getModifiers() & Modifier.PROTECTED) == 0) {
+			if (!AsmUtils.canProxy(m.getModifiers())) {
 				continue;
 			}
 

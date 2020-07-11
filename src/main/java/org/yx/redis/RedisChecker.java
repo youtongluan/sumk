@@ -15,7 +15,10 @@
  */
 package org.yx.redis;
 
-final class RedisChecker implements Runnable {
+import org.yx.log.Logs;
+import org.yx.util.helper.ArrayHelper;
+
+public final class RedisChecker implements Runnable {
 
 	private static final RedisChecker holder = new RedisChecker();
 
@@ -27,22 +30,24 @@ final class RedisChecker implements Runnable {
 		return holder;
 	}
 
-	private Redis[] allRedis = new Redis[0];
+	private Checkable[] allRedis = new Checkable[0];
 
-	public synchronized void addRedis(Redis redis) {
-		Redis[] rss = new Redis[allRedis.length + 1];
-		System.arraycopy(allRedis, 0, rss, 0, allRedis.length);
-		rss[rss.length - 1] = redis;
-		this.allRedis = rss;
+	public synchronized void addRedis(Checkable c) {
+		Logs.redis().debug("add alive check: {}", c);
+		this.allRedis = ArrayHelper.add(this.allRedis, c, i -> new Checkable[i]);
 	}
 
 	@Override
 	public void run() {
-		Redis[] rediss = this.allRedis;
-		for (Redis redis : rediss) {
+		Checkable[] rediss = this.allRedis;
+		for (Checkable redis : rediss) {
 			redis.aliveCheck();
 		}
+	}
 
+	public void remove(Checkable c) {
+		Logs.redis().debug("remove alive chech: {}", c);
+		this.allRedis = ArrayHelper.remove(this.allRedis, c, i -> new Checkable[i]);
 	}
 
 }

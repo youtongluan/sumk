@@ -15,27 +15,43 @@
  */
 package org.yx.redis;
 
+import java.util.Objects;
 import java.util.function.Function;
+
+import org.yx.log.Logs;
 
 public class RedisFactory {
 
 	private static Function<RedisConfig, Redis> creator;
 
-	public static Function<RedisConfig, Redis> getCreator() {
+	static {
+		try {
+			creator = conf -> {
+				String type = conf.getType();
+				if ("1".equals(type) || "cluster".equalsIgnoreCase(type)) {
+					return Jedis2Factorys.getJedisClusterFactory().apply(conf);
+				}
+				if ("2".equals(conf.getType()) || "sentinel".equalsIgnoreCase(type)) {
+					return new RedisImpl(new SentinelJedis2Executor(conf));
+				}
+				return new RedisImpl(new SingleJedis2Executor(conf));
+			};
+		} catch (Throwable e) {
+			Logs.redis().error("初始化redis的factory失败", e);
+		}
+
+	}
+
+	public static Function<RedisConfig, Redis> getFactroy() {
 		return creator;
 	}
 
-	public static void setCreator(Function<RedisConfig, Redis> creator) {
-		RedisFactory.creator = creator;
+	public static void setFactroy(Function<RedisConfig, Redis> creator) {
+		RedisFactory.creator = Objects.requireNonNull(creator);
 	}
 
 	public static Redis create(RedisConfig conf) {
-		Function<RedisConfig, Redis> factory = creator;
-		if (factory == null) {
-			factory = new RedisCreator();
-			RedisFactory.creator = factory;
-		}
-		return factory.apply(conf);
+		return creator.apply(conf);
 	}
 
 }

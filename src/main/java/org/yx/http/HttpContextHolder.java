@@ -90,7 +90,15 @@ public final class HttpContextHolder {
 		if (v != null) {
 			return v;
 		}
-		return req.getParameter(name);
+		v = req.getParameter(name);
+		if (v != null) {
+			return v;
+		}
+		Object attr = req.getAttribute(name);
+		if (attr != null && attr.getClass() == String.class) {
+			return String.class.cast(attr);
+		}
+		return null;
 	}
 
 	public static String userFlag() {

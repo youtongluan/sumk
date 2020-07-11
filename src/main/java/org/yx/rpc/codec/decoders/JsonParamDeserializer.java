@@ -16,10 +16,10 @@
 package org.yx.rpc.codec.decoders;
 
 import org.yx.annotation.Bean;
-import org.yx.exception.SumkException;
 import org.yx.rpc.Profile;
-import org.yx.rpc.RpcGson;
+import org.yx.rpc.RpcJson;
 import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 
 @Bean
@@ -27,19 +27,23 @@ public class JsonParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public boolean accept(int protocol) {
-		return Protocols.hasFeature(protocol, Protocols.REQ_PARAM_JSON);
+		return Protocols.hasFeature(protocol, ReqParamType.REQ_PARAM_JSON);
 	}
 
 	@Override
 	public Request decode(int protocol, byte[] data) throws Exception {
-		String message = new String(data, Profile.UTF8);
-		String[] msgs = message.split(Protocols.LINE_SPLIT, -1);
-		if (msgs.length < 2) {
-			SumkException.throwException(4353254, "error jsoned param req");
+		int splitIndex = DeserializeKits.nextSplitIndex(data, 0);
+
+		String reqJson = new String(data, 0, splitIndex, Profile.UTF8);
+		Request req = RpcJson.operator().fromJson(reqJson, Request.class);
+		splitIndex = DeserializeKits.nextSplitIndex(data, splitIndex + 1);
+		int startIndex = splitIndex + 1;
+		int length = data.length - startIndex;
+		if (length < 0) {
+			return req;
 		}
-		Request req = RpcGson.fromJson(msgs[0], Request.class);
-		req.setJsonedParam(msgs[1]);
-		req.protocol(protocol);
+		String json = length == 0 ? "" : new String(data, startIndex, length, Profile.UTF8);
+		req.setParams(ReqParamType.REQ_PARAM_JSON, json);
 		return req;
 	}
 

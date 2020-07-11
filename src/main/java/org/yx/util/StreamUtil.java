@@ -20,18 +20,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 
-import org.yx.common.UnsafeByteArrayOutputStream;
+import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 
 public final class StreamUtil {
 
-	public static byte[] extractData(InputStream in, boolean closeInput) throws IOException {
+	public static byte[] readAllBytes(InputStream in, boolean closeInput) throws IOException {
 		UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(1024);
 		transferTo(in, out, closeInput);
 		out.close();
 		return out.toByteArray();
 	}
 
-	public static String extractReader(Reader in, boolean closeInput) throws IOException {
+	public static String readAll(Reader in, boolean closeInput) throws IOException {
 		StringBuilder sb = new StringBuilder();
 		int len;
 		char[] buf = new char[1024];

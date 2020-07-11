@@ -5,7 +5,7 @@ import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.yx.http.HttpGson;
+import org.yx.http.HttpJson;
 import org.yx.http.handler.WebContext;
 import org.yx.log.LogKits;
 
@@ -54,7 +54,7 @@ public class HttpLogs {
 			String temp = new String(bs, 0, len, charset);
 			return LogKits.shorterSubfix(temp, maxLength);
 		}
-		String resp = HttpGson.gson().toJson(obj);
+		String resp = HttpJson.operator().toJson(obj);
 		return LogKits.shorterSubfix(resp, maxLength);
 	}
 

@@ -28,8 +28,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.log.RawLog;
-import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
+import org.yx.util.Task;
 
 public class AppConfig extends AbstractRefreshableSystemConfig {
 
@@ -37,10 +37,11 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 	protected final int periodTime;
 	protected Map<String, String> map = Collections.emptyMap();
 	protected boolean showLog = true;
+	private boolean isFirst = true;
 	protected ScheduledFuture<?> future;
 
 	public AppConfig() {
-		this(System.getProperty("appinfo", "app.properties"));
+		this(System.getProperty("sumk.appinfo", "app.properties"));
 	}
 
 	public AppConfig(String fileName) {
@@ -75,12 +76,12 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 				if (this.showLog) {
 					RawLog.info("sumk.conf", fileName + " loaded");
 				}
-				boolean isFirst = this.map.isEmpty();
 				this.map = conf;
 				if (!isFirst) {
 					this.onRefresh();
 				}
 			}
+			this.isFirst = false;
 		} catch (Exception e) {
 			RawLog.error("sumk.conf", e.getMessage(), e);
 		}
@@ -97,8 +98,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 	@Override
 	protected void init() {
 		this.handle();
-		this.future = SumkThreadPool.scheduledExecutor().scheduleAtFixedRate(this::handle, this.periodTime,
-				this.periodTime, TimeUnit.MILLISECONDS);
+		this.future = Task.scheduleAtFixedRate(this::handle, this.periodTime, this.periodTime, TimeUnit.MILLISECONDS);
 	}
 
 	@Override

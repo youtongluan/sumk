@@ -21,8 +21,8 @@ import java.util.Set;
 
 public class RedisImpl extends Redis2 {
 
-	public RedisImpl(RedisConfig config) {
-		super(config);
+	public RedisImpl(Jedis2Executor executor) {
+		super(executor);
 	}
 
 	@Override
@@ -131,7 +131,7 @@ public class RedisImpl extends Redis2 {
 	}
 
 	@Override
-	public Object eval(String script) {
+	public Object eval(String script, String sampleKey) {
 		return execAndRetry(jedis -> jedis.eval(script));
 	}
 
@@ -506,7 +506,7 @@ public class RedisImpl extends Redis2 {
 	}
 
 	@Override
-	public Object evalsha(String sha1) {
+	public Object evalsha(String sha1, String sampleKey) {
 		return execAndRetry(jedis -> jedis.evalsha(sha1));
 	}
 
@@ -738,16 +738,6 @@ public class RedisImpl extends Redis2 {
 	@Override
 	public Long zremrangeByScore(String key, String min, String max) {
 		return execAndRetry(jedis -> jedis.zremrangeByScore(key, min, max));
-	}
-
-	@Override
-	public List<Boolean> scriptExists(String... sha1) {
-		return execAndRetry(jedis -> jedis.scriptExists(sha1));
-	}
-
-	@Override
-	public Boolean scriptExists(String sha1) {
-		return execAndRetry(jedis -> jedis.scriptExists(sha1));
 	}
 
 	@Override

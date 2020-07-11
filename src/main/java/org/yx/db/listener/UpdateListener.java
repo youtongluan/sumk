@@ -20,22 +20,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
-import org.yx.db.DBGson;
+import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.sql.ColumnMeta;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.redis.RecordReq;
+import org.yx.redis.RecordRepository;
 
 @Bean
 public class UpdateListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!UpdateEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !UpdateEvent.class.isInstance(ev)) {
 			return;
 		}
 		UpdateEvent event = UpdateEvent.class.cast(ev);
@@ -59,8 +60,8 @@ public class UpdateListener implements DBEventListener {
 		String id = pm.getRedisID(where, true);
 		Map<String, Object> to = new HashMap<>(event.getTo());
 		if (!event.isUpdateDBID()) {
-			ColumnMeta[] m_ids = pm.getPrimaryIDs();
-			if (m_ids != null && m_ids.length > 0) {
+			List<ColumnMeta> m_ids = pm.getPrimaryIDs();
+			if (m_ids != null && m_ids.size() > 0) {
 				for (ColumnMeta m : m_ids) {
 					String name = m.getFieldName();
 					Object v = where.get(name);
@@ -75,17 +76,17 @@ public class UpdateListener implements DBEventListener {
 		if (event.isFullUpdate()) {
 			String id_new = pm.getRedisID(to, true);
 			if (!id.equals(id_new)) {
-				RecordReq.del(pm, id);
+				RecordRepository.del(pm, id);
 			}
 			if (pm.cacheType() == CacheType.LIST || event.getIncrMap() != null) {
-				RecordReq.del(pm, id_new);
+				RecordRepository.del(pm, id_new);
 			} else {
-				RecordReq.set(pm, id_new, DBGson.toJson(to));
+				RecordRepository.set(pm, id_new, DBJson.operator().toJson(to));
 			}
 			return;
 		}
 
-		RecordReq.del(pm, id);
+		RecordRepository.del(pm, id);
 
 		Map<String, Object> where2 = new HashMap<>(where);
 		where2.putAll(to);
@@ -94,7 +95,7 @@ public class UpdateListener implements DBEventListener {
 		if (id.equals(id_new)) {
 			return;
 		}
-		RecordReq.del(pm, id_new);
+		RecordRepository.del(pm, id_new);
 	}
 
 }

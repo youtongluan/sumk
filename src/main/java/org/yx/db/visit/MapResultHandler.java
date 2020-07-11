@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import org.yx.db.DBGson;
+import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.sql.PojoMeta;
 import org.yx.util.CollectionUtil;
@@ -47,7 +47,7 @@ public class MapResultHandler implements ResultHandler {
 			}
 
 			if (pm.cacheType() == CacheType.LIST || (json.startsWith("[") && json.endsWith("]"))) {
-				Object[] ts = DBGson.fromJson(json, pm.pojoArrayClz());
+				Object[] ts = DBJson.operator().fromJson(json, pm.pojoArrayClz());
 				if (ts == null || ts.length == 0) {
 					continue;
 				}
@@ -59,7 +59,7 @@ public class MapResultHandler implements ResultHandler {
 				}
 				continue;
 			}
-			Object obj = DBGson.fromJson(json, pm.pojoClz);
+			Object obj = DBJson.operator().fromJson(json, pm.pojoClz());
 			if (obj == null) {
 				continue;
 			}

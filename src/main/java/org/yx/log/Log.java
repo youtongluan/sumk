@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 public final class Log {
 	private static LogType logType = LogType.slf4j;
+	private static final String SUMKBOX = ".sumkbox.";
 
 	private Log() {
 	}
@@ -40,7 +41,12 @@ public final class Log {
 	}
 
 	public static Logger get(Class<?> clz) {
-		return get(clz.getName());
+		String name = clz.getName();
+		if (name.contains(SUMKBOX)) {
+			int index = name.lastIndexOf(SUMKBOX);
+			name = String.join(".", name.substring(0, index), name.substring(index + SUMKBOX.length()));
+		}
+		return get(name);
 	}
 
 	public static Logger get(String module) {

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
-import org.yx.annotation.doc.Comment;
 import org.yx.annotation.http.Web;
 import org.yx.bean.Loader;
 import org.yx.common.ActInfoUtil;
@@ -32,6 +31,7 @@ import org.yx.common.matcher.WildcardMatcher;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
 import org.yx.main.SumkServer;
+import org.yx.util.StringUtil;
 
 public final class HttpActions {
 
@@ -91,8 +91,8 @@ public final class HttpActions {
 			HttpActionNode http = info.node();
 			Map<String, Object> map = ActInfoUtil.infoMap(info.rawAct(), http);
 			ret.add(map);
-			if (http.action != null) {
-				Web web = http.action;
+			if (http.action() != null) {
+				Web web = http.action();
 				map.put("cnName", web.cnName());
 				map.put("requireLogin", web.requireLogin());
 				map.put("requestEncrypt", web.requestEncrypt());
@@ -105,12 +105,11 @@ public final class HttpActions {
 					map.put("custom", web.custom());
 				}
 
-				Comment comment = http.getAnnotation(Comment.class);
-				if (comment != null && comment.value().length() > 0) {
-					map.put("comment", comment.value());
+				if (StringUtil.isNotEmpty(http.comment())) {
+					map.put("comment", http.comment());
 				}
 			}
-			map.put("upload", http.upload != null);
+			map.put("upload", http.upload() != null);
 		}
 		return ret;
 	}

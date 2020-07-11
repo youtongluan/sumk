@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -76,7 +77,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		MapedSql ms = new MapedSql();
 		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");
-		ColumnMeta[] fms = pojoMeta.fieldMetas;
+		List<ColumnMeta> fms = pojoMeta.fieldMetas;
 		int recodeSize = in.size();
 		for (ColumnMeta fm : fms) {
 			String name = fm.dbColumn;
@@ -104,17 +105,10 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		for (int i = 0; i < recodeSize; i++) {
 			Map<String, Object> pojoMap = this.in.get(i);
 			Map<String, Object> map = new HashMap<>();
+			this.fillSpecialColumns(pojoMap, src.get(i));
 
 			for (ColumnMeta fm : fms) {
 				Object value = fm.value(pojoMap);
-				if (value == null) {
-
-					if (fm.isDBID() && canUseAutoID(pojoMeta)) {
-						value = SeqUtil.next(pojoMeta.getTableName());
-						fm.setValue(pojoMap, value);
-						fm.setValue(src.get(i), value);
-					}
-				}
 				ms.addParam(value);
 				map.put(fm.getFieldName(), value);
 			}
@@ -132,13 +126,32 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		return ms;
 	}
 
-	private boolean canUseAutoID(PojoMeta pm) {
-		ColumnMeta[] ids = pm.getPrimaryIDs();
-		if (ids.length != 1) {
-			return false;
+	protected void fillSpecialColumns(Map<String, Object> pojoMap, Object srcObject) throws Exception {
+		List<ColumnMeta> idColumns = pojoMeta.getPrimaryIDs();
+		if (idColumns.size() != 1) {
+			return;
 		}
-		Class<?> f = ids[0].field.getType();
-		return Long.class == f;
+		ColumnMeta idColumn = idColumns.get(0);
+		if (idColumn.field.getType() != Long.class) {
+			return;
+		}
+
+		if (idColumn.value(pojoMap) != null) {
+			return;
+		}
+
+		Long autoId = SeqUtil.next(pojoMeta.getTableName());
+		idColumn.setValue(srcObject, autoId);
+		idColumn.setValue(pojoMap, autoId);
+		List<ColumnMeta> createTimes = pojoMeta.createColumns();
+		if (createTimes.size() > 0) {
+			Date now = new Date(SeqUtil.getDateTime(autoId) / 1000 * 1000);
+			for (ColumnMeta cTime : createTimes) {
+				cTime.setValue(srcObject, now);
+				Object time2 = cTime.value(srcObject);
+				cTime.setValue(pojoMap, time2);
+			}
+		}
 	}
 
 }

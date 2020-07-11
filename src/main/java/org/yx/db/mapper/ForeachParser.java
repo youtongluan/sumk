@@ -22,14 +22,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.yx.common.ItemJoiner;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.MapedSqlBuilder;
 import org.yx.exception.SumkException;
+import org.yx.log.Logs;
 
 public class ForeachParser implements SqlParser {
 
-	private final Joiner joiner;
+	private final JoinerFactory joinFactory;
 	private final String itemName;
 	private final String collecitonName;
 	/**
@@ -37,7 +37,7 @@ public class ForeachParser implements SqlParser {
 	 */
 	private final String template;
 
-	public static ForeachParser create(String collection, String itemName, String template, Joiner joiner) {
+	public static ForeachParser create(String collection, String itemName, String template, JoinerFactory joinFactory) {
 		if (template == null) {
 			return null;
 		}
@@ -47,15 +47,14 @@ public class ForeachParser implements SqlParser {
 				itemName = null;
 			}
 		}
-		return new ForeachParser(Objects.requireNonNull(collection), itemName, template,
-				Objects.requireNonNull(joiner));
+		return new ForeachParser(collection, itemName, template, joinFactory);
 	}
 
-	private ForeachParser(String collecitonName, String itemName, String template, Joiner joiner) {
-		this.collecitonName = collecitonName;
+	protected ForeachParser(String collecitonName, String itemName, String template, JoinerFactory joinFactory) {
+		this.collecitonName = Objects.requireNonNull(collecitonName);
 		this.itemName = itemName;
-		this.template = template;
-		this.joiner = joiner;
+		this.template = Objects.requireNonNull(template).trim();
+		this.joinFactory = Objects.requireNonNull(joinFactory);
 	}
 
 	@SuppressWarnings("unchecked")
@@ -63,15 +62,17 @@ public class ForeachParser implements SqlParser {
 	public MapedSql toMapedSql(Map<String, Object> param) throws Exception {
 		Object obj = param.get(collecitonName);
 		if (obj == null) {
-			throw new SumkException(235345346,
-					"field " + collecitonName + " must be a Collection instance and can not be null. but it is null");
+			if (Logs.db().isTraceEnabled()) {
+				Logs.db().trace("{} is null", collecitonName);
+			}
+			return null;
 		}
 		if (Collection.class.isInstance(obj)) {
 			Collection<?> list = (Collection<?>) obj;
 			List<MapedSql> mapeds = new ArrayList<>(list.size());
 
+			MapedSqlBuilder builder;
 			for (Object v : list) {
-				MapedSqlBuilder builder;
 				if (this.itemName == null) {
 					builder = new MapedSqlBuilder(template, param);
 				} else if (Map.class.isInstance(v)) {
@@ -88,7 +89,7 @@ public class ForeachParser implements SqlParser {
 			if (mapeds.isEmpty()) {
 				return null;
 			}
-			return MapedSql.merge(mapeds, joiner.toItemJoiner());
+			return MapedSql.merge(mapeds, joinFactory.create());
 		}
 		throw new SumkException(235345346, "field " + collecitonName + " is not a Collection instance,it's type is "
 				+ obj.getClass().getSimpleName());
@@ -96,29 +97,8 @@ public class ForeachParser implements SqlParser {
 
 	@Override
 	public String toString() {
-		return "Foreach [colleciton=" + collecitonName + ", item=" + itemName + ", joiner=" + joiner + " : " + template
-				+ "]";
-	}
-
-	public static class Joiner {
-		private final CharSequence delimiter;
-		private final CharSequence prefix;
-		private final CharSequence suffix;
-
-		public Joiner(CharSequence delimiter, CharSequence prefix, CharSequence suffix) {
-			this.delimiter = delimiter;
-			this.prefix = "".equals(prefix) ? null : prefix;
-			this.suffix = "".equals(suffix) ? null : suffix;
-		}
-
-		public ItemJoiner toItemJoiner() {
-			return new ItemJoiner(delimiter, prefix, suffix);
-		}
-
-		@Override
-		public String toString() {
-			return "{" + prefix + " - " + delimiter + " - " + suffix + "}";
-		}
+		return "Foreach [colleciton=" + collecitonName + ", item=" + itemName + ", joinFactory=" + joinFactory + " : "
+				+ template + "]";
 	}
 
 	private static class ComposeMapHandler implements Function<String, Object> {

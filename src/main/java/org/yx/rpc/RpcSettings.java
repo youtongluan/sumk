@@ -19,10 +19,15 @@ import org.yx.conf.AppInfo;
 
 public final class RpcSettings {
 	private static boolean started;
-	private static long infoTime;
-	private static long warnTime;
 	private static boolean serverLogDisable;
 	private static boolean clientLogDisable;
+	private static long infoTime;
+	private static long warnTime;
+	private static int clientDefaultTimeout;;
+
+	public static int clientDefaultTimeout() {
+		return clientDefaultTimeout;
+	}
 
 	public static long infoTime() {
 		return infoTime;
@@ -50,6 +55,7 @@ public final class RpcSettings {
 			RpcSettings.infoTime = AppInfo.getInt("sumk.rpc.log.info.time", 1000);
 			RpcSettings.serverLogDisable = AppInfo.getBoolean("sumk.rpc.log.server.disable", false);
 			RpcSettings.clientLogDisable = AppInfo.getBoolean("sumk.rpc.log.client.disable", false);
+			RpcSettings.clientDefaultTimeout = AppInfo.getInt("sumk.rpc.call.timeout", 30000);
 		});
 	}
 }

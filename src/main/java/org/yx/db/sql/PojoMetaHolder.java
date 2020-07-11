@@ -19,12 +19,13 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.yx.annotation.Exclude;
 import org.yx.annotation.db.Column;
 import org.yx.annotation.db.Table;
 import org.yx.exception.SumkException;
@@ -93,8 +94,11 @@ public class PojoMetaHolder {
 		}
 
 		Field[] fs = S.bean().getFields(pojoClz);
-		Map<String, Field> map = new HashMap<>();
+		Map<String, Field> map = new LinkedHashMap<>();
 		for (Field f : fs) {
+			if (f.isAnnotationPresent(Exclude.class)) {
+				continue;
+			}
 			map.putIfAbsent(f.getName(), f);
 		}
 		Collection<Field> set = map.values();
@@ -110,7 +114,7 @@ public class PojoMetaHolder {
 		}
 		Collections.sort(list);
 		PojoMeta tm = new PojoMeta(table, list.toArray(new ColumnMeta[list.size()]), pojoClz);
-		if (tm.getPrimaryIDs().length == 0) {
+		if (tm.getPrimaryIDs().isEmpty()) {
 			SumkException.throwException(56456456, pojoClz.getName() + " has no primary key");
 		}
 		pojoMetas.put(pojoClz, tm);

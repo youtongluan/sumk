@@ -22,6 +22,9 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+/**
+ * bean解析时的优先级，值越小越靠前
+ */
 @Target({ TYPE })
 @Retention(RUNTIME)
 @Documented

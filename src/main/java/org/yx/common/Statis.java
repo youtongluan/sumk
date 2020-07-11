@@ -20,14 +20,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Statis {
-	public final String name;
+	private final String name;
 
-	public final AtomicInteger count = new AtomicInteger(0);
+	private final AtomicInteger count = new AtomicInteger(0);
 
-	public final AtomicLong time = new AtomicLong(0);
+	private final AtomicLong time = new AtomicLong(0);
 
-	public final AtomicInteger failedCount = new AtomicInteger(0);
-	public final AtomicLong failedTime = new AtomicLong(0);
+	private final AtomicInteger failedCount = new AtomicInteger(0);
+	private final AtomicLong failedTime = new AtomicLong(0);
 
 	public Statis(String name) {
 		this.name = Objects.requireNonNull(name);
@@ -59,6 +59,26 @@ public class Statis {
 
 	public static String header() {
 		return "name  count  time  avg  failedCount  failedTime";
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public int getSuccessCount() {
+		return count.get();
+	}
+
+	public long getSuccessTime() {
+		return time.get();
+	}
+
+	public int getFailedCount() {
+		return failedCount.get();
+	}
+
+	public long getFailedTime() {
+		return failedTime.get();
 	}
 
 }

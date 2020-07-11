@@ -40,7 +40,7 @@ public @interface SoftDelete {
 	String value();
 
 	/**
-	 * @return 只能是String、Int、Byte、Short、Long、Boolean
+	 * @return 只能是String、Integer、Byte、Short、Long、Boolean
 	 */
 	Class<?> type() default String.class;
 

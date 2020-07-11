@@ -15,16 +15,16 @@
  */
 package org.yx.util;
 
-import org.yx.common.GsonHelper;
+import org.yx.common.json.GsonHelper;
 import org.yx.common.lock.Locker;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
 import org.yx.util.secury.Base64;
+import org.yx.util.secury.CommonDigest;
 import org.yx.util.secury.Encryptor;
 import org.yx.util.secury.Hasher;
-import org.yx.util.secury.MD5;
 
 import com.google.gson.Gson;
 
@@ -34,19 +34,19 @@ public final class S {
 	private static SumkExecutorService executor = SumkThreadPool.executor();
 	private static Base64 base64 = Base64.inst;
 	private static Encryptor cipher = new AESEncryptor();
-	private static Hasher hash = new MD5();
+	private static Hasher hash = new CommonDigest("md5");
 	private static Locker lock = Locker.inst;
 	private static BeanConverter bean = new BeanConverter();
 
 	/**
-	 * json工具
+	 * @return json工具
 	 */
 	public static Gson json() {
 		return json;
 	}
 
 	/**
-	 * 系统共用的线程池
+	 * @return 系统共用的线程池
 	 */
 	public static SumkExecutorService executor() {
 		return executor;
@@ -57,28 +57,28 @@ public final class S {
 	}
 
 	/**
-	 * 加密器，默认是AES对称加密
+	 * @return 加密器，默认是AES对称加密
 	 */
 	public static Encryptor cipher() {
 		return cipher;
 	}
 
 	/**
-	 * hash工具，就是大家常说的md5
+	 * @return hash工具，就是大家常说的md5
 	 */
 	public static Hasher hash() {
 		return hash;
 	}
 
 	/**
-	 * 分布式锁
+	 * @return 分布式锁
 	 */
 	public static Locker lock() {
 		return lock;
 	}
 
 	/**
-	 * bean和map的转换，以及属性复制。 只支持第一级field
+	 * @return bean和map的转换，以及属性复制。只支持第一级field
 	 */
 	public static BeanConverter bean() {
 		return bean;

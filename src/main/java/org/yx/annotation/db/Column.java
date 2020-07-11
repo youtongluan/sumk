@@ -23,7 +23,6 @@ import java.lang.annotation.Target;
 
 import org.yx.conf.Const;
 import org.yx.db.enums.ColumnType;
-import org.yx.db.enums.UpdateType;
 
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -36,12 +35,5 @@ public @interface Column {
 
 	ColumnType type() default ColumnType.NORMAL;
 
-	/**
-	 * @return 如果为值为NONE，就不能被orm更新
-	 */
-	UpdateType updateType() default UpdateType.CUSTOM;
-
 	byte order() default Const.DEFAULT_ORDER;
-
-	String comment() default "";
 }

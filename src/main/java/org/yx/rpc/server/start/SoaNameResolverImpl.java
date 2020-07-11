@@ -25,11 +25,9 @@ import org.yx.util.StringUtil;
 
 public class SoaNameResolverImpl implements SoaNameResolver {
 
-	private final String groupId;
 	private final String appId;
 
 	public SoaNameResolverImpl() {
-		groupId = AppInfo.getBoolean("sumk.rpc.groupId.enable", true) ? AppInfo.groupId(null) : null;
 		appId = AppInfo.getBoolean("sumk.rpc.appId.enable", true) ? AppInfo.appId(null) : null;
 	}
 
@@ -60,9 +58,6 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 
 	public String solve(String soaName, Soa soa) {
 		StringBuilder sb = new StringBuilder();
-		if (soa.groupPrefix() && this.groupId != null) {
-			sb.append(this.groupId).append('.');
-		}
 		if (soa.appIdPrefix() && this.appId != null) {
 			sb.append(this.appId).append('.');
 		}

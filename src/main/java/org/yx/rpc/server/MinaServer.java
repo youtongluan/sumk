@@ -18,7 +18,7 @@ package org.yx.rpc.server;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.locks.LockSupport;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
@@ -75,8 +75,8 @@ public class MinaServer implements Runnable {
 	}
 
 	protected InetSocketAddress listenAddr(boolean randomPort) {
-		if (randomPort) {
-			port = 5000 + (new Random()).nextInt(5000);
+		if (randomPort) {// 1万到6万之间
+			port = 10000 + ThreadLocalRandom.current().nextInt(50000);
 		}
 		if (host == null || host.trim().length() == 0) {
 			return new InetSocketAddress(port);
@@ -116,6 +116,7 @@ public class MinaServer implements Runnable {
 					break;
 				} catch (IOException e) {
 					if (randomPort) {
+						Log.get("sumk.rpc.server").info("{} was occupied,try another port...", this.port);
 						continue;
 					}
 					Log.get("sumk.rpc.server").debug("waiting for listening to {}.{}", port, e.getMessage());

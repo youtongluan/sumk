@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yx.common.sumk.UnmodifiableArrayList;
+
 /**
  * 本类的许多方法都会对key、value做trim()处理
  */
@@ -220,5 +222,31 @@ public final class CollectionUtil {
 			ret.put(k, v);
 		});
 		return ret;
+	}
+
+	public static <T> List<T> unmodifyList(Collection<T> col, Class<T> clz) {
+		if (col == null) {
+			return null;
+		}
+		if (col.isEmpty()) {
+			return Collections.emptyList();
+		}
+		if (col.size() == 1) {
+			return Collections.singletonList(col.iterator().next());
+		}
+		return new UnmodifiableArrayList<>(col, clz);
+	}
+
+	public static <T> List<T> unmodifyList(T[] arr) {
+		if (arr == null) {
+			return null;
+		}
+		if (arr.length == 0) {
+			return Collections.emptyList();
+		}
+		if (arr.length == 1) {
+			return Collections.singletonList(arr[0]);
+		}
+		return new UnmodifiableArrayList<>(arr);
 	}
 }

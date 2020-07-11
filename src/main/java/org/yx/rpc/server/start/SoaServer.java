@@ -29,6 +29,7 @@ import org.yx.common.Host;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.Profile;
 import org.yx.rpc.RpcActions;
@@ -116,7 +117,7 @@ public class SoaServer implements Lifecycle {
 		final Map<String, String> map = new HashMap<>();
 		for (String method : methods) {
 
-			map.put(ZKConst.METHODS + "." + method, AppInfo.get("sumk.rpc.method." + method));
+			map.put(ZKConst.METHODS + method, AppInfo.get("sumk.rpc.method." + method));
 		}
 		map.put(ZKConst.FEATURE, Profile.featureInHex());
 		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));
@@ -184,7 +185,7 @@ public class SoaServer implements Lifecycle {
 			started = true;
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
-			System.exit(1);
+			throw new SumkException(-35334546, "soa服务启动失败");
 		}
 
 	}
@@ -211,7 +212,7 @@ public class SoaServer implements Lifecycle {
 			ZkClientHelper.makeSure(client, SOA_ROOT);
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
-			System.exit(1);
+			throw new SumkException(-353451436, "soa服务初始化失败");
 		}
 
 	}

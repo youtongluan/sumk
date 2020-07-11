@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+import javax.xml.parsers.DocumentBuilder;
+
 import org.yx.conf.AppInfo;
 import org.yx.conf.LocalMultiResourceLoaderSupplier;
 import org.yx.conf.MultiResourceLoader;
@@ -32,7 +34,7 @@ public class SqlHolder {
 		SQLS = sqls;
 	}
 
-	private static XmlBuilderFactory documentBuilderFactory = new XmlBuilderFactoryImpl();
+	private static Supplier<DocumentBuilder> documentBuilderFactory = new SqlXmlBuilderFactory();
 
 	private static Supplier<MultiResourceLoader> resourceLoader = new LocalMultiResourceLoaderSupplier(
 			AppInfo.get("sumk.db.sql.path", AppInfo.CLASSPATH_URL_PREFIX + "sql"));
@@ -45,11 +47,11 @@ public class SqlHolder {
 		SqlHolder.resourceLoader = Objects.requireNonNull(resourceLoader);
 	}
 
-	public static XmlBuilderFactory documentBuilderFactory() {
+	public static Supplier<DocumentBuilder> documentBuilderFactory() {
 		return documentBuilderFactory;
 	}
 
-	public static void documentBuilderFactory(XmlBuilderFactory documentBuilderFactory) {
+	public static void documentBuilderFactory(Supplier<DocumentBuilder> documentBuilderFactory) {
 		SqlHolder.documentBuilderFactory = Objects.requireNonNull(documentBuilderFactory);
 	}
 

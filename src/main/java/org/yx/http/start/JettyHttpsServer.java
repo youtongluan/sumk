@@ -24,8 +24,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
-import org.yx.http.HttpPlugin;
 import org.yx.log.Logs;
 import org.yx.util.FileUtil;
 
@@ -39,7 +39,7 @@ public class JettyHttpsServer extends JettyServer {
 	protected ConnectionFactory[] getConnectionFactorys() throws URISyntaxException {
 		@SuppressWarnings("deprecation")
 		SslContextFactory sslContextFactory = new SslContextFactory();
-		String path = get(HttpPlugin.KEY_STORE_PATH);
+		String path = get(Const.KEY_STORE_PATH);
 		File keystoreFile = FileUtil.file(path);
 		if (!keystoreFile.exists()) {
 			String msg = path + " is not exist";

@@ -23,13 +23,12 @@ import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
+import org.yx.rpc.codec.Protocols;
 import org.yx.util.UUIDSeed;
 
 public final class Rpc {
 	private Rpc() {
 	}
-
-	private static int DEFAULT_TIMEOUT;
 
 	private static volatile boolean strated;
 
@@ -45,7 +44,6 @@ public final class Rpc {
 		}
 		try {
 			appId = AppInfo.appId("sumk");
-			DEFAULT_TIMEOUT = AppInfo.getInt("sumk.rpc.timeout", 30000);
 			RpcSettings.init();
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
@@ -68,7 +66,8 @@ public final class Rpc {
 		req.setFullSn(sn, context.traceId(), context.nextSpanId());
 		req.setUserId(context.userId());
 		req.setApi(method);
-		req.setSrc(appId);
+		req.setFrom(appId);
+		req.initAcceptResponseTypes(Protocols.RESPONSE_ACCEPT_TYPES);
 
 		req.setAttachments(context.attachmentView());
 		return req;
@@ -93,7 +92,8 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String call(String method, Object... args) {
-		return new Client(method).paramInArray(args).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInArray(args).timeout(RpcSettings.clientDefaultTimeout()).execute()
+				.getOrException();
 	}
 
 	/**
@@ -109,11 +109,13 @@ public final class Rpc {
 	 *             业务异常
 	 */
 	public static String callInJson(String method, String json) {
-		return new Client(method).paramInJson(json).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInJson(json).timeout(RpcSettings.clientDefaultTimeout()).execute()
+				.getOrException();
 	}
 
 	public static String callInMap(String method, Map<String, ?> map) {
-		return new Client(method).paramInMap(map).timeout(DEFAULT_TIMEOUT).execute().getOrException();
+		return new Client(method).paramInMap(map).timeout(RpcSettings.clientDefaultTimeout()).execute()
+				.getOrException();
 	}
 
 	/**

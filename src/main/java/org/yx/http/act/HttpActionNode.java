@@ -27,19 +27,28 @@ import org.yx.common.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.HttpGson;
+import org.yx.http.HttpJson;
 import org.yx.http.kit.HttpException;
-import org.yx.http.kit.HttpSettings;
 import org.yx.log.Logs;
 
 import com.google.gson.JsonParseException;
 
 public final class HttpActionNode extends CalleeNode {
 
-	public final Web action;
-	public final Upload upload;
+	private final Web action;
+	private final ErrorHandler errorHandler;
 
-	public final ErrorHandler errorHandler;
+	public Web action() {
+		return this.action;
+	}
+
+	public Upload upload() {
+		return this.getAnnotation(Upload.class);
+	}
+
+	public ErrorHandler errorHandler() {
+		return this.errorHandler;
+	}
 
 	public ArgPojo buildArgPojo(Object reqData) throws Exception {
 		if (this.isEmptyArgument() || reqData == null) {
@@ -53,7 +62,7 @@ public final class HttpActionNode extends CalleeNode {
 			return getEmptyArgObj();
 		}
 		try {
-			return HttpGson.gson().fromJson(data, argClz);
+			return HttpJson.operator().fromJson(data, argClz);
 		} catch (JsonParseException e) {
 			Logs.rpc().debug("json解析异常", e);
 			throw HttpException.create(HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
@@ -65,7 +74,6 @@ public final class HttpActionNode extends CalleeNode {
 		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.action = action;
-		this.upload = HttpSettings.isUploadEnable() ? this.getAnnotation(Upload.class) : null;
 		this.errorHandler = this.getAnnotation(ErrorHandler.class);
 	}
 }

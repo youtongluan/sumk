@@ -26,7 +26,6 @@ import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.log.Logs;
 import org.yx.util.Asserts;
 
 public final class ConnectionPool implements AutoCloseable {
@@ -213,14 +212,14 @@ public final class ConnectionPool implements AutoCloseable {
 			try {
 				this.writeConn.close();
 			} catch (Exception e) {
-				Logs.printSQLException(e);
+				Log.printStack("sumk.sql.error", e);
 			}
 		}
 		if (this.readConn != null && !this.readConn.isSameInnerConnection(this.writeConn)) {
 			try {
 				this.readConn.close();
 			} catch (Exception e) {
-				Logs.printSQLException(e);
+				Log.printStack("sumk.sql.error", e);
 			}
 		}
 		this.writeConn = null;
