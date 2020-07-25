@@ -7,6 +7,6 @@
 * [代码自动生成工具](https://github.com/youtongluan/sumk-codetool)
 
 
-test目录下有简单的压测工具类HttpPressTest和RpcPressTest。
+test目录下有简单的压测工具类（HttpPressTest和RpcPressTest）和简单程序（[sumk-server-demo](https://www.oschina.net/p/sumk)这个工程里的示例更详细）
 
 ### 作者：游夏。QQ：3205207767
