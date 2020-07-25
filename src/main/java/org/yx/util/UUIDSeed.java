@@ -19,8 +19,10 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public final class UUIDSeed {
-	private final static char[] LETTERS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
-	private final static int LEN = LETTERS.length;
+	private static final char[] LETTERS = "0123456789abcdefghijklmnopqrstuvwxyz".toCharArray();
+	private static final int LEN = LETTERS.length;
+	private static final int DOUBLE_LEN = LEN * LEN;
+	private static AtomicInteger current = new AtomicInteger(6538);
 
 	static void fill(char[] source, final int from, int bytes, long number) {
 		if (number < 0) {
@@ -52,9 +54,6 @@ public final class UUIDSeed {
 		}
 		return ret;
 	}
-
-	private final static int DOUBLE_LEN = LEN * LEN;
-	private static AtomicInteger current = new AtomicInteger(6538);
 
 	public static long getSeqTime(String sn) {
 		return toLong(sn.substring(0, 8));

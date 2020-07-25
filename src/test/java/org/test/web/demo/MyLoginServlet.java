@@ -20,7 +20,7 @@ public class MyLoginServlet extends AbstractLoginServlet {
 		String validCode = req.getParameter("code");
 		System.out.println("login的log：" + DB.select().tableClass(DemoUser.class).byPrimaryId(log()).queryOne());
 		if (!"9999".equals(validCode)) {
-			return LoginObject.error("验证码错误");
+			return LoginObject.fail("验证码错误");
 		}
 		if ("admin".equals(user) && "123456".equals(password)) {
 			DemoSessionObject so = new DemoSessionObject();
@@ -29,7 +29,7 @@ public class MyLoginServlet extends AbstractLoginServlet {
 			return LoginObject.success(null, so);
 		}
 
-		return LoginObject.error("用户名或密码错误");
+		return LoginObject.fail("用户名或密码错误");
 	}
 
 	public long log() {

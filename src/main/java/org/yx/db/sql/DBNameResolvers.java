@@ -1,32 +1,39 @@
 package org.yx.db.sql;
 
 import java.util.Objects;
+import java.util.function.UnaryOperator;
 
 import org.yx.util.StringUtil;
 
 public class DBNameResolvers {
 
-	private static DBNameResolver nameResolver = new DBColumnNameResolverImpl();
+	private static UnaryOperator<String> columnNameResolver = StringUtil::camelToUnderline;
 
-	public static DBNameResolver getResolver() {
-		return nameResolver;
+	private static UnaryOperator<String> tableNameResolver = columnNameResolver;
+	private static UnaryOperator<String> cachePrefixResolver = tableName -> "{" + tableName + "}";
+
+	public static UnaryOperator<String> getColumnNameResolver() {
+		return columnNameResolver;
 	}
 
-	public static void setResolver(DBNameResolver resolver) {
-		DBNameResolvers.nameResolver = Objects.requireNonNull(resolver, "resolver cannot be null");
+	public static void setColumnNameResolver(UnaryOperator<String> columnNameResolver) {
+		DBNameResolvers.columnNameResolver = Objects.requireNonNull(columnNameResolver);
 	}
 
-	private static class DBColumnNameResolverImpl implements DBNameResolver {
-
-		@Override
-		public String resolveColumnName(String javaFieldName) {
-			return StringUtil.camelToUnderline(javaFieldName);
-		}
-
-		@Override
-		public String resolveTableName(String simpleJavaName) {
-			return StringUtil.camelToUnderline(simpleJavaName);
-		}
-
+	public static UnaryOperator<String> getTableNameResolver() {
+		return tableNameResolver;
 	}
+
+	public static void setTableNameResolver(UnaryOperator<String> tableNameResolver) {
+		DBNameResolvers.tableNameResolver = Objects.requireNonNull(tableNameResolver);
+	}
+
+	public static UnaryOperator<String> getCachePrefixResolver() {
+		return cachePrefixResolver;
+	}
+
+	public static void setCachePrefixResolver(UnaryOperator<String> cachePrefixResolver) {
+		DBNameResolvers.cachePrefixResolver = Objects.requireNonNull(cachePrefixResolver);
+	}
+
 }

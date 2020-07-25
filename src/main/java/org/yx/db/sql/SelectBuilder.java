@@ -235,9 +235,14 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected static class Order {
 
-		String name;
+		final String name;
 
-		boolean desc;
+		final boolean desc;
+
+		public Order(String name, boolean desc) {
+			this.name = name;
+			this.desc = desc;
+		}
 
 		public String toString(PojoMeta pm) {
 			ColumnMeta cm = pm.getByFieldName(name);

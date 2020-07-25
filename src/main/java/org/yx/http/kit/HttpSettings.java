@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -38,6 +40,9 @@ public final class HttpSettings {
 	private static int infoTime;
 	private static Charset defaultCharset = StandardCharsets.UTF_8;
 	private static int maxHttpBody;
+	private static String plainKey;
+
+	private static boolean singleLogin;
 
 	public static int getErrorHttpStatus() {
 		return errorHttpStatus;
@@ -91,6 +96,15 @@ public final class HttpSettings {
 		return infoTime;
 	}
 
+	public static boolean isSingleLogin() {
+		return singleLogin;
+	}
+
+	public static boolean allowPlain(HttpServletRequest request) {
+		String plainKey = HttpSettings.plainKey;
+		return plainKey != null && plainKey.equals(request.getParameter("plainKey"));
+	}
+
 	public static void init() {
 		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
 		String c = AppInfo.get("sumk.http.charset");
@@ -108,6 +122,9 @@ public final class HttpSettings {
 			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn.time", 3000);
 			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info.time", 1000);
 			HttpSettings.maxHttpBody = AppInfo.getInt("sumk.http.body.maxLength", 1024 * 1024 * 100);
+			HttpSettings.singleLogin = AppInfo.getBoolean("sumk.http.session.single", false);
+			String plain = AppInfo.get("sumk.http.plain.key", null);
+			HttpSettings.plainKey = "".equals(plain) ? null : plain;
 		});
 	}
 

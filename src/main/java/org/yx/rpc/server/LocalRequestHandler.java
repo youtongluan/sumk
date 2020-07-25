@@ -49,7 +49,7 @@ public class LocalRequestHandler {
 				}
 			}
 		} catch (Throwable e) {
-			resp.exception(new SoaException(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
+			resp.exception(new SoaException(e, RpcErrorCode.SERVER_UNKNOW, "server handler error"));
 		}
 		long begin = request.getStartInServer();
 		resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);

@@ -22,12 +22,12 @@ public class ParamInfo {
 
 	final String paramName;
 
-	final Class<?> type;
+	final Class<?> paramType;
 
 	public ParamInfo(Param param, String paramName, Class<?> type) {
 		this.param = param;
 		this.paramName = paramName;
-		this.type = type;
+		this.paramType = type;
 	}
 
 	public String getParamName() {
@@ -39,6 +39,6 @@ public class ParamInfo {
 	}
 
 	public Class<?> getType() {
-		return type;
+		return paramType;
 	}
 }

@@ -179,3 +179,10 @@ v2.8.0
 v2.8.1
 1、文件上传改为基于servlet3的MultiPart模式，而不是commons-upload。同时去掉对commons-upload的依赖。相应的，WebUtil的getUploadFiles()改名为getMultiParts，UploadFile类改为MultipartItem
 2、StreamUtil的extractData改名为readAllBytes
+
+v2.8.2
+1、@Web的requestEncrypt改为requestType,responseEncrypt改为responseType。
+2、EncryptType类型改名为MessageType，NONE属性改名为PLAIN，AES改名为ENCRYPT
+3、去掉@ErrorHandler，这个用法较冷门，通过WebFilter接口也能轻松实现
+4、LoginObject的error方法改名为fail
+

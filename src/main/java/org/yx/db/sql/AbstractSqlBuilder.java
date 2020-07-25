@@ -84,6 +84,11 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		if (this.in == null) {
 			this.in = new ArrayList<>();
 		}
+
+		if ("java.util.Collections$SingletonMap".equals(src.getClass().getName())) {
+			this.in.add((Map<String, Object>) src);
+			return;
+		}
 		if (Map.class.isInstance(src)) {
 			Map<String, Object> map = (Map<String, Object>) src;
 			if (!map.isEmpty()) {

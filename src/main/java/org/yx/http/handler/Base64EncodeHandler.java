@@ -16,6 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
+import org.yx.http.kit.HttpSettings;
 import org.yx.util.S;
 
 @Bean
@@ -28,7 +29,7 @@ public class Base64EncodeHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().responseEncrypt().isBase64()) {
+		if (!ctx.web().responseType().isBase64() || HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = (byte[]) ctx.result();

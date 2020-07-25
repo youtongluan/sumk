@@ -42,9 +42,9 @@ import org.yx.util.kit.PriorityKits;
 
 public final class BeanPublisher {
 
-	private static ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
+	private ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
 
-	public static synchronized void publishBeans(List<String> packageNames) throws Exception {
+	public synchronized void publishBeans(List<String> packageNames) throws Exception {
 		if (packageNames.isEmpty()) {
 			Logs.ioc().warn("property [sumk.ioc] is empty");
 		}
@@ -95,7 +95,7 @@ public final class BeanPublisher {
 		autoWiredAll();
 	}
 
-	private static Object getBean(Field f, Class<?> clz) {
+	private Object getBean(Field f, Class<?> clz) {
 		String name = f.getName();
 		if (clz == Object.class) {
 			clz = f.getType();
@@ -112,7 +112,7 @@ public final class BeanPublisher {
 		return IOC.get(clz);
 	}
 
-	private static void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
+	private void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
 		boolean access = f.isAccessible();
 		if (!access) {
 			f.setAccessible(true);
@@ -120,7 +120,7 @@ public final class BeanPublisher {
 		f.set(bean, target);
 	}
 
-	private static void autoWiredAll() throws Exception {
+	private void autoWiredAll() throws Exception {
 		Logger logger = Logs.ioc();
 		Object[] bs = InnerIOC.beans().toArray(new Object[0]);
 		final List<Object> beans = Arrays.asList(bs);
@@ -139,7 +139,7 @@ public final class BeanPublisher {
 		PluginHandler.instance.start();
 	}
 
-	private static void injectProperties(Object bean) throws Exception {
+	private void injectProperties(Object bean) throws Exception {
 		Class<?> tempClz = bean.getClass();
 		while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
@@ -177,7 +177,7 @@ public final class BeanPublisher {
 		}
 	}
 
-	private static List<?> getListField(Field f, Class<?> clz, Object bean) throws ClassNotFoundException {
+	private List<?> getListField(Field f, Class<?> clz, Object bean) throws ClassNotFoundException {
 		if (clz == null || clz == Object.class) {
 			String genericName = f.getGenericType().getTypeName();
 			if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
@@ -198,11 +198,11 @@ public final class BeanPublisher {
 		return target;
 	}
 
-	private static boolean allowEmptyCollection() {
+	private boolean allowEmptyCollection() {
 		return AppInfo.getBoolean("sumk.ioc.inject.allowEmpty", true);
 	}
 
-	private static Object getArrayField(Field f, Class<?> clz, Object bean) {
+	private Object getArrayField(Field f, Class<?> clz, Object bean) {
 		Class<?> filedType = f.getType().getComponentType();
 		if (clz == null || clz == Object.class) {
 			clz = filedType;
@@ -217,12 +217,11 @@ public final class BeanPublisher {
 		return target.toArray((Object[]) Array.newInstance(filedType, target.size()));
 	}
 
-	public static void publish(BeanEvent event) {
+	private void publish(BeanEvent event) {
 		group.listen(event);
 	}
 
-	public static synchronized void setListeners(BeanEventListener[] array) {
+	public synchronized void setListeners(BeanEventListener[] array) {
 		group.setListener(array);
 	}
-
 }

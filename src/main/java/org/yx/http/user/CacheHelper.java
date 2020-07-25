@@ -39,7 +39,6 @@ public final class CacheHelper {
 		}
 		if (log.isTraceEnabled()) {
 			log.trace("catch size from {} to {},duration:{}", beginSize, map.size(), duration);
-			;
 		}
 	}
 

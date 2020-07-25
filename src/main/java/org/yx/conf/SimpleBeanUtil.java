@@ -45,11 +45,6 @@ public class SimpleBeanUtil {
 		m.invoke(bean, v);
 	}
 
-	/**
-	 * @param ptype
-	 * @param value
-	 * @return
-	 */
 	private static Object parseValue(Class<?> ptype, String value) {
 		if (ptype == String.class) {
 			return value;

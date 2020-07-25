@@ -39,11 +39,6 @@ public interface HttpErrorCode extends ErrorCode {
 	int LOGIN_AGAIN = 903;
 
 	/**
-	 * 没有访问权限。一般是指该角色的权限不足
-	 */
-	int AUTHORITY_ERROR = 904;
-
-	/**
 	 * 熔断
 	 */
 	int FUSING = 905;

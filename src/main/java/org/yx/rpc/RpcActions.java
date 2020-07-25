@@ -79,7 +79,6 @@ public class RpcActions {
 				continue;
 			}
 			Map<String, Object> map = ActInfoUtil.infoMap(name, rpc);
-			;
 			ret.add(map);
 			Soa soa = rpc.getAnnotation(Soa.class);
 			if (soa != null) {

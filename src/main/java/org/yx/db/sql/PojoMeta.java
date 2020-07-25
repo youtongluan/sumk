@@ -44,7 +44,7 @@ import org.yx.util.StringUtil;
 
 public final class PojoMeta implements Cloneable {
 
-	public static final String WILDCHAR = "?";
+	public static final String WILDCHAR = "#";
 	private static final char KEY_SPLIT = ':';
 
 	final List<ColumnMeta> fieldMetas;
@@ -53,7 +53,7 @@ public final class PojoMeta implements Cloneable {
 	 */
 	final Class<?> pojoClz;
 
-	final List<ColumnMeta> redisIDs;
+	final List<ColumnMeta> cacheIDs;
 
 	final List<ColumnMeta> primaryIDs;
 
@@ -98,15 +98,15 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	public boolean isNoCache() {
-		return cacheType == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.redisIDs.isEmpty();
+		return cacheType == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.cacheIDs.isEmpty();
 	}
 
 	public CacheType cacheType() {
 		return cacheType;
 	}
 
-	public boolean isPrimeKeySameWithReids() {
-		return primaryIDs == redisIDs;
+	public boolean isPrimeKeySameWithCache() {
+		return primaryIDs == cacheIDs;
 	}
 
 	public List<ColumnMeta> getPrimaryIDs() {
@@ -143,7 +143,7 @@ public final class PojoMeta implements Cloneable {
 		for (ColumnMeta m : this.fieldMetas) {
 			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
 			filedNameMap.put(m.getFieldName().toLowerCase(), m);
-			if (m.isRedisID()) {
+			if (m.isCacheID()) {
 				rids.add(m);
 			}
 			if (m.isDBID()) {
@@ -158,8 +158,8 @@ public final class PojoMeta implements Cloneable {
 				}
 			}
 		}
-		this.redisIDs = CollectionUtil.unmodifyList(rids, ColumnMeta.class);
-		this.primaryIDs = pids.equals(rids) ? this.redisIDs : CollectionUtil.unmodifyList(pids, ColumnMeta.class);
+		this.cacheIDs = CollectionUtil.unmodifyList(rids, ColumnMeta.class);
+		this.primaryIDs = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids, ColumnMeta.class);
 		this.createColumns = CollectionUtil.unmodifyList(ctimes, ColumnMeta.class);
 		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class));
 		this.parseTable(table);
@@ -184,11 +184,15 @@ public final class PojoMeta implements Cloneable {
 		IntFunction<VisitCounter> factory = (IntFunction<VisitCounter>) StartContext.inst().get(VisitCounter.class);
 		this.counter = factory != null ? factory.apply(maxHit) : new DefaultVisitCounter(maxHit);
 
+		this.tableName = StringUtil.isEmpty(table.value())
+				? DBNameResolvers.getTableNameResolver().apply(this.pojoClz.getSimpleName())
+				: table.value().replace('?', '#');
 		String _pre = table.preInCache();
 
-		this.pre = StringUtil.isEmpty(_pre) ? "{" + this.pojoClz.getSimpleName() + "}" : _pre;
-		this.tableName = StringUtil.isEmpty(table.value())
-				? DBNameResolvers.getResolver().resolveTableName(this.pojoClz.getSimpleName()) : table.value();
+		if (StringUtil.isEmpty(_pre)) {
+			_pre = DBNameResolvers.getCachePrefixResolver().apply(this.tableName);
+		}
+		this.pre = _pre.replace('?', '#');
 	}
 
 	public String getTableName() {
@@ -199,11 +203,11 @@ public final class PojoMeta implements Cloneable {
 		return this.pre;
 	}
 
-	public boolean isOnlyRedisID(Object condition) throws IllegalArgumentException, IllegalAccessException {
+	public boolean isOnlyCacheID(Object condition) throws IllegalArgumentException, IllegalAccessException {
 		if (this.pojoClz.isInstance(condition)) {
 			for (ColumnMeta m : this.fieldMetas) {
 				Object v = m.value(condition);
-				if (m.isRedisID() == (v == null)) {
+				if (m.isCacheID() == (v == null)) {
 					return false;
 				}
 			}
@@ -212,7 +216,7 @@ public final class PojoMeta implements Cloneable {
 		if (Map.class.isInstance(condition)) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) condition;
-			if (map.size() != this.redisIDs.size()) {
+			if (map.size() != this.cacheIDs.size()) {
 				return false;
 			}
 			Set<Map.Entry<String, Object>> set = map.entrySet();
@@ -222,7 +226,7 @@ public final class PojoMeta implements Cloneable {
 				}
 				String key = entry.getKey();
 				ColumnMeta cm = this.getByFieldName(key);
-				if (cm == null || !cm.isRedisID()) {
+				if (cm == null || !cm.isCacheID()) {
 					return false;
 				}
 			}
@@ -232,8 +236,8 @@ public final class PojoMeta implements Cloneable {
 
 	}
 
-	public List<ColumnMeta> getRedisIDs() {
-		return this.redisIDs;
+	public List<ColumnMeta> getCacheIDs() {
+		return this.cacheIDs;
 	}
 
 	public Object buildFromDBColumn(Map<String, Object> map) throws Exception {
@@ -312,12 +316,12 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public String getRedisID(Object source, boolean exceptionIfHasNull) throws Exception {
+	public String getCacheID(Object source, boolean exceptionIfHasNull) throws Exception {
 		if (Map.class.isInstance(source)) {
-			return this.getRedisIDByMap((Map<String, Object>) source, exceptionIfHasNull);
+			return this.getCacheIDByMap((Map<String, Object>) source, exceptionIfHasNull);
 		}
 		StringBuilder key = new StringBuilder();
-		for (ColumnMeta m : this.redisIDs) {
+		for (ColumnMeta m : this.cacheIDs) {
 			Object v = m.value(source);
 			if (v == null) {
 				if (exceptionIfHasNull) {
@@ -333,9 +337,9 @@ public final class PojoMeta implements Cloneable {
 		return key.toString();
 	}
 
-	public String getRedisIDWithNULL(Map<String, Object> map) throws Exception {
+	public String getCacheIDWithNULL(Map<String, Object> map) throws Exception {
 		StringBuilder key = new StringBuilder();
-		for (ColumnMeta m : this.redisIDs) {
+		for (ColumnMeta m : this.cacheIDs) {
 			Object v = map.get(m.getFieldName());
 			if (key.length() > 0) {
 				key.append(KEY_SPLIT);
@@ -345,9 +349,9 @@ public final class PojoMeta implements Cloneable {
 		return key.toString();
 	}
 
-	private String getRedisIDByMap(Map<String, Object> map, boolean exceptionIfHasNull) {
+	private String getCacheIDByMap(Map<String, Object> map, boolean exceptionIfHasNull) {
 		StringBuilder key = new StringBuilder();
-		for (ColumnMeta m : this.redisIDs) {
+		for (ColumnMeta m : this.cacheIDs) {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {
 				if (exceptionIfHasNull) {
@@ -374,7 +378,7 @@ public final class PojoMeta implements Cloneable {
 			throw new SumkException(3456346, e.getMessage());
 		}
 		clone.tableName = subTableName(sub);
-		clone.pre = this.pre.replace(WILDCHAR, sub);
+		clone.pre = this.pre.replace(WILDCHAR, sub.toLowerCase());
 		return clone;
 	}
 

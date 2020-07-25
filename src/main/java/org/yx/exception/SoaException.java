@@ -36,7 +36,7 @@ public class SoaException extends CodeException {
 		return exceptionClz;
 	}
 
-	public SoaException(int code, String msg, Throwable e) {
+	public SoaException(Throwable e, int code, String msg) {
 		super(BizException.class.isInstance(e) ? ((BizException) e).getCode() : code,
 				BizException.class.isInstance(e) ? e.getMessage() : msg);
 		this.exceptionClz = e == null ? null : e.getClass().getName();

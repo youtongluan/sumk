@@ -23,7 +23,7 @@ public final class RpcSettings {
 	private static boolean clientLogDisable;
 	private static long infoTime;
 	private static long warnTime;
-	private static int clientDefaultTimeout;;
+	private static int clientDefaultTimeout;
 
 	public static int clientDefaultTimeout() {
 		return clientDefaultTimeout;

@@ -54,7 +54,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 			this.columnOrder = c.order();
 		}
 		this.dbColumn = (c == null || StringUtil.isEmpty(c.value()))
-				? DBNameResolvers.getResolver().resolveColumnName(field.getName()) : c.value();
+				? DBNameResolvers.getColumnNameResolver().apply(field.getName()) : c.value();
 		this.isNumber = Number.class.isAssignableFrom(field.getType());
 		this.isDate = TimeUtil.isGenericDate(field.getType());
 	}
@@ -63,7 +63,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		return ColumnType.ID_DB.accept(meta);
 	}
 
-	public boolean isRedisID() {
+	public boolean isCacheID() {
 		return ColumnType.ID_CACHE.accept(meta);
 	}
 

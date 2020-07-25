@@ -15,8 +15,8 @@
  */
 package org.yx.util;
 
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
@@ -25,7 +25,7 @@ import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 
 public final class ZkClientHelper {
-	private final static Map<String, ZkClient> map = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, ZkClient> map = new ConcurrentHashMap<>();
 
 	public static void makeSure(ZkClient client, final String dataPath) {
 		int start = 0, index;

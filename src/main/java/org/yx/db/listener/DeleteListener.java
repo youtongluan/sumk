@@ -46,7 +46,7 @@ public class DeleteListener implements DBEventListener {
 				return;
 			}
 			for (Map<String, Object> src : wheres) {
-				String id = pm.getRedisID(src, true);
+				String id = pm.getCacheID(src, true);
 				RecordRepository.del(pm, id);
 			}
 		} catch (Exception e) {

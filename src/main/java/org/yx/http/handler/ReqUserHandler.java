@@ -21,6 +21,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpException;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
@@ -37,7 +38,7 @@ public class ReqUserHandler implements HttpHandler {
 	}
 
 	public boolean accept(Web web) {
-		return web.requireLogin() || web.requestEncrypt().isAes();
+		return web.requireLogin() || web.requestType().isEncrypt();
 	}
 
 	@Override
@@ -54,7 +55,7 @@ public class ReqUserHandler implements HttpHandler {
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
 
 		if (obj == null) {
-			if (WebSessions.isSingleLogin()) {
+			if (HttpSettings.isSingleLogin()) {
 				String userId = HttpContextHolder.userFlag();
 				if (StringUtil.isNotEmpty(userId)) {
 

@@ -24,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.yx.bean.IOC;
 import org.yx.http.server.AbstractCommonHttpServlet;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 
@@ -42,16 +42,16 @@ public class HttpLoginWrapper extends AbstractCommonHttpServlet {
 		try {
 			List<LoginServlet> ss = IOC.getBeans(LoginServlet.class);
 			if (ss == null || ss.isEmpty()) {
-				Log.get("sumk.http.login").info("there is no LoginServlet");
+				Logs.http().info("there is no LoginServlet");
 				return;
 			}
 			if (ss.size() > 1) {
-				Log.get("sumk.http.login").warn("there is {} login servlet", ss.size());
+				Logs.http().warn("there is {} login servlet", ss.size());
 			}
 			this.serv = ss.get(0);
 			serv.init(config);
 		} catch (Exception e) {
-			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
+			Logs.http().error(e.getLocalizedMessage(), e);
 		}
 	}
 

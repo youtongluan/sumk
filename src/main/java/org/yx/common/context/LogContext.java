@@ -21,7 +21,7 @@ import java.util.Map;
 import org.yx.util.StringUtil;
 
 public final class LogContext {
-	public static final LogContext EMPTY = new LogContext(null, null, null, null, false, null);;
+	public static final LogContext EMPTY = new LogContext(null, null, null, null, false, null);
 
 	public final String act;
 

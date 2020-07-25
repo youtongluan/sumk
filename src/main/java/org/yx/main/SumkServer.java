@@ -106,8 +106,8 @@ public final class SumkServer {
 			if (StartContext.inst().get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
-
-			BeanPublisher.setListeners(Scaners.supplier().get());
+			BeanPublisher publisher = new BeanPublisher();
+			publisher.setListeners(Scaners.supplier().get());
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
@@ -117,7 +117,7 @@ public final class SumkServer {
 			if (StartContext.inst().get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
 				httpEnable = true;
 			}
-			BeanPublisher.publishBeans(allPackage(ps));
+			publisher.publishBeans(allPackage(ps));
 			SumkThreadPool.scheduleThreadPoolMonitor();
 			StartContext.clear();
 		} catch (Throwable e) {

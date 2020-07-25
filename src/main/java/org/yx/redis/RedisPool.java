@@ -16,17 +16,19 @@
 package org.yx.redis;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import org.yx.log.Logs;
 
 public final class RedisPool {
-	private static final ConcurrentMap<String, Redis> map = new ConcurrentHashMap<>();
+
+	private static Map<String, Redis> cache = Collections.emptyMap();
 
 	private static Redis _defaultRedis;
 
@@ -35,26 +37,28 @@ public final class RedisPool {
 	}
 
 	static List<String> keys() {
-		return new ArrayList<String>(map.keySet());
+		return new ArrayList<String>(cache.keySet());
 	}
 
 	public static Redis get(String alias) {
 		if (alias == null) {
 			return _defaultRedis;
 		}
-		return map.getOrDefault(alias, _defaultRedis);
+		return cache.getOrDefault(alias, _defaultRedis);
 	}
 
 	public static Redis getRedisExactly(String alias) {
-		return map.get(alias);
+		return cache.get(alias);
 	}
 
 	public static Redis defaultRedis() {
 		return _defaultRedis;
 	}
 
-	public static void put(String alias, Redis redis) {
+	public static synchronized void put(String alias, Redis redis) {
+		Map<String, Redis> map = new HashMap<>(cache);
 		Redis old = map.put(alias, Objects.requireNonNull(redis));
+		cache = map;
 		Logs.redis().trace("redis name {} : {}", alias, redis);
 		if (old != null) {
 			old.shutdownPool();
@@ -63,7 +67,7 @@ public final class RedisPool {
 	}
 
 	public static void shutdown() {
-		Set<Redis> redises = new HashSet<>(map.values());
+		Set<Redis> redises = new HashSet<>(cache.values());
 		if (_defaultRedis != null) {
 			redises.add(_defaultRedis);
 		}
@@ -71,6 +75,6 @@ public final class RedisPool {
 		for (Redis r : redises) {
 			r.shutdownPool();
 		}
-		map.clear();
+		cache = Collections.emptyMap();
 	}
 }

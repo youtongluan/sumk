@@ -19,7 +19,6 @@ import org.yx.conf.AppInfo;
 
 public final class HttpHeaderName {
 
-	public static final String CLIENT_PC = "PC";
 	private static String sessionId;
 	private static String userFlag;
 

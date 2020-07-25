@@ -56,8 +56,8 @@ public class Exchange {
 
 			List<Map<String, Object>> notFound = new ArrayList<>(origin.size());
 			for (Map<String, Object> map : origin) {
-				if (pm.isOnlyRedisID(map)) {
-					redisList.add(pm.getRedisID(map, false));
+				if (pm.isOnlyCacheID(map)) {
+					redisList.add(pm.getCacheID(map, false));
 					redisConditions.add(map);
 				} else {
 					notFound.add(map);

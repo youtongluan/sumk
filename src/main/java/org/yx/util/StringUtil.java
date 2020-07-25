@@ -32,7 +32,7 @@ public final class StringUtil {
 		if (str == null || (strLen = str.length()) == 0) {
 			return str;
 		}
-		return new StringBuffer(strLen).append(Character.toLowerCase(str.charAt(0))).append(str.substring(1))
+		return new StringBuilder(strLen).append(Character.toLowerCase(str.charAt(0))).append(str.substring(1))
 				.toString();
 	}
 
@@ -53,7 +53,7 @@ public final class StringUtil {
 		if (str == null || (strLen = str.length()) == 0) {
 			return str;
 		}
-		return new StringBuffer(strLen).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1))
+		return new StringBuilder(strLen).append(Character.toUpperCase(str.charAt(0))).append(str.substring(1))
 				.toString();
 	}
 

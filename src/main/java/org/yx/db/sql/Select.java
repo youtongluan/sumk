@@ -33,7 +33,6 @@ import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
-import org.yx.util.SBuilder;
 
 /**
  * 比较跟整个addEqual是add关系。同一种比较类型，比如less，它的一个key只能设置一次，后设置的会覆盖前面设置的<BR>
@@ -219,12 +218,9 @@ public class Select extends SelectBuilder {
 
 	private Select addOrderBy(String name, boolean desc) {
 		if (this.orderby == null) {
-			this.orderby = new ArrayList<>();
+			this.orderby = new ArrayList<>(2);
 		}
-		Order order = new Order();
-		order.name = name;
-		order.desc = desc;
-		this.orderby.add(order);
+		this.orderby.add(new Order(name, desc));
 		return this;
 	}
 
@@ -326,7 +322,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select addEqual(String field, Object value) {
-		this._addIn(SBuilder.map(field, value).toMap());
+		this._addIn(Collections.singletonMap(field, value));
 		return this;
 	}
 
@@ -363,7 +359,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 * 
 	 */
-	public Select byRedisId(Object... ids) {
+	public Select byCacheId(Object... ids) {
 		return byId(false, ids);
 	}
 
@@ -372,9 +368,9 @@ public class Select extends SelectBuilder {
 			return this;
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
-		List<ColumnMeta> cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getRedisIDs();
+		List<ColumnMeta> cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getCacheIDs();
 		Asserts.isTrue(cms != null && cms.size() == 1,
-				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "redis") + " key table");
+				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "cache") + " key table");
 		String key = cms.get(0).getFieldName();
 		for (Object id : ids) {
 			addEqual(Collections.singletonMap(key, id));

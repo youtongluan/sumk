@@ -21,7 +21,7 @@ package org.yx.http.user;
 public class SessionObject {
 
 	protected String userId;
-	protected long loginTime;
+	protected Long loginTime;
 
 	/**
 	 * 返回用户id
@@ -36,11 +36,11 @@ public class SessionObject {
 		this.userId = userId;
 	}
 
-	public long getLoginTime() {
+	public Long getLoginTime() {
 		return loginTime;
 	}
 
-	public void setLoginTime(long loginTime) {
+	public void setLoginTime(Long loginTime) {
 		this.loginTime = loginTime;
 	}
 

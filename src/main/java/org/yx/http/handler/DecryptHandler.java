@@ -17,6 +17,7 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.http.HttpCiphers;
+import org.yx.http.kit.HttpSettings;
 
 @Bean
 public class DecryptHandler implements HttpHandler {
@@ -28,7 +29,8 @@ public class DecryptHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().requestEncrypt().isAes() || ctx.httpNode().isEmptyArgument()) {
+		if (!ctx.web().requestType().isEncrypt() || ctx.httpNode().isEmptyArgument()
+				|| HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();

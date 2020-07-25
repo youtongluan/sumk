@@ -50,17 +50,17 @@ public class SelectListener implements DBEventListener {
 			}
 
 			Map<String, Object> where = in.get(0);
-			if (!pm.isOnlyRedisID(where)) {
+			if (!pm.isOnlyCacheID(where)) {
 				return;
 			}
-			String id = pm.getRedisID(where, false);
+			String id = pm.getCacheID(where, false);
 			if (id == null) {
 				return;
 			}
 
 			List<Object> list = new ArrayList<>(4);
 			for (Object obj : event.getResult()) {
-				if (id.equals(pm.getRedisID(obj, false))) {
+				if (id.equals(pm.getCacheID(obj, false))) {
 					list.add(obj);
 				}
 			}

@@ -13,33 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation;
+package org.yx.http;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Inherited;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public enum MessageType {
+	PLAIN, BASE64, ENCRYPT_BASE64, ENCRYPT;
 
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-@Inherited
-public @interface ErrorHandler {
-
-	public enum ExceptionStrategy {
-
-		IF_NO_BIZEXCEPTION,
-
-		FORCE;
-
+	public boolean isEncrypt() {
+		return this == ENCRYPT_BASE64 || this == ENCRYPT;
 	}
 
-	int code();
-
-	String message();
-
-	ExceptionStrategy strategy() default ExceptionStrategy.IF_NO_BIZEXCEPTION;
-
+	public boolean isBase64() {
+		return this == ENCRYPT_BASE64 || this == BASE64;
+	}
 }

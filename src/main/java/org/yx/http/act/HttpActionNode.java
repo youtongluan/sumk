@@ -18,7 +18,6 @@ package org.yx.http.act;
 import java.lang.reflect.Method;
 import java.util.Objects;
 
-import org.yx.annotation.ErrorHandler;
 import org.yx.annotation.Param;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
@@ -36,7 +35,6 @@ import com.google.gson.JsonParseException;
 public final class HttpActionNode extends CalleeNode {
 
 	private final Web action;
-	private final ErrorHandler errorHandler;
 
 	public Web action() {
 		return this.action;
@@ -44,10 +42,6 @@ public final class HttpActionNode extends CalleeNode {
 
 	public Upload upload() {
 		return this.getAnnotation(Upload.class);
-	}
-
-	public ErrorHandler errorHandler() {
-		return this.errorHandler;
 	}
 
 	public ArgPojo buildArgPojo(Object reqData) throws Exception {
@@ -74,6 +68,5 @@ public final class HttpActionNode extends CalleeNode {
 		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.action = action;
-		this.errorHandler = this.getAnnotation(ErrorHandler.class);
 	}
 }

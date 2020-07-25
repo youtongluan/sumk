@@ -57,7 +57,7 @@ public class UpdateListener implements DBEventListener {
 	}
 
 	private void handleUpdate(UpdateEvent event, PojoMeta pm, Map<String, Object> where) throws Exception {
-		String id = pm.getRedisID(where, true);
+		String id = pm.getCacheID(where, true);
 		Map<String, Object> to = new HashMap<>(event.getTo());
 		if (!event.isUpdateDBID()) {
 			List<ColumnMeta> m_ids = pm.getPrimaryIDs();
@@ -74,7 +74,7 @@ public class UpdateListener implements DBEventListener {
 			}
 		}
 		if (event.isFullUpdate()) {
-			String id_new = pm.getRedisID(to, true);
+			String id_new = pm.getCacheID(to, true);
 			if (!id.equals(id_new)) {
 				RecordRepository.del(pm, id);
 			}
@@ -90,7 +90,7 @@ public class UpdateListener implements DBEventListener {
 
 		Map<String, Object> where2 = new HashMap<>(where);
 		where2.putAll(to);
-		String id_new = pm.getRedisID(where2, true);
+		String id_new = pm.getCacheID(where2, true);
 
 		if (id.equals(id_new)) {
 			return;

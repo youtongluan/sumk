@@ -149,7 +149,7 @@ public final class Client {
 			url = useDirectUrl();
 			if (url == null && !this.backup) {
 				SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE,
-						"all directUrls is disabled:" + Arrays.toString(this.directUrls), (String) null);
+						"all directUrls is disabled:" + Arrays.toString(this.directUrls), null);
 				return new ErrorRpcFuture(ex, locker);
 			}
 		}
@@ -162,15 +162,14 @@ public final class Client {
 			}
 
 			if (route == null) {
-				SoaException ex = new SoaException(RpcErrorCode.NO_ROUTE, "can not find route for " + api,
-						(String) null);
+				SoaException ex = new SoaException(RpcErrorCode.NO_ROUTE, "can not find route for " + api, null);
 				return new ErrorRpcFuture(ex, locker);
 			}
 			url = route.select();
 		}
 		if (url == null) {
 			SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE, "route for " + api + " are all disabled",
-					(String) null);
+					null);
 			return new ErrorRpcFuture(ex, locker);
 		}
 		locker.url(url);
@@ -184,7 +183,7 @@ public final class Client {
 			Logs.rpc().error(e.getLocalizedMessage(), e);
 		}
 		if (f == null) {
-			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", (String) null);
+			SoaException ex = new SoaException(RpcErrorCode.SEND_FAILED, url + " can not connect", null);
 			return new ErrorRpcFuture(ex, locker);
 		}
 		f.addListener(locker);

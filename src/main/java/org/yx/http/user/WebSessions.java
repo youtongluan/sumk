@@ -16,7 +16,6 @@
 package org.yx.http.user;
 
 import org.yx.bean.IOC;
-import org.yx.conf.AppInfo;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpException;
@@ -52,10 +51,6 @@ public final class WebSessions {
 			return;
 		}
 		session.removeSession(HttpContextHolder.sessionId());
-	}
-
-	public static boolean isSingleLogin() {
-		return AppInfo.getBoolean("sumk.http.session.single", false);
 	}
 
 	public static synchronized void initSession() {

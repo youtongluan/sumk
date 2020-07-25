@@ -31,7 +31,7 @@ import org.yx.http.HttpHeaderName;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.log.HttpLogs;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.UUIDSeed;
@@ -48,7 +48,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		Charset charset = InnerHttpUtil.charset(req);
 		try {
 			if (!acceptMethod(req, resp)) {
-				Log.get("sumk.http.login").warn("不是有效的method，只能使用GET或POST");
+				Logs.http().warn("不是login的有效method，比如HEAD等方法可能不支持");
 				return;
 			}
 			InnerHttpUtil.setRespHeader(resp, charset);
@@ -64,9 +64,9 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				return;
 			}
 			byte[] key = createEncryptKey(req);
-			boolean singleLogin = WebSessions.isSingleLogin();
+			boolean singleLogin = HttpSettings.isSingleLogin();
 			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
-				Log.get("sumk.http.login").debug("{} :sid:{} login failed", user, sid);
+				Logs.http().debug("{} :sid:{} login failed", user, sid);
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
 				return;
 			}
@@ -75,7 +75,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			if (StringUtil.isNotEmpty(userId)) {
 				resp.setHeader(HttpHeaderName.userFlag(), userId);
 			}
-			UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(256);
+			UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(64);
 			outputKey(out, key, req, resp);
 			if (HttpSettings.isCookieEnable()) {
 				String contextPath = req.getContextPath();
@@ -88,14 +88,14 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				setUserFlagCookie(req, resp, userId, attr);
 			}
 
-			out.write(new byte[] { '\t', '\n' });
+			this.outputSplit(out);
 			if (obj.getResponseData() != null) {
 				out.write(obj.getResponseData().getBytes(charset));
 			}
 			resp.getOutputStream().write(out.toByteArray());
 		} catch (Throwable e) {
 			ex = e;
-			Log.get("sumk.http.login").error(e.getLocalizedMessage(), e);
+			Logs.http().error(e.getLocalizedMessage(), e);
 			InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;
@@ -104,6 +104,10 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			InnerHttpUtil.record(LOGIN_NAME, time, ex == null);
 		}
 
+	}
+
+	protected void outputSplit(OutputStream out) throws IOException {
+		out.write(new byte[] { '\t', '\n' });
 	}
 
 	protected boolean acceptMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -116,19 +120,17 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	}
 
 	protected String getUserName(HttpServletRequest req) {
-		return req.getParameter(AppInfo.get("sumk.http.username", "username"));
+		return req.getParameter(AppInfo.get("sumk.http.login.username", "username"));
 	}
 
 	protected void setSessionCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String attr) {
-		StringBuilder cookie = new StringBuilder();
-
-		cookie.append(HttpHeaderName.sessionId()).append('=').append(sid).append(attr);
+		StringBuilder cookie = new StringBuilder(HttpHeaderName.sessionId()).append('=').append(sid).append(attr);
 
 		resp.addHeader("Set-Cookie", cookie.toString());
 	}
 
 	protected void setUserFlagCookie(HttpServletRequest req, HttpServletResponse resp, String userId, String attr) {
-		if (WebSessions.isSingleLogin() && StringUtil.isNotEmpty(userId)) {
+		if (HttpSettings.isSingleLogin() && StringUtil.isNotEmpty(userId)) {
 			StringBuilder cookie = new StringBuilder();
 			cookie.append(HttpHeaderName.userFlag()).append('=').append(userId).append(attr);
 			resp.addHeader("Set-Cookie", cookie.toString());
@@ -160,11 +162,11 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	/**
 	 * @param sessionId
 	 *            http头部sid的信息
-	 * @param user
-	 *            对应于http parameter的username
+	 * @param userName
+	 *            用户名，默认通过request.getParameter("username")获取的
 	 * @param req
 	 *            用户请求的HttpServletRequest对象
 	 * @return 登录信息，无论成功与否，返回值不能是null
 	 */
-	protected abstract LoginObject login(String sessionId, String user, HttpServletRequest req);
+	protected abstract LoginObject login(String sessionId, String userName, HttpServletRequest req);
 }

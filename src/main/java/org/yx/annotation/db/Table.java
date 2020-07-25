@@ -28,7 +28,7 @@ import org.yx.db.enums.CacheType;
 @Documented
 public @interface Table {
 	/**
-	 * @return 表名。为空时，就是小写的类名
+	 * @return 表名。为空时，就是表名，支持#或者?作为通配符
 	 */
 	String value() default "";
 
@@ -38,7 +38,9 @@ public @interface Table {
 	int duration() default 0;
 
 	/**
-	 * @return 为空使用类名，一般使用默认就好
+	 * 如果使用cluster，同一张表的DB缓存会在一个slot上，这是为了防止mget、mset出问题
+	 * 
+	 * @return 为空使用表名，一般使用默认就好。支持#或者?作为通配符
 	 */
 	String preInCache() default "";
 

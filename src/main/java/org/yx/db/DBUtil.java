@@ -46,7 +46,7 @@ public class DBUtil {
 			if (src == null) {
 				continue;
 			}
-			String id = pm.getRedisID(src, false);
+			String id = pm.getCacheID(src, false);
 			if (StringUtil.isEmpty(id)) {
 				continue;
 			}

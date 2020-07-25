@@ -36,7 +36,7 @@ import org.yx.util.M;
 public class MultipartServer extends AbstractHttpServer {
 
 	private static final long serialVersionUID = 1L;
-	final static String MULTI = "multipart/form-data";
+	private static final String MULTIPART_FORMDATA = "multipart/form-data";
 
 	@Override
 	protected void handle(WebContext wc) throws Throwable {
@@ -45,10 +45,10 @@ public class MultipartServer extends AbstractHttpServer {
 			throw HttpException.create(HttpErrorCode.UPLOAD_DISABLED, "上传功能暂时无法使用");
 		}
 		String contextType = wc.httpRequest().getContentType();
-		if (contextType == null || !contextType.startsWith(MULTI)) {
-			log.error("the MIME of act is " + MULTI + ",not " + contextType);
+		if (contextType == null || !contextType.startsWith(MULTIPART_FORMDATA)) {
+			log.error("the MIME of act is " + MULTIPART_FORMDATA + ",not " + contextType);
 			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE,
-					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTI, wc.rawAct()));
+					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTIPART_FORMDATA, wc.rawAct()));
 		}
 		if (wc.httpNode().upload() == null) {
 			log.error("{}缺少 @upload", wc.rawAct());

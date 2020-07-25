@@ -45,7 +45,7 @@ public class InsertListener implements DBEventListener {
 				return;
 			}
 			for (Map<String, Object> map : list) {
-				String id = pm.getRedisID(map, false);
+				String id = pm.getCacheID(map, false);
 				if (id == null) {
 					continue;
 				}

@@ -13,7 +13,7 @@ import org.yx.annotation.Param;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
-import org.yx.http.EncryptType;
+import org.yx.http.MessageType;
 import org.yx.http.handler.MultipartItem;
 import org.yx.http.user.WebSessions;
 import org.yx.util.StreamUtil;
@@ -31,7 +31,7 @@ public class PlainServer {
 		return list;
 	}
 
-	@Web(value = "base64", requestEncrypt = EncryptType.BASE64, responseEncrypt = EncryptType.BASE64)
+	@Web(value = "base64", requestType = MessageType.BASE64, responseType = MessageType.BASE64)
 	public List<String> base64(@Param(max = 20) String echo, List<String> names) {
 		List<String> list = new ArrayList<>();
 		for (String name : names) {
@@ -40,7 +40,7 @@ public class PlainServer {
 		return list;
 	}
 
-	@Web(value = "upload", requestEncrypt = EncryptType.BASE64)
+	@Web(value = "upload", requestType = MessageType.BASE64)
 	@Upload
 	public String upload(String name, @Param(required = true) Integer age) throws FileNotFoundException, IOException {
 		Assert.assertEquals("张三", name);
@@ -61,7 +61,7 @@ public class PlainServer {
 		return "hello " + name+"，来自"+WebSessions.getUserObject(DemoSessionObject.class).getUserId()+"的问候";
 	}
 
-	@Web(requestEncrypt = EncryptType.AES_BASE64, responseEncrypt = EncryptType.AES_BASE64)
+	@Web(requestType = MessageType.ENCRYPT_BASE64, responseType = MessageType.ENCRYPT_BASE64)
 	public String bizError() {
 		System.out.println("req:" + WebUtil.getHttpRequest());
 		BizException.throwException(12345, "业务异常");

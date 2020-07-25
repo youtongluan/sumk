@@ -95,8 +95,8 @@ public final class HttpActions {
 				Web web = http.action();
 				map.put("cnName", web.cnName());
 				map.put("requireLogin", web.requireLogin());
-				map.put("requestEncrypt", web.requestEncrypt());
-				map.put("responseEncrypt", web.responseEncrypt());
+				map.put("requestEncrypt", web.requestType());
+				map.put("responseEncrypt", web.responseType());
 				map.put("sign", web.sign());
 				if (web.toplimit() > 0) {
 					map.put("toplimit", web.toplimit());

@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yx.http.EncryptType;
+import org.yx.http.MessageType;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -37,11 +37,11 @@ public @interface Web {
 
 	boolean requireLogin() default false;
 
-	EncryptType requestEncrypt() default EncryptType.NONE;
+	MessageType requestType() default MessageType.PLAIN;
 
 	boolean sign() default false;
 
-	EncryptType responseEncrypt() default EncryptType.NONE;
+	MessageType responseType() default MessageType.PLAIN;
 
 	String custom() default "";
 

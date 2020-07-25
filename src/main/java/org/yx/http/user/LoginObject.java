@@ -43,7 +43,7 @@ public class LoginObject {
 		return errorMsg;
 	}
 
-	public static LoginObject error(String errorMsg) {
+	public static LoginObject fail(String errorMsg) {
 		return new LoginObject(null, null, errorMsg);
 	}
 
