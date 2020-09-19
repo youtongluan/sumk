@@ -27,7 +27,7 @@ public abstract class RpcFilter implements Ordered {
 
 	public final void setNext(RpcFilter next) {
 		if (this.next != null) {
-			SumkException.throwException(23431, "next已经赋值了，它是" + this.next);
+			throw new SumkException(23431, "next已经赋值了，它是" + this.next);
 		}
 		this.next = Objects.requireNonNull(next);
 	}

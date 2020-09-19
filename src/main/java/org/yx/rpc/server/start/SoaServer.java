@@ -101,7 +101,7 @@ public class SoaServer implements Lifecycle {
 	};
 
 	public SoaServer(int port) {
-		this.SOA_ROOT = AppInfo.get("sumk.rpc.server.route", "sumk.rpc.server.zk.route", ZKConst.SUMK_SOA_ROOT);
+		this.SOA_ROOT = AppInfo.get("sumk.rpc.zk.root.server", "sumk.rpc.zk.root", ZKConst.SUMK_SOA_ROOT);
 		this.init(port);
 	}
 

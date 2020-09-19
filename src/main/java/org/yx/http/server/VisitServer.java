@@ -29,9 +29,6 @@ import org.yx.conf.AppInfo;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.db.sql.VisitCounter;
-import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Logs;
-import org.yx.util.S;
 
 @Bean
 @SumkServlet(value = { "/_sumk_cache_monitor" }, loadOnStartup = -1, appKey = "sumkCacheMonitor")
@@ -42,21 +39,8 @@ public class VisitServer extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		InnerHttpUtil.noCache(resp);
-		resp.setContentType("text/plain;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.http.cache.monitor", "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
-		String sign = req.getParameter("sign");
-		if (sign == null) {
-			Logs.http().debug("sign is empty");
+		if (!ServerHelper.preHandle(req, resp, "sumk.http.cache.monitor")) {
 			return;
-		}
-		try {
-			String signed = S.hash().digest(sign, StandardCharsets.UTF_8);
-			if (!md5.equalsIgnoreCase(signed)) {
-				Logs.http().debug("signed:{},need:{}", signed, md5);
-				return;
-			}
-		} catch (Exception e) {
 		}
 		resp.getOutputStream().write(visitInfo().getBytes(StandardCharsets.UTF_8));
 	}

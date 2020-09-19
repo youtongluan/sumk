@@ -27,7 +27,7 @@ public abstract class WebFilter implements Ordered {
 
 	public final void setNext(WebFilter next) {
 		if (this.next != null) {
-			SumkException.throwException(2343, "next已经赋值了，它是" + this.next);
+			throw new SumkException(2343, "next已经赋值了，它是" + this.next);
 		}
 		this.next = Objects.requireNonNull(next);
 	}
@@ -36,6 +36,16 @@ public abstract class WebFilter implements Ordered {
 		return this.next.doFilter(ctx);
 	}
 
+	/**
+	 * 本方法只需要实现，不需要去调用任何接口的本方法。<BR>
+	 * 这个方法里一般需要在里面调用callNextFilter(ctx)。
+	 * 
+	 * @param ctx
+	 *            web请求的上下文
+	 * @return 返回给请求端的对象
+	 * @throws Throwable
+	 *             如果抛出了异常，就会返回类似于“未知异常”这种提示信息
+	 */
 	public abstract Object doFilter(WebContext ctx) throws Throwable;
 
 }

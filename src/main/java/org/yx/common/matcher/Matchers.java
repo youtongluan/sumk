@@ -15,13 +15,13 @@
  */
 package org.yx.common.matcher;
 
-import static org.yx.common.matcher.WildcardMatcher.WILDCARD;
-
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.yx.log.RawLog;
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class Matchers {
@@ -31,7 +31,21 @@ public class Matchers {
 	 */
 	public static final String SPLIT = ",";
 
+	public static final String WILDCARD = "*";
+
+	public static Predicate<String> createWildcardMatcher(String patterns) {
+		return createWildcardMatcher(patterns, 1);
+	}
+
 	public static Predicate<String> createWildcardMatcher(String patterns, int minPatternLength) {
+		if (patterns == null || patterns.isEmpty()) {
+			return BooleanMatcher.FALSE;
+		}
+		String[] array = StringUtil.toLatin(patterns).split(SPLIT);
+		return createWildcardMatcher(CollectionUtil.unmodifyList(array), minPatternLength);
+	}
+
+	public static Predicate<String> createWildcardMatcher(Collection<String> patterns, int minPatternLength) {
 		if (patterns == null || patterns.isEmpty()) {
 			return BooleanMatcher.FALSE;
 		}
@@ -39,10 +53,8 @@ public class Matchers {
 		Set<String> matchStart = new HashSet<>();
 		Set<String> matchEnd = new HashSet<>();
 		Set<String> matchContain = new HashSet<>();
-		patterns = StringUtil.toLatin(patterns);
-		String[] noProxyArray = patterns.split(SPLIT);
 		String doubleWild = WILDCARD + WILDCARD;
-		for (String s : noProxyArray) {
+		for (String s : patterns) {
 			if ((s = s.trim()).isEmpty()) {
 				continue;
 			}
@@ -93,4 +105,26 @@ public class Matchers {
 		return new WildcardMatcher(exacts, matchStarts, matchEnds, matchContains);
 	}
 
+	/**
+	 * 创建InOutMatcher、BooleanMatcher或其它Matcher
+	 * 
+	 * @param include
+	 *            可以匹配的Predicate,不能为null
+	 * @param exclude
+	 *            被排除的Predicate,不能为null
+	 * @return 返回值有可能是InOutMatcher类型，也有可能是BooleanMatcher
+	 */
+	public static Predicate<String> includeAndExclude(Predicate<String> include, Predicate<String> exclude) {
+		if (exclude == BooleanMatcher.FALSE) {
+			return include;
+		}
+		if (include == BooleanMatcher.FALSE || exclude == BooleanMatcher.TRUE) {
+			return BooleanMatcher.FALSE;
+		}
+		return new InOutMatcher(include, exclude);
+	}
+
+	public static Predicate<String> includeAndExclude(String include, String exclude) {
+		return includeAndExclude(createWildcardMatcher(include), createWildcardMatcher(exclude));
+	}
 }

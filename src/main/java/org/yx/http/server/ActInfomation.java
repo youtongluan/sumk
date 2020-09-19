@@ -16,7 +16,6 @@
 package org.yx.http.server;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
@@ -29,10 +28,8 @@ import org.yx.common.Monitors;
 import org.yx.common.json.GsonHelper;
 import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
-import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 import org.yx.rpc.RpcActions;
-import org.yx.util.S;
 import org.yx.util.StringUtil;
 
 import com.google.gson.Gson;
@@ -46,22 +43,12 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		InnerHttpUtil.noCache(resp);
-		resp.setContentType("text/plain;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.acts.info", "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
-		String sign = req.getParameter("sign");
-		String mode = req.getParameter("mode");
-		if (sign == null) {
-			Logs.http().debug("sign is empty");
+		if (!ServerHelper.preHandle(req, resp, "sumk.acts.info")) {
 			return;
 		}
-		try {
-			String signed = S.hash().digest(sign, StandardCharsets.UTF_8);
-			if (!md5.equalsIgnoreCase(signed) || StringUtil.isEmpty(mode)) {
-				Logs.http().debug("signed:{},need:{}", signed, md5);
-				return;
-			}
-		} catch (Exception e) {
+		String mode = req.getParameter("mode");
+		if (StringUtil.isEmpty(mode)) {
+			Logs.http().debug("mode is empty");
 		}
 		GsonBuilder builder = GsonHelper.builder("sumk.acts");
 		if ("1".equals(req.getParameter("pretty"))) {

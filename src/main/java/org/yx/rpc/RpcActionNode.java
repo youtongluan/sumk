@@ -22,6 +22,7 @@ import org.yx.annotation.Param;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
 import org.yx.common.CalleeNode;
+import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
@@ -44,7 +45,7 @@ public final class RpcActionNode extends CalleeNode {
 					this.fields[i] = f;
 				}
 			} catch (Exception e) {
-				SumkException.throwException(235345, e.getMessage());
+				throw new SumkException(235345, e.getMessage());
 			}
 		} else {
 			this.fields = null;
@@ -72,7 +73,7 @@ public final class RpcActionNode extends CalleeNode {
 			return this.execute(this.getEmptyArgObj());
 		}
 		if (args == null) {
-			SumkException.throwException(12012, method.getName() + "的参数不能为空");
+			throw new SumkException(12012, method.getName() + "的参数不能为空");
 		}
 		if (args.length != argNames.length) {
 			Logs.rpc().debug("{}需要传递{}个参数，实际传递{}个", method.getName(), argNames.length, args.length);
@@ -87,6 +88,15 @@ public final class RpcActionNode extends CalleeNode {
 			f.set(pojo, RpcJson.operator().fromJson(args[i], f.getGenericType()));
 		}
 		return this.execute(pojo);
+	}
+
+	public static void checkNode(String api, CalleeNode node) {
+		if (node == null) {
+			throw new SumkException(123546, "[" + api + "] is not a valid interface");
+		}
+		if (node.overflowThreshold()) {
+			throw BizException.create(RpcErrorCode.THREAD_THRESHOLD_OVER, "微服务限流降级");
+		}
 	}
 
 }

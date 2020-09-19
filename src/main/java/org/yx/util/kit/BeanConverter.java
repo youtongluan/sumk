@@ -123,6 +123,8 @@ public class BeanConverter {
 	 * 根据map的内容填充bean的属性。只转义第一层的key。<BR>
 	 * 对大小写和下划线不敏感
 	 * 
+	 * @param <T>
+	 *            参数类型
 	 * @param map
 	 *            原始map
 	 * @param bean
@@ -161,8 +163,10 @@ public class BeanConverter {
 	}
 
 	/**
-	 * 根据map的内容填充bean的属性。只转义第一层的key。<BR>
+	 * 根据map的内容填充bean的属性。只转义第一层的key。
 	 * 
+	 * @param <T>
+	 *            参数类型
 	 * @param map
 	 *            原始map
 	 * @param bean

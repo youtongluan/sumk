@@ -17,10 +17,7 @@ package org.yx.http;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.yx.annotation.Bean;
@@ -32,6 +29,7 @@ import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
+import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
@@ -66,11 +64,16 @@ public class HttpPlugin implements Plugin {
 	protected void resolveWebAnnotation(List<Object> beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
+			List<HttpActionInfo> infos = new ArrayList<>(100);
 			for (Object bean : beans) {
-				factory.resolve(bean);
+				List<HttpActionInfo> acts = factory.resolve(bean);
+				if (acts != null && acts.size() > 0) {
+					infos.addAll(acts);
+				}
 			}
+			HttpActions.init(infos);
 		} catch (Exception e) {
-			throw SumkException.create(e);
+			throw SumkException.wrap(e);
 		}
 	}
 
@@ -83,11 +86,9 @@ public class HttpPlugin implements Plugin {
 		try {
 			HttpHeaderName.init();
 			HttpSettings.init();
-			HttpActions.init();
 			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
-			this.addFusingObserver();
 			this.buildHttpHandlers();
 			this.initServer(port);
 		} catch (Exception e) {
@@ -150,24 +151,6 @@ public class HttpPlugin implements Plugin {
 			return false;
 		}
 		return true;
-	}
-
-	protected void addFusingObserver() {
-		AppInfo.addObserver(info -> {
-			HttpSettings.setCookieEnable(AppInfo.getBoolean("sumk.http.header.usecookie", true));
-			HttpSettings.setHttpSessionTimeoutInMs(1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30));
-			String fusing = AppInfo.get("sumk.http.fusing", null);
-			if (fusing == null) {
-				HttpSettings.setFusing(Collections.emptySet());
-			} else {
-				Set<String> set = new HashSet<>();
-				String[] fs = StringUtil.toLatin(fusing).split(",");
-				for (String f : fs) {
-					set.add(f.trim());
-				}
-				HttpSettings.setFusing(set);
-			}
-		});
 	}
 
 	@Override

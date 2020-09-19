@@ -23,7 +23,6 @@ import java.util.Set;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
@@ -42,7 +41,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	protected void sub(String sub) {
 		if (this.sub != null) {
-			SumkException.throwException(14323543, "sub已经设置了，这个属性只允许调用一次");
+			throw new SumkException(14323543, "sub已经设置了，这个属性只允许调用一次");
 		}
 		if (sub == null || sub.isEmpty()) {
 			return;
@@ -64,50 +63,47 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 					continue MAPKEY;
 				}
 			}
-			SumkException.throwException(743257, key + " is not a field in " + pm.pojoClz);
+			throw new SumkException(743257, key + " is not a field in " + pm.pojoClz);
 		}
 	}
 
 	protected void checkIn() {
-		Asserts.isTrue(CollectionUtil.isNotEmpty(this.in), "no conditions");
-	}
-
-	protected void _addIn(Object src) {
-		this._addIn(src, Map.class.isInstance(src));
+		if (CollectionUtil.isEmpty(this.in)) {
+			throw new SumkException(-7345245, "no conditions");
+		}
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void _addIn(Object src, boolean addNullFieldToIn) {
+	protected void _addIn(Object src) {
 		if (src == null) {
 			return;
 		}
-		if (this.in == null) {
-			this.in = new ArrayList<>();
-		}
-
-		if ("java.util.Collections$SingletonMap".equals(src.getClass().getName())) {
-			this.in.add((Map<String, Object>) src);
-			return;
-		}
 		if (Map.class.isInstance(src)) {
-			Map<String, Object> map = (Map<String, Object>) src;
-			if (!map.isEmpty()) {
-				this.in.add(new HashMap<>(map));
-			}
+			this._addInByMap(new HashMap<>((Map<String, Object>) src));
 			return;
 		}
 
 		if (this.pojoMeta == null) {
 			this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass(), sub);
 			if (this.pojoMeta == null) {
-				SumkException.throwException(3654, src.getClass() + " does not config as a table");
+				throw new SumkException(3654, src.getClass() + " does not config as a table");
 			}
 		}
 		try {
-			this.in.add(this.pojoMeta.populate(src, addNullFieldToIn));
+			_addInByMap(this.pojoMeta.populate(src, false));
 		} catch (Exception e) {
-			SumkException.throwException(534254, e.getMessage(), e);
+			throw new SumkException(534254, e.getMessage(), e);
 		}
+	}
+
+	protected void _addInByMap(Map<String, Object> map) {
+		if (map == null || map.isEmpty()) {
+			return;
+		}
+		if (this.in == null) {
+			this.in = new ArrayList<>();
+		}
+		this.in.add(map);
 	}
 
 	private PojoMeta parsePojoMeta() {
@@ -121,7 +117,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	public PojoMeta parsePojoMeta(boolean failIfNull) {
 		PojoMeta pm = this.parsePojoMeta();
 		if (pm == null && failIfNull) {
-			SumkException.throwException(7325435, "please call tableClass(XX.class) first");
+			throw new SumkException(7325435, "please call tableClass(XX.class) first");
 		}
 		return pm;
 	}

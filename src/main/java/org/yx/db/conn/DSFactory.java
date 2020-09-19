@@ -21,7 +21,7 @@ import java.util.Objects;
 import javax.sql.DataSource;
 
 import org.slf4j.Logger;
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.log.Logs;
 
 public final class DSFactory {

@@ -51,14 +51,14 @@ public class LocalSqlDao {
 	
 	@Box
 	public Map<String, Object> select(Long id){
-		return SDB.selectOne("demo.select",SBuilder.map("id", id).put("table", "demo_user").toMap());
+		return SDB.queryOne("demo.select",SBuilder.map("id", id).put("table", "demo_user").toMap());
 	}
 	
 	@Box
 	public Map<String, Object> select(Map<String, Object> param){
 		Map<String, Object> map=new HashMap<>(param);
 		map.put("table", "demo_user");
-		return SDB.selectOne("demo.select",map);
+		return SDB.queryOne("demo.select",map);
 	}
 	
 	@Box

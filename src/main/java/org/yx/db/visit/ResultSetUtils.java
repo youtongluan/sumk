@@ -25,9 +25,9 @@ import java.util.Objects;
 
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
-import org.yx.util.Asserts;
+import org.yx.util.kit.Asserts;
 
-public class ResultSetUtils {
+public final class ResultSetUtils {
 	public static List<Map<String, Object>> toMapList(ResultSet rs) throws java.sql.SQLException {
 		List<Map<String, Object>> list = new ArrayList<>(10);
 		if (rs == null) {
@@ -73,7 +73,7 @@ public class ResultSetUtils {
 			return list;
 		}
 		ResultSetMetaData md = rs.getMetaData();
-		Asserts.isTrue(md.getColumnCount() == 1, "result data column is " + md.getColumnCount() + ", not 1");
+		Asserts.requireTrue(md.getColumnCount() == 1, "result data column is " + md.getColumnCount() + ", not 1");
 		while (rs.next()) {
 			list.add(rs.getObject(1));
 		}

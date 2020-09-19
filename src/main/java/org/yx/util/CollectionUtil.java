@@ -25,10 +25,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Map.Entry;
 
 import org.yx.common.sumk.UnmodifiableArrayList;
 
@@ -37,20 +36,6 @@ import org.yx.common.sumk.UnmodifiableArrayList;
  */
 
 public final class CollectionUtil {
-
-	@SafeVarargs
-	public static <T> List<T> list(T... a) {
-		List<T> list = new ArrayList<>();
-		Collections.addAll(list, a);
-		return list;
-	}
-
-	@SafeVarargs
-	public static <T> Set<T> hashSet(T... a) {
-		Set<T> set = new HashSet<>();
-		Collections.addAll(set, a);
-		return set;
-	}
 
 	public static Map<String, String> loadMap(InputStream in, boolean keepNullValue) throws IOException {
 		if (in == null) {
@@ -61,7 +46,11 @@ public final class CollectionUtil {
 	}
 
 	public static Map<String, String> loadMapFromText(String text, String bigDelimiter, String smallDelimiter) {
-		Map<String, String> map = new HashMap<>();
+		return fillMapFromText(new HashMap<String, String>(), text, bigDelimiter, smallDelimiter);
+	}
+
+	public static Map<String, String> fillMapFromText(Map<String, String> map, String text, String bigDelimiter,
+			String smallDelimiter) {
 		for (String entry : text.split(bigDelimiter)) {
 			entry = entry.trim();
 			if (StringUtil.isEmpty(entry)) {
@@ -224,7 +213,7 @@ public final class CollectionUtil {
 		return ret;
 	}
 
-	public static <T> List<T> unmodifyList(Collection<T> col, Class<T> clz) {
+	public static <T> List<T> unmodifyList(Collection<T> col) {
 		if (col == null) {
 			return null;
 		}
@@ -234,7 +223,7 @@ public final class CollectionUtil {
 		if (col.size() == 1) {
 			return Collections.singletonList(col.iterator().next());
 		}
-		return new UnmodifiableArrayList<>(col, clz);
+		return new UnmodifiableArrayList<>(col);
 	}
 
 	public static <T> List<T> unmodifyList(T[] arr) {
@@ -248,5 +237,19 @@ public final class CollectionUtil {
 			return Collections.singletonList(arr[0]);
 		}
 		return new UnmodifiableArrayList<>(arr);
+	}
+
+	public static <K, V> Map<K, V> unmodifyMap(Map<? extends K, ? extends V> m) {
+		if (m == null) {
+			return null;
+		}
+		if (m.isEmpty()) {
+			return Collections.emptyMap();
+		}
+		if (m.size() == 1) {
+			Entry<? extends K, ? extends V> kv = m.entrySet().iterator().next();
+			return Collections.singletonMap(kv.getKey(), kv.getValue());
+		}
+		return Collections.unmodifiableMap(m);
 	}
 }

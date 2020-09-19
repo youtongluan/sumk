@@ -15,15 +15,18 @@
  */
 package org.yx.http;
 
-import org.yx.exception.ErrorCode;
-
 /**
  * 3位数的错误码，为系统所保留，应用系统的错误码，要避开这个区间。客户端可以对这些异常码做额外处理，尤其是登录相关部分<BR>
  * 用户异常码推荐4位数，BizException中的code会对应http中json的异常码。<BR>
- * 这个错误码对应于http请求的返回码499时的异常码。它是body里的错误码（json格式）.<BR>
- * 只要有异常发生，http的状态码固定为499，json有2个默认字段code、message，其中code为int类型<BR>
+ * 这个错误码对应于http请求的返回码550时的异常码。它是body里的错误码（json格式）.<BR>
+ * json有2个默认字段code、message，其中code为int类型<BR>
  */
-public interface HttpErrorCode extends ErrorCode {
+public interface HttpErrorCode {
+	/**
+	 * 线程数溢出
+	 */
+	int THREAD_THRESHOLD_OVER = 900;
+
 	/**
 	 * 登录失败
 	 */

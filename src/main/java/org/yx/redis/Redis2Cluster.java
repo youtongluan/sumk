@@ -95,10 +95,6 @@ public class Redis2Cluster extends JedisCluster implements Redis {
 		}
 	}
 
-	public boolean isCluster() {
-		return true;
-	}
-
 	@Override
 	public String toString() {
 		return "Redis[hosts=" + hosts + ", db=" + config.getDb() + "]";
@@ -124,6 +120,11 @@ public class Redis2Cluster extends JedisCluster implements Redis {
 	@Override
 	public boolean isMuted() {
 		return false;
+	}
+
+	@Override
+	public RedisType redisType() {
+		return RedisType.CLUSTER;
 	}
 
 }

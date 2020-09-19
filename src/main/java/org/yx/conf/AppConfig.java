@@ -45,7 +45,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 	}
 
 	public AppConfig(String fileName) {
-		this(fileName, 1000 * 60);
+		this(fileName, Integer.getInteger("sumk.appinfo.period", 1000 * 30));
 	}
 
 	public AppConfig(String fileName, int periodTimeMS) {

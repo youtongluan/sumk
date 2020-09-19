@@ -19,7 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class Statis {
+public class StatisItem {
 	private final String name;
 
 	private final AtomicInteger count = new AtomicInteger(0);
@@ -29,7 +29,7 @@ public class Statis {
 	private final AtomicInteger failedCount = new AtomicInteger(0);
 	private final AtomicLong failedTime = new AtomicLong(0);
 
-	public Statis(String name) {
+	public StatisItem(String name) {
 		this.name = Objects.requireNonNull(name);
 	}
 

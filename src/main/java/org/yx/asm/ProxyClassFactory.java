@@ -24,7 +24,7 @@ import org.objectweb.asm.ClassWriter;
 import org.yx.annotation.Box;
 import org.yx.conf.Const;
 
-public class ProxyClassFactory {
+public final class ProxyClassFactory {
 
 	public static Class<?> proxyIfNeed(Class<?> clz) throws Exception {
 		List<Method> aopMethods = new ArrayList<>();

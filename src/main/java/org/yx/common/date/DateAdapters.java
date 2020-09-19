@@ -127,7 +127,7 @@ public final class DateAdapters {
 			} catch (Exception e) {
 				String num = v;
 				if (num.contains(".")) {
-					num = num.substring(0, num.indexOf("."));
+					num = num.substring(0, num.indexOf('.'));
 				}
 				return SumkDate.of(Long.parseLong(num));
 			}

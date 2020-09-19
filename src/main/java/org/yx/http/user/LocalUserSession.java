@@ -25,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
-import org.yx.log.Logs;
+import org.yx.log.Log;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.Task;
@@ -66,10 +66,10 @@ public class LocalUserSession implements UserSession {
 	}
 
 	public LocalUserSession() {
-		Logs.http().info("$$$use local user session");
+		Log.get("sumk.http.session").info("$$$use local user session");
 		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
-		Task.scheduleAtFixedRate(() -> CacheHelper.expire(map, HttpSettings.getHttpSessionTimeoutInMs()), seconds,
-				seconds, TimeUnit.SECONDS);
+		Task.scheduleAtFixedRate(() -> CacheHelper.expire(map, HttpSettings.httpSessionTimeoutInMs()), seconds, seconds,
+				TimeUnit.SECONDS);
 	}
 
 	protected TimedCachedObject loadUserObject(String sid) {
@@ -81,7 +81,7 @@ public class LocalUserSession implements UserSession {
 			return null;
 		}
 		long now = System.currentTimeMillis();
-		if (to.refreshTime + HttpSettings.getHttpSessionTimeoutInMs() < now) {
+		if (to.refreshTime + HttpSettings.httpSessionTimeoutInMs() < now) {
 			map.remove(sid);
 			return null;
 		}
@@ -126,11 +126,6 @@ public class LocalUserSession implements UserSession {
 	@Override
 	public int localCacheSize() {
 		return this.map.size();
-	}
-
-	@Override
-	public boolean valid(String sessionId) {
-		return true;
 	}
 
 }

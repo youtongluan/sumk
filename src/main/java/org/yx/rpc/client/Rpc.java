@@ -51,7 +51,7 @@ public final class Rpc {
 			ReqSession.init();
 			strated = true;
 		} catch (Exception e) {
-			throw SumkException.create(e);
+			throw SumkException.wrap(e);
 		}
 	}
 

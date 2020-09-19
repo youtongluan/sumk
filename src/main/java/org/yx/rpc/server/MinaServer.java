@@ -128,7 +128,7 @@ public class MinaServer implements Runnable {
 		} catch (Exception e) {
 			Log.get("sumk.rpc.server").debug(e.getLocalizedMessage(), e);
 			acceptor = null;
-			SumkException.throwException(38057306, "start mina server failed", e);
+			throw new SumkException(38057306, "start mina server failed", e);
 		}
 
 	}

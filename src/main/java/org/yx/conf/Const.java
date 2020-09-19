@@ -31,4 +31,5 @@ public interface Const {
 	String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
 
 	String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
+
 }

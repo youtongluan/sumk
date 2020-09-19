@@ -135,6 +135,11 @@ public class WebContext {
 		return WebSessions.loadUserSession().getKey(sessionId);
 	}
 
+	/**
+	 * 开发者定义的原始act，这里的act不包含逗号。 如果有逗号分隔，这里就只是@Web中的一段
+	 * 
+	 * @return 就是@Web上定义的act
+	 */
 	public String rawAct() {
 		return rawAct;
 	}

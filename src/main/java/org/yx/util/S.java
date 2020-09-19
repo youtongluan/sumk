@@ -22,6 +22,7 @@ import org.yx.main.SumkThreadPool;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.AESEncryptor;
 import org.yx.util.secury.Base64;
+import org.yx.util.secury.Base64Impl;
 import org.yx.util.secury.CommonDigest;
 import org.yx.util.secury.Encryptor;
 import org.yx.util.secury.Hasher;
@@ -32,7 +33,7 @@ public final class S {
 
 	private static Gson json = GsonHelper.gson("sumk");
 	private static SumkExecutorService executor = SumkThreadPool.executor();
-	private static Base64 base64 = Base64.inst;
+	private static Base64 base64 = Base64Impl.inst;
 	private static Encryptor cipher = new AESEncryptor();
 	private static Hasher hash = new CommonDigest("md5");
 	private static Locker lock = Locker.inst;

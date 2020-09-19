@@ -22,8 +22,8 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.db.sql.PojoMeta;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Asserts;
 
 public final class RecordRepository {
 
@@ -56,7 +56,9 @@ public final class RecordRepository {
 		if (json == null) {
 			return;
 		}
-		Asserts.notEmpty(id, "key of redis value cannot be null");
+		if (id == null || id.isEmpty()) {
+			throw new SumkException(657645465, "key of redis value cannot be null");
+		}
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		int ttl = m.getTtlSec();

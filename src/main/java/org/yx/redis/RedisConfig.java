@@ -16,7 +16,7 @@
 package org.yx.redis;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.yx.util.Asserts;
+import org.yx.exception.SumkException;
 import org.yx.util.StringUtil;
 
 @SuppressWarnings("rawtypes")
@@ -37,7 +37,9 @@ public class RedisConfig extends GenericObjectPoolConfig {
 	private String type;
 
 	public RedisConfig(String host) {
-		Asserts.notEmpty(host, "redis host cannot be empty");
+		if (host == null || host.isEmpty()) {
+			throw new SumkException(657645465, "redis host cannot be empty");
+		}
 		this.hosts = StringUtil.toLatin(host.trim());
 
 		setTestWhileIdle(true);

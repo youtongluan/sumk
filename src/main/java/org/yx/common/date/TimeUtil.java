@@ -15,6 +15,8 @@
  */
 package org.yx.common.date;
 
+import static org.yx.exception.SumkExceptionCode.DATETIME_CONVERT;
+
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -129,7 +131,7 @@ public class TimeUtil {
 		}
 		if (java.sql.Date.class == type) {
 			if (Time.class == v.getClass()) {
-				SumkException.throwException(868927175, "Time cannot convert to java.sql.Date");
+				throw new SumkException(DATETIME_CONVERT, "Time cannot convert to java.sql.Date");
 			}
 			return (T) new java.sql.Date(v.getYear(), v.getMonth(), v.getDate());
 		}
@@ -140,7 +142,7 @@ public class TimeUtil {
 
 		if (Time.class == type) {
 			if (java.sql.Date.class == v.getClass()) {
-				SumkException.throwException(868927175, "java.sql.Date cannot convert to Time");
+				throw new SumkException(DATETIME_CONVERT, "java.sql.Date cannot convert to Time");
 			}
 			return (T) new Time(v.getHours(), v.getMinutes(), v.getSeconds());
 		}
@@ -148,7 +150,7 @@ public class TimeUtil {
 
 		if (LocalDate.class == type) {
 			if (Time.class == v.getClass()) {
-				SumkException.throwException(868927175, "Time cannot convert to LocalDate");
+				throw new SumkException(DATETIME_CONVERT, "Time cannot convert to LocalDate");
 			}
 			return (T) sumk.toLocalDate();
 		}
@@ -159,7 +161,7 @@ public class TimeUtil {
 
 		if (LocalTime.class == type) {
 			if (java.sql.Date.class == v.getClass()) {
-				SumkException.throwException(868927175, "java.sql.Date cannot convert to LocalTime");
+				throw new SumkException(DATETIME_CONVERT, "java.sql.Date cannot convert to LocalTime");
 			}
 			return (T) sumk.toLocalTime();
 		}
@@ -195,7 +197,7 @@ public class TimeUtil {
 		}
 
 		if (failIfNotSupport || !isGenericDate(type)) {
-			throw new SumkException(868927175, type.getClass().getName() + "is not a supported Date type");
+			throw new SumkException(DATETIME_CONVERT, type.getClass().getName() + "is not a supported Date type");
 		}
 		return (T) v;
 	}
@@ -215,7 +217,7 @@ public class TimeUtil {
 		}
 
 		if (Time.class == type) {
-			SumkException.throwException(868927175, "LocalDate cannot convert to Time");
+			throw new SumkException(DATETIME_CONVERT, "LocalDate cannot convert to Time");
 		}
 
 		if (LocalDateTime.class == type) {
@@ -223,11 +225,11 @@ public class TimeUtil {
 		}
 
 		if (LocalTime.class == type) {
-			SumkException.throwException(868927175, "LocalDate cannot convert to LocalTime");
+			throw new SumkException(DATETIME_CONVERT, "LocalDate cannot convert to LocalTime");
 		}
 
 		if (failIfNotSupport || !isGenericDate(type)) {
-			throw new SumkException(868927175, type.getClass().getName() + "is not a supported Date type");
+			throw new SumkException(DATETIME_CONVERT, type.getClass().getName() + "is not a supported Date type");
 		}
 		return (T) v;
 	}
@@ -238,7 +240,7 @@ public class TimeUtil {
 			return (T) new Date(Time.valueOf(v).getTime());
 		}
 		if (java.sql.Date.class == type) {
-			SumkException.throwException(868927175, "LocalTime cannot convert to java.sql.Date");
+			throw new SumkException(DATETIME_CONVERT, "LocalTime cannot convert to java.sql.Date");
 		}
 
 		if (Timestamp.class == type) {
@@ -254,11 +256,11 @@ public class TimeUtil {
 		}
 
 		if (LocalDate.class == type) {
-			SumkException.throwException(868927175, "LocalTime cannot convert to LocalDate");
+			throw new SumkException(DATETIME_CONVERT, "LocalTime cannot convert to LocalDate");
 		}
 
 		if (failIfNotSupport || !isGenericDate(type)) {
-			throw new SumkException(868927175, type.getClass().getName() + "is not a supported Date type");
+			throw new SumkException(DATETIME_CONVERT, type.getClass().getName() + "is not a supported Date type");
 		}
 		return (T) v;
 	}

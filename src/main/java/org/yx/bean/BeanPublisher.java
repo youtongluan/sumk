@@ -43,10 +43,11 @@ import org.yx.util.kit.PriorityKits;
 public final class BeanPublisher {
 
 	private ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
+	private Logger logger = Logs.ioc();
 
 	public synchronized void publishBeans(List<String> packageNames) throws Exception {
 		if (packageNames.isEmpty()) {
-			Logs.ioc().warn("property [sumk.ioc] is empty");
+			logger.warn("property [sumk.ioc] is empty");
 		}
 
 		packageNames.remove(StartConstants.INNER_PACKAGE);
@@ -58,8 +59,7 @@ public final class BeanPublisher {
 			try {
 
 				Class<?> clz = Loader.loadClassExactly(c);
-				int modify = clz.getModifiers();
-				if ((modify & (Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PUBLIC
+				if ((clz.getModifiers() & (Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PUBLIC
 						| Modifier.INTERFACE)) != Modifier.PUBLIC || clz.isAnonymousClass() || clz.isLocalClass()
 						|| clz.isAnnotation() || clz.isEnum()) {
 					continue;
@@ -69,9 +69,9 @@ public final class BeanPublisher {
 				if (!c.startsWith("org.yx.")) {
 					throw e;
 				}
-				Logs.ioc().debug("{} ignored.{}", c, e.getMessage());
+				logger.debug("{} ignored.{}", c, e.getMessage());
 			} catch (Exception e) {
-				Logs.ioc().error(c + "加载失败", e);
+				logger.error(c + "加载失败", e);
 			}
 		}
 
@@ -83,14 +83,14 @@ public final class BeanPublisher {
 				if (!clz.getName().startsWith("org.yx.")) {
 					throw e;
 				}
-				Logs.ioc().debug("{} ignored.{}", clz.getName(), e.getMessage());
+				logger.debug("{} ignored.{}", clz.getName(), e.getMessage());
 			}
 		}
-		if (clazzList.size() > 5) {
-			Logs.ioc().debug("scan class size:{}, {} {}..{} {}", clazzList.size(), clazzList.get(0).getSimpleName(),
+		if (clazzList.size() > 5 && logger.isDebugEnabled()) {
+			logger.debug("scan class size:{}, {} {}..{} {}", clazzList.size(), clazzList.get(0).getSimpleName(),
 					clazzList.get(1).getSimpleName(), clazzList.get(clazzList.size() - 2).getSimpleName(),
 					clazzList.get(clazzList.size() - 1).getSimpleName());
-			Logs.ioc().trace("ordered class:\n{}", clazzList);
+			logger.trace("ordered class:\n{}", clazzList);
 		}
 		autoWiredAll();
 	}
@@ -121,7 +121,6 @@ public final class BeanPublisher {
 	}
 
 	private void autoWiredAll() throws Exception {
-		Logger logger = Logs.ioc();
 		Object[] bs = InnerIOC.beans().toArray(new Object[0]);
 		final List<Object> beans = Arrays.asList(bs);
 		StartContext.inst().setBeans(beans);

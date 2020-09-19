@@ -16,11 +16,11 @@
 package org.yx.bean;
 
 import java.lang.annotation.Annotation;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
-public class AopMetaHolder {
-	private static Map<Integer, Annotation[]> map = new ConcurrentHashMap<>();
+public final class AopMetaHolder {
+	private static final ConcurrentMap<Integer, Annotation[]> map = new ConcurrentHashMap<>();
 
 	public static void put(Integer key, Annotation[] value) {
 		map.put(key, value);

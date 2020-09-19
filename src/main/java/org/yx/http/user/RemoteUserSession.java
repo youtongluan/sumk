@@ -56,12 +56,12 @@ public class RemoteUserSession implements UserSession {
 		Task.scheduleAtFixedRate(() -> {
 
 			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
-			if (duration > HttpSettings.getHttpSessionTimeoutInMs()) {
-				duration = HttpSettings.getHttpSessionTimeoutInMs();
+			if (duration > HttpSettings.httpSessionTimeoutInMs()) {
+				duration = HttpSettings.httpSessionTimeoutInMs();
 			}
 			duration -= cache.size() * 10;
 			if (duration < this.noFreshTime) {
-				duration = this.noFreshTime + 100;
+				duration = this.noFreshTime + 100L;
 			}
 			CacheHelper.expire(cache, duration);
 		}, seconds, seconds, TimeUnit.SECONDS);
@@ -92,7 +92,7 @@ public class RemoteUserSession implements UserSession {
 		}
 
 		if (to.refreshTime + this.noFreshTime < now) {
-			long durationInMS = HttpSettings.getHttpSessionTimeoutInMs();
+			long durationInMS = HttpSettings.httpSessionTimeoutInMs();
 			Long v = redis.pexpire(bigKey, durationInMS);
 			if (v == null || v.intValue() == 0) {
 				cache.remove(sid);
@@ -143,7 +143,7 @@ public class RemoteUserSession implements UserSession {
 
 	@Override
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
-		long sessionTimeout = HttpSettings.getHttpSessionTimeoutInMs();
+		long sessionTimeout = HttpSettings.httpSessionTimeoutInMs();
 		byte[] bigKey = this.bigKey(sessionId);
 		String json = S.json().toJson(sessionObj);
 		byte[] data = TimedCachedObject.toBytes(json, key);
@@ -169,10 +169,4 @@ public class RemoteUserSession implements UserSession {
 	public int localCacheSize() {
 		return this.cache.size();
 	}
-
-	@Override
-	public boolean valid(String sessionId) {
-		return true;
-	}
-
 }

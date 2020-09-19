@@ -25,7 +25,7 @@ import org.apache.commons.dbcp2.BasicDataSource;
 import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.util.Asserts;
+import org.yx.util.kit.Asserts;
 
 public class DBCPDataSourceFactory implements DataSourceFactory {
 
@@ -36,7 +36,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 
 		DEFAULT_PROPERTIES.put("maxTotal", "50");
 		DEFAULT_PROPERTIES.put("minIdle", "5");
-		DEFAULT_PROPERTIES.put("maxIdle", "10");
+		DEFAULT_PROPERTIES.put("maxIdle", "30");
 		DEFAULT_PROPERTIES.put("maxWaitMillis", "10000");
 		DEFAULT_PROPERTIES.put("testOnBorrow", "false");
 		DEFAULT_PROPERTIES.put("testOnReturn", "false");
@@ -60,7 +60,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 
 	@Override
 	public DataSource create(Map<String, String> properties, boolean readonly) {
-		Asserts.isTrue(this.valid(properties), "url,username,password should not be null");
+		Asserts.requireTrue(this.valid(properties), "url,username,password should not be null");
 		BasicDataSource basic = new BasicDataSource();
 		try {
 			Map<String, String> map = new HashMap<>(DEFAULT_PROPERTIES);
@@ -71,7 +71,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 			basic.setDefaultReadOnly(readonly);
 		} catch (Exception e) {
 			Logs.db().error(e.getMessage(), e);
-			SumkException.throwException(23434, e.getMessage(), e);
+			throw new SumkException(23434, e.getMessage(), e);
 		}
 		return basic;
 	}

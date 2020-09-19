@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.yx.conf.AppInfo;
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;

@@ -39,7 +39,7 @@ public final class SeqImpl extends AbstractSeq {
 		return num << 24;
 	}
 
-	public long getDateTime(long seq) {
+	public long getTimeMillis(long seq) {
 		long num = seq & 0xFFFFFFFFFF000000L;
 		num >>>= 24;
 		return fullTime(num);

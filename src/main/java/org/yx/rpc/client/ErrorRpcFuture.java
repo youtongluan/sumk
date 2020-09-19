@@ -23,13 +23,11 @@ public class ErrorRpcFuture extends AbstractRpcFuture {
 
 	private final RpcResult rpcResult;
 
-	final RpcLocker locker;
-
 	public ErrorRpcFuture(Throwable e, RpcLocker locker) {
+		super(locker);
 		CodeException exception = CodeException.class.isInstance(e) ? CodeException.class.cast(e)
 				: new SoaException(e, RpcErrorCode.UNKNOW, e.getMessage());
 		this.rpcResult = new RpcResult(null, exception);
-		this.locker = locker;
 	}
 
 	public RpcResult awaitForRpcResult() {

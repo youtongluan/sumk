@@ -49,7 +49,7 @@ public final class RpcResult {
 		}
 		if (SoaException.class == e.getClass()) {
 			SoaException ex = (SoaException) e;
-			if (BizException.class.getName().equals(ex.getExceptionClz())) {
+			if (ex.isBizException()) {
 				return BizException.create(ex.getCode(), ex.getMessage());
 			}
 		}

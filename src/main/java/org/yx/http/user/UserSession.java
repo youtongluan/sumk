@@ -17,8 +17,6 @@ package org.yx.http.user;
 
 public interface UserSession {
 
-	boolean valid(String sessionId);
-
 	byte[] getKey(String sessionId);
 
 	<T extends SessionObject> T getUserObject(String sessionId, Class<T> clz);

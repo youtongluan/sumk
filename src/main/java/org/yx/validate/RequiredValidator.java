@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.conf;
+package org.yx.validate;
 
-import org.I0Itec.zkclient.IZkDataListener;
-import org.I0Itec.zkclient.ZkClient;
-import org.yx.util.ZkClientHelper;
+import org.yx.annotation.Bean;
+import org.yx.conf.AppInfo;
+import org.yx.exception.InvalidParamException;
 
-public class ZKConfigHandler {
+@Bean
+public class RequiredValidator implements Validator {
 
-	public static NamePairs readAndListen(String zkUrl, String path, IZkDataListener listener) {
-		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-		if (!client.exists(path)) {
-			return null;
+	@Override
+	public void valid(ParamInfo param, Object arg) throws InvalidParamException {
+		if (!param.param.required()) {
+			return;
 		}
-		String data = ZkClientHelper.data2String(client.readData(path));
-		if (listener != null) {
-			client.subscribeDataChanges(path, listener);
+		if (arg == null || "".equals(arg)) {
+			throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), param);
 		}
-		return new NamePairs(data);
 	}
+
 }

@@ -37,6 +37,7 @@ public class ThreadPools {
 				core);
 		ThresholdThreadPool pool = new ThresholdThreadPool(core, max, aliveTime, TimeUnit.MILLISECONDS,
 				abortPolicyQueue, SumkThreadPool.createThreadFactory(name + "-"), abortPolicyQueue, 0);
+		pool.setCorePoolSize(core);
 		abortPolicyQueue.pool = pool;
 		return pool;
 	}
@@ -75,6 +76,10 @@ public class ThreadPools {
 						.append(e.toString()).append(", because of ").append(PriorityRunnable.class.cast(r).priority())
 						.append(" lower than ").append(pool.threshold()).toString();
 				throw new RejectedExecutionException(msg);
+			}
+			int waiting = this.size();
+			if (waiting % 10 == 0 && Log.get("sumk.thread").isWarnEnabled()) {
+				Log.get("sumk.thread").warn("task is busy,waiting size:{}", waiting);
 			}
 			if (!super.offer(r)) {
 				throw new RejectedExecutionException("Task " + r.toString() + " rejected from " + e.toString());

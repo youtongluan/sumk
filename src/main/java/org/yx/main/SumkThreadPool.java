@@ -26,12 +26,10 @@ import org.slf4j.Logger;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
 import org.yx.conf.AppInfo;
-import org.yx.exception.BizException;
-import org.yx.exception.ErrorCode;
 import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.log.RawLog;
-import org.yx.util.Asserts;
+import org.yx.util.kit.Asserts;
 
 public final class SumkThreadPool {
 
@@ -75,14 +73,11 @@ public final class SumkThreadPool {
 		return ThreadPools.DEFAULT_EXECUTOR;
 	}
 
-	public static final BizException THREAD_THRESHOLD_OVER = BizException.create(ErrorCode.THREAD_THRESHOLD_OVER,
-			"系统限流降级");
-
 	public static ScheduledFuture<?> scheduleAtFixedRate(Runnable job, long delayMS, long periodMS) {
 		if (SumkServer.isDestoryed()) {
 			return null;
 		}
-		Asserts.isTrue(periodMS > 0, "delayMils要大于0 才行");
+		Asserts.requireTrue(periodMS > 0, "delayMils要大于0 才行");
 		if (periodMS < 100) {
 			RawLog.warn("sumk.thread", job + "加入到作业中(短作业)，定时间隔为" + periodMS + "ms");
 		} else {

@@ -15,12 +15,12 @@ v2.3.3
 v2.3.4
 1、增加RedisConfig工具类
 2、因为Observer接口从java9开始被标注为不推荐使用。所以AppInfo中使用Consumer代替Observer接口
-3、增加SimpleLogger接口和SimpleLoggerHolder类。
+3、增加SimpleLogger接口和SimpleLoggerHolder类。这个是配置等跟日志同级的模块使用的
 4、允许soa和web使用自定义的线程池
 5、重构主键生成的代码
 6、支持在微服务中配置随机端口。端口值为0表示随机端口
 7、修复鹰眼跟踪的bug
-8、更好的将分布式锁嵌入到工具类S中
+8、将分布式锁的入口改到S类中
 
 v2.3.5
 1、修复日志级别的一个bug
@@ -181,8 +181,29 @@ v2.8.1
 2、StreamUtil的extractData改名为readAllBytes
 
 v2.8.2
-1、@Web的requestEncrypt改为requestType,responseEncrypt改为responseType。
-2、EncryptType类型改名为MessageType，NONE属性改名为PLAIN，AES改名为ENCRYPT
-3、去掉@ErrorHandler，这个用法较冷门，通过WebFilter接口也能轻松实现
-4、LoginObject的error方法改名为fail
+1、@Web的requestEncrypt改为requestType,responseEncrypt改为responseType。对应的EncryptType类型改名为MessageType，NONE属性改名为PLAIN，AES改名为ENCRYPT
+2、去掉@ErrorHandler，这个用法较冷门，通过WebFilter接口也能轻松实现
+3、LoginObject的error方法改名为fail
+4、提供加密接口的明文调试功能
 
+v2.8.3
+1、sumk.http.fusing支持头尾*匹配，并且放宽对接口书写格式的要求
+2、移除CollectionUtil.unmodifyList()方法移除第二个参数
+3、SDB的selectOne改名为queryOne
+4、@CreateTime改名为@AutoCreateTime，并且无论是否主键是自动生成的，该注解都生效
+5、Select的byPrimaryId方法改名为byDatabaseId
+6、DBType和TransactionType改了下包名位置
+7、web响应增加s-trace头部，它用于跟踪日志
+
+v2.8.4
+1、统一日志增加sumk.unionlog.exclude参数，并修复异常信息打印的问题
+2、增加SumkExceptionCode接口，用于定义一些重要的框架异常码，方便开发者提示错误信息
+
+v2.8.5
+1、s.log.day等日志配置增加exclude过滤条件
+2、@Param参数增加对空字符串的过滤
+
+v2.9.0
+1、zk和http方式的统一配置支持多节点模式
+2、http错误码由原来的499改为550
+3、个别地方性能优化

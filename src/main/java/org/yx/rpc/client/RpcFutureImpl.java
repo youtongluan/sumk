@@ -16,12 +16,10 @@
 package org.yx.rpc.client;
 
 public class RpcFutureImpl extends AbstractRpcFuture {
-	private RpcLocker locker;
-
 	private RpcResult result;
 
 	public RpcFutureImpl(RpcLocker target) {
-		this.locker = target;
+		super(target);
 	}
 
 	@Override

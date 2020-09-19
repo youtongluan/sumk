@@ -34,6 +34,7 @@ import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
 import org.yx.common.Host;
+import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
@@ -42,26 +43,23 @@ import org.yx.rpc.ZKConst;
 import org.yx.rpc.data.RouteInfo;
 import org.yx.rpc.data.ZKPathData;
 import org.yx.rpc.data.ZkDataOperators;
-import org.yx.util.StringUtil;
 import org.yx.util.ZkClientHelper;
 
 public final class ZkRouteParser {
 	private final String zkUrl;
 	private Set<String> childs = Collections.emptySet();
-	private final Predicate<String> includes;
-	private final Predicate<String> excludes;
-	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.route", "sumk.rpc.client.zk.route", ZKConst.SUMK_SOA_ROOT);
+	private final Predicate<String> matcher;
+	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.root.client", "sumk.rpc.zk.root", ZKConst.SUMK_SOA_ROOT);
 	private Logger logger = Log.get("sumk.rpc.client");
 	private final ThreadPoolExecutor executor;
 	private final BlockingQueue<RouteEvent> queue = new LinkedBlockingQueue<>();
 
 	private ZkRouteParser(String zkUrl) {
 		this.zkUrl = zkUrl;
-		String temp = AppInfo.getLatin("sumk.rpc.server.includes");
-		includes = StringUtil.isEmpty(temp) ? null : Matchers.createWildcardMatcher(temp, 1);
 
-		temp = AppInfo.getLatin("sumk.rpc.server.excludes");
-		excludes = StringUtil.isEmpty(temp) ? null : Matchers.createWildcardMatcher(temp, 1);
+		this.matcher = Matchers.includeAndExclude(AppInfo.getLatin("sumk.rpc.server.include", "*"),
+				AppInfo.getLatin("sumk.rpc.server.exclude", null));
+
 		executor = new ThreadPoolExecutor(1, 1, 5000L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>(1000),
 				SumkThreadPool.createThreadFactory("rpc-client-"), new ThreadPoolExecutor.DiscardPolicy());
 		executor.allowCoreThreadTimeOut(true);
@@ -161,28 +159,16 @@ public final class ZkRouteParser {
 	}
 
 	private List<String> filter(List<String> currentChilds) {
-
-		if (includes != null) {
-			List<String> ips = new ArrayList<>();
-			for (String ip : currentChilds) {
-				if (includes.test(ip)) {
-					ips.add(ip);
-				}
-			}
-			return ips;
+		if (this.matcher == BooleanMatcher.TRUE) {
+			return currentChilds;
 		}
-
-		if (excludes != null) {
-			List<String> ips = new ArrayList<>();
-			for (String ip : currentChilds) {
-				if (!excludes.test(ip)) {
-					ips.add(ip);
-				}
+		List<String> ips = new ArrayList<>(currentChilds.size());
+		for (String ip : currentChilds) {
+			if (this.matcher.test(ip)) {
+				ips.add(ip);
 			}
-			return ips;
 		}
-
-		return currentChilds;
+		return ips;
 	}
 
 	private RouteInfo getZkNodeData(ZkClient zk, String path) {

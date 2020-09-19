@@ -13,32 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.common.matcher;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 
-import org.yx.util.S;
+public class InOutMatcher implements Predicate<String> {
 
-public final class HttpCiphers {
+	private final Predicate<String> include;
+	private final Predicate<String> exclude;
 
-	private static HttpEncryptor encryptor = new DefaultHttpEncryptor();
-
-	public static HttpEncryptor getEncryptor() {
-		return encryptor;
+	InOutMatcher(Predicate<String> include, Predicate<String> exclude) {
+		this.include = Objects.requireNonNull(include);
+		this.exclude = Objects.requireNonNull(exclude);
 	}
 
-	public static void setEncryptor(HttpEncryptor encryptor) {
-		HttpCiphers.encryptor = Objects.requireNonNull(encryptor);
+	@Override
+	public boolean test(String t) {
+		if (exclude.test(t)) {
+			return false;
+		}
+		return include.test(t);
 	}
 
-	private static Signer signer = (bs, httpServletRequest) -> S.hash().digestByteToString(bs);
-
-	public static Signer getSigner() {
-		return signer;
-	}
-
-	public static void setSigner(Signer signer) {
-		HttpCiphers.signer = Objects.requireNonNull(signer);
+	@Override
+	public String toString() {
+		return "[include: " + include + ", exclude: " + exclude + "]";
 	}
 
 }

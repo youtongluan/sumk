@@ -50,7 +50,7 @@ import org.objectweb.asm.Type;
 import org.yx.bean.AopMetaHolder;
 import org.yx.conf.AppInfo;
 
-public class ProxyMethodWritor {
+public final class ProxyMethodWritor {
 
 	private static void jReturn(MethodVisitor mv, Class<?> c) {
 		if (c == Integer.TYPE || c == Boolean.TYPE || c == Byte.TYPE || c == Character.TYPE || c == Short.TYPE) {

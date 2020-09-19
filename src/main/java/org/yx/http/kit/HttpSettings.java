@@ -17,9 +17,6 @@ package org.yx.http.kit;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Objects;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -31,7 +28,6 @@ public final class HttpSettings {
 
 	private static int errorHttpStatus;
 
-	private static Set<String> fusing = Collections.emptySet();
 	private static long httpSessionTimeoutInMs;
 	private static boolean cookieEnable;
 	private static int maxReqLogSize;
@@ -44,19 +40,17 @@ public final class HttpSettings {
 
 	private static boolean singleLogin;
 
-	public static int getErrorHttpStatus() {
-		return errorHttpStatus;
-	}
+	private static String traceHeaderName;
 
-	public static Set<String> getFusing() {
-		return fusing;
+	public static int errorHttpStatus() {
+		return errorHttpStatus;
 	}
 
 	public static int maxHttpBody() {
 		return maxHttpBody;
 	}
 
-	public static long getHttpSessionTimeoutInMs() {
+	public static long httpSessionTimeoutInMs() {
 		return httpSessionTimeoutInMs;
 	}
 
@@ -66,18 +60,6 @@ public final class HttpSettings {
 
 	public static boolean isUploadEnable() {
 		return AppInfo.getBoolean("sumk.http.upload.enable", true);
-	}
-
-	public static void setCookieEnable(boolean cookieEnable) {
-		HttpSettings.cookieEnable = cookieEnable;
-	}
-
-	public static void setFusing(Set<String> fusing) {
-		HttpSettings.fusing = Objects.requireNonNull(fusing);
-	}
-
-	public static void setHttpSessionTimeoutInMs(long httpSessionTimeoutInMs) {
-		HttpSettings.httpSessionTimeoutInMs = httpSessionTimeoutInMs;
 	}
 
 	public static int maxReqLogSize() {
@@ -106,7 +88,7 @@ public final class HttpSettings {
 	}
 
 	public static void init() {
-		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 499);
+		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 550);
 		String c = AppInfo.get("sumk.http.charset");
 		if (StringUtil.isNotEmpty(c)) {
 			try {
@@ -118,18 +100,26 @@ public final class HttpSettings {
 		}
 		AppInfo.addObserver(info -> {
 			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 1000);
-			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 1000);
+			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 5000);
 			HttpSettings.warnTime = AppInfo.getInt("sumk.http.log.warn.time", 3000);
 			HttpSettings.infoTime = AppInfo.getInt("sumk.http.log.info.time", 1000);
 			HttpSettings.maxHttpBody = AppInfo.getInt("sumk.http.body.maxLength", 1024 * 1024 * 100);
 			HttpSettings.singleLogin = AppInfo.getBoolean("sumk.http.session.single", false);
 			String plain = AppInfo.get("sumk.http.plain.key", null);
 			HttpSettings.plainKey = "".equals(plain) ? null : plain;
+
+			HttpSettings.cookieEnable = AppInfo.getBoolean("sumk.http.header.usecookie", true);
+			HttpSettings.httpSessionTimeoutInMs = 1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30);
+			HttpSettings.traceHeaderName = AppInfo.get("sumk.http.header.trace", "s-trace");
 		});
 	}
 
 	public static Charset defaultCharset() {
 		return defaultCharset;
+	}
+
+	public static String traceHeaderName() {
+		return traceHeaderName;
 	}
 
 }

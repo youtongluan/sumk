@@ -26,7 +26,6 @@ import org.yx.annotation.Param;
 import org.yx.annotation.doc.Comment;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
-import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
@@ -67,7 +66,7 @@ public abstract class CalleeNode {
 		}
 	}
 
-	public void checkThreshold() {
+	public boolean overflowThreshold() {
 		if (this.toplimit < SumkThreadPool.executor().threshold()) {
 			if (Log.get("sumk.thread").isDebugEnabled()) {
 				String msg = new StringBuilder().append("[")
@@ -77,8 +76,9 @@ public abstract class CalleeNode {
 						.append(" ,  threshold=").append(SumkThreadPool.executor().threshold()).toString();
 				Log.get("sumk.thread").debug(msg);
 			}
-			throw SumkThreadPool.THREAD_THRESHOLD_OVER;
+			return true;
 		}
+		return false;
 	}
 
 	public ArgPojo getEmptyArgObj() throws Exception {
@@ -155,13 +155,6 @@ public abstract class CalleeNode {
 			}
 			throw e;
 		}
-	}
-
-	public static void checkNode(String api, CalleeNode node) {
-		if (node == null) {
-			SumkException.throwException(123546, "[" + api + "] is not a valid interface");
-		}
-		node.checkThreshold();
 	}
 
 	public List<String> argNames() {

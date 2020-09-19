@@ -36,7 +36,7 @@ public class BeanFactory extends AbstractBeanListener {
 		super(AppInfo.get(StartConstants.IOC_PACKAGES));
 		this.valid = true;
 		this.excludeMatcher = createExcludeMatcher();
-		Logs.ioc().info("bean exclude matcher:{}", excludeMatcher);
+		Logs.ioc().debug("bean exclude matcher:{}", excludeMatcher);
 	}
 
 	public Predicate<String> excludeMatcher() {
@@ -83,7 +83,7 @@ public class BeanFactory extends AbstractBeanListener {
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
-			SumkException.throwException(-345365, "IOC error", e);
+			throw new SumkException(-345365, "IOC error", e);
 		}
 
 	}

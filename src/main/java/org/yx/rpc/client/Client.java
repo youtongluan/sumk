@@ -27,6 +27,7 @@ import org.yx.common.context.ActionContext;
 import org.yx.common.route.Router;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
+import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.rpc.InnerRpcKit;
 import org.yx.rpc.RpcActionNode;
@@ -38,7 +39,6 @@ import org.yx.rpc.client.route.RpcRoutes;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.util.Asserts;
 import org.yx.util.S;
 
 public final class Client {
@@ -108,7 +108,9 @@ public final class Client {
 	 *         通信异常是SoaException；如果是业务类异常，则是BizException
 	 */
 	public RpcFuture execute() {
-		Asserts.notEmpty(api, "api cannot be empty");
+		if (api == null || api.isEmpty()) {
+			throw new SumkException(657645465, "api cannot be empty");
+		}
 		Objects.requireNonNull(this.paramType, "param have not been set");
 		this.totalStart = System.currentTimeMillis();
 		Req req = Rpc.req(this.api);

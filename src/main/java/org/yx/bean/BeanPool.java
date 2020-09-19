@@ -31,7 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.yx.asm.ProxyClassFactory;
-import org.yx.exception.TooManyBeanException;
+import org.yx.exception.SumkException;
+import org.yx.exception.SumkExceptionCode;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
@@ -52,7 +53,9 @@ public final class BeanPool {
 		Set<Class<?>> interfaces = new HashSet<>();
 		resloveSuperClassAndInterface(clazz, interfaces);
 		Set<String> names = new HashSet<>();
-		interfaces.forEach(clz -> names.add(resloveBeanName(clz)));
+		for (Class<?> clz : interfaces) {
+			names.add(resloveBeanName(clz));
+		}
 		return names;
 	}
 
@@ -198,7 +201,7 @@ public final class BeanPool {
 					+ ",cannot  compatible with " + clz.getName());
 		}
 		if (clz == null) {
-			throw new TooManyBeanException(name + " exist multi instance");
+			throw new SumkException(SumkExceptionCode.TOO_MANY_BEAN, name + " exist multi instance");
 		}
 		BeanWrapper[] objs = (BeanWrapper[]) bw;
 
@@ -222,7 +225,7 @@ public final class BeanPool {
 			return null;
 		}
 		if (beans.size() > 1) {
-			throw new TooManyBeanException(name + "存在多个" + clz.getName() + "实例");
+			throw new SumkException(SumkExceptionCode.TOO_MANY_BEAN, name + "存在多个" + clz.getName() + "实例");
 		}
 		return (T) beans.get(0);
 

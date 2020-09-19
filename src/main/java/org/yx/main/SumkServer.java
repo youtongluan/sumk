@@ -39,7 +39,7 @@ import org.yx.util.StringUtil;
 
 public final class SumkServer {
 	private static volatile boolean started;
-	private static volatile boolean destoryed = false;
+	private static volatile boolean destoryed;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
 	private static long startTime;
@@ -125,6 +125,7 @@ public final class SumkServer {
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e1) {
+				Thread.currentThread().interrupt();
 			}
 			System.exit(1);
 		}
@@ -183,6 +184,7 @@ public final class SumkServer {
 			destoryed = true;
 			started = false;
 		}
+		Logs.system().warn("sumk server stoping...");
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
 		if (lifes != null && lifes.size() > 0) {
 			Collections.reverse(lifes);

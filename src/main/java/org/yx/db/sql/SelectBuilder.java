@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 import org.yx.common.ItemJoiner;
+import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
@@ -67,7 +68,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
 		if (StringUtil.isEmpty(where) && !this.allowEmptyWhere) {
-			SumkException.throwException(63254325, "empty where");
+			throw new SumkException(63254325, "empty where");
 		}
 		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);
@@ -186,7 +187,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
-					SumkException.throwException(234, filedName + " has no mapper");
+					throw new SumkException(234, filedName + " has no mapper");
 				}
 				continue;
 			}
@@ -199,7 +200,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 					continue;
 				}
 				if (this.compareNullPolicy == CompareNullPolicy.FAIL) {
-					SumkException.throwException(2342423, filedName + "的值为null");
+					throw new SumkException(2342423, filedName + "的值为null");
 				}
 			}
 			joiner.item().append(cm.dbColumn).append(COMPARES[compareIndex]).append(" ? ");
@@ -218,7 +219,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
-					SumkException.throwException(234, filedName + " has no mapper");
+					throw new SumkException(234, filedName + " has no mapper");
 				}
 				return;
 			}

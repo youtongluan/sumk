@@ -58,7 +58,7 @@ public class SqlHolder {
 	public static SqlParser findSql(String name) {
 		SqlParser sql = SQLS.get(name);
 		if (sql == null) {
-			SumkException.throwException(64342451, "sql [" + name + "] can not found ");
+			throw new SumkException(64342451, "sql [" + name + "] can not found ");
 		}
 		return sql;
 	}

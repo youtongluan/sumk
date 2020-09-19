@@ -29,6 +29,7 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler.ContextScopeListener;
+import org.eclipse.jetty.server.handler.HandlerWrapper;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.gzip.GzipHandler;
 import org.eclipse.jetty.server.session.SessionHandler;
@@ -79,7 +80,8 @@ public class JettyServer implements Lifecycle {
 						Thread.sleep(AppInfo.getLong("sumk.jetty.bind.sleepTime", 2000));
 					} catch (InterruptedException e1) {
 						Logs.http().error("showdown because of InterruptedException");
-						System.exit(1);
+						Thread.currentThread().interrupt();
+						throw new SumkException(-34534560, "收到中断." + e1);
 					}
 					Logs.http().warn("{} was occupied({}),begin retry {}", this.getPort(), ex.getMessage(), i);
 					try {
@@ -134,12 +136,27 @@ public class JettyServer implements Lifecycle {
 					context.insertHandler(h);
 				}
 			}
+			addUserHandlers(context);
 			server.setHandler(context);
 		} catch (Throwable e) {
 			Log.printStack("sumk.http", e);
 			StartContext.startFail();
 		}
 
+	}
+
+	protected void addUserHandlers(ServletContextHandler context) {
+		Object obj = StartContext.inst().get(HandlerWrapper.class);
+		if (obj == null) {
+			return;
+		}
+		if (HandlerWrapper[].class.isInstance(obj)) {
+			HandlerWrapper[] hs = (HandlerWrapper[]) obj;
+			for (HandlerWrapper h : hs) {
+				Logs.http().info("add jetty handler {}", h);
+				context.insertHandler(h);
+			}
+		}
 	}
 
 	protected void buildJettyProperties() {

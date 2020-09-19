@@ -21,12 +21,12 @@ import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.util.Asserts;
+import org.yx.util.kit.Asserts;
 
 public final class ConnectionPool implements AutoCloseable {
 
@@ -80,7 +80,7 @@ public final class ConnectionPool implements AutoCloseable {
 
 	public static ConnectionPool get() {
 		List<ConnectionPool> list = connectionHolder.get();
-		Asserts.isTrue(list.size() > 0, "must open transaction in box or other containers");
+		Asserts.requireTrue(list.size() > 0, "must open transaction in box or other containers");
 		ConnectionPool context = list.get(0);
 		return context;
 	}
@@ -157,7 +157,7 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 		SumkDataSource dataSource = DataSources.readDataSource(dbName);
 		if (dataSource == null) {
-			SumkException.throwException(124234154, dbName + "没有可用的读数据源");
+			throw new SumkException(124234154, dbName + "没有可用的读数据源");
 		}
 		if (this.writeConn != null && this.writeConn.dataSource == dataSource) {
 			if (LOG_CONN.isTraceEnabled()) {
@@ -177,7 +177,7 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 		SumkDataSource dataSource = DataSources.writeDataSource(dbName);
 		if (dataSource == null) {
-			SumkException.throwException(124234153, dbName + "没有可用的写数据源");
+			throw new SumkException(124234153, dbName + "没有可用的写数据源");
 		}
 		if (this.readConn != null && this.readConn.dataSource == dataSource) {
 			this.writeConn = this.readConn.copy();

@@ -36,20 +36,16 @@ public class ActNameResolver implements Function<String, String> {
 	}
 
 	private String solve(String name) {
-		name = name.replace('\\', '/');
-		if (name.contains("/")) {
-			return convertFromPath(name);
-		}
-		return name;
+		return convertFromPath(name.replace('\\', '/').replace('.', '/'));
 	}
 
 	private String convertFromPath(String path) {
-		while (path.endsWith("/") && path.length() > 0) {
+		while (path.endsWith("/") && path.length() > 1) {
 			path = path.substring(0, path.length() - 1);
 		}
-		while (path.startsWith("/") && path.length() > 0) {
+		while (path.startsWith("/") && path.length() > 1) {
 			path = path.substring(1);
 		}
-		return path.replace('/', '.');
+		return path;
 	}
 }

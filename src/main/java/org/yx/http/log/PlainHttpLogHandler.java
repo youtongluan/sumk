@@ -12,7 +12,7 @@ import org.yx.log.Log;
 import org.yx.util.StringUtil;
 
 public class PlainHttpLogHandler implements HttpLogHandler {
-	private Logger log = Log.get("sumk.http.log");
+	protected Logger log = Log.get("sumk.http.log");
 
 	@Override
 	public void log(WebContext ctx, HttpServletRequest req, Throwable ex, final long time) {
@@ -49,7 +49,7 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	protected void logError(WebContext wc, Throwable ex, long time) {
 		StringBuilder sb = new StringBuilder(64);
 		sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(wc.httpRequest())).append("   time:").append(time)
-				.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()));
+				.append(LN).append("   param: ").append(getParam(wc, HttpSettings.maxReqLogSize()));
 		logError(sb.toString(), ex);
 	}
 
@@ -65,8 +65,8 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 		StringBuilder sb = new StringBuilder(64);
 		if (wc != null) {
 			sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time)
-					.append(LN).append("   param: ").append(HttpLogs.getParam(wc, HttpSettings.maxReqLogSize()))
-					.append(LN).append("   resp: ").append(HttpLogs.getResponse(wc, HttpSettings.maxRespLogSize()));
+					.append(LN).append("   param: ").append(getParam(wc, HttpSettings.maxReqLogSize())).append(LN)
+					.append("   resp: ").append(getResponse(wc, HttpSettings.maxRespLogSize()));
 			return sb.toString();
 		}
 		sb.append(req.getRequestURI()).append("   time:").append(time);
@@ -76,5 +76,13 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	protected String remoteAddr(HttpServletRequest req) {
 		String ip = req.getHeader("X-Real-IP");
 		return StringUtil.isNotEmpty(ip) ? ip : req.getRemoteAddr();
+	}
+
+	protected String getParam(WebContext wc, int maxLength) {
+		return HttpLogs.getParam(wc, maxLength);
+	}
+
+	protected String getResponse(WebContext wc, int maxLength) {
+		return HttpLogs.getResponse(wc, maxLength);
 	}
 }

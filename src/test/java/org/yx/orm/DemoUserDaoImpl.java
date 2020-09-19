@@ -61,7 +61,7 @@ public class DemoUserDaoImpl implements DemoUserDao {
 	@Override
 	@Box
 	public DemoUser query(long id) {
-		return DB.select().tableClass(DemoUser.class).byPrimaryId(id).queryOne();
+		return DB.select().tableClass(DemoUser.class).byDatabaseId(id).queryOne();
 	}
 
 	@Override

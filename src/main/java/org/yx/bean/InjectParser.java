@@ -21,7 +21,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.yx.annotation.Inject;
 
-public class InjectParser {
+public final class InjectParser {
 
 	private static ConcurrentMap<String, BeanHandler> map = new ConcurrentHashMap<>();
 

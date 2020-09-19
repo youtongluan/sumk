@@ -54,7 +54,7 @@ public final class DateTimeTypeAdapter extends TypeAdapter<Date> {
 		String num = text;
 		if (num.contains(".")) {
 
-			num = num.substring(0, num.indexOf("."));
+			num = num.substring(0, num.indexOf('.'));
 		}
 		return new Date(Long.parseLong(num));
 	}

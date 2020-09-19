@@ -66,7 +66,7 @@ public class SqlXmlParser {
 			SqlParser parser = compose(parseSqlNode(el.getChildNodes()));
 			if (parser != null) {
 				if (map.putIfAbsent(name(namespace, el.getAttribute(ID)), parser) != null) {
-					SumkException.throwException(435436,
+					throw new SumkException(435436,
 							fileName + "-" + name(namespace, el.getAttribute(ID)) + " is duplicate");
 				}
 			}
@@ -92,7 +92,7 @@ public class SqlXmlParser {
 	}
 
 	private static SqlParser compose(List<SqlParser> list) {
-		if (list.isEmpty()) {
+		if (list == null || list.isEmpty()) {
 			return null;
 		}
 		if (list.size() == 1) {

@@ -22,13 +22,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.http.HttpContextHolder;
-import org.yx.http.handler.MultipartItem;
 import org.yx.http.handler.MultipartHolder;
+import org.yx.http.handler.MultipartItem;
 import org.yx.http.kit.HttpKit;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
 
+/**
+ * <B>注意：本工具类不能在自定义的servlet中调用，比如login</B>
+ */
 public final class WebUtil {
 
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
@@ -36,7 +39,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 移除session内容
+	 * 移除session内容，也就是logout
 	 */
 	public static void removeUserObject() {
 		WebSessions.remove();
@@ -47,8 +50,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 获取http请求中的HttpServletRequest对象 <BR>
-	 * <B>注意：不能在自定义的servlet中调用，否则为null</B>
+	 * 获取http请求中的HttpServletRequest对象
 	 * 
 	 * @return HttpServletRequest对象
 	 */
@@ -57,8 +59,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 获取http请求中的HttpServletResponse对象 <BR>
-	 * <B>注意：不能在自定义的servlet中调用，否则为null</B>
+	 * 获取http请求中的HttpServletResponse对象
 	 * 
 	 * @return HttpServletResponse对象
 	 */
@@ -67,8 +68,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 获取sessionId <BR>
-	 * <B>注意：不能在自定义的servlet中调用</B>
+	 * 获取sessionId
 	 * 
 	 * @return sessionId
 	 */
@@ -89,7 +89,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 如果是文件上传的接口，用这个方法获取上传项
+	 * 用这个方法获取上传项，<B>仅用于@upload修饰的接口</B>
 	 * 
 	 * @return 除了参数外所有的multipart
 	 */
@@ -98,7 +98,7 @@ public final class WebUtil {
 	}
 
 	/**
-	 * 根据name获取对应的MultipartItem
+	 * 根据name获取对应的MultipartItem，<B>仅用于@upload修饰的接口</B>
 	 * 
 	 * @param name
 	 *            MultipartItem对应的名称，注意该名称是part的名称，而不是文件名

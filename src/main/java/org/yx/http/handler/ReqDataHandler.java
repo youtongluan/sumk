@@ -55,5 +55,4 @@ public class ReqDataHandler implements HttpHandler {
 		InputStream in = req.getInputStream();
 		ctx.data(InnerHttpUtil.extractData(in, req.getContentLength()));
 	}
-
 }

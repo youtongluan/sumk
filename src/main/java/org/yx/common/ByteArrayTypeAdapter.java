@@ -22,7 +22,6 @@ import java.util.Base64;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.util.S;
 
-import com.google.gson.JsonSyntaxException;
 import com.google.gson.TypeAdapter;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
@@ -31,7 +30,6 @@ import com.google.gson.stream.JsonWriter;
 public class ByteArrayTypeAdapter extends TypeAdapter<byte[]> {
 
 	private ByteArrayTypeAdapter() {
-
 	}
 
 	public static final ByteArrayTypeAdapter inst = new ByteArrayTypeAdapter();
@@ -67,22 +65,18 @@ public class ByteArrayTypeAdapter extends TypeAdapter<byte[]> {
 	}
 
 	private byte[] rawRead(JsonReader in) throws IOException {
-		@SuppressWarnings("resource")
 		UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(128);
 		in.beginArray();
-		try {
-			while (in.hasNext()) {
-				if (in.peek() == JsonToken.NULL) {
-					in.nextNull();
-					continue;
-				}
-				out.write(in.nextInt());
+		while (in.hasNext()) {
+			if (in.peek() == JsonToken.NULL) {
+				in.nextNull();
+				continue;
 			}
-		} catch (NumberFormatException e) {
-			throw new JsonSyntaxException(e);
+			out.write(in.nextInt());
 		}
 		in.endArray();
 		out.flush();
+		out.close();
 		return out.toByteArray();
 	}
 

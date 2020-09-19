@@ -21,11 +21,11 @@ import org.objectweb.asm.Type;
 
 public final class MethodParamInfo {
 
-	private Method method;
+	private final Method method;
 	private String[] argNames;
 	private String[] descs;
 	private String[] signatures;
-	private String methodDesc;
+	private final String methodDesc;
 
 	public String[] getArgNames() {
 		return argNames;

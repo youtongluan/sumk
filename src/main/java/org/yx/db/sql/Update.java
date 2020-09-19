@@ -22,7 +22,7 @@ import java.util.Map;
 import org.yx.common.ItemJoiner;
 import org.yx.db.enums.ColumnType;
 import org.yx.db.event.UpdateEvent;
-import org.yx.db.kit.NumUtil;
+import org.yx.db.kit.DBKits;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
@@ -127,12 +127,12 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass(), this.sub);
 		if (this.pojoMeta == null) {
-			SumkException.throwException(36541, pojo.getClass() + " does not config as a table");
+			throw new SumkException(36541, pojo.getClass() + " does not config as a table");
 		}
 		try {
 			this.updateTo = this.pojoMeta.populate(pojo, true);
 		} catch (Exception e) {
-			SumkException.throwException(-345461, e.getMessage(), e);
+			throw new SumkException(-345461, e.getMessage(), e);
 		}
 		return this;
 	}
@@ -144,7 +144,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
 	public MapedSql toMapedSql() throws Exception {
 		if (this.updateTo == null || this.updateTo.isEmpty()) {
-			SumkException.throwException(-34601, "updateTo is null or empty");
+			throw new SumkException(-34601, "updateTo is null or empty");
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
 		this.checkMap(this.updateTo, this.pojoMeta);
@@ -225,7 +225,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		CharSequence whereStr = orItem.toCharSequence(true);
 		if (whereStr == null || whereStr.length() == 0) {
-			SumkException.throwException(345445, "where cannot be null");
+			throw new SumkException(345445, "where cannot be null");
 		}
 		sb.append(whereStr);
 		ms.sql = sb.toString();
@@ -235,13 +235,13 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	}
 
 	protected void addDBIDs2Where() throws Exception {
-		List<ColumnMeta> whereColumns = this.pojoMeta.getPrimaryIDs();
+		List<ColumnMeta> whereColumns = this.pojoMeta.getDatabaseIds();
 		Map<String, Object> paramMap = new HashMap<>();
 		for (ColumnMeta fm : whereColumns) {
 			String fieldName = fm.getFieldName();
 			paramMap.put(fieldName, fm.value(this.updateTo));
 		}
-		this._addIn(paramMap, true);
+		this._addInByMap(paramMap);
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		if (columnMeta == null) {
 			throw new SumkException(5912239, "cannot found java field " + fieldName + " in " + pm.pojoClz);
 		}
-		v = NumUtil.toType(v, columnMeta.field.getType(), true);
+		v = DBKits.toType(v, columnMeta.field.getType(), true);
 		if (this.incrMap == null) {
 			this.incrMap = new HashMap<>();
 		}

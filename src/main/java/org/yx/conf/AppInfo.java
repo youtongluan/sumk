@@ -38,6 +38,10 @@ public final class AppInfo {
 	private static String pid;
 
 	static {
+		init();
+	}
+
+	private synchronized static void init() {
 		try {
 			String temp = ManagementFactory.getRuntimeMXBean().getName();
 			pid = temp.substring(0, temp.indexOf("@"));
@@ -45,10 +49,6 @@ public final class AppInfo {
 			RawLog.error("sumk.conf", e);
 			pid = "UNKNOW";
 		}
-		init();
-	}
-
-	private synchronized static void init() {
 		if (info != null) {
 			return;
 		}
@@ -188,7 +188,8 @@ public final class AppInfo {
 	public static Charset systemCharset() {
 
 		String charsetName = info == null ? null : info.get("sumk.charset");
-		if (StringUtil.isEmpty(charsetName) || charsetName.equalsIgnoreCase(UTF8.name())) {
+		if (charsetName == null || charsetName.isEmpty() || "utf8".equalsIgnoreCase(charsetName)
+				|| "utf-8".equalsIgnoreCase(charsetName)) {
 			return UTF8;
 		}
 		if (!Charset.isSupported(charsetName)) {
@@ -248,7 +249,7 @@ public final class AppInfo {
 		for (Consumer<SystemConfig> consumer : consumers) {
 			try {
 				consumer.accept(info);
-			} catch (Exception e) {
+			} catch (Throwable e) {
 				RawLog.error("sumk.conf", e);
 			}
 		}

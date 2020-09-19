@@ -28,7 +28,7 @@ import org.yx.conf.AppInfo;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
 
-public class RpcActions {
+public final class RpcActions {
 
 	private static Map<String, Class<?>> pojoMap = new ConcurrentHashMap<>();
 
@@ -40,7 +40,7 @@ public class RpcActions {
 	}
 
 	private static String getArgClassName(String method) {
-		int k = method.lastIndexOf(".");
+		int k = method.lastIndexOf('.');
 		return method.substring(0, k) + "_" + method.substring(k + 1);
 	}
 

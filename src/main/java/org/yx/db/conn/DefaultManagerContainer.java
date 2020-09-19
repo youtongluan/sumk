@@ -15,9 +15,10 @@
  */
 package org.yx.db.conn;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Function;
 
 import org.yx.exception.SumkException;
@@ -25,7 +26,10 @@ import org.yx.log.Logs;
 
 public class DefaultManagerContainer implements Function<String, DataSourceManager> {
 
-	private final ConcurrentMap<String, DataSourceManager> factoryMap = new ConcurrentHashMap<>();
+	/**
+	 * 这个属性是不可变的
+	 */
+	private Map<String, DataSourceManager> factoryMap = Collections.emptyMap();
 
 	private Function<String, DataSourceManager> managerFactory = name -> new DataSourceManagerImpl(name);
 
@@ -33,15 +37,23 @@ public class DefaultManagerContainer implements Function<String, DataSourceManag
 		this.managerFactory = Objects.requireNonNull(managerFactory);
 	}
 
-	public void put(String dbName, DataSourceManager factory) {
-		factoryMap.putIfAbsent(dbName, factory);
+	public synchronized DataSourceManager addManager(String dbName, DataSourceManager factory) {
+		Map<String, DataSourceManager> map = new HashMap<>(this.factoryMap);
+		DataSourceManager pre = map.putIfAbsent(dbName, factory);
+		if (pre == null) {
+			this.factoryMap = map;
+		}
+		return pre;
 	}
 
-	public void remove(String dbName) throws Exception {
-		DataSourceManager old = factoryMap.remove(dbName);
+	public synchronized DataSourceManager removeManager(String dbName) throws Exception {
+		Map<String, DataSourceManager> map = new HashMap<>(this.factoryMap);
+		DataSourceManager old = map.remove(dbName);
 		if (old != null) {
+			this.factoryMap = map;
 			old.destroy();
 		}
+		return old;
 	}
 
 	@Override
@@ -52,14 +64,22 @@ public class DefaultManagerContainer implements Function<String, DataSourceManag
 		}
 		try {
 			for (int i = 0; i < 3; i++) {
-				factory = factoryMap.computeIfAbsent(dbName, managerFactory);
-				if (factory != null) {
-					Logs.db().info("create dataSource manager of {}", dbName);
-					return factory;
-				}
-				factory = factoryMap.get(dbName);
-				if (factory != null) {
-					return factory;
+				synchronized (this) {
+					if ((factory = factoryMap.get(dbName)) != null) {
+						return factory;
+					}
+					factory = managerFactory.apply(dbName);
+					if (factory == null) {
+						continue;
+					}
+					Logs.db().info("create dataSource manager: {}", dbName);
+					DataSourceManager pre = this.addManager(dbName, factory);
+					if (pre == null) {
+						return factory;
+					}
+					Logs.db().info("create dataSource manager '{}' twice!!", dbName);
+					factory.destroy();
+					return pre;
 				}
 			}
 			throw new SumkException(100234321, "get DataSourceManager [" + dbName + "] failed");

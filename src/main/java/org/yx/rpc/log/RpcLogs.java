@@ -2,9 +2,6 @@ package org.yx.rpc.log;
 
 import java.util.Objects;
 
-import org.yx.common.Host;
-import org.yx.rpc.client.Req;
-import org.yx.rpc.client.RpcResult;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.Response;
 
@@ -20,8 +17,8 @@ public class RpcLogs {
 		RpcLogs.handler = Objects.requireNonNull(handler);
 	}
 
-	public static void clientLog(Host url, Req req, RpcResult result, long receiveTime) {
-		handler.clientLog(new RpcLog(url, req, result, receiveTime));
+	public static void clientLog(RpcLog log) {
+		handler.clientLog(log);
 	}
 
 	public static void serverLog(Request req, Response resp) {

@@ -16,35 +16,27 @@
 package org.yx.common.sumk;
 
 import java.io.Serializable;
-import java.lang.reflect.Array;
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.RandomAccess;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-public class UnmodifiableArrayList<E> extends AbstractList<E> implements List<E>, RandomAccess, Serializable {
+public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	private final E[] elements;
+	private final Object[] elements;
 
 	public UnmodifiableArrayList(E[] array) {
 		elements = Objects.requireNonNull(array);
 	}
 
-	@SuppressWarnings("unchecked")
-	public UnmodifiableArrayList(Collection<E> col, Class<E> clz) {
-		this.elements = (E[]) Array.newInstance(clz, col.size());
-		int i = 0;
-		for (E e : col) {
-			this.elements[i++] = e;
-		}
+	public UnmodifiableArrayList(Collection<E> col) {
+		this.elements = col.toArray();
 	}
 
 	@Override
@@ -58,25 +50,20 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements List<E>
 	}
 
 	@Override
-	@SuppressWarnings("unchecked")
 	public <T> T[] toArray(T[] a) {
-		int size = size();
-		if (a.length < size)
-			return Arrays.copyOf(this.elements, size, (Class<? extends T[]>) a.getClass());
-		System.arraycopy(this.elements, 0, a, 0, size);
-		if (a.length > size)
-			a[size] = null;
+		System.arraycopy(this.elements, 0, a, 0, size());
 		return a;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public E get(int index) {
-		return elements[index];
+		return (E) elements[index];
 	}
 
 	@Override
 	public int indexOf(Object o) {
-		E[] a = this.elements;
+		Object[] a = this.elements;
 		if (o == null) {
 			for (int i = 0; i < a.length; i++)
 				if (a[i] == null)
@@ -99,11 +86,12 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements List<E>
 		return Spliterators.spliterator(elements, Spliterator.ORDERED);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void forEach(Consumer<? super E> action) {
 		Objects.requireNonNull(action);
-		for (E e : elements) {
-			action.accept(e);
+		for (Object e : elements) {
+			action.accept((E) e);
 		}
 	}
 

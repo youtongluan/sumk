@@ -26,7 +26,7 @@ import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.db.enums.ColumnType;
-import org.yx.db.kit.NumUtil;
+import org.yx.db.kit.DBKits;
 import org.yx.exception.SumkException;
 import org.yx.util.StreamUtil;
 import org.yx.util.StringUtil;
@@ -103,7 +103,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 			return;
 		}
 		if (this.isNumber && Number.class.isInstance(value)) {
-			Number v = NumUtil.toType((Number) value, fieldType, false);
+			Number v = DBKits.toType((Number) value, fieldType, false);
 			field.set(owner, v);
 			return;
 		}
@@ -120,7 +120,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 			return;
 		}
 		if (AppInfo.getBoolean("sumk.db.fail.miss.type", true)) {
-			SumkException.throwException(345234543,
+			throw new SumkException(345234543,
 					"字段类型是" + fieldType.getName() + ",参数对象的实际类型是:" + value.getClass().getName());
 		}
 	}

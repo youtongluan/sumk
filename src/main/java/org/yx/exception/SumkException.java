@@ -16,7 +16,8 @@
 package org.yx.exception;
 
 /**
- * 这个异常表示是执行sumk框架中的某个方法抛出的异常
+ * 这个异常表示是执行sumk框架中的某个方法抛出的异常<BR>
+ * 框架内部使用，业务异常请用BizException
  * 
  * @author 游夏
  *
@@ -33,33 +34,11 @@ public class SumkException extends CodeException {
 		super(code, msg, exception);
 	}
 
-	public static void throwException(int code, String msg) throws SumkException {
-		throw new SumkException(code, msg);
-	}
-
-	public static void throwException(int code, String msg, Throwable exception) throws SumkException {
-		if (SumkException.class.isInstance(exception)) {
-			throw (SumkException) exception;
-		}
-		throw new SumkException(code, msg, exception);
-	}
-
-	public static void throwException(String msg) throws SumkException {
-		throw new SumkException(0, msg);
-	}
-
-	public static void throwException(String msg, Throwable exception) throws SumkException {
-		if (SumkException.class.isInstance(exception)) {
-			throw (SumkException) exception;
-		}
-		throw new SumkException(0, msg, exception);
-	}
-
-	public static SumkException create(Throwable e) {
+	public static SumkException wrap(Throwable e) {
 		if (SumkException.class.isInstance(e)) {
 			throw (SumkException) e;
 		}
-		return new SumkException(0, e.getMessage(), e);
+		return new SumkException(-34534565, e.getMessage(), e);
 	}
 
 }

@@ -23,7 +23,7 @@ import org.yx.common.route.Router;
 import org.yx.common.route.Routes;
 import org.yx.common.route.WeightedServer;
 import org.yx.conf.AppInfo;
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 
@@ -65,7 +65,7 @@ public class WeightedRouterFactory implements RouterFactory {
 			if (AppInfo.getBoolean("sumk.db.empty.allow", false)) {
 				Logs.db().warn("you have not config any read datasource for [{}]", name);
 			} else {
-				SumkException.throwException(83587871, "you have not config " + type + " datasource for " + name);
+				throw new SumkException(83587871, "you have not config " + type + " datasource for " + name);
 			}
 		}
 		return Routes.createWeightedRouter(wds);

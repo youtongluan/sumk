@@ -13,13 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db;
+package org.yx.db.enums;
 
-import java.io.IOException;
-import java.sql.SQLException;
+public enum DBType {
 
-public interface DBAction {
-	void commit() throws IOException, SQLException;
+	WRITE(true, false),
 
-	void rollback() throws IOException, SQLException;
+	READ_PREFER(false, true),
+
+	READONLY(false, true),
+
+	ANY(true, true);
+
+	private boolean writable;
+	private boolean readable;
+
+	private DBType(boolean writable, boolean readable) {
+		this.writable = writable;
+		this.readable = readable;
+	}
+
+	public boolean isWritable() {
+		return writable;
+	}
+
+	public boolean isReadable() {
+		return readable;
+	}
+
 }

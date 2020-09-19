@@ -15,6 +15,9 @@
  */
 package org.yx.http.user;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+
 import org.yx.bean.IOC;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
@@ -28,6 +31,8 @@ import org.yx.redis.RedisPool;
 public final class WebSessions {
 	private static UserSession session;
 
+	private static Predicate<String> sessionIdVerifier = s -> s != null && s.length() > 10;
+
 	public static UserSession userSession() {
 		return session;
 	}
@@ -38,6 +43,14 @@ public final class WebSessions {
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
 		return session;
+	}
+
+	public static Predicate<String> getSessionIdVerifier() {
+		return sessionIdVerifier;
+	}
+
+	public static void setSessionIdVerifier(Predicate<String> sessionIdVerifier) {
+		WebSessions.sessionIdVerifier = Objects.requireNonNull(sessionIdVerifier);
 	}
 
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {

@@ -29,8 +29,8 @@ import org.yx.bean.IOC;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
+import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
-import org.yx.http.act.HttpActions;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 import org.yx.validate.ParamFactory;
@@ -62,11 +62,11 @@ public final class WebAnnotationResolver {
 		}
 	}
 
-	public void resolve(Object bean) throws Exception {
+	public List<HttpActionInfo> resolve(Object bean) throws Exception {
 
 		Class<?> clz = IOC.getTargetClassOfBean(bean);
 		if (exclude.test(clz.getName())) {
-			return;
+			return null;
 		}
 		Method[] methods = clz.getDeclaredMethods();
 		List<Method> httpMethods = new ArrayList<>();
@@ -84,10 +84,11 @@ public final class WebAnnotationResolver {
 			httpMethods.add(m);
 		}
 		if (httpMethods.isEmpty()) {
-			return;
+			return null;
 		}
 
 		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(httpMethods);
+		List<HttpActionInfo> infos = new ArrayList<>(mpInfos.size() * 2);
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
@@ -99,16 +100,9 @@ public final class WebAnnotationResolver {
 				continue;
 			}
 			for (String name : names) {
-				this.addAction(name, node);
+				infos.add(new HttpActionInfo(name, node));
 			}
 		}
+		return infos;
 	}
-
-	private void addAction(String name, HttpActionNode node) throws Exception {
-		if (name == null || name.isEmpty()) {
-			return;
-		}
-		HttpActions.putActInfo(name, node);
-	}
-
 }

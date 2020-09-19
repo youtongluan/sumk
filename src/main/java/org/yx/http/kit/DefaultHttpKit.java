@@ -64,7 +64,7 @@ public class DefaultHttpKit implements HttpKit {
 
 	@Override
 	public void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
-		resp.setStatus(HttpSettings.getErrorHttpStatus());
+		resp.setStatus(HttpSettings.errorHttpStatus());
 		JsonObject jo = new JsonObject();
 		jo.addProperty("code", code);
 		jo.addProperty("message", errorMsg);

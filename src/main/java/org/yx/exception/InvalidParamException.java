@@ -42,7 +42,10 @@ public class InvalidParamException extends Exception {
 		if (ret.indexOf("#") < 0) {
 			return ret;
 		}
-		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && info != null && info.getParam() != null
+		if (info == null) {
+			return ret.replace("#", "参数");
+		}
+		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && info.getParam() != null
 				&& StringUtil.isNotEmpty(info.getParam().value())) {
 			return ret.replace("#", info.getParam().value());
 		}

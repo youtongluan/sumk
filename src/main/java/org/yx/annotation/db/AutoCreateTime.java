@@ -21,8 +21,17 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 在@Table注解的表中，让插入记录的时候，一并写入创建时间。它有以下要点:
+ * <OL>
+ * <LI>它注解的字段要是时间类型，比如Timestamp、Date、LocalDatetime</LI>
+ * <LI>只有在单主键，并且该主键是Long类型时才有用</LI>
+ * <LI>不限制一张表有几个CreateTime字段，0个或多个都是可以的</LI>
+ * <LI>它只作用在insert的时候，之后它就跟其它字段没啥差异</LI>
+ * </OL>
+ */
 @Target({ ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface CreateTime {
+public @interface AutoCreateTime {
 }

@@ -18,7 +18,7 @@ public class MyLoginServlet extends AbstractLoginServlet {
 
 		String password = req.getParameter("password");
 		String validCode = req.getParameter("code");
-		System.out.println("login的log：" + DB.select().tableClass(DemoUser.class).byPrimaryId(log()).queryOne());
+		System.out.println("login的log：" + DB.select().tableClass(DemoUser.class).byDatabaseId(log()).queryOne());
 		if (!"9999".equals(validCode)) {
 			return LoginObject.fail("验证码错误");
 		}

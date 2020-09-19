@@ -20,4 +20,9 @@ public class SentinelJedis2Executor extends AbstractJedis2Executor {
 	public SentinelJedis2Executor(RedisConfig config) {
 		super(config, Jedis2Factorys.getSentinelPoolFactory().apply(config));
 	}
+
+	@Override
+	public RedisType redisType() {
+		return RedisType.SENTINEL;
+	}
 }

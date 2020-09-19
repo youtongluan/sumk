@@ -13,31 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.util;
+package org.yx.redis;
 
-import org.yx.exception.SumkException;
+public enum RedisType {
+	SIMPLE, CLUSTER,
+	/**
+	 * 实验性功能
+	 */
+	SENTINEL, OTHER;
 
-public final class Asserts {
-
-	public static void notEmpty(String text, String msg) {
-		if (text == null || text.isEmpty()) {
-			throw new SumkException(657645465, msg);
+	public boolean accept(String type) {
+		if (type == null || type.isEmpty()) {
+			return false;
 		}
-
-	}
-
-	public static void isTrue(boolean b, String msg) {
-		if (b) {
-			return;
+		if (this.name().equalsIgnoreCase(type)) {
+			return true;
 		}
-		throw new SumkException(5674354, msg);
-	}
-
-	public static void hasText(String text, String msg) {
-		if (text == null || text.trim().isEmpty()) {
-			throw new SumkException(652342134, msg);
+		if (String.valueOf(this.ordinal()).equals(type)) {
+			return true;
 		}
-
+		return false;
 	}
-
 }

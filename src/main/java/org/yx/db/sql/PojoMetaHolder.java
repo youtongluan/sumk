@@ -114,8 +114,8 @@ public class PojoMetaHolder {
 		}
 		Collections.sort(list);
 		PojoMeta tm = new PojoMeta(table, list.toArray(new ColumnMeta[list.size()]), pojoClz);
-		if (tm.getPrimaryIDs().isEmpty()) {
-			SumkException.throwException(56456456, pojoClz.getName() + " has no primary key");
+		if (tm.databaseIds.isEmpty()) {
+			throw new SumkException(56456456, pojoClz.getName() + " has no database primary key");
 		}
 		pojoMetas.put(pojoClz, tm);
 		tableMetas.put(tm.getTableName(), tm);

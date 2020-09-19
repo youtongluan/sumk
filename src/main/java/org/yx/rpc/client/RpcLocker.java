@@ -24,11 +24,14 @@ import java.util.function.Consumer;
 import org.apache.mina.core.future.IoFutureListener;
 import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
+import org.yx.common.context.ActionContext;
+import org.yx.common.context.LogContext;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
+import org.yx.rpc.log.RpcLog;
 import org.yx.rpc.log.RpcLogs;
 
 public final class RpcLocker implements IoFutureListener<WriteFuture> {
@@ -38,12 +41,18 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 	final Req req;
 	private Host url;
 	final Consumer<RpcResult> callback;
+	private final LogContext originLogContext;
 
 	private final AtomicReference<Thread> awaitThread = new AtomicReference<>();
 
 	RpcLocker(Req req, Consumer<RpcResult> callback) {
 		this.req = req;
 		this.callback = callback;
+		this.originLogContext = ActionContext.get().logContext();
+	}
+
+	public LogContext originLogContext() {
+		return this.originLogContext;
 	}
 
 	public void url(Host url) {
@@ -78,7 +87,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 				Log.printStack("sumk.rpc", e);
 			}
 		}
-		RpcLogs.clientLog(this.url, this.req, result, receiveTime);
+		RpcLogs.clientLog(new RpcLog(this.url, this.req, this.originLogContext, result, receiveTime));
 	}
 
 	@Override

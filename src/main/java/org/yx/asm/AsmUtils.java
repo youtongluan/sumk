@@ -32,14 +32,15 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.yx.conf.AppInfo;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public final class AsmUtils {
 
-	private static String[] blanks = new String[] { "getClass", "wait", "equals", "notify", "notifyAll", "toString",
-			"hashCode" };
+	private static final String[] blanks = new String[] { "getClass", "wait", "equals", "notify", "notifyAll",
+			"toString", "hashCode" };
 
-	private static ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
 	private static Method defineClass;
 
 	static {
@@ -55,7 +56,7 @@ public final class AsmUtils {
 
 	public static String proxyCalssName(Class<?> clz) {
 		String name = clz.getName();
-		int index = name.lastIndexOf(".");
+		int index = name.lastIndexOf('.');
 		return name.substring(0, index) + ".sumkbox" + name.substring(index);
 	}
 
@@ -167,7 +168,7 @@ public final class AsmUtils {
 			}
 			clz = (Class<?>) defineClass.invoke(loader(), fullName, b, 0, b.length);
 			if (clz == null) {
-				throw new Exception("cannot load class " + fullName);
+				throw new SumkException(-235345436, "cannot load class " + fullName);
 			}
 			clzMap.put(fullName, clz);
 			return clz;

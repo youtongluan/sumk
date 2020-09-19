@@ -94,7 +94,6 @@ public class ArgPojos {
 		cw.visitEnd();
 
 		return (Class<? extends ArgPojo>) AsmUtils.loadClass(fullName.replace('/', '.'), cw.toByteArray());
-
 	}
 
 	private static void buildArgArray(String fullName, MethodVisitor mv, Arg[] args, Class<?>[] params) {
@@ -122,6 +121,5 @@ public class ArgPojos {
 			this.name = name;
 			this.desc = desc;
 		}
-
 	}
 }

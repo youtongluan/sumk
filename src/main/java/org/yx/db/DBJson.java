@@ -21,7 +21,7 @@ import org.yx.common.ByteArrayTypeAdapter;
 import org.yx.common.json.GsonHelper;
 import org.yx.common.json.GsonOperator;
 
-public class DBJson {
+public final class DBJson {
 
 	private static GsonOperator operator = new GsonOperator(
 			GsonHelper.builder("sumk.db").registerTypeAdapter(byte[].class, ByteArrayTypeAdapter.inst).create());

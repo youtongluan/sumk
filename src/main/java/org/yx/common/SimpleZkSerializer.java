@@ -16,21 +16,25 @@
 package org.yx.common;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-import org.I0Itec.zkclient.exception.ZkMarshallingError;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.yx.util.S;
 
 public class SimpleZkSerializer implements ZkSerializer {
 
-	private Charset charset;
+	private final Charset charset;
+
+	public SimpleZkSerializer() {
+		this(StandardCharsets.UTF_8);
+	}
 
 	public SimpleZkSerializer(Charset charset) {
 		this.charset = charset;
 	}
 
 	@Override
-	public byte[] serialize(Object data) throws ZkMarshallingError {
+	public byte[] serialize(Object data) {
 		if (data == null) {
 			return null;
 		}
@@ -44,7 +48,7 @@ public class SimpleZkSerializer implements ZkSerializer {
 	}
 
 	@Override
-	public Object deserialize(byte[] bytes) throws ZkMarshallingError {
+	public Object deserialize(byte[] bytes) {
 		return bytes;
 	}
 

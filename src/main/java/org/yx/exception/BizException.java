@@ -19,7 +19,7 @@ public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;
 
-	protected BizException(int code, String msg) {
+	public BizException(int code, String msg) {
 		super(code, msg);
 	}
 

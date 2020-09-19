@@ -26,8 +26,8 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
-import org.yx.db.DBType;
 import org.yx.db.conn.ConnectionPool;
+import org.yx.db.enums.DBType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 

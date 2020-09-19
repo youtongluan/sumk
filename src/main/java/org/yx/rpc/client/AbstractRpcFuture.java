@@ -15,10 +15,19 @@
  */
 package org.yx.rpc.client;
 
+import java.util.Objects;
+
+import org.yx.common.Host;
+import org.yx.common.context.LogContext;
 import org.yx.exception.CodeException;
 import org.yx.util.S;
 
 public abstract class AbstractRpcFuture implements RpcFuture {
+	protected final RpcLocker locker;
+
+	public AbstractRpcFuture(RpcLocker locker) {
+		this.locker = Objects.requireNonNull(locker);
+	}
 
 	@Override
 	public <T> T getOrException(Class<T> clz) throws CodeException {
@@ -51,4 +60,11 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		return resp.json();
 	}
 
+	public Host getServer() {
+		return this.locker.url();
+	}
+
+	public LogContext getOriginLogContext() {
+		return this.locker.originLogContext();
+	}
 }

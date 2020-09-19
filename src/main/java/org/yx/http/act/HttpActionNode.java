@@ -49,7 +49,7 @@ public final class HttpActionNode extends CalleeNode {
 			return getEmptyArgObj();
 		}
 		if (reqData.getClass() != String.class) {
-			SumkException.throwException(1245464, "http argument " + reqData.getClass().getName() + " is not String");
+			throw new SumkException(1245464, "http argument " + reqData.getClass().getName() + " is not String");
 		}
 		String data = (String) reqData;
 		if (data.isEmpty()) {

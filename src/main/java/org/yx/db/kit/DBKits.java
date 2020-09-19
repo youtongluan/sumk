@@ -15,9 +15,27 @@
  */
 package org.yx.db.kit;
 
-import org.yx.exception.SumkException;
+import java.util.List;
 
-public class NumUtil {
+import org.yx.db.sql.PojoMeta;
+import org.yx.db.sql.PojoMetaHolder;
+import org.yx.exception.SumkException;
+import org.yx.exception.SumkExceptionCode;
+import org.yx.redis.RecordRepository;
+import org.yx.util.StringUtil;
+
+public final class DBKits {
+
+	public static <T> T queryOne(List<T> list) {
+		if (list == null || list.isEmpty()) {
+			return null;
+		}
+		if (list.size() > 1) {
+			throw new SumkException(SumkExceptionCode.DB_TOO_MANY_RESULTS,
+					"result size:" + list.size() + " more than one");
+		}
+		return list.get(0);
+	}
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Number> T toType(Number v, Class<?> type, boolean failIfNotSupport) {
@@ -51,5 +69,39 @@ public class NumUtil {
 			throw new SumkException(927816546, type.getClass().getName() + "is not valid Number type");
 		}
 		return (T) v;
+	}
+
+	@SafeVarargs
+	public static <T> int clearCache(T... pojos) throws Exception {
+		int total = 0;
+		if (pojos == null || pojos.length == 0) {
+			return total;
+		}
+		T t = null;
+		for (int i = 0; i < pojos.length; i++) {
+			t = pojos[i];
+			if (t != null) {
+				break;
+			}
+		}
+		if (t == null) {
+			return total;
+		}
+		PojoMeta pm = PojoMetaHolder.getPojoMeta(t.getClass(), null);
+		if (pm == null || pm.isNoCache()) {
+			return total;
+		}
+		for (T src : pojos) {
+			if (src == null) {
+				continue;
+			}
+			String id = pm.getCacheID(src, false);
+			if (StringUtil.isEmpty(id)) {
+				continue;
+			}
+			RecordRepository.del(pm, id);
+			total++;
+		}
+		return total;
 	}
 }

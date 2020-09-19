@@ -28,12 +28,11 @@ public class RedisFactory {
 		try {
 			creator = conf -> {
 				String type = conf.getType();
-				if ("2".equals(conf.getType()) || "sentinel".equalsIgnoreCase(type)) {
+				if (RedisType.SENTINEL.accept(type)) {
 					Logs.redis().warn("sentinel has not be tested.if any problem,send email to 3205207767@qq.com");
 					return new RedisImpl(new SentinelJedis2Executor(conf));
 				}
-				if ("1".equals(type) || "cluster".equalsIgnoreCase(type)
-						|| conf.hosts().replace('，', ',').contains(",")) {
+				if (RedisType.CLUSTER.accept(type) || conf.hosts().contains(",")) {
 					return Jedis2Factorys.getJedisClusterFactory().apply(conf);
 				}
 				return new RedisImpl(new SingleJedis2Executor(conf));

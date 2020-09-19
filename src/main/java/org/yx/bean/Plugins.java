@@ -30,6 +30,7 @@ public final class Plugins {
 			}
 			return c.await(mils, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 			return false;
 		}
 	}

@@ -27,7 +27,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.IntFunction;
 
-import org.yx.annotation.db.CreateTime;
+import org.yx.annotation.db.AutoCreateTime;
 import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
 import org.yx.annotation.doc.Comment;
@@ -55,7 +55,7 @@ public final class PojoMeta implements Cloneable {
 
 	final List<ColumnMeta> cacheIDs;
 
-	final List<ColumnMeta> primaryIDs;
+	final List<ColumnMeta> databaseIds;
 
 	private VisitCounter counter;
 	private int ttlSec;
@@ -106,11 +106,11 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	public boolean isPrimeKeySameWithCache() {
-		return primaryIDs == cacheIDs;
+		return databaseIds == cacheIDs;
 	}
 
-	public List<ColumnMeta> getPrimaryIDs() {
-		return primaryIDs;
+	public List<ColumnMeta> getDatabaseIds() {
+		return databaseIds;
 	}
 
 	public boolean isSoftDelete() {
@@ -149,7 +149,7 @@ public final class PojoMeta implements Cloneable {
 			if (m.isDBID()) {
 				pids.add(m);
 			}
-			if (m.field.isAnnotationPresent(CreateTime.class)) {
+			if (m.field.isAnnotationPresent(AutoCreateTime.class)) {
 				if (m.isDate && !timeOnly(m.field.getType())) {
 					ctimes.add(m);
 				} else {
@@ -158,9 +158,9 @@ public final class PojoMeta implements Cloneable {
 				}
 			}
 		}
-		this.cacheIDs = CollectionUtil.unmodifyList(rids, ColumnMeta.class);
-		this.primaryIDs = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids, ColumnMeta.class);
-		this.createColumns = CollectionUtil.unmodifyList(ctimes, ColumnMeta.class);
+		this.cacheIDs = CollectionUtil.unmodifyList(rids);
+		this.databaseIds = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids);
+		this.createColumns = CollectionUtil.unmodifyList(ctimes);
 		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class));
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
@@ -250,7 +250,7 @@ public final class PojoMeta implements Cloneable {
 			String key = en.getKey();
 			ColumnMeta m = this.getByColumnDBName(key);
 			if (m == null) {
-				Logs.db().warn("数据库字段{}找不到对应的属性", key);
+				Logs.db().warn("{}数据库字段{}找不到对应的属性", this.tableName, key);
 				continue;
 			}
 			m.setValue(ret, en.getValue());
@@ -266,7 +266,7 @@ public final class PojoMeta implements Cloneable {
 		}
 		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
-			SumkException.throwException(548092345,
+			throw new SumkException(548092345,
 					source.getClass().getName() + " is not instance of " + this.pojoClz.getName());
 		}
 		for (ColumnMeta m : this.fieldMetas) {
@@ -325,7 +325,8 @@ public final class PojoMeta implements Cloneable {
 			Object v = m.value(source);
 			if (v == null) {
 				if (exceptionIfHasNull) {
-					SumkException.throwException(1232142356, "value of " + m.getFieldName() + " cannot be null");
+					throw new SumkException(1232142356,
+							this.pojoClz.getName() + ": value of " + m.getFieldName() + " cannot be null");
 				}
 				return null;
 			}
@@ -355,7 +356,8 @@ public final class PojoMeta implements Cloneable {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {
 				if (exceptionIfHasNull) {
-					SumkException.throwException(1232142356, "redis key [" + m.getFieldName() + "] cannot be null");
+					throw new SumkException(1232142356,
+							this.pojoClz.getName() + ": redis key [" + m.getFieldName() + "] cannot be null");
 				}
 				return null;
 			}

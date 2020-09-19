@@ -44,8 +44,8 @@ public abstract class AbstractRefreshableSystemConfig extends StartOnceLifecycle
 	@Override
 	protected final void onStart() {
 		this.init();
-		this.notifyListener();
 		RawLog.setLogger(RawLog.SLF4J_LOG);
+		this.notifyListener();
 	}
 
 	protected abstract void init();

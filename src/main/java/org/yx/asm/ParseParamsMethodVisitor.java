@@ -28,20 +28,24 @@ import org.yx.log.Log;
 public class ParseParamsMethodVisitor extends EmptyMethodVisitor {
 
 	private final MethodParamInfo info;
+
 	private final List<LocalArg> argPojos;
-	private final int maxSize;
+	private final int maxIndex;
 
 	public ParseParamsMethodVisitor(int api, MethodParamInfo info) {
 		super(api);
 		this.info = info;
-		this.maxSize = info.getArgNames().length * 2;
-		this.argPojos = new ArrayList<>(maxSize);
+		this.maxIndex = info.getArgNames().length * 2;
+		this.argPojos = new ArrayList<>(maxIndex);
 	}
 
 	@Override
 	public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
 
-		if ((index == 0 && "this".equals(name)) || index >= maxSize) {
+		if (index == 0 && "this".equals(name)) {
+			return;
+		}
+		if (index >= maxIndex) {
 			return;
 		}
 		argPojos.add(new LocalArg(name, desc, index, signature));
@@ -62,14 +66,14 @@ public class ParseParamsMethodVisitor extends EmptyMethodVisitor {
 		if (argPojos.size() < size) {
 			log.error("{}.{},real param size:{},but is {}", info.getMethod().getDeclaringClass().getName(), methodName,
 					size, argPojos.size());
-			SumkException.throwException(123253, "failed to parse parameter because parameter size not satisfied");
+			throw new SumkException(123253, "failed to parse parameter because parameter size not satisfied");
 		}
 		for (int i = 0; i < size; i++) {
 			LocalArg pojo = argPojos.get(i);
 			if (!args[i].getDescriptor().equals(pojo.desc)) {
 				log.error("{}.{},i:{},index:{},except:{},indeed:{}", info.getMethod().getDeclaringClass().getName(),
 						methodName, i, pojo.index, args[i].getDescriptor(), pojo.desc);
-				SumkException.throwException(123253, "failed to parse parameter");
+				throw new SumkException(123253, "failed to parse parameter");
 			}
 			argNames[i] = pojo.name;
 			signatures[i] = pojo.signature;

@@ -37,7 +37,7 @@ public class ReqUserHandler implements HttpHandler {
 		return 1000;
 	}
 
-	public boolean accept(Web web) {
+	private boolean accept(Web web) {
 		return web.requireLogin() || web.requestType().isEncrypt();
 	}
 
@@ -47,11 +47,11 @@ public class ReqUserHandler implements HttpHandler {
 			return;
 		}
 		String sessionId = HttpContextHolder.sessionId();
-		UserSession session = WebSessions.loadUserSession();
-		if (!session.valid(sessionId)) {
+		if (!WebSessions.getSessionIdVerifier().test(sessionId)) {
 			Logs.http().info("session:{}, is not valid", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
+		UserSession session = WebSessions.loadUserSession();
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
 
 		if (obj == null) {

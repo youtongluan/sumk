@@ -13,15 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.exception;
+package org.yx.db.enums;
 
 /**
- * rpc和http中有意义的错误码 3位数的错误码，为系统所保留。 应用系统的错误码，要避开这个区间。 8XX表示通用异常
+ * select的where条件中，对于null的处理
  */
-public interface ErrorCode {
+public enum CompareNullPolicy {
 	/**
-	 * 线程数溢出
+	 * equal和not的null都会被正确解析，其它的null比较会被忽略掉
 	 */
-	int THREAD_THRESHOLD_OVER = 800;
+	CONTINUE,
 
+	/**
+	 * 保持原来的方式，不处理。可能会产生a like null这种表达式
+	 */
+	AS_IT_IS,
+
+	/**
+	 * 因为它会失败，所以就直接抛出异常
+	 */
+	FAIL
 }

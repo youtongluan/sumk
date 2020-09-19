@@ -52,13 +52,20 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 		}
 	}
 
+	protected String getResult(String json) {
+		return json;
+	}
+
 	@Override
 	public void clientLog(RpcLog rpcLog) {
 		if (RpcSettings.isClientLogDisable() || rpcLog == null) {
 			return;
 		}
 		Req req = rpcLog.getReq();
-		String api = req == null ? null : req.getApi();
+		if (req == null) {
+			return;
+		}
+		String api = req.getApi();
 		if (api == null || api.isEmpty() || api.startsWith("$")) {
 			return;
 		}
@@ -70,12 +77,19 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 			return;
 		}
 		StringBuilder sb = new StringBuilder(64);
-		sb.append(api).append("   server:").append(rpcLog.getServer()).append("   totalTime:").append(totalTime)
+		if (req.getTraceId() != null) {
+			sb.append('{').append(req.getTraceId());
+			if (req.getSpanId() != null) {
+				sb.append('-').append(req.getSpanId());
+			}
+			sb.append("}  ");
+		}
+		sb.append(api).append("  server:").append(rpcLog.getServer()).append("  totalTime:").append(totalTime)
 				.append(LN);
 		this.appendParam(sb, req);
 		if (result != null) {
 			if (e == null) {
-				sb.append(LN).append("   result: ").append(result.json());
+				sb.append(LN).append("   result: ").append(getResult(result.json()));
 			}
 		}
 
@@ -112,7 +126,7 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 		}
 		String json = resp != null ? resp.json() : null;
 		if (e == null) {
-			sb.append(LN).append("   result: ").append(json);
+			sb.append(LN).append("   result: ").append(getResult(json));
 		}
 
 		if (resp != null && resp.isSuccess()) {

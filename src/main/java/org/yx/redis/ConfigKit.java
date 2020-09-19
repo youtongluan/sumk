@@ -19,11 +19,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.common.Host;
+import org.yx.util.StringUtil;
 
 public final class ConfigKit {
 	public static List<Host> parseHosts(String host) {
-		host = host.replace('　', ' ').replace('，', ',').replace('：', ':').replaceAll("\\s", "");
-		String h = host;
+		String h = StringUtil.toLatin(host).replaceAll("\\s", "");
 		String[] hs = h.split(",");
 		List<Host> hosts = new ArrayList<>(hs.length);
 		for (String addr : hs) {

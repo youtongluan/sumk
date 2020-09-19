@@ -55,7 +55,7 @@ public final class Locker {
 		int index = id.hashCode() & (REDIS_LEN - 1);
 		Redis redis = RedisPool.get(nodeKey[index]);
 		if (redis == null) {
-			SumkException.throwException(8295462, "SLock must use in redis environment");
+			throw new SumkException(8295462, "SLock must use in redis environment");
 		}
 		return redis;
 	}

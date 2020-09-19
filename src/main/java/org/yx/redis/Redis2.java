@@ -56,10 +56,6 @@ public abstract class Redis2 implements Redis, Cloneable {
 		}
 	}
 
-	public boolean isCluster() {
-		return false;
-	}
-
 	@Override
 	public Redis mute() {
 		Redis2 r = this.muteConnectionExceptionRedis;
@@ -83,6 +79,11 @@ public abstract class Redis2 implements Redis, Cloneable {
 	@Override
 	public boolean isMuted() {
 		return mute;
+	}
+
+	@Override
+	public RedisType redisType() {
+		return this.jedis2Executor.redisType();
 	}
 
 	@Override

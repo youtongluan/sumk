@@ -15,12 +15,32 @@
  */
 package org.yx.exception;
 
-public class TooManyBeanException extends RuntimeException {
+/**
+ * 这里的code是不可变的，可以用它对SumkException中的code做判断。 它们都是91275XXXX格式
+ */
+public interface SumkExceptionCode {
+	/**
+	 * 存在多个bean
+	 */
+	int TOO_MANY_BEAN = 912753951;
 
-	private static final long serialVersionUID = 1L;
+	/**
+	 * SumkDate类中所用到的异常码
+	 */
+	int SUMKDATE_ERROR_CODE = 912753954;
 
-	public TooManyBeanException(String message) {
-		super(message);
-	}
+	/**
+	 * 时间格式转换异常
+	 */
+	int DATETIME_CONVERT = 912753916;
 
+	/**
+	 * 数据库连接已经关闭
+	 */
+	int DB_CONNECTION_CLOSED = 912753820;
+
+	/**
+	 * 数据库queryOne()的时候，返回的结果不止一条
+	 */
+	int DB_TOO_MANY_RESULTS = 912753811;
 }

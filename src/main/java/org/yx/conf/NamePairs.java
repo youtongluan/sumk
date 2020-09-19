@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -23,7 +24,8 @@ public final class NamePairs {
 	public NamePairs(final String data) {
 		this.data = data;
 		this.map = StringUtil.isEmpty(data) ? Collections.emptyMap()
-				: CollectionUtil.loadMapFromText(data.trim().replace("\r\n", LN).replace("\r", LN), LN, "=");
+				: CollectionUtil.fillMapFromText(new LinkedHashMap<String, String>(),
+						data.trim().replace("\r\n", LN).replace("\r", LN), LN, "=");
 	}
 
 	public NamePairs(final Map<String, String> map) {

@@ -17,9 +17,9 @@ package org.yx.db.exec;
 
 import java.sql.SQLException;
 
-import org.yx.db.DBType;
-import org.yx.db.TransactionType;
 import org.yx.db.conn.ConnectionPool;
+import org.yx.db.enums.DBType;
+import org.yx.db.enums.TransactionType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
@@ -87,7 +87,7 @@ public final class DBTransaction implements AutoCloseable {
 		try {
 			dbCtx.close();
 		} catch (Exception e) {
-			SumkException.throwException(7820198, "error in commit," + e.getMessage(), e);
+			throw new SumkException(7820198, "error in commit," + e.getMessage(), e);
 		}
 	}
 

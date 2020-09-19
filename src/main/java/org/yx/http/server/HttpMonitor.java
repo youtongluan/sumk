@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -34,17 +33,14 @@ import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.common.ActStatis;
 import org.yx.common.Monitors;
-import org.yx.common.Statis;
+import org.yx.common.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
-import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
-import org.yx.log.Logs;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcActions;
-import org.yx.util.S;
 
 @Bean
 @SumkServlet(value = { "/_sumk_monitor" }, loadOnStartup = -1, appKey = "sumkMonitor")
@@ -55,21 +51,8 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		InnerHttpUtil.noCache(resp);
-		resp.setContentType("text/plain;charset=UTF-8");
-		String md5 = AppInfo.get("sumk.http.monitor", "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
-		String sign = req.getParameter("sign");
-		if (sign == null) {
-			Logs.http().debug("sign is empty");
+		if (!ServerHelper.preHandle(req, resp, "sumk.http.monitor")) {
 			return;
-		}
-		try {
-			String signed = S.hash().digest(sign, StandardCharsets.UTF_8);
-			if (!md5.equalsIgnoreCase(signed)) {
-				Logs.http().debug("signed:{},need:{}", signed, md5);
-				return;
-			}
-		} catch (Exception e) {
 		}
 
 		UnsafeStringWriter writer = new UnsafeStringWriter(512);
@@ -95,7 +78,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		if (userSession == null) {
 			return "";
 		}
-		return new StringBuilder("#localSessions:").append("  ").append(userSession.localCacheSize()).toString();
+		return new StringBuilder("##localSessions:").append("  ").append(userSession.localCacheSize()).toString();
 	}
 
 	private void outputLocalSessions(HttpServletRequest req, Writer writer) throws IOException {
@@ -118,7 +101,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		if (!"1".equals(req.getParameter("acts"))) {
 			return;
 		}
-		writer.append(Arrays.toString(HttpActions.acts()));
+		writer.append(String.valueOf(HttpActions.acts()));
 		writer.append(TYPE_SPLIT);
 	}
 
@@ -136,16 +119,16 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		}
 		ActStatis actStatic = InnerHttpUtil.getActStatic();
 		String reset = req.getParameter("statis.reset");
-		Map<String, Statis> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
-		List<Statis> values = new ArrayList<>(map.values());
+		Map<String, StatisItem> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
+		List<StatisItem> values = new ArrayList<>(map.values());
 		values.sort((a, b) -> Long.compare(b.getSuccessTime(), a.getSuccessTime()));
 		long totalSuccessCount = 0;
 		long totalSuccessTime = 0;
 		long totalFailCount = 0;
 		long totalFailTime = 0;
 		StringBuilder sb = new StringBuilder();
-		sb.append("##").append(Statis.header()).append(LN);
-		for (Statis v : values) {
+		sb.append("##").append(StatisItem.header()).append(LN);
+		for (StatisItem v : values) {
 			sb.append(v.toSimpleString()).append(LN);
 			totalSuccessCount += v.getSuccessCount();
 			totalSuccessTime += v.getSuccessTime();

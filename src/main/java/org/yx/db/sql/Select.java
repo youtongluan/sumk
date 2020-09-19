@@ -24,15 +24,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.event.QueryEvent;
+import org.yx.db.kit.DBKits;
 import org.yx.db.visit.Exchange;
 import org.yx.db.visit.PojoResultHandler;
 import org.yx.db.visit.ResultHandler;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
-import org.yx.util.Asserts;
 import org.yx.util.CollectionUtil;
+import org.yx.util.kit.Asserts;
 
 /**
  * 比较跟整个addEqual是add关系。同一种比较类型，比如less，它的一个key只能设置一次，后设置的会覆盖前面设置的<BR>
@@ -77,20 +79,27 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	private ResultHandler resultHandler;
+	protected ResultHandler resultHandler;
 
 	public Select resultHandler(ResultHandler resultHandler) {
 		this.resultHandler = Objects.requireNonNull(resultHandler);
 		return this;
 	}
 
+	/**
+	 * select的where比较条件中，对于null的处理
+	 * 
+	 * @param policy
+	 *            null的处理策略
+	 * @return 当前对象
+	 */
 	public Select compareNullPolicy(CompareNullPolicy policy) {
 		this.compareNullPolicy = Objects.requireNonNull(policy);
 		return this;
 	}
 
 	@SuppressWarnings("unchecked")
-	private Select setCompare(int index, Map<String, Object> map) {
+	protected Select setCompare(int index, Map<String, Object> map) {
 		if (CollectionUtil.isEmpty(map)) {
 			return this;
 		}
@@ -102,7 +111,7 @@ public class Select extends SelectBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	private Select setCompare(int index, String key, Object value) {
+	protected Select setCompare(int index, String key, Object value) {
 		if (key == null || key.isEmpty()) {
 			return this;
 		}
@@ -216,7 +225,7 @@ public class Select extends SelectBuilder {
 		return this.addOrderBy(field, false);
 	}
 
-	private Select addOrderBy(String name, boolean desc) {
+	protected Select addOrderBy(String name, boolean desc) {
 		if (this.orderby == null) {
 			this.orderby = new ArrayList<>(2);
 		}
@@ -243,7 +252,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
-		Asserts.isTrue(offset >= 0, "offset must bigger or equal than 0");
+		Asserts.requireTrue(offset >= 0, "offset must bigger or equal than 0");
 		this.offset = offset;
 		return this;
 	}
@@ -255,7 +264,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
-		Asserts.isTrue(limit >= 0, "limit must bigger or equal than 0");
+		Asserts.requireTrue(limit >= 0, "limit must bigger or equal than 0");
 		this.limit = limit;
 		return this;
 	}
@@ -322,7 +331,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select addEqual(String field, Object value) {
-		this._addIn(Collections.singletonMap(field, value));
+		this._addInByMap(Collections.singletonMap(field, value));
 		return this;
 	}
 
@@ -342,10 +351,10 @@ public class Select extends SelectBuilder {
 	 * 通过数据库主键列表查询主键，本方法只支持单主键类型。多主键请用addEqual()或addEquals()方法
 	 * 
 	 * @param ids
-	 *            id列表
+	 *            id列表，顺序跟pojo中定义的一致（按order顺序或书写顺序）
 	 * @return 注意：调用本方法之前，要确保调用过tableClass()方法
 	 */
-	public Select byPrimaryId(Object... ids) {
+	public Select byDatabaseId(Object... ids) {
 		return byId(true, ids);
 	}
 
@@ -355,7 +364,7 @@ public class Select extends SelectBuilder {
 	 * <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids
-	 *            id列表
+	 *            id列表，顺序跟pojo中定义的一致（按order顺序或书写顺序）
 	 * @return 当前对象
 	 * 
 	 */
@@ -363,18 +372,18 @@ public class Select extends SelectBuilder {
 		return byId(false, ids);
 	}
 
-	private Select byId(boolean dbPrimary, Object... ids) {
+	protected Select byId(boolean databaseId, Object... ids) {
 		if (ids == null || ids.length == 0) {
 			return this;
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
-		List<ColumnMeta> cms = dbPrimary ? this.pojoMeta.getPrimaryIDs() : this.pojoMeta.getCacheIDs();
-		Asserts.isTrue(cms != null && cms.size() == 1,
-				pojoMeta.getTableName() + " is not an one " + (dbPrimary ? "primary" : "cache") + " key table");
-		String key = cms.get(0).getFieldName();
-		for (Object id : ids) {
-			addEqual(Collections.singletonMap(key, id));
+		List<ColumnMeta> cms = databaseId ? this.pojoMeta.getDatabaseIds() : this.pojoMeta.getCacheIDs();
+		Asserts.requireTrue(cms != null && cms.size() == ids.length, pojoMeta.getTableName() + "没有设置主键，或者主键个数跟参数个数不一致");
+		Map<String, Object> map = new HashMap<>();
+		for (int i = 0; i < cms.size(); i++) {
+			map.put(cms.get(i).getFieldName(), ids[i]);
 		}
+		_addInByMap(map);
 		return this;
 	}
 
@@ -432,16 +441,12 @@ public class Select extends SelectBuilder {
 			}
 			return list;
 		} catch (Exception e) {
-			throw SumkException.create(e);
+			throw SumkException.wrap(e);
 		}
 	}
 
 	public <T> T queryOne() {
-		List<T> list = this.queryList();
-		if (list == null || list.isEmpty()) {
-			return null;
-		}
-		return list.get(0);
+		return DBKits.queryOne(this.queryList());
 	}
 
 	/**

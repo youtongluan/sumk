@@ -21,6 +21,9 @@ public interface DataSourceManager {
 
 	String status();
 
+	/**
+	 * 销毁mananger，不能抛出异常
+	 */
 	void destroy();
 
 	SumkDataSource writeDataSource();

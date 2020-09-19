@@ -15,11 +15,13 @@
  */
 package org.yx.listener;
 
+import java.util.List;
+
 public interface ListenerGroup<T extends SumkListener> {
 
 	void setListener(T[] listeners);
 
-	SumkListener[] getListeners();
+	List<SumkListener> getListeners();
 
 	void listen(SumkEvent event);
 

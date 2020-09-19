@@ -39,7 +39,7 @@ import org.yx.conf.MultiResourceLoader;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
-import org.yx.util.Asserts;
+import org.yx.util.StringUtil;
 
 public class SqlSessionFactory {
 
@@ -104,8 +104,7 @@ public class SqlSessionFactory {
 			return factoryMap.get(dbName);
 		} catch (Exception e) {
 			Log.printStack("sumk.sql.error", e);
-			SumkException.throwException(100234325, dbName + " create SqlSessionFactory failed");
-			return null;
+			throw new SumkException(100234325, dbName + " create SqlSessionFactory failed");
 		}
 	}
 
@@ -113,8 +112,7 @@ public class SqlSessionFactory {
 	}
 
 	public static void reload(String dbName) throws Exception {
-		Asserts.hasText(dbName, "db name can not be empty");
-		dbName = dbName.trim();
+		dbName = StringUtil.requireNotEmpty(dbName).trim();
 		SqlSessionFactory factory = factoryMap.get(dbName);
 		if (factory == null) {
 			return;

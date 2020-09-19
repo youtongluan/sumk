@@ -28,4 +28,6 @@ public interface Jedis2Executor {
 	RedisConfig getRedisConfig();
 
 	String hosts();
+
+	RedisType redisType();
 }

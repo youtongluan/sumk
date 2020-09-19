@@ -29,51 +29,29 @@ import org.yx.util.secury.Hasher;
 import com.google.gson.Gson;
 
 public final class SBuilder {
-	public static class MapBuilder {
-		private Map<String, Object> map = new HashMap<>();
+	public static class MapBuilder<T> {
+		private Map<String, T> map = new HashMap<>();
 
-		public MapBuilder put(String key, Object value) {
+		public MapBuilder<T> put(String key, T value) {
 			map.put(key, value);
 			return this;
 		}
 
-		public Map<String, Object> toMap() {
-			return this.map;
-		}
-
-	}
-
-	public static class StringMapBuilder {
-		private Map<String, String> map = new HashMap<>();
-
-		public StringMapBuilder put(String key, String value) {
-			map.put(key, value);
-			return this;
-		}
-
-		public Map<String, String> toMap() {
+		public Map<String, T> toMap() {
 			return this.map;
 		}
 	}
 
-	public static boolean isMap(Object obj) {
-		return Map.class.isInstance(obj);
+	public static <T> MapBuilder<T> map(Class<T> valueType) {
+		return new MapBuilder<>();
 	}
 
-	public static MapBuilder map() {
-		return new MapBuilder();
+	public static MapBuilder<Object> map() {
+		return new MapBuilder<>();
 	}
 
-	public static MapBuilder map(String key, Object value) {
+	public static MapBuilder<Object> map(String key, Object value) {
 		return map().put(key, value);
-	}
-
-	public static StringMapBuilder stringMap() {
-		return new StringMapBuilder();
-	}
-
-	public static StringMapBuilder stringMap(String key, String value) {
-		return stringMap().put(key, value);
 	}
 
 	public static void setJson(Gson json) {

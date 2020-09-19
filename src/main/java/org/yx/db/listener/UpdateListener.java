@@ -60,7 +60,7 @@ public class UpdateListener implements DBEventListener {
 		String id = pm.getCacheID(where, true);
 		Map<String, Object> to = new HashMap<>(event.getTo());
 		if (!event.isUpdateDBID()) {
-			List<ColumnMeta> m_ids = pm.getPrimaryIDs();
+			List<ColumnMeta> m_ids = pm.getDatabaseIds();
 			if (m_ids != null && m_ids.size() > 0) {
 				for (ColumnMeta m : m_ids) {
 					String name = m.getFieldName();

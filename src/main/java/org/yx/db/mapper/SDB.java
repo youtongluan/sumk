@@ -18,9 +18,9 @@ package org.yx.db.mapper;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.db.kit.DBKits;
 import org.yx.db.kit.SDBuilder;
 import org.yx.db.sql.InsertResult;
-import org.yx.exception.SumkException;
 
 public class SDB {
 
@@ -48,12 +48,8 @@ public class SDB {
 		return NamedExecutor.count(SqlHolder.findSql(name), map);
 	}
 
-	public static Map<String, Object> selectOne(String name, Map<String, Object> map) {
-		List<Map<String, Object>> list = list(name, map);
-		if (list == null || list.size() != 1) {
-			SumkException.throwException(521343, name + " -- result size more than one");
-		}
-		return list.get(0);
+	public static Map<String, Object> queryOne(String name, Map<String, Object> map) {
+		return DBKits.queryOne(list(name, map));
 	}
 
 	public static SDBuilder builder() {

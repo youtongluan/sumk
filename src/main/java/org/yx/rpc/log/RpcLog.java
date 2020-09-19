@@ -1,6 +1,7 @@
 package org.yx.rpc.log;
 
 import org.yx.common.Host;
+import org.yx.common.context.LogContext;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.client.RpcResult;
 
@@ -14,13 +15,15 @@ public class RpcLog {
 	private final Host server;
 	private final Req req;
 	private final RpcResult result;
+	private final LogContext originLogContext;
 	private long receiveTime;
 
-	public RpcLog(Host server, Req req, RpcResult result, long receiveTime) {
+	public RpcLog(Host server, Req req, LogContext logContext, RpcResult result, long receiveTime) {
 		this.server = server;
 		this.req = req;
 		this.result = result;
 		this.receiveTime = receiveTime;
+		this.originLogContext = logContext;
 	}
 
 	public long getReceiveTime() {
@@ -37,6 +40,10 @@ public class RpcLog {
 
 	public RpcResult getResult() {
 		return result;
+	}
+
+	public LogContext getOriginLogContext() {
+		return originLogContext;
 	}
 
 	@Override

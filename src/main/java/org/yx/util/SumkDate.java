@@ -16,6 +16,7 @@
 package org.yx.util;
 
 import static java.time.temporal.ChronoField.DAY_OF_MONTH;
+import static org.yx.exception.SumkExceptionCode.SUMKDATE_ERROR_CODE;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -56,8 +57,6 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 
 	public static final String HH_mm_ss_SSS = "HH:mm:ss.SSS";
 
-	public static final int ERROR_CODE = 912753954;
-
 	private static final int MIL_TO_NANO = 1000_000;
 	private static volatile CacheDate CACHED;
 	private static final SumkDateFormater[] formaters = { FullDateTimeFormater.inst, DateTimeFormater.inst,
@@ -70,10 +69,8 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		final long ms = System.currentTimeMillis();
 		final long sec = ms / 1000;
 		CacheDate cache = CACHED;
-		if (cache != null) {
-			if (sec == cache.second) {
-				return cache.date.withMilSecond((int) (ms % 1000));
-			}
+		if (cache != null && sec == cache.second) {
+			return cache.date.withMilSecond((int) (ms % 1000));
 		}
 		SumkDate sd = _create(ms);
 		CACHED = new CacheDate(sec, sd);
@@ -133,22 +130,22 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 
 	SumkDate(int year, byte month, byte day, byte hour, byte minute, byte second, short milSecond) {
 		if (month < 1 || month > 12) {
-			SumkException.throwException(ERROR_CODE, month + " is not valid month");
+			throw new SumkException(SUMKDATE_ERROR_CODE, month + " is not valid month");
 		}
 		if (day < 1 || day > 31) {
-			SumkException.throwException(ERROR_CODE, day + " is not valid day");
+			throw new SumkException(SUMKDATE_ERROR_CODE, day + " is not valid day");
 		}
 		if (hour < 0 || hour > 23) {
-			SumkException.throwException(ERROR_CODE, hour + " is not valid hour");
+			throw new SumkException(SUMKDATE_ERROR_CODE, hour + " is not valid hour");
 		}
 		if (minute < 0 || minute > 59) {
-			SumkException.throwException(ERROR_CODE, minute + " is not valid minute");
+			throw new SumkException(SUMKDATE_ERROR_CODE, minute + " is not valid minute");
 		}
 		if (second < 0 || second > 59) {
-			SumkException.throwException(ERROR_CODE, second + " is not valid second");
+			throw new SumkException(SUMKDATE_ERROR_CODE, second + " is not valid second");
 		}
 		if (milSecond < 0 || milSecond > 999) {
-			SumkException.throwException(ERROR_CODE, milSecond + " is not valid milSecond");
+			throw new SumkException(SUMKDATE_ERROR_CODE, milSecond + " is not valid milSecond");
 		}
 		this.year = year;
 		this.month = month;
@@ -189,7 +186,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	}
 
 	public static SumkDate of(final String dateString) {
-		int lastDot = dateString.lastIndexOf(".");
+		int lastDot = dateString.lastIndexOf('.');
 
 		if (lastDot > 15 && dateString.length() - lastDot <= 4) {
 			return FullDateTimeFormater.inst.parse(dateString);
@@ -212,14 +209,14 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		} catch (Exception e) {
 			Log.get(LOG_NAME).warn(e.getMessage(), e);
 			if (!AppInfo.getBoolean("sumk.date.retry_simple", true)) {
-				throw new SumkException(12345435, dateString + "使用java time方式解析失败", e);
+				throw new SumkException(SUMKDATE_ERROR_CODE, dateString + "使用java time方式解析失败", e);
 			}
 		}
 		try {
 			return of(new SimpleDateFormat(format).parse(dateString));
 		} catch (ParseException e1) {
 			Log.get(LOG_NAME).error(e1.getMessage(), e1);
-			throw new SumkException(12345435, dateString + "使用SimpleDateFormat方式解析失败", e1);
+			throw new SumkException(SUMKDATE_ERROR_CODE, dateString + "使用SimpleDateFormat方式解析失败", e1);
 		}
 
 	}
@@ -418,7 +415,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		return new SumkDateStringBuilder(this).to_yyyy_MM_dd_HH_mm_ss_SSS().toString();
 	}
 
-	private Calendar toCalendar() {
+	public Calendar toCalendar() {
 		Calendar cal = Calendar.getInstance();
 		cal.set(year, month - 1, day, hour, minute, second);
 		cal.set(Calendar.MILLISECOND, milSecond);
@@ -691,6 +688,116 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		CacheDate(long second, SumkDate date) {
 			this.second = second;
 			this.date = date;
+		}
+	}
+
+	private static class SumkDateStringBuilder {
+		private static final char DATE_SPLIT = '-';
+		private static final char TIME_SPLIT = ':';
+
+		private final SumkDate sumkDate;
+
+		SumkDateStringBuilder(SumkDate sumkDate) {
+			this.sumkDate = sumkDate;
+		}
+
+		/**
+		 * 返回的格式如13:12:59
+		 * 
+		 * @return HH:mm:ss 格式
+		 */
+		StringBuilder to_HH_mm_ss() {
+			StringBuilder sb = new StringBuilder();
+			if (sumkDate.hour < 10) {
+				sb.append('0');
+			}
+			sb.append(sumkDate.hour).append(TIME_SPLIT);
+
+			if (sumkDate.minute < 10) {
+				sb.append('0');
+			}
+			sb.append(sumkDate.minute).append(TIME_SPLIT);
+
+			if (sumkDate.second < 10) {
+				sb.append('0');
+			}
+			return sb.append(sumkDate.second);
+		}
+
+		/**
+		 * 返回的格式如13:12:59.123
+		 * 
+		 * @return HH:mm:ss.SSS 格式
+		 */
+		StringBuilder to_HH_mm_ss_SSS() {
+			StringBuilder sb = this.to_HH_mm_ss().append('.');
+			String milStr = String.valueOf(sumkDate.milSecond);
+			for (int i = 0; i < 3 - milStr.length(); i++) {
+				sb.append('0');
+			}
+			return sb.append(milStr);
+		}
+
+		/**
+		 * 返回的格式如2018-10
+		 * 
+		 * @return yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+		 */
+		StringBuilder to_yyyy_MM() {
+			StringBuilder sb = new StringBuilder();
+			if (sumkDate.year == Integer.MIN_VALUE) {
+				sb.append(sumkDate.year);
+			} else {
+				if (sumkDate.year < 0) {
+					sb.append('-');
+				}
+				int y = sumkDate.year >= 0 ? sumkDate.year : -sumkDate.year;
+				if (y < 1000) {
+					if (y >= 100) {
+						sb.append('0');
+					} else if (y >= 10) {
+						sb.append("00");
+					} else {
+						sb.append("000");
+					}
+				}
+				sb.append(y);
+			}
+
+			sb.append(DATE_SPLIT);
+			if (sumkDate.month < 10) {
+				sb.append('0');
+			}
+			return sb.append(sumkDate.month);
+		}
+
+		/**
+		 * 返回的格式如2018-10-20
+		 * 
+		 * @return yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+		 */
+		StringBuilder to_yyyy_MM_dd() {
+			StringBuilder sb = this.to_yyyy_MM();
+			sb.append(DATE_SPLIT);
+
+			if (sumkDate.day < 10) {
+				sb.append('0');
+			}
+			return sb.append(sumkDate.day);
+		}
+
+		/**
+		 * 返回的格式如2018-10-20 13:12:59
+		 * 
+		 * @return yyyy-MM-dd HH:mm:ss 格式<BR>
+		 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+		 */
+		StringBuilder to_yyyy_MM_dd_HH_mm_ss() {
+			return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss());
+		}
+
+		StringBuilder to_yyyy_MM_dd_HH_mm_ss_SSS() {
+			return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss_SSS());
 		}
 	}
 }

@@ -73,7 +73,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		return batchInsert();
 	}
 
-	private MapedSql batchInsert() throws Exception {
+	protected MapedSql batchInsert() throws Exception {
 		MapedSql ms = new MapedSql();
 		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");
@@ -121,13 +121,12 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 			}
 		}
 
-		InsertEvent event = new InsertEvent(pojoMeta.getTableName(), cacheList);
-		ms.event = event;
+		ms.event = new InsertEvent(pojoMeta.getTableName(), cacheList);
 		return ms;
 	}
 
 	protected void fillSpecialColumns(Map<String, Object> pojoMap, Object srcObject) throws Exception {
-		List<ColumnMeta> idColumns = pojoMeta.getPrimaryIDs();
+		List<ColumnMeta> idColumns = pojoMeta.getDatabaseIds();
 		if (idColumns.size() != 1) {
 			return;
 		}
@@ -135,17 +134,16 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		if (idColumn.field.getType() != Long.class) {
 			return;
 		}
+		Long autoId = (Long) idColumn.value(pojoMap);
+		if (autoId == null) {
 
-		if (idColumn.value(pojoMap) != null) {
-			return;
+			autoId = SeqUtil.next(pojoMeta.getTableName());
+			idColumn.setValue(srcObject, autoId);
+			idColumn.setValue(pojoMap, autoId);
 		}
-
-		Long autoId = SeqUtil.next(pojoMeta.getTableName());
-		idColumn.setValue(srcObject, autoId);
-		idColumn.setValue(pojoMap, autoId);
 		List<ColumnMeta> createTimes = pojoMeta.createColumns();
 		if (createTimes.size() > 0) {
-			Date now = new Date(SeqUtil.getDateTime(autoId) / 1000 * 1000);
+			Date now = new Date(SeqUtil.getTimeMillis(autoId) / 1000 * 1000);
 			for (ColumnMeta cTime : createTimes) {
 				cTime.setValue(srcObject, now);
 				Object time2 = cTime.value(srcObject);

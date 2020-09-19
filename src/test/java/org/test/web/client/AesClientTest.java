@@ -89,7 +89,7 @@ public class AesClientTest {
 
 		post = new HttpPost(getUrl("bizError"));
 		resp = client.execute(post);
-		Assert.assertEquals(499, resp.getStatusLine().getStatusCode());
+		Assert.assertEquals(550, resp.getStatusLine().getStatusCode());
 		resEntity = resp.getEntity();
 		String errMsg = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", errMsg);

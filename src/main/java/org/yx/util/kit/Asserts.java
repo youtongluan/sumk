@@ -13,20 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.validate;
+package org.yx.util.kit;
 
-import org.yx.annotation.Bean;
-import org.yx.conf.AppInfo;
-import org.yx.exception.InvalidParamException;
+import org.yx.exception.SumkException;
 
-@Bean
-public class NotNullValidator implements Validator {
+public final class Asserts {
 
-	@Override
-	public void valid(ParamInfo param, Object arg) throws InvalidParamException {
-		if (param.param.required() && arg == null) {
-			throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), param);
+	public static void requireTrue(boolean b, String msg) {
+		if (b) {
+			return;
 		}
+		throw new SumkException(5674354, msg);
 	}
 
 }

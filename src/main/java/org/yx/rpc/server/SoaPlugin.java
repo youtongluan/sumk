@@ -64,7 +64,7 @@ public class SoaPlugin implements Plugin {
 				factory.resolve(bean);
 			}
 		} catch (Exception e) {
-			throw SumkException.create(e);
+			throw SumkException.wrap(e);
 		}
 	}
 

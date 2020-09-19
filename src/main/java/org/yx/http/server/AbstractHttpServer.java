@@ -44,7 +44,7 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
 
-	protected Logger log = Logs.http();
+	protected final Logger log = Logs.http();
 
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) {
 		final long beginTime = System.currentTimeMillis();
@@ -61,28 +61,19 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
 						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
 			}
-			String usedAct = HttpActions.solveAct(rawAct);
-			if (usedAct == null || rawAct.isEmpty()) {
-				log.error("act is empty for {}", rawAct);
-				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
-						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
-			}
-			if (HttpSettings.getFusing().contains(usedAct)) {
-				log.error("{} is in fusing", usedAct);
-				throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.error.fusing", "请求出错", usedAct));
-			}
-			HttpActionInfo info = HttpActions.getHttpInfo(usedAct);
+			HttpActionInfo info = HttpActions.getHttpInfo(rawAct);
 			if (info == null) {
-				info = HttpActions.getDefaultInfo();
-				if (info == null) {
-					throw BizException.create(HttpErrorCode.ACT_NOT_FOUND,
-							M.get("sumk.http.error.act.notfound", "接口不存在", usedAct));
-				}
+				throw BizException.create(HttpErrorCode.ACT_NOT_FOUND,
+						M.get("sumk.http.error.act.notfound", "接口不存在", rawAct));
 			}
 			rawAct = info.rawAct();
-			info.node().checkThreshold();
+			if (info.node().overflowThreshold()) {
+				throw BizException.create(HttpErrorCode.THREAD_THRESHOLD_OVER, "系统限流降级");
+			}
 			HttpContextHolder.set(req, resp);
-			ActionContext.newContext(rawAct, UUIDSeed.seq18(), req.getParameter("thisIsTest"));
+			String traceId = UUIDSeed.seq18();
+			ActionContext.newContext(rawAct, traceId, req.getParameter("thisIsTest"));
+			setTraceIdForResponse(req, resp, traceId);
 			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
 			handle(wc);
 
@@ -103,6 +94,10 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 				InnerHttpUtil.record(wc.rawAct(), time, ex == null && !wc.isFailed());
 			}
 		}
+	}
+
+	protected void setTraceIdForResponse(HttpServletRequest req, HttpServletResponse resp, String traceId) {
+		resp.setHeader(HttpSettings.traceHeaderName(), traceId);
 	}
 
 	protected void sendError(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) {

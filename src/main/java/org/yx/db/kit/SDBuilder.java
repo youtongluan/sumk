@@ -71,8 +71,8 @@ public class SDBuilder {
 		return retList;
 	}
 
-	public <T> T selectOne(Class<T> clz) {
-		Map<String, Object> ret = SDB.selectOne(name, param);
+	public <T> T queryOne(Class<T> clz) {
+		Map<String, Object> ret = SDB.queryOne(name, param);
 		if (ret == null) {
 			return null;
 		}

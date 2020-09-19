@@ -21,6 +21,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 
+import org.yx.exception.SumkException;
+
 public final class StringUtil {
 
 	public static String[] splitByComma(String text) {
@@ -104,5 +106,16 @@ public final class StringUtil {
 
 	public static boolean isNumber(char c) {
 		return c >= '0' && c <= '9';
+	}
+
+	public static String requireNotEmpty(String text) {
+		if (text == null) {
+			throw new SumkException(652342134, "字符串是null");
+		}
+		text = text.trim();
+		if (text.isEmpty()) {
+			throw new SumkException(652342134, "字符串是空的");
+		}
+		return text;
 	}
 }

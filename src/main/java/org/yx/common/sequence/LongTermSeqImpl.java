@@ -38,7 +38,7 @@ public final class LongTermSeqImpl extends AbstractSeq {
 		return num << 23;
 	}
 
-	public long getDateTime(long seq) {
+	public long getTimeMillis(long seq) {
 		long num = seq & 0xFFFFFFFFFF800000L;
 		num >>>= 23;
 		return fullTime(num);

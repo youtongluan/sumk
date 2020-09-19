@@ -68,7 +68,8 @@ public class PluginHandler {
 				System.exit(1);
 			}
 		} catch (InterruptedException e) {
-			Logs.ioc().error("receive InterruptedException in plugin starting", timeout);
+			Logs.ioc().error("receive InterruptedException in plugin starting");
+			Thread.currentThread().interrupt();
 			System.exit(1);
 		}
 		Plugins.setAllStarted();
@@ -80,11 +81,10 @@ public class PluginHandler {
 
 	private void preHotCoreThreads(SumkExecutorService executor) {
 		if (AppInfo.getBoolean("sumk.thread.prestartAllCoreThreads", true)
-				&& (SumkServer.isHttpEnable() || SumkServer.isRpcEnable())) {
-			if (ThreadPoolExecutor.class.isInstance(executor)) {
-				ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
-				pool.prestartAllCoreThreads();
-			}
+				&& (SumkServer.isHttpEnable() || SumkServer.isRpcEnable())
+				&& (ThreadPoolExecutor.class.isInstance(executor))) {
+			ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
+			pool.prestartAllCoreThreads();
 		}
 	}
 

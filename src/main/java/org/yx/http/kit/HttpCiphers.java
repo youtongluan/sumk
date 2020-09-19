@@ -13,33 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http;
+package org.yx.http.kit;
 
 import java.util.Objects;
 
-import org.yx.http.handler.WebContext;
+import org.yx.http.HttpEncryptor;
+import org.yx.http.Signer;
 import org.yx.util.S;
-import org.yx.util.secury.Encryptor;
 
-public class DefaultHttpEncryptor implements HttpEncryptor {
+public final class HttpCiphers {
 
-	private Encryptor cipher = S.cipher();
+	private static HttpEncryptor encryptor = new DefaultHttpEncryptor();
 
-	@Override
-	public byte[] encrypt(byte[] data, WebContext ctx) throws Exception {
-		return cipher.encrypt(data, ctx.key());
+	public static HttpEncryptor getEncryptor() {
+		return encryptor;
 	}
 
-	@Override
-	public byte[] decrypt(byte[] data, WebContext ctx) throws Exception {
-		return cipher.decrypt(data, ctx.key());
+	public static void setEncryptor(HttpEncryptor encryptor) {
+		HttpCiphers.encryptor = Objects.requireNonNull(encryptor);
 	}
 
-	public Encryptor getCipher() {
-		return cipher;
+	private static Signer signer = (bs, httpServletRequest) -> S.hash().digestByteToString(bs);
+
+	public static Signer getSigner() {
+		return signer;
 	}
 
-	public void setCipher(Encryptor cipher) {
-		this.cipher = Objects.requireNonNull(cipher);
+	public static void setSigner(Signer signer) {
+		HttpCiphers.signer = Objects.requireNonNull(signer);
 	}
+
 }

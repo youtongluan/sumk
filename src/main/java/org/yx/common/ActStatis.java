@@ -21,7 +21,7 @@ public interface ActStatis {
 
 	void visit(String name, long time, boolean success);
 
-	Map<String, Statis> getAndReset();
+	Map<String, StatisItem> getAndReset();
 
-	Map<String, Statis> getAll();
+	Map<String, StatisItem> getAll();
 }

@@ -27,7 +27,7 @@ public interface Seq {
 
 	long next();
 
-	long getDateTime(long seq);
+	long getTimeMillis(long seq);
 
 	long low(SumkDate date);
 

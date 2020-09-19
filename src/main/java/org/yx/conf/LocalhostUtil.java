@@ -27,7 +27,6 @@ import java.util.function.Predicate;
 
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
-import org.yx.common.matcher.WildcardMatcher;
 import org.yx.log.RawLog;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -46,10 +45,19 @@ public final class LocalhostUtil {
 	}
 
 	private static boolean isValid(InetAddress ia) {
-		if (ia instanceof Inet6Address) {
+		if (Inet6Address.class.isInstance(ia) && AppInfo.getBoolean("sumk.local.ipv6.disable", false)) {
 			return false;
 		}
 		return !ia.isAnyLocalAddress() && !ia.isLoopbackAddress();
+	}
+
+	private static String getHostAddress(InetAddress ia) {
+		String address = ia.getHostAddress();
+		int index = address.indexOf('%');
+		if (index > 0 && AppInfo.getBoolean("sumk.ipv6.pure", true)) {
+			address = address.substring(0, index);
+		}
+		return address;
 	}
 
 	public static synchronized boolean setLocalIp(String ip) {
@@ -58,7 +66,7 @@ public final class LocalhostUtil {
 		}
 		try {
 			ip = StringUtil.toLatin(ip).trim();
-			if (ip.contains(WildcardMatcher.WILDCARD) || ip.contains(",")) {
+			if (ip.contains(Matchers.WILDCARD) || ip.contains(",")) {
 				matcher = Matchers.createWildcardMatcher(ip, 1);
 				resetLocalIp();
 				return true;
@@ -134,7 +142,7 @@ public final class LocalhostUtil {
 				while (e2.hasMoreElements()) {
 					InetAddress ia = (InetAddress) e2.nextElement();
 					if (isValid(ia)) {
-						ipList.add(ia.getHostAddress());
+						ipList.add(getHostAddress(ia));
 					}
 
 				}

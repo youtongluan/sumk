@@ -40,16 +40,15 @@ import org.yx.conf.Const;
 
 public class ProxyClassVistor extends ClassVisitor {
 
-	private Class<?> orginClz;
-	private Method[] aopMethods;
-	private String clzName;
+	private final Class<?> orginClz;
+	private final Method[] aopMethods;
+	private final String clzName;
 
 	public ProxyClassVistor(final ClassVisitor cv, String newClzName, Class<?> clz, Collection<Method> aopMethods) {
 		super(Const.ASM_VERSION, cv);
 		this.orginClz = clz;
 		this.aopMethods = aopMethods.toArray(new Method[0]);
-		clzName = newClzName;
-
+		this.clzName = newClzName;
 	}
 
 	public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

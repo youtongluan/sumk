@@ -77,7 +77,7 @@ public class ClientHandler implements IoHandler {
 			LockHolder.unLockAndSetResult(resp);
 			return;
 		}
-		SumkException.throwException(458223, obj.getClass().getName() + " has not deserialized");
+		throw new SumkException(458223, obj.getClass().getName() + " has not deserialized");
 	}
 
 	@Override

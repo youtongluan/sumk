@@ -17,8 +17,8 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.conf.AppInfo;
-import org.yx.http.HttpCiphers;
 import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpCiphers;
 import org.yx.http.kit.HttpException;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;

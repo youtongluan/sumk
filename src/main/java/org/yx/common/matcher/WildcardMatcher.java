@@ -22,11 +22,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.yx.common.ItemJoiner;
 import org.yx.util.CollectionUtil;
 
 public class WildcardMatcher implements Predicate<String> {
-
-	public static final String WILDCARD = "*";
 
 	private final Set<String> exacts;
 
@@ -97,8 +96,20 @@ public class WildcardMatcher implements Predicate<String> {
 
 	@Override
 	public String toString() {
-		return "exacts=" + exacts + ", matchStarts=" + Arrays.toString(matchStarts) + ", matchEnds="
-				+ Arrays.toString(matchEnds) + ", contains=" + Arrays.toString(this.contains);
+		ItemJoiner join = new ItemJoiner(",");
+		if (exacts != null) {
+			join.item().append("exacts=").append(exacts);
+		}
+		if (matchStarts != null) {
+			join.item().append("matchStarts=").append(Arrays.toString(matchStarts));
+		}
+		if (matchEnds != null) {
+			join.item().append("matchEnds=").append(Arrays.toString(matchEnds));
+		}
+		if (contains != null) {
+			join.item().append("contains=").append(Arrays.toString(contains));
+		}
+		return join.toString();
 	}
 
 }

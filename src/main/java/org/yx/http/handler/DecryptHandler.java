@@ -16,7 +16,7 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.http.HttpCiphers;
+import org.yx.http.kit.HttpCiphers;
 import org.yx.http.kit.HttpSettings;
 
 @Bean

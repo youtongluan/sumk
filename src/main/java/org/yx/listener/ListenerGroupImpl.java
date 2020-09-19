@@ -15,10 +15,11 @@
  */
 package org.yx.listener;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 import org.yx.exception.SumkException;
+import org.yx.util.CollectionUtil;
 
 public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<T> {
 
@@ -39,12 +40,12 @@ public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<
 				throw new SumkException(2453451, "监听器不能为null");
 			}
 		}
-		this.listeners = Objects.requireNonNull(listeners);
+		this.listeners = listeners;
 
 	}
 
 	@Override
-	public SumkListener[] getListeners() {
-		return Arrays.copyOf(this.listeners, this.listeners.length);
+	public List<SumkListener> getListeners() {
+		return CollectionUtil.unmodifyList(this.listeners);
 	}
 }

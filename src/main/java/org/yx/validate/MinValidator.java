@@ -41,6 +41,7 @@ public class MinValidator implements Validator {
 				return M.get("sumk.valid.msg.minLength", "#的长度不能小于{0},实际却是{1}", expect, s.length());
 			}
 		}
+
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n < expect) {

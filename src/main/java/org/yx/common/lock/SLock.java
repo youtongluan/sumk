@@ -18,8 +18,8 @@ package org.yx.common.lock;
 import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
-import org.yx.util.Asserts;
 import org.yx.util.UUIDSeed;
+import org.yx.util.kit.Asserts;
 
 public final class SLock implements Lock {
 	private final Logger logger = Log.get("sumk.lock");
@@ -33,8 +33,8 @@ public final class SLock implements Lock {
 	private long endTime;
 
 	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
-		Asserts.isTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
-		Asserts.isTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
+		Asserts.requireTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
+		Asserts.requireTrue(intervalTime > 0 && maxLockTime > 0 && value != null && value.length() > 0,
 				"lock param is not valid");
 		this.id = keyId;
 		this.value = value;
@@ -87,6 +87,7 @@ public final class SLock implements Lock {
 				logger.debug("locked failed: {}={},sleep {}ms", id, value, sleepTime);
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 				return false;
 			}
 		}

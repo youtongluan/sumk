@@ -75,7 +75,7 @@ public class SoaAnnotationResolver {
 		for (Method m : methods) {
 			Method methodInTarget = targetClass.getMethod(m.getName(), m.getParameterTypes());
 			if (!m.getReturnType().isAssignableFrom(methodInTarget.getReturnType())) {
-				SumkException.throwException(234324, targetClass.getName() + "." + methodInTarget.getName() + "的返回值类型是"
+				throw new SumkException(234324, targetClass.getName() + "." + methodInTarget.getName() + "的返回值类型是"
 						+ methodInTarget.getReturnType().getName() + ",期待的类型是" + m.getReturnType().getName());
 			}
 			map.put(methodInTarget, pre);

@@ -65,13 +65,13 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 					}
 					file = new File(url.toURI());
 					if (!file.exists()) {
-						SumkException.throwException(23423, file.getAbsolutePath() + " is not a file");
+						throw new SumkException(23423, file.getAbsolutePath() + " is not a file");
 					}
 					this.parseFile(classNameList, file, packagePath);
 				}
 			} catch (Exception ex) {
 				Logs.system().error("parse " + packageName + "failed", ex);
-				SumkException.throwException(23423, ex.getMessage(), ex);
+				throw new SumkException(23423, ex.getMessage(), ex);
 			}
 		}
 		return classNameList;
@@ -114,7 +114,7 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 			URLConnection conn = url.openConnection();
 			if (!JarURLConnection.class.isInstance(conn)) {
 				Logs.system().error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
-				SumkException.throwException(25345643, conn.getClass().getName() + " is not JarURLConnection");
+				throw new SumkException(25345643, conn.getClass().getName() + " is not JarURLConnection");
 			}
 			jarFile = ((JarURLConnection) conn).getJarFile();
 			Enumeration<JarEntry> jarEntryEnum = jarFile.entries();

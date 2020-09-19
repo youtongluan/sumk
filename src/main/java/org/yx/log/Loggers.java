@@ -96,7 +96,7 @@ public final class Loggers {
 		int index = 0;
 		String logName = fullName;
 		do {
-			index = logName.lastIndexOf(".");
+			index = logName.lastIndexOf('.');
 			if (index <= 0) {
 				break;
 			}

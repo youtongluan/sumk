@@ -37,7 +37,7 @@ import static org.objectweb.asm.Opcodes.SIPUSH;
 import org.objectweb.asm.MethodVisitor;
 import org.yx.conf.AppInfo;
 
-public class WriterHelper {
+public final class WriterHelper {
 	public static final int SINGLE = AppInfo.getInt("sumk.aop.single", 1);
 	public static final int WIDTH = AppInfo.getInt("sumk.aop.width", 2);
 

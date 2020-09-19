@@ -37,7 +37,6 @@ import org.yx.util.StringUtil;
 
 class MethodInfoClassVisitor extends ClassVisitor {
 
-	private Logger log = Log.get("sumk.asm");
 	private final List<MethodParamInfo> infos;
 
 	public MethodInfoClassVisitor(List<Method> methods) {
@@ -132,12 +131,13 @@ class MethodInfoClassVisitor extends ClassVisitor {
 	}
 
 	public List<MethodParamInfo> getMethodInfos() {
+		Logger log = Log.get("sumk.asm");
 		for (MethodParamInfo info : this.infos) {
 			for (String name : info.getArgNames()) {
 				if (StringUtil.isEmpty(name)) {
 					log.error("{}.{}() has empty name。params:{}", info.getMethod().getClass().getSimpleName(),
 							info.getMethod().getName(), Arrays.toString(info.getArgNames()));
-					SumkException.throwException(362655465, "params not full parsed");
+					throw new SumkException(362655465, "params not full parsed");
 				}
 			}
 		}

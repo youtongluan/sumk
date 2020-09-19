@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentMap;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.yx.common.SimpleZkSerializer;
-import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 
 public final class ZkClientHelper {
@@ -67,7 +66,7 @@ public final class ZkClientHelper {
 				return zk;
 			}
 			zk = new ZkClient(url, 30000);
-			zk.setZkSerializer(new SimpleZkSerializer(AppInfo.UTF8));
+			zk.setZkSerializer(new SimpleZkSerializer());
 			if (map.putIfAbsent(url, zk) != null) {
 				zk.close();
 			}
@@ -79,10 +78,4 @@ public final class ZkClientHelper {
 		return map.remove(url);
 	}
 
-	public static String data2String(byte[] zkData) {
-		if (zkData == null) {
-			return null;
-		}
-		return new String(zkData, AppInfo.UTF8);
-	}
 }

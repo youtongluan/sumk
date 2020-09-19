@@ -21,12 +21,13 @@ import java.io.PrintWriter;
 import org.yx.conf.AppInfo;
 import org.yx.util.ExceptionUtil;
 
-public class SoaException extends CodeException {
+public final class SoaException extends CodeException {
 
 	private static final long serialVersionUID = 453453343454L;
 
 	private String detailError;
 	private String exceptionClz;
+	private boolean bizException;
 
 	public String getDetailError() {
 		return this.detailError;
@@ -41,6 +42,7 @@ public class SoaException extends CodeException {
 				BizException.class.isInstance(e) ? e.getMessage() : msg);
 		this.exceptionClz = e == null ? null : e.getClass().getName();
 		this.detailError = getException(e);
+		this.bizException = BizException.class.isInstance(e);
 	}
 
 	public SoaException(int code, String msg, String detail) {
@@ -106,4 +108,7 @@ public class SoaException extends CodeException {
 		s.println(this.buildStackTraceMessage());
 	}
 
+	public boolean isBizException() {
+		return bizException;
+	}
 }

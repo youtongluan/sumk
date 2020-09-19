@@ -55,6 +55,11 @@ public class ItemJoiner {
 		return this;
 	}
 
+	public ItemJoiner append(Object v) {
+		sb.append(v);
+		return this;
+	}
+
 	public ItemJoiner append(ItemJoiner item, CharSequence pre, CharSequence sub) {
 		if (item == null) {
 			return this;

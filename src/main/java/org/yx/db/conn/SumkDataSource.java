@@ -24,7 +24,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.exception.SumkException;
 
 public class SumkDataSource implements DataSource {

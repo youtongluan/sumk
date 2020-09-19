@@ -30,6 +30,7 @@ import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.SqlLog;
 import org.yx.exception.SumkException;
+import org.yx.exception.SumkExceptionCode;
 import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
 import org.yx.log.Logs;
@@ -81,7 +82,7 @@ public class SumkStatement {
 	public int executeUpdate() throws SQLException {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
-			SumkException.throwException(234132, "连接已关闭");
+			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
 		}
 		modifyCount = 0;
 		try {
@@ -98,7 +99,7 @@ public class SumkStatement {
 	public ResultSet executeQuery() throws Exception {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
-			SumkException.throwException(234132, "连接已关闭");
+			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
 		}
 		ResultSet ret = null;
 		try {
@@ -166,7 +167,7 @@ public class SumkStatement {
 	private void attachParams() throws Exception {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
-			SumkException.throwException(234132, "连接已关闭");
+			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭了");
 		}
 		List<Object> params = maped.getParamters();
 		int size = params.size();
@@ -202,7 +203,7 @@ public class SumkStatement {
 	public ResultSet getGeneratedKeys() throws SQLException {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
-			SumkException.throwException(234132, "连接已关闭");
+			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
 		}
 		return statement.getGeneratedKeys();
 	}

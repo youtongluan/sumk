@@ -22,8 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.yx.conf.Const;
-import org.yx.db.DBType;
-import org.yx.db.TransactionType;
+import org.yx.db.enums.DBType;
+import org.yx.db.enums.TransactionType;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)

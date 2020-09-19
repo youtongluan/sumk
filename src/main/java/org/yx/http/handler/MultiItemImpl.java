@@ -46,7 +46,7 @@ public class MultiItemImpl implements MultipartItem {
 
 	@Override
 	public String getSubmittedFileName() {
-		return this.part.getSubmittedFileName();
+		return part.getSubmittedFileName();
 	}
 
 	@Override

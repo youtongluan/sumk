@@ -51,4 +51,9 @@ public class SingleJedis2Executor extends AbstractJedis2Executor implements Chec
 		this.disConnected = true;
 		return false;
 	}
+
+	@Override
+	public RedisType redisType() {
+		return RedisType.SIMPLE;
+	}
 }

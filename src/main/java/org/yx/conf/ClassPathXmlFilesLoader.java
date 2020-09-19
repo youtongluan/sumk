@@ -45,7 +45,7 @@ public class ClassPathXmlFilesLoader extends AbstractFilesLoader {
 		Enumeration<URL> urls = Loader.getResources(rootUri);
 		if (urls == null || !urls.hasMoreElements()) {
 			if (AppInfo.getBoolean("sumk.conf.classpath.force", false)) {
-				SumkException.throwException(356453425, "can not find path " + rootUri);
+				throw new SumkException(356453425, "can not find path " + rootUri);
 			}
 			return Collections.emptyMap();
 		}

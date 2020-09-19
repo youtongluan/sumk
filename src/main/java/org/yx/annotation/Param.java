@@ -33,11 +33,13 @@ public @interface Param {
 	String value() default "";
 
 	/**
-	 * @return true表示是必传参数，不允许为null
+	 * @return true表示是必传参数，不允许为null或空字符串
 	 */
 	boolean required() default true;
 
 	/**
+	 * 数字类型支持int、long、byte、short、Integer、Long、Byte、Short
+	 * 
 	 * @return 字符串的最大长度或正整数的最大值(包含)，小于0表示不限
 	 */
 	int max() default Integer.MIN_VALUE;

@@ -17,8 +17,8 @@ package org.yx.db.exec;
 
 import java.util.Objects;
 
-import org.yx.db.DBType;
-import org.yx.db.TransactionType;
+import org.yx.db.enums.DBType;
+import org.yx.db.enums.TransactionType;
 
 public class DefaultDatabase implements Database {
 	private final String dbName;

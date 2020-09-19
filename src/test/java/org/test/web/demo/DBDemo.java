@@ -9,7 +9,7 @@ import org.yx.annotation.Box;
 import org.yx.annotation.http.Web;
 import org.yx.annotation.rpc.Soa;
 import org.yx.db.DB;
-import org.yx.db.DBType;
+import org.yx.db.enums.DBType;
 import org.yx.db.sql.Insert;
 import org.yx.demo.member.DemoUser;
 import org.yx.exception.BizException;
@@ -58,8 +58,8 @@ public class DBDemo {
 		}
 		List<DemoUser> list = new ArrayList<>();
 		for (DemoUser user : users) {
-			DemoUser user2 = DB.select().tableClass(DemoUser.class).byPrimaryId(user.getId()).queryOne();
-			Assert.assertEquals(DB.select().tableClass(DemoUser.class).byPrimaryId(user.getId()).queryOne(), user2);
+			DemoUser user2 = DB.select().tableClass(DemoUser.class).byDatabaseId(user.getId()).queryOne();
+			Assert.assertEquals(DB.select().tableClass(DemoUser.class).byDatabaseId(user.getId()).queryOne(), user2);
 			list.add(user2);
 		}
 		return list;

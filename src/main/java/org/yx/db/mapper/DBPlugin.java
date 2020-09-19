@@ -65,7 +65,7 @@ public class DBPlugin implements Plugin {
 		}
 		Set<String> names = new HashSet<>();
 		for (String key : map.keySet()) {
-			int index = key.indexOf(".");
+			int index = key.indexOf('.');
 			if (index > 0) {
 				key = key.substring(0, index);
 			}
@@ -89,7 +89,7 @@ public class DBPlugin implements Plugin {
 			loadSql(loader);
 			startListen(loader);
 		} catch (Throwable e) {
-			SumkException.throwException(2351343, "sdb加载本地sql文件失败", e);
+			throw new SumkException(2351343, "sdb加载本地sql文件失败", e);
 		}
 	}
 

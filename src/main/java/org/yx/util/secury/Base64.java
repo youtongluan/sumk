@@ -15,49 +15,35 @@
  */
 package org.yx.util.secury;
 
-import java.util.Base64.Decoder;
-import java.util.Base64.Encoder;
-
-import org.yx.conf.AppInfo;
-
-public final class Base64 {
-
-	private Base64() {
-
-	}
-
-	public static final Base64 inst = new Base64();
-	private final Decoder decoder = java.util.Base64.getMimeDecoder();
-
-	private final Encoder encoder = java.util.Base64.getEncoder();
+public interface Base64 {
 
 	/**
 	 * 解码，是否含有\r\n都能解码
 	 * 
 	 * @param src
-	 *            数据源
+	 *            密文
 	 * @return 明文
 	 */
-	public byte[] decode(byte[] src) {
-		return decoder.decode(src);
-	}
+	byte[] decode(byte[] src);
 
 	/**
 	 * 解码，是否含有\r\n都能解码
 	 * 
 	 * @param src
-	 *            数据源
+	 *            密文
 	 * @return 明文
 	 */
-	public byte[] decode(String src) {
-		return decoder.decode(src.getBytes(AppInfo.UTF8));
-	}
+	byte[] decode(String src);
 
-	public byte[] encode(byte[] src) {
-		return encoder.encode(src);
-	}
+	/**
+	 * 使用标准方式进行编码,不含有换行符
+	 * 
+	 * @param src
+	 *            原文
+	 * @return 编码后的
+	 */
+	byte[] encode(byte[] src);
 
-	public String encodeToString(byte[] src) {
-		return new String(encoder.encode(src), AppInfo.UTF8);
-	}
+	String encodeToString(byte[] src);
+
 }

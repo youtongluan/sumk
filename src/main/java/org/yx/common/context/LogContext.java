@@ -15,9 +15,9 @@
  */
 package org.yx.common.context;
 
-import java.util.Collections;
 import java.util.Map;
 
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public final class LogContext {
@@ -58,10 +58,34 @@ public final class LogContext {
 		this.spanId = spanId;
 		this.userId = userId;
 		this.test = test;
-		this.attachments = attachments == null ? null : Collections.unmodifiableMap(attachments);
+		this.attachments = CollectionUtil.unmodifyMap(attachments);
+	}
+
+	public static LogContext empty() {
+		return EMPTY;
 	}
 
 	public Map<String, String> unmodifiedAttachs() {
 		return this.attachments;
+	}
+
+	public String getAct() {
+		return act;
+	}
+
+	public String getTraceId() {
+		return traceId;
+	}
+
+	public String getSpanId() {
+		return spanId;
+	}
+
+	public String getUserId() {
+		return userId;
+	}
+
+	public boolean isTest() {
+		return test;
 	}
 }

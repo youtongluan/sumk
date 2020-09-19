@@ -15,11 +15,12 @@
  */
 package org.yx.rpc;
 
-import org.yx.exception.ErrorCode;
+public interface RpcErrorCode {
 
-public interface RpcErrorCode extends ErrorCode {
-
-	int UNKNOW = 700;
+	/**
+	 * 线程数溢出
+	 */
+	int THREAD_THRESHOLD_OVER = 700;
 
 	int WAIT_TWICE = 710;
 
@@ -34,5 +35,7 @@ public interface RpcErrorCode extends ErrorCode {
 	int SERVER_HANDLE_ERROR = 760;
 
 	int SERVER_UNKNOW = 770;
+
+	int UNKNOW = 799;
 
 }

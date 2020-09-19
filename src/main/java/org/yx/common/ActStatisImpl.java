@@ -21,9 +21,9 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ActStatisImpl implements ActStatis {
 
-	private Map<String, Statis> actStatis;
+	private Map<String, StatisItem> actStatis;
 
-	public ActStatisImpl(Map<String, Statis> actStatis) {
+	public ActStatisImpl(Map<String, StatisItem> actStatis) {
 		this.actStatis = actStatis;
 	}
 
@@ -31,15 +31,15 @@ public class ActStatisImpl implements ActStatis {
 		this.actStatis = new ConcurrentHashMap<>();
 	}
 
-	public void setActStatis(Map<String, Statis> actStatis) {
+	public void setActStatis(Map<String, StatisItem> actStatis) {
 		this.actStatis = Objects.requireNonNull(actStatis);
 	}
 
 	public void visit(String name, long time, boolean success) {
-		Statis statis = actStatis.get(name);
+		StatisItem statis = actStatis.get(name);
 		if (statis == null) {
-			statis = new Statis(name);
-			Statis tmp = actStatis.putIfAbsent(name, statis);
+			statis = new StatisItem(name);
+			StatisItem tmp = actStatis.putIfAbsent(name, statis);
 			if (tmp != null) {
 				statis = tmp;
 			}
@@ -51,13 +51,13 @@ public class ActStatisImpl implements ActStatis {
 		}
 	}
 
-	public Map<String, Statis> getAndReset() {
-		Map<String, Statis> tmp = this.actStatis;
+	public Map<String, StatisItem> getAndReset() {
+		Map<String, StatisItem> tmp = this.actStatis;
 		actStatis = new ConcurrentHashMap<>();
 		return tmp;
 	}
 
-	public Map<String, Statis> getAll() {
+	public Map<String, StatisItem> getAll() {
 		return this.actStatis;
 	}
 }

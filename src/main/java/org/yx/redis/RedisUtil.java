@@ -38,6 +38,8 @@ public class RedisUtil {
 	/**
 	 * 本方法只在普通redis或者sentinel模式下使用， 它允许开发者对jedis对象进行批处理等其它redis没有提供的操作
 	 * 
+	 * @param <T>
+	 *            参数类型
 	 * @param r
 	 *            redis对象，通过RedisPool.get(XX)获取
 	 * @param callback

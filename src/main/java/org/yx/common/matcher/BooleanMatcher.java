@@ -4,9 +4,9 @@ import java.util.function.Predicate;
 
 public enum BooleanMatcher implements Predicate<String> {
 
-	TRUE(true), FALSE(false);
+	FALSE(false), TRUE(true);
 
-	private boolean matched;
+	private final boolean matched;
 
 	private BooleanMatcher(boolean matched) {
 		this.matched = matched;
