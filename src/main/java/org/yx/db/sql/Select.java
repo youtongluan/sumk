@@ -20,9 +20,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.event.DBEventPublisher;
@@ -425,7 +427,7 @@ public class Select extends SelectBuilder {
 			if (dbData == null || dbData.isEmpty()) {
 				return list;
 			}
-			list.addAll(dbData);
+			list = merge(list, dbData);
 			List<Map<String, Object>> eventIn = fromCache ? exchange.getLeftIn() : this.in;
 
 			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
@@ -443,6 +445,30 @@ public class Select extends SelectBuilder {
 		} catch (Exception e) {
 			throw SumkException.wrap(e);
 		}
+	}
+
+	protected <T> List<T> merge(List<T> cacheList, List<T> dbList) throws Exception {
+		if (cacheList.isEmpty()) {
+			return dbList;
+		}
+		List<T> ret = new ArrayList<>(cacheList.size() + dbList.size());
+		ret.addAll(dbList);
+		Set<String> keys = new HashSet<>();
+		PojoMeta pm = this.pojoMeta;
+		List<ColumnMeta> columns = pm.databaseIds;
+		for (T t : dbList) {
+			String key = pm.joinColumns(t, false, columns);
+			if (key != null) {
+				keys.add(key);
+			}
+		}
+		for (T t : cacheList) {
+			String key = pm.joinColumns(t, false, columns);
+			if (key == null || keys.add(key)) {
+				ret.add(t);
+			}
+		}
+		return ret;
 	}
 
 	public <T> T queryOne() {

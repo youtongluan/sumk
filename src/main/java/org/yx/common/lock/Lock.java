@@ -25,6 +25,8 @@ public interface Lock extends AutoCloseable {
 
 	String getId();
 
+	String getValue();
+
 	void unlock();
 
 	@Override

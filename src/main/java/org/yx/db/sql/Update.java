@@ -22,10 +22,10 @@ import java.util.Map;
 import org.yx.common.ItemJoiner;
 import org.yx.db.enums.ColumnType;
 import org.yx.db.event.UpdateEvent;
-import org.yx.db.kit.DBKits;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
+import org.yx.util.kit.TypeConverter;
 
 public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 
@@ -130,7 +130,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			throw new SumkException(36541, pojo.getClass() + " does not config as a table");
 		}
 		try {
-			this.updateTo = this.pojoMeta.populate(pojo, true);
+			this.updateTo = this.pojoMeta.populate(pojo, false);
 		} catch (Exception e) {
 			throw new SumkException(-345461, e.getMessage(), e);
 		}
@@ -174,8 +174,8 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 				ms.addParam(this.incrMap.get(fieldName));
 				continue;
 			}
-			Object value = fm.value(this.updateTo);
-			if (value == null && !this.fullUpdate) {
+
+			if (!fm.containsKey(this.updateTo) && !this.fullUpdate) {
 				continue;
 			}
 			if (fm.accept(ColumnType.ID_DB) && !this.updateDBID) {
@@ -184,7 +184,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			sb.append(notFirst ? " , " : " SET ");
 			sb.append(fm.dbColumn).append("=? ");
 			notFirst = true;
-			ms.addParam(value);
+			ms.addParam(fm.value(this.updateTo));
 		}
 
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
@@ -262,7 +262,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		if (columnMeta == null) {
 			throw new SumkException(5912239, "cannot found java field " + fieldName + " in " + pm.pojoClz);
 		}
-		v = DBKits.toType(v, columnMeta.field.getType(), true);
+		v = TypeConverter.toType(v, columnMeta.field.getType(), true);
 		if (this.incrMap == null) {
 			this.incrMap = new HashMap<>();
 		}

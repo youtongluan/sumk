@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 import java.util.Set;
 
 import org.yx.conf.AppInfo;
@@ -97,7 +98,7 @@ public final class Locker {
 	}
 
 	void remove(final Lock lock) {
-		if (lock == null || lock == Locked.inst) {
+		if (lock == null || lock instanceof Locked) {
 			return;
 		}
 		List<SLock> list = locks.get();
@@ -133,8 +134,8 @@ public final class Locker {
 	 * @param name
 	 *            要被锁的对象
 	 * @param maxWaitTime
-	 *            获取锁的最大时间，单位ms
-	 * @return 锁的钥匙
+	 *            获取锁的最大时间，单位ms。如果只想尝试一次，可以传0
+	 * @return 锁的钥匙，获取不到锁就返回null
 	 */
 	public Lock tryLock(String name, int maxWaitTime) {
 		SLock lock = SLock.create(name);
@@ -155,14 +156,38 @@ public final class Locker {
 	 * @return Key对象,或者null
 	 */
 	public Lock tryLock(SLock lock, int maxWaitTime) {
-		if (getLock(lock) != null) {
-			return Locked.inst;
+		Lock old = getLock(lock);
+		if (old != null) {
+			return new Locked(old.getId(), old.getValue());
 		}
 		if (lock.lock(maxWaitTime)) {
 			locks.get().add(lock);
 			return lock;
 		}
 		return null;
+	}
+
+	public boolean isLockedNow(Lock lock) {
+		return Objects.equals(lock.getValue(), Locker.redis(lock.getId()).get(lock.getId()));
+	}
+
+	/**
+	 * 重置锁超时时间，对重进入的锁也适用
+	 * 
+	 * @return 如果锁已经被释放，或其它未知原因，就返回false
+	 */
+	public boolean resetExpiredTime(Lock lock, int mils) {
+		SLock slock = getLock(lock);
+		if (slock == null || !isLockedNow(slock)) {
+			return false;
+		}
+
+		long endTime = System.currentTimeMillis() + mils;
+		if (Locker.redis(slock.getId()).pexpireAt(slock.getId(), endTime) > 0) {
+			slock.resetEndTime(endTime);
+			return true;
+		}
+		return false;
 	}
 
 	private static final Runnable ensureScriptRunner = () -> {

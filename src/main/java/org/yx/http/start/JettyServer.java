@@ -107,7 +107,7 @@ public class JettyServer implements Lifecycle {
 	protected synchronized void init() {
 		try {
 			buildJettyProperties();
-			server = new Server(new ExecutorThreadPool(HttpExcutors.getThreadPool()));
+			server = new Server(new ExecutorThreadPool(StartContext.inst().getHttpExecutor()));
 			ServerConnector connector = this.createConnector();
 			Logs.http().info("listen at port: {}", port);
 			String host = StartContext.httpHost();

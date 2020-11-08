@@ -147,6 +147,9 @@ public final class HttpActions {
 				if (web.custom().length() > 0) {
 					map.put("custom", web.custom());
 				}
+				if (web.tags().length > 0) {
+					map.put("tags", web.tags());
+				}
 
 				if (StringUtil.isNotEmpty(http.comment())) {
 					map.put("comment", http.comment());

@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
+import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpHeaderName;
 import org.yx.http.kit.HttpSettings;
@@ -45,6 +46,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	public void service(HttpServletRequest req, HttpServletResponse resp) {
 		final long beginTime = System.currentTimeMillis();
 		Throwable ex = null;
+		String user = null;
 		Charset charset = InnerHttpUtil.charset(req);
 		try {
 			if (!acceptMethod(req, resp)) {
@@ -53,7 +55,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			}
 			InnerHttpUtil.setRespHeader(resp, charset);
 			final String sid = createSessionId(req);
-			String user = getUserName(req);
+			user = getUserName(req);
 			LoginObject obj = login(sid, user, req);
 			if (obj == null) {
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
@@ -75,8 +77,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			if (StringUtil.isNotEmpty(userId)) {
 				resp.setHeader(HttpHeaderName.userFlag(), userId);
 			}
-			UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(64);
-			outputKey(out, key, req, resp);
+
 			if (HttpSettings.isCookieEnable()) {
 				String contextPath = req.getContextPath();
 
@@ -88,15 +89,21 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				setUserFlagCookie(req, resp, userId, attr);
 			}
 
-			this.outputSplit(out);
+			UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(64);
+			this.outputKey(out, key, req, resp);
 			if (obj.getResponseData() != null) {
 				out.write(obj.getResponseData().getBytes(charset));
 			}
 			resp.getOutputStream().write(out.toByteArray());
 		} catch (Throwable e) {
 			ex = e;
-			Logs.http().error(e.getLocalizedMessage(), e);
-			InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
+			Logs.http().error("user:" + user + ",message:" + e.getLocalizedMessage(), e);
+			if (BizException.class.isInstance(e)) {
+				BizException be = (BizException) e;
+				InnerHttpUtil.sendError(resp, be.getCode(), be.getMessage(), charset);
+			} else {
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail:" + user, charset);
+			}
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;
 			HttpLogs.log(null, req, ex, time);
@@ -104,10 +111,6 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			InnerHttpUtil.record(LOGIN_NAME, time, ex == null);
 		}
 
-	}
-
-	protected void outputSplit(OutputStream out) throws IOException {
-		out.write(new byte[] { '\t', '\n' });
 	}
 
 	protected boolean acceptMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException {
@@ -139,7 +142,14 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 
 	protected void outputKey(OutputStream out, byte[] key, HttpServletRequest req, HttpServletResponse resp)
 			throws IOException {
-		out.write(S.base64().encode(key));
+		if (AppInfo.getBoolean("sumk.http.key.output.body", false)) {
+			out.write(S.base64().encode(key));
+			out.write(new byte[] { '\t', '\n' });
+		}
+
+		if (AppInfo.getBoolean("sumk.http.key.output.header", true)) {
+			resp.setHeader(AppInfo.get("sumk.http.header.skey", "skey"), S.base64().encodeToString(key));
+		}
 	}
 
 	protected byte[] createEncryptKey(HttpServletRequest req) {

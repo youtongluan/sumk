@@ -24,6 +24,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.yx.db.sql.DBSettings;
@@ -34,12 +35,47 @@ import org.yx.exception.SumkExceptionCode;
 import org.yx.log.CodeLineMarker;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.util.SumkDate;
 
 public class SumkStatement {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
 	private static SqlLog sqlLog = (a, b, c) -> {
 	};
 	private static CodeLineMarker marker = new CodeLineMarker("org.yx.db.");
+	private static BiConsumer<PreparedStatement, List<Object>> statementParamAttacher = (ps, params) -> {
+		int size = params.size();
+		if (size == 0) {
+			return;
+		}
+		try {
+			for (int i = 0; i < size; i++) {
+				Object parameterObj = params.get(i);
+				if (parameterObj == null) {
+					ps.setNull(i + 1, java.sql.Types.OTHER);
+					continue;
+				}
+				if (parameterObj.getClass() == java.util.Date.class) {
+					ps.setTimestamp(i + 1, new Timestamp(((java.util.Date) parameterObj).getTime()));
+					continue;
+				}
+				if (parameterObj.getClass() == SumkDate.class) {
+					ps.setTimestamp(i + 1, SumkDate.class.cast(parameterObj).toTimestamp());
+					continue;
+				}
+				ps.setObject(i + 1, parameterObj);
+			}
+		} catch (Exception e) {
+			throw new SumkException(-3643654, "设置PreparedStatement的参数失败", e);
+		}
+	};
+
+	public static BiConsumer<PreparedStatement, List<Object>> getStatementParamAttacher() {
+		return statementParamAttacher;
+	}
+
+	public static void setStatementParamAttacher(BiConsumer<PreparedStatement, List<Object>> statementParamAttacher) {
+		SumkStatement.statementParamAttacher = Objects.requireNonNull(statementParamAttacher);
+	}
 
 	private final AtomicReference<PreparedStatement> statement;
 	private final MapedSql maped;
@@ -72,7 +108,7 @@ public class SumkStatement {
 		return new SumkStatement(conn.prepareStatement(maped.getSql(), Statement.RETURN_GENERATED_KEYS), maped);
 	}
 
-	private SumkStatement(PreparedStatement statement, MapedSql maped) throws Exception {
+	private SumkStatement(PreparedStatement statement, MapedSql maped) {
 		this.statement = new AtomicReference<>(statement);
 		this.maped = maped;
 		beginTime = System.currentTimeMillis();
@@ -164,27 +200,12 @@ public class SumkStatement {
 		return sb.toString();
 	}
 
-	private void attachParams() throws Exception {
+	private void attachParams() {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
 			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭了");
 		}
-		List<Object> params = maped.getParamters();
-		int size = params.size();
-		if (size > 0) {
-			for (int i = 0; i < size; i++) {
-				Object parameterObj = params.get(i);
-				if (parameterObj == null) {
-					statement.setNull(i + 1, java.sql.Types.OTHER);
-					continue;
-				}
-				if (parameterObj.getClass() == java.util.Date.class) {
-					statement.setTimestamp(i + 1, new Timestamp(((java.util.Date) parameterObj).getTime()));
-					continue;
-				}
-				statement.setObject(i + 1, parameterObj);
-			}
-		}
+		statementParamAttacher.accept(statement, maped.getParamters());
 		if (LOG.isDebugEnabled()) {
 			StringBuilder sb = new StringBuilder();
 			LOG.debug(marker, sb.append("<=> ").append(getSql()).toString());

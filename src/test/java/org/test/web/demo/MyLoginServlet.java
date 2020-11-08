@@ -24,7 +24,6 @@ public class MyLoginServlet extends AbstractLoginServlet {
 		}
 		if ("admin".equals(user) && "123456".equals(password)) {
 			DemoSessionObject so = new DemoSessionObject();
-			so.setLoginTime(System.currentTimeMillis());
 			so.setUserId("admin");
 			return LoginObject.success(null, so);
 		}

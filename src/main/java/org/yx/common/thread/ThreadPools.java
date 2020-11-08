@@ -78,7 +78,7 @@ public class ThreadPools {
 				throw new RejectedExecutionException(msg);
 			}
 			int waiting = this.size();
-			if (waiting % 10 == 0 && Log.get("sumk.thread").isWarnEnabled()) {
+			if (waiting % 50 == 0 && Log.get("sumk.thread").isWarnEnabled()) {
 				Log.get("sumk.thread").warn("task is busy,waiting size:{}", waiting);
 			}
 			if (!super.offer(r)) {

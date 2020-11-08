@@ -75,6 +75,7 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			ActionContext.newContext(rawAct, traceId, req.getParameter("thisIsTest"));
 			setTraceIdForResponse(req, resp, traceId);
 			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
+			wc.setAttach(info.getAttach());
 			handle(wc);
 
 		} catch (Throwable e) {

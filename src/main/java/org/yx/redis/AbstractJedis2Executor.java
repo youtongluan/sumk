@@ -20,6 +20,7 @@ import java.util.function.Function;
 
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
+import org.yx.exception.SumkExceptionCode;
 import org.yx.log.Logs;
 
 import redis.clients.jedis.Jedis;
@@ -28,7 +29,8 @@ import redis.clients.util.Pool;
 
 public abstract class AbstractJedis2Executor implements Jedis2Executor {
 
-	private static final SumkException DIS_CONNECTION_EXCEPTION = new SimpleSumkException(400, "redis is disConnected");
+	private static final SumkException DIS_CONNECTION_EXCEPTION = new SimpleSumkException(
+			SumkExceptionCode.REDIS_DIS_CONNECTION, "redis is disConnected");
 
 	protected boolean disConnected;
 	protected final RedisConfig config;

@@ -29,7 +29,6 @@ import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.util.ExceptionUtil;
 
@@ -58,7 +57,7 @@ public class SocketConnectorSupplier implements Supplier<SocketConnector> {
 			con.setHandler(createClientHandler());
 			con.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 			if (AppInfo.getBoolean("sumk.rpc.client.threadpool.enable", true)) {
-				con.getFilterChain().addLast("threadpool", new ExecutorFilter(SoaExcutors.getClientThreadPool()));
+				con.getFilterChain().addLast("threadpool", new ExecutorFilter(Rpc.clientExecutor()));
 			}
 			this.connector = con;
 			return con;

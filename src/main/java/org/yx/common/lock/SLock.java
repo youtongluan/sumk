@@ -15,14 +15,12 @@
  */
 package org.yx.common.lock;
 
-import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.util.UUIDSeed;
 import org.yx.util.kit.Asserts;
 
 public final class SLock implements Lock {
-	private final Logger logger = Log.get("sumk.lock");
 	private static final String SHA = "fc8341f94e518c9868148c2b8fc7cef25ec6fa85";
 	private static final long CLOSED = -1;
 	private final String id;
@@ -44,6 +42,10 @@ public final class SLock implements Lock {
 
 	public String getId() {
 		return id;
+	}
+
+	public String getValue() {
+		return value;
 	}
 
 	public static SLock create(String name, int maxLockTime, int intervalTime) {
@@ -84,13 +86,17 @@ public final class SLock implements Lock {
 
 			long sleepTime = Math.min(left, (long) this.intervalTime);
 			try {
-				logger.debug("locked failed: {}={},sleep {}ms", id, value, sleepTime);
+				Log.get("sumk.lock").debug("locked failed: {}={},sleep {}ms", id, value, sleepTime);
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				return false;
 			}
 		}
+	}
+
+	void resetEndTime(long endTime) {
+		this.endTime = endTime;
 	}
 
 	boolean isEnable() {
@@ -106,7 +112,7 @@ public final class SLock implements Lock {
 		Locker.redis(id).evalsha(SHA, 1, id, value);
 		this.endTime = CLOSED;
 		Locker.inst.remove(this);
-		logger.debug("unlock: {}={}", id, value);
+		Log.get("sumk.lock").debug("unlock: {}={}", id, value);
 	}
 
 	@Override

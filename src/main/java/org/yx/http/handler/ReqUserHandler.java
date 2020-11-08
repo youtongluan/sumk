@@ -16,7 +16,6 @@
 package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Web;
 import org.yx.common.context.ActionContext;
 import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
@@ -27,7 +26,6 @@ import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
-import org.yx.util.UUIDSeed;
 
 @Bean
 public class ReqUserHandler implements HttpHandler {
@@ -37,18 +35,16 @@ public class ReqUserHandler implements HttpHandler {
 		return 1000;
 	}
 
-	private boolean accept(Web web) {
-		return web.requireLogin() || web.requestType().isEncrypt();
-	}
-
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!this.accept(ctx.web())) {
-			return;
+		if (ctx.web().requireLogin() || ctx.web().requestType().isEncrypt()) {
+			checkSession(HttpContextHolder.sessionId());
 		}
-		String sessionId = HttpContextHolder.sessionId();
+	}
+
+	public void checkSession(String sessionId) {
 		if (!WebSessions.getSessionIdVerifier().test(sessionId)) {
-			Logs.http().info("session:{}, is not valid", sessionId);
+			Logs.http().warn("sessionId:{}, is not valid", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
 		UserSession session = WebSessions.loadUserSession();
@@ -60,16 +56,23 @@ public class ReqUserHandler implements HttpHandler {
 				if (StringUtil.isNotEmpty(userId)) {
 
 					if (session.isLogin(userId)) {
-						Logs.http().info("session:{}, login by other", sessionId);
+						Logs.http().info("sessionId:{}, login by other", sessionId);
 						throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
 					}
 				}
 			}
-			Logs.http().info("session:{}, has expired", sessionId);
+			Logs.http().info("sessionId:{}, 没找到对应的session", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
 		ActionContext.get().userId(obj.getUserId());
-		ActionContext.get().setTraceIdIfAbsent(UUIDSeed.seq18());
+
+		Long deadTime = obj.getExpiredTime();
+		if (deadTime != null) {
+			if (deadTime < System.currentTimeMillis()) {
+				Logs.http().warn("sessionId:{}, expiredTime:{}，使用时间太长", sessionId, deadTime);
+				throw HttpException.create(HttpErrorCode.SESSION_ERROR, "session使用时间太长");
+			}
+		}
 	}
 
 }

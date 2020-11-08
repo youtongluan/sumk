@@ -18,10 +18,15 @@ package org.yx.http.act;
 public final class HttpActionInfo {
 	private final String rawAct;
 	private final HttpActionNode node;
+	/**
+	 * 如果要支持url中的参数，可以考虑从这里入手
+	 */
+	private final Object attach;
 
-	public HttpActionInfo(String rawAct, HttpActionNode node) {
+	public HttpActionInfo(String rawAct, HttpActionNode node, Object attach) {
 		this.rawAct = rawAct;
 		this.node = node;
+		this.attach = attach;
 	}
 
 	public String rawAct() {
@@ -32,4 +37,7 @@ public final class HttpActionInfo {
 		return node;
 	}
 
+	public Object getAttach() {
+		return attach;
+	}
 }

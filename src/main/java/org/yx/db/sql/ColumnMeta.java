@@ -16,20 +16,14 @@
 package org.yx.db.sql;
 
 import java.lang.reflect.Field;
-import java.sql.Blob;
-import java.sql.Clob;
 import java.util.Map;
 
 import org.yx.annotation.db.Column;
 import org.yx.annotation.doc.Comment;
-import org.yx.common.date.TimeUtil;
-import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.db.enums.ColumnType;
-import org.yx.db.kit.DBKits;
-import org.yx.exception.SumkException;
-import org.yx.util.StreamUtil;
 import org.yx.util.StringUtil;
+import org.yx.util.kit.TypeConverter;
 
 public final class ColumnMeta implements Comparable<ColumnMeta> {
 
@@ -39,10 +33,6 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	final byte columnOrder;
 
 	final String dbColumn;
-
-	final boolean isNumber;
-
-	final boolean isDate;
 
 	public ColumnMeta(Field field, Column c) {
 		super();
@@ -55,8 +45,6 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		}
 		this.dbColumn = (c == null || StringUtil.isEmpty(c.value()))
 				? DBNameResolvers.getColumnNameResolver().apply(field.getName()) : c.value();
-		this.isNumber = Number.class.isAssignableFrom(field.getType());
-		this.isDate = TimeUtil.isGenericDate(field.getType());
 	}
 
 	public boolean isDBID() {
@@ -80,6 +68,10 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		return field.get(owner);
 	}
 
+	public boolean containsKey(Map<String, Object> owner) throws IllegalArgumentException, IllegalAccessException {
+		return owner.containsKey(field.getName());
+	}
+
 	void setValue(Object owner, final Object value) throws Exception {
 		if (Map.class.isInstance(owner)) {
 			@SuppressWarnings("unchecked")
@@ -87,42 +79,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 			map.put(field.getName(), value);
 			return;
 		}
-		if (value == null) {
-			field.set(owner, null);
-			return;
-		}
-		final Class<?> fieldType = this.field.getType();
-		if (this.isDate) {
-			Object v = TimeUtil.toType(value, fieldType, false);
-			field.set(owner, v);
-			return;
-		}
-
-		if (fieldType.isInstance(value)) {
-			field.set(owner, value);
-			return;
-		}
-		if (this.isNumber && Number.class.isInstance(value)) {
-			Number v = DBKits.toType((Number) value, fieldType, false);
-			field.set(owner, v);
-			return;
-		}
-		if (fieldType == byte[].class && Blob.class.isInstance(value)) {
-			Blob v = (Blob) value;
-			byte[] bs = StreamUtil.readAllBytes(v.getBinaryStream(), true);
-			field.set(owner, bs);
-			return;
-		}
-		if (fieldType == String.class && Clob.class.isInstance(value)) {
-			Clob v = (Clob) value;
-			String s = StreamUtil.readAll(v.getCharacterStream(), true);
-			field.set(owner, s);
-			return;
-		}
-		if (AppInfo.getBoolean("sumk.db.fail.miss.type", true)) {
-			throw new SumkException(345234543,
-					"字段类型是" + fieldType.getName() + ",参数对象的实际类型是:" + value.getClass().getName());
-		}
+		field.set(owner, TypeConverter.convert(value, field.getType()));
 	}
 
 	public String getFieldName() {
@@ -157,14 +114,6 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 
 	public String getDbColumn() {
 		return dbColumn;
-	}
-
-	public boolean isNumber() {
-		return isNumber;
-	}
-
-	public boolean isDate() {
-		return isDate;
 	}
 
 	public String getComment() {

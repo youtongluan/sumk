@@ -37,40 +37,6 @@ public final class DBKits {
 		return list.get(0);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T extends Number> T toType(Number v, Class<?> type, boolean failIfNotSupport) {
-		if (v.getClass() == type) {
-			return (T) v;
-		}
-		if (Byte.class == type || byte.class == type) {
-			return (T) Byte.valueOf(v.byteValue());
-		}
-
-		if (Short.class == type || short.class == type) {
-			return (T) Short.valueOf(v.shortValue());
-		}
-
-		if (Integer.class == type || int.class == type) {
-			return (T) Integer.valueOf(v.intValue());
-		}
-
-		if (Long.class == type || long.class == type) {
-			return (T) Long.valueOf(v.longValue());
-		}
-
-		if (Float.class == type || float.class == type) {
-			return (T) Float.valueOf(v.floatValue());
-		}
-
-		if (Double.class == type || double.class == type) {
-			return (T) Double.valueOf(v.doubleValue());
-		}
-		if (failIfNotSupport || !Number.class.isAssignableFrom(type)) {
-			throw new SumkException(927816546, type.getClass().getName() + "is not valid Number type");
-		}
-		return (T) v;
-	}
-
 	@SafeVarargs
 	public static <T> int clearCache(T... pojos) throws Exception {
 		int total = 0;

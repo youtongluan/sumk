@@ -65,7 +65,7 @@ public class SoaAnnotationResolver {
 		}
 	}
 
-	private void parseSoaClass(Map<Method, String> map, Class<?> targetClass, SoaClass sc, Class<?> refer)
+	private void parseSoaClass(Map<Method, String> map, Class<?> targetClass, Class<?> refer)
 			throws NoSuchMethodException, SecurityException {
 		String pre = this.soaClassResolver.solvePrefix(targetClass, refer);
 		if (pre == null) {
@@ -85,15 +85,7 @@ public class SoaAnnotationResolver {
 	private void parseSoa(Map<Method, String> map, Class<?> clz) {
 		Method[] methods = clz.getMethods();
 		for (final Method m : methods) {
-			if (AsmUtils.isFilted(m.getName())) {
-				continue;
-			}
 			if (m.getAnnotation(Soa.class) == null || map.containsKey(m)) {
-				continue;
-			}
-			if (AsmUtils.notPublicOnly(m.getModifiers())) {
-				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
-						m.getName());
 				continue;
 			}
 			map.putIfAbsent(m, "");
@@ -107,21 +99,31 @@ public class SoaAnnotationResolver {
 			return;
 		}
 		Map<Method, String> map = new HashMap<>();
-		Class<?> refer = null;
-		SoaClass sc = clz.getAnnotation(SoaClass.class);
-		if (sc != null) {
-			refer = this.soaClassResolver.getRefer(clz, sc);
-			this.parseSoaClass(map, clz, sc, refer);
+
+		Class<?> refer = this.soaClassResolver.getRefer(clz, clz.getAnnotation(SoaClass.class));
+		if (refer != null) {
+			this.parseSoaClass(map, clz, refer);
 		}
 
-		if (sc == null || refer != clz) {
+		if (refer != clz) {
 			this.parseSoa(map, clz);
 		}
-		if (map.isEmpty()) {
+		List<Method> soaMethods = new ArrayList<>(map.size());
+		for (Method m : map.keySet()) {
+			if (AsmUtils.isFilted(m.getName())) {
+				continue;
+			}
+			if (AsmUtils.notPublicOnly(m.getModifiers())) {
+				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
+						m.getName());
+				continue;
+			}
+			soaMethods.add(m);
+		}
+		if (soaMethods.isEmpty()) {
 			return;
 		}
-
-		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(new ArrayList<>(map.keySet()));
+		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(soaMethods);
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			String prefix = map.get(m);

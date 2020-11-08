@@ -26,6 +26,7 @@ import java.util.concurrent.TimeUnit;
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.Task;
@@ -82,6 +83,7 @@ public class LocalUserSession implements UserSession {
 		}
 		long now = System.currentTimeMillis();
 		if (to.refreshTime + HttpSettings.httpSessionTimeoutInMs() < now) {
+			Logs.http().debug("session:{}实际上已经过期了", sid);
 			map.remove(sid);
 			return null;
 		}

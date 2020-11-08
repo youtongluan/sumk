@@ -153,7 +153,7 @@ public class BeanConverter {
 			for (Field f : fields) {
 				String fName = f.getName().toLowerCase().replace("_", "");
 				if (map.containsKey(fName)) {
-					f.set(bean, map.get(fName));
+					f.set(bean, TypeConverter.convert(map.get(fName), f.getType()));
 				}
 			}
 		} catch (Exception e) {
@@ -186,7 +186,7 @@ public class BeanConverter {
 		try {
 			for (Field f : fields) {
 				if (map.containsKey(f.getName())) {
-					f.set(bean, map.get(f.getName()));
+					f.set(bean, TypeConverter.convert(map.get(f.getName()), f.getType()));
 				}
 			}
 		} catch (Exception e) {

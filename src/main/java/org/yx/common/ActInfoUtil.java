@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Param;
+import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 import org.yx.validate.ParamInfo;
@@ -47,6 +48,9 @@ public final class ActInfoUtil {
 		Map<String, Object> map = new LinkedHashMap<>();
 		Class<?> tempClz = clazz;
 		while (tempClz != null && !tempClz.getName().startsWith("java.")) {
+			if (AppInfo.getBoolean("sumk.http.act.output.class", false)) {
+				map.put("$class", tempClz.getName());
+			}
 
 			Field[] fs = tempClz.getDeclaredFields();
 			for (Field f : fs) {

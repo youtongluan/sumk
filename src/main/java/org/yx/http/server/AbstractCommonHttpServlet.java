@@ -16,6 +16,7 @@
 package org.yx.http.server;
 
 import java.io.IOException;
+import java.util.function.BiConsumer;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -49,6 +50,16 @@ public abstract class AbstractCommonHttpServlet extends HttpServlet {
 	@Override
 	protected void doTrace(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
+	}
+
+	@Override
+	protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+		BiConsumer<HttpServletRequest, HttpServletResponse> h = InnerHttpUtil.getOptionMethodHandler();
+		if (h != null) {
+			h.accept(req, resp);
+			return;
+		}
+		super.doOptions(req, resp);
 	}
 
 	protected abstract void handle(HttpServletRequest req, HttpServletResponse resp)

@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,15 @@ import org.yx.log.Logs;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
+	private static BiConsumer<HttpServletRequest, HttpServletResponse> optionMethodHandler;
+
+	public static BiConsumer<HttpServletRequest, HttpServletResponse> getOptionMethodHandler() {
+		return optionMethodHandler;
+	}
+
+	public static void setOptionMethodHandler(BiConsumer<HttpServletRequest, HttpServletResponse> optionMethodHandler) {
+		InnerHttpUtil.optionMethodHandler = optionMethodHandler;
+	}
 
 	public static HttpKit getKit() {
 		return kit;

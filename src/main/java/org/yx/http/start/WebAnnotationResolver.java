@@ -100,7 +100,7 @@ public final class WebAnnotationResolver {
 				continue;
 			}
 			for (String name : names) {
-				infos.add(new HttpActionInfo(name, node));
+				infos.add(new HttpActionInfo(name, node, null));
 			}
 		}
 		return infos;

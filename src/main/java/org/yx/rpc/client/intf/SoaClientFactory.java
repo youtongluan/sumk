@@ -36,8 +36,6 @@ import org.yx.bean.FactoryBean;
 import org.yx.bean.IOC;
 import org.yx.bean.InterfaceBean;
 import org.yx.bean.Loader;
-import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
@@ -86,8 +84,8 @@ public class SoaClientFactory implements FactoryBean {
 
 	@Override
 	public Collection<Object> beans() {
-		if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) != null
-				|| AppInfo.getBoolean("sumk.rpc.intfclient.disable", false)) {
+
+		if (AppInfo.getBoolean("sumk.rpc.intfclient.disable", false)) {
 			return Collections.emptyList();
 		}
 		Logger log = Logs.ioc();

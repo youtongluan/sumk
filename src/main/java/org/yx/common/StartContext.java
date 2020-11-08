@@ -18,13 +18,15 @@ package org.yx.common;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.yx.conf.AppInfo;
-import org.yx.util.StringUtil;
+import org.yx.main.SumkThreadPool;
 
-public class StartContext {
+public final class StartContext {
 
-	private static StartContext inst = new StartContext();
+	private static final StartContext inst = new StartContext();
 
 	public static StartContext inst() {
 		return inst;
@@ -81,11 +83,11 @@ public class StartContext {
 	}
 
 	public static String soaHostInzk() {
-		return get("sumk.rpc.zk.host", null);
+		return AppInfo.get("sumk.rpc.zk.host", null);
 	}
 
 	public static String soaHost() {
-		return get("sumk.rpc.host", AppInfo.getLocalIp());
+		return AppInfo.get("sumk.rpc.host", AppInfo.getLocalIp());
 	}
 
 	public static int soaPort() {
@@ -97,7 +99,7 @@ public class StartContext {
 	}
 
 	public static String httpHost() {
-		return get("sumk.http.host", AppInfo.get("sumk.http.host"));
+		return AppInfo.get("sumk.http.host", AppInfo.get("sumk.http.host"));
 	}
 
 	public static int httpPort() {
@@ -112,12 +114,19 @@ public class StartContext {
 		return AppInfo.getInt(name, defaultValue);
 	}
 
-	private static String get(String name, String defaultValue) {
-		String v = System.getProperty(name);
-		if (StringUtil.isNotEmpty(v)) {
-			return v;
+	public ThreadPoolExecutor getHttpExecutor() {
+		Object obj = map.get("sumk.http.executor");
+		if (obj == null || !ThreadPoolExecutor.class.isInstance(obj)) {
+			return (ThreadPoolExecutor) SumkThreadPool.executor();
 		}
-		return AppInfo.get(name, defaultValue);
+		return (ThreadPoolExecutor) obj;
 	}
 
+	public ExecutorService getExecutorService(String name) {
+		Object obj = map.get(name);
+		if (obj == null || !ExecutorService.class.isInstance(obj)) {
+			return SumkThreadPool.executor();
+		}
+		return (ExecutorService) obj;
+	}
 }

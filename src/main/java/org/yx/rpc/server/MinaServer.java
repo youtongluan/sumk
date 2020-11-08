@@ -31,12 +31,12 @@ import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
+import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
-import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.util.ExceptionUtil;
 
@@ -96,7 +96,8 @@ public class MinaServer implements Runnable {
 
 			chain.addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 
-			chain.addLast("threadpool", new ExecutorFilter(SoaExcutors.getServerThreadPool()));
+			chain.addLast("threadpool",
+					new ExecutorFilter(StartContext.inst().getExecutorService("sumk.rpc.server.executor")));
 
 			acceptor.setHandler(handler);
 

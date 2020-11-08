@@ -15,14 +15,27 @@
  */
 package org.yx.rpc.server.start;
 
+import java.util.function.Predicate;
+
 import org.yx.annotation.rpc.SoaClass;
 import org.yx.bean.Loader;
+import org.yx.common.matcher.BooleanMatcher;
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.log.Logs;
 import org.yx.rpc.InnerRpcKit;
 
 public class SoaClassResolverImpl implements SoaClassResolver {
+
+	private Predicate<String> autoMatcher = BooleanMatcher.FALSE;
+
+	public SoaClassResolverImpl() {
+		String soaClassMatcher = AppInfo.get("sumk.rpc.intfserver.automatch", null);
+		if (soaClassMatcher != null) {
+			this.autoMatcher = Matchers.createWildcardMatcher(soaClassMatcher, 1);
+		}
+	}
 
 	@Override
 	public String solvePrefix(Class<?> targetClass, Class<?> refer) {
@@ -40,7 +53,7 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 
 	@Override
 	public Class<?> getRefer(Class<?> targetClass, SoaClass sc) {
-		Class<?> refer = sc.refer();
+		Class<?> refer = parseRefer(targetClass, sc);
 		if (refer != SoaClassResolver.AUTO) {
 			return refer;
 		}
@@ -50,6 +63,16 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 		} else {
 			return targetClass;
 		}
+	}
+
+	protected Class<?> parseRefer(Class<?> targetClass, SoaClass sc) {
+		if (sc != null) {
+			return sc.refer();
+		}
+		if (this.autoMatcher.test(targetClass.getName())) {
+			return SoaClassResolver.AUTO;
+		}
+		return null;
 	}
 
 }

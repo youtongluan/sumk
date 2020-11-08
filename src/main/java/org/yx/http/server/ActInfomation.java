@@ -49,6 +49,7 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 		String mode = req.getParameter("mode");
 		if (StringUtil.isEmpty(mode)) {
 			Logs.http().debug("mode is empty");
+			return;
 		}
 		GsonBuilder builder = GsonHelper.builder("sumk.acts");
 		if ("1".equals(req.getParameter("pretty"))) {
@@ -82,6 +83,9 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 	}
 
 	private void write(HttpServletResponse resp, String msg) throws IOException {
-		resp.getWriter().write(msg);
+		if (msg == null) {
+			return;
+		}
+		resp.getOutputStream().write(msg.getBytes(AppInfo.UTF8));
 	}
 }

@@ -16,15 +16,22 @@
 package org.yx.common.lock;
 
 public final class Locked implements Lock {
-	public static final Locked inst = new Locked();
+	private final String id;
+	private final String value;
 
-	private Locked() {
-
+	public Locked(String id, String value) {
+		this.id = id;
+		this.value = value;
 	}
 
 	@Override
 	public String getId() {
-		return "LockedKey";
+		return this.id;
+	}
+
+	@Override
+	public String getValue() {
+		return value;
 	}
 
 	@Override

@@ -37,8 +37,8 @@ import org.yx.log.Log;
 
 public final class AsmUtils {
 
-	private static final String[] blanks = new String[] { "getClass", "wait", "equals", "notify", "notifyAll",
-			"toString", "hashCode" };
+	private static final String[] blanks = { "getClass", "wait", "equals", "notify", "notifyAll", "toString",
+			"hashCode" };
 
 	private static final ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
 	private static Method defineClass;

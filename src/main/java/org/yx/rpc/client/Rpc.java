@@ -16,11 +16,14 @@
 package org.yx.rpc.client;
 
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 
+import org.yx.common.StartContext;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.rpc.codec.Protocols;
@@ -34,6 +37,12 @@ public final class Rpc {
 
 	private static String appId;
 
+	private static ExecutorService clientExecutor = SumkThreadPool.executor();
+
+	public static ExecutorService clientExecutor() {
+		return clientExecutor;
+	}
+
 	public static void resetStatus() {
 		strated = false;
 	}
@@ -45,6 +54,7 @@ public final class Rpc {
 		try {
 			appId = AppInfo.appId("sumk");
 			RpcSettings.init();
+			Rpc.clientExecutor = StartContext.inst().getExecutorService("sumk.rpc.client.executor");
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
 			ZkRouteParser.get(zkUrl).readRouteAndListen();

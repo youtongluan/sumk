@@ -45,6 +45,13 @@ public @interface Web {
 
 	String custom() default "";
 
+	/**
+	 * 留给开发者做权限分组等，框架本身没有实际应用
+	 * 
+	 * @return 标签（或分组）列表
+	 */
+	String[] tags() default {};
+
 	int toplimit() default 0;
 
 }

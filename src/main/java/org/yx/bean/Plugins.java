@@ -42,7 +42,7 @@ public final class Plugins {
 		c.countDown();
 	}
 
-	public static boolean waitForRedisPlugin(long mils) {
+	public static boolean waitForRedis(long mils) {
 		return waitForPlugin(redisWatcher, mils);
 	}
 
@@ -51,7 +51,7 @@ public final class Plugins {
 	}
 
 	public static boolean waitForDBAndCache(long mils) {
-		waitForRedisPlugin(mils);
+		waitForRedis(mils);
 		return waitForDBOnly(mils);
 	}
 

@@ -21,7 +21,7 @@ package org.yx.http.user;
 public class SessionObject {
 
 	protected String userId;
-	protected Long loginTime;
+	private Long expiredTime;
 
 	/**
 	 * 返回用户id
@@ -36,12 +36,17 @@ public class SessionObject {
 		this.userId = userId;
 	}
 
-	public Long getLoginTime() {
-		return loginTime;
+	public Long getExpiredTime() {
+		return expiredTime;
 	}
 
-	public void setLoginTime(Long loginTime) {
-		this.loginTime = loginTime;
+	/**
+	 * 如果设置了过期时间，即使用户一直在操作， 当达到过期时间后，session也会被清理
+	 * 
+	 * @param expiredTime
+	 *            最大的过期时间，精确到毫秒。null表示不自动清理
+	 */
+	public void setExpiredTime(Long expiredTime) {
+		this.expiredTime = expiredTime;
 	}
-
 }

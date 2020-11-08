@@ -33,6 +33,7 @@ import org.yx.annotation.db.Table;
 import org.yx.annotation.doc.Comment;
 import org.yx.bean.Loader;
 import org.yx.common.StartContext;
+import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
@@ -150,7 +151,7 @@ public final class PojoMeta implements Cloneable {
 				pids.add(m);
 			}
 			if (m.field.isAnnotationPresent(AutoCreateTime.class)) {
-				if (m.isDate && !timeOnly(m.field.getType())) {
+				if (TimeUtil.isGenericDate(m.field.getType()) && !timeOnly(m.field.getType())) {
 					ctimes.add(m);
 				} else {
 					Logs.db().warn("{}.{}的类型{}不是@CreateTime支持的类型", pojoClz.getSimpleName(), m.field.getName(),
@@ -315,27 +316,8 @@ public final class PojoMeta implements Cloneable {
 		return map;
 	}
 
-	@SuppressWarnings("unchecked")
 	public String getCacheID(Object source, boolean exceptionIfHasNull) throws Exception {
-		if (Map.class.isInstance(source)) {
-			return this.getCacheIDByMap((Map<String, Object>) source, exceptionIfHasNull);
-		}
-		StringBuilder key = new StringBuilder();
-		for (ColumnMeta m : this.cacheIDs) {
-			Object v = m.value(source);
-			if (v == null) {
-				if (exceptionIfHasNull) {
-					throw new SumkException(1232142356,
-							this.pojoClz.getName() + ": value of " + m.getFieldName() + " cannot be null");
-				}
-				return null;
-			}
-			if (key.length() > 0) {
-				key.append(KEY_SPLIT);
-			}
-			key.append(v);
-		}
-		return key.toString();
+		return joinColumns(source, exceptionIfHasNull, this.cacheIDs);
 	}
 
 	public String getCacheIDWithNULL(Map<String, Object> map) throws Exception {
@@ -350,14 +332,37 @@ public final class PojoMeta implements Cloneable {
 		return key.toString();
 	}
 
-	private String getCacheIDByMap(Map<String, Object> map, boolean exceptionIfHasNull) {
+	private String joinColumnsFromMap(Map<String, Object> map, boolean exceptionIfHasNull, List<ColumnMeta> cols) {
 		StringBuilder key = new StringBuilder();
-		for (ColumnMeta m : this.cacheIDs) {
+		for (ColumnMeta m : cols) {
 			Object v = map.get(m.getFieldName());
 			if (v == null) {
 				if (exceptionIfHasNull) {
 					throw new SumkException(1232142356,
 							this.pojoClz.getName() + ": redis key [" + m.getFieldName() + "] cannot be null");
+				}
+				return null;
+			}
+			if (key.length() > 0) {
+				key.append(KEY_SPLIT);
+			}
+			key.append(v);
+		}
+		return key.toString();
+	}
+
+	@SuppressWarnings("unchecked")
+	public String joinColumns(Object source, boolean exceptionIfHasNull, List<ColumnMeta> cols) throws Exception {
+		if (Map.class.isInstance(source)) {
+			return this.joinColumnsFromMap((Map<String, Object>) source, exceptionIfHasNull, cols);
+		}
+		StringBuilder key = new StringBuilder();
+		for (ColumnMeta m : cols) {
+			Object v = m.value(source);
+			if (v == null) {
+				if (exceptionIfHasNull) {
+					throw new SumkException(1232142356,
+							this.pojoClz.getName() + ": value of " + m.getFieldName() + " cannot be null");
 				}
 				return null;
 			}

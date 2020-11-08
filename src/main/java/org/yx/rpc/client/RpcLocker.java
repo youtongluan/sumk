@@ -29,7 +29,6 @@ import org.yx.common.context.LogContext;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
-import org.yx.rpc.SoaExcutors;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.log.RpcLog;
 import org.yx.rpc.log.RpcLogs;
@@ -95,7 +94,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		if (future.getException() == null) {
 			return;
 		}
-		SoaExcutors.getClientThreadPool().execute(() -> {
+		Rpc.clientExecutor().execute(() -> {
 			if (LockHolder.remove(req.getSn()) == null) {
 				return;
 			}
