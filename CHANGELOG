@@ -208,6 +208,16 @@ v2.9.0
 2、http错误码由原来的499改为550
 3、个别地方性能优化
 
+v2.9.1
+1、部分update支持更新字段为null
+2、支持设置用户session最长的存活时间，即使一直有交付
+
+v2.9.2
+1、登录时的加密key改为通过header传递
+2、修复Select中缓存跟数据库数据重复的bug
+3、lock增加动态设置锁超时的功能
+4、@Web添加tags属性 
+
 v2.9.3
 1、SumkDate支持在DB和SDB中使用，但不支持mbatis、hibernate等外置数据库操作
 2、支持使用配置的方式替代@SoaClass注解
