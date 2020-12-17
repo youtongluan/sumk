@@ -19,7 +19,6 @@ import java.util.Objects;
 
 import org.yx.common.Ordered;
 import org.yx.exception.SumkException;
-import org.yx.rpc.RpcActionNode;
 
 public abstract class RpcFilter implements Ordered {
 
@@ -32,10 +31,10 @@ public abstract class RpcFilter implements Ordered {
 		this.next = Objects.requireNonNull(next);
 	}
 
-	protected final Object callNextFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable {
-		return this.next.doFilter(node, visitor);
+	protected final Object callNextFilter(RpcContext ctx) throws Throwable {
+		return this.next.doFilter(ctx);
 	}
 
-	public abstract Object doFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable;
+	public abstract Object doFilter(RpcContext ctx) throws Throwable;
 
 }

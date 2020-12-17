@@ -17,23 +17,34 @@ package org.yx.http.kit;
 
 import java.util.Objects;
 
+import org.yx.exception.BizException;
 import org.yx.http.HttpEncryptor;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.handler.WebContext;
 import org.yx.util.S;
+import org.yx.util.WebUtil;
 import org.yx.util.secury.Encryptor;
 
 public class DefaultHttpEncryptor implements HttpEncryptor {
 
 	private Encryptor cipher = S.cipher();
 
+	protected byte[] getKey() {
+		byte[] key = WebUtil.getSessionEncryptKey();
+		if (key == null) {
+			throw new BizException(HttpErrorCode.SESSION_KEY_NOT_FOUND, "加密用的key没有找到");
+		}
+		return key;
+	}
+
 	@Override
 	public byte[] encrypt(byte[] data, WebContext ctx) throws Exception {
-		return cipher.encrypt(data, ctx.key());
+		return cipher.encrypt(data, getKey());
 	}
 
 	@Override
 	public byte[] decrypt(byte[] data, WebContext ctx) throws Exception {
-		return cipher.decrypt(data, ctx.key());
+		return cipher.decrypt(data, getKey());
 	}
 
 	public Encryptor getCipher() {

@@ -38,7 +38,7 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 			soaName = m.getName();
 		}
 		String[] names = StringUtil.toLatin(soaName).split(",");
-		List<String> list = new ArrayList<String>(names.length);
+		List<String> list = new ArrayList<>(names.length);
 		for (String name : names) {
 			name = name.trim();
 			if (name.isEmpty()) {
@@ -49,7 +49,7 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 		if (list.isEmpty()) {
 			list.add(m.getName());
 		}
-		List<String> ret = new ArrayList<String>(list.size());
+		List<String> ret = new ArrayList<>(list.size());
 		for (String name : list) {
 			ret.add(solve(name, soa));
 		}

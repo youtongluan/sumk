@@ -23,7 +23,7 @@ import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.rpc.server.RpcVisitor;
+import org.yx.rpc.server.RpcContext;
 
 @Bean
 public class JsonedParamReqHandler implements RequestHandler {
@@ -38,25 +38,14 @@ public class JsonedParamReqHandler implements RequestHandler {
 			String api = req.getApi();
 			RpcActionNode node = RpcActions.getActionNode(api);
 			RpcActionNode.checkNode(api, node);
-			Object ret = RpcHandler.handle(node, new JsonedRpcVisitor(req));
+			RpcContext ctx = new RpcContext(node, req);
+			ctx.setArgPojo(node.createJsonArgPojo(req));
+			Object ret = RpcHandler.handle(ctx);
 			resp.json(RpcJson.operator().toJson(ret));
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);
 		}
 		return true;
 	}
-
-	private static final class JsonedRpcVisitor extends RpcVisitor {
-
-		public JsonedRpcVisitor(Request req) {
-			super(req);
-		}
-
-		@Override
-		public Object visit(RpcActionNode info) throws Throwable {
-			return info.invokeByJsonArg(req.getJsonedParam());
-		}
-
-	};
 
 }

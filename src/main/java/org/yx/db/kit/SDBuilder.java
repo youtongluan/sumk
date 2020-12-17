@@ -21,22 +21,14 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.bean.Loader;
-import org.yx.db.mapper.SDB;
+import org.yx.db.SDB;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
 
-public class SDBuilder {
+public final class SDBuilder {
 	private String name;
 	private Map<String, Object> param;
-
-	public SDBuilder() {
-	}
-
-	public SDBuilder(String name, Map<String, Object> param) {
-		this.name = name;
-		this.param = param;
-	}
 
 	public SDBuilder name(String name) {
 		this.name = name;
@@ -64,21 +56,21 @@ public class SDBuilder {
 		}
 		List<T> retList = new ArrayList<>();
 		for (Map<String, Object> ret : list) {
-			T obj = newInstance(clz);
-			S.bean().fillBeanIgnoreCaseAndUnderLine(ret, obj);
-			retList.add(obj);
+			retList.add(toBean(ret, clz));
 		}
 		return retList;
 	}
 
 	public <T> T queryOne(Class<T> clz) {
 		Map<String, Object> ret = SDB.queryOne(name, param);
+		return toBean(ret, clz);
+	}
+
+	private <T> T toBean(Map<String, Object> ret, Class<T> clz) {
 		if (ret == null) {
 			return null;
 		}
-		T obj = newInstance(clz);
-		S.bean().fillBeanIgnoreCaseAndUnderLine(ret, obj);
-		return obj;
+		return S.bean().fillBeanIgnoreCaseAndUnderLine(ret, newInstance(clz));
 	}
 
 	private <T> T newInstance(Class<T> clz) {

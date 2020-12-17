@@ -13,13 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.mapper;
+package org.yx.db;
 
 import java.util.List;
 import java.util.Map;
 
 import org.yx.db.kit.DBKits;
 import org.yx.db.kit.SDBuilder;
+import org.yx.db.mapper.NamedExecutor;
+import org.yx.db.mapper.SqlHolder;
 import org.yx.db.sql.InsertResult;
 
 public class SDB {
@@ -44,7 +46,7 @@ public class SDB {
 		return NamedExecutor.singleColumnList(SqlHolder.findSql(name), map);
 	}
 
-	public static int count(String name, Map<String, Object> map) {
+	public static long count(String name, Map<String, Object> map) {
 		return NamedExecutor.count(SqlHolder.findSql(name), map);
 	}
 
@@ -56,7 +58,7 @@ public class SDB {
 		return new SDBuilder();
 	}
 
-	public static SDBuilder builder(String name, Map<String, Object> param) {
-		return new SDBuilder(name, param);
+	public static SDBuilder builder(String name, Object param) {
+		return new SDBuilder().name(name).param(param);
 	}
 }

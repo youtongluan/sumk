@@ -22,9 +22,9 @@ import java.util.List;
  */
 public class CountedResult<T> {
 	private List<T> list;
-	private int count;
+	private long count;
 
-	public CountedResult(List<T> list, int count) {
+	public CountedResult(List<T> list, long count) {
 		this.list = list;
 		this.count = count;
 	}
@@ -39,7 +39,7 @@ public class CountedResult<T> {
 	/**
 	 * @return 符合条件的总记录数
 	 */
-	public int getCount() {
+	public long getCount() {
 		return count;
 	}
 

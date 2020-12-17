@@ -27,9 +27,9 @@ public class Validators implements Plugin {
 
 	private static Validator[] validators;
 
-	public static void check(ParamInfo info, Object arg) throws InvalidParamException {
+	public static void check(ParameterInfo info, Object arg) throws InvalidParamException {
 		Validator[] validators = Validators.validators;
-		if (info == null || info.param == null || validators == null || validators.length == 0) {
+		if (info == null || validators == null) {
 			return;
 		}
 		for (Validator v : validators) {

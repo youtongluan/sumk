@@ -19,6 +19,7 @@ import java.lang.reflect.Constructor;
 import java.util.List;
 
 import org.yx.annotation.Bean;
+import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartContext;
@@ -48,7 +49,7 @@ public class SoaPlugin implements Plugin {
 			RpcHandler.init();
 
 			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
-			Class<?> clz = Class.forName(clzName);
+			Class<?> clz = Loader.loadClassExactly(clzName);
 			Constructor<?> c = clz.getConstructor(int.class);
 			server = (Lifecycle) c.newInstance(port);
 		} catch (Throwable e) {

@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,14 +74,17 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	protected void _addIn(Object src) {
+		this._addInByMap(this.populate(src, false));
+	}
+
+	@SuppressWarnings("unchecked")
+	protected Map<String, Object> populate(Object src, boolean keepNull) {
 		if (src == null) {
-			return;
+			return Collections.emptyMap();
 		}
 		if (Map.class.isInstance(src)) {
-			this._addInByMap(new HashMap<>((Map<String, Object>) src));
-			return;
+			return new HashMap<>((Map<String, Object>) src);
 		}
 
 		if (this.pojoMeta == null) {
@@ -90,7 +94,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 			}
 		}
 		try {
-			_addInByMap(this.pojoMeta.populate(src, false));
+			return this.pojoMeta.populate(src, keepNull);
 		} catch (Exception e) {
 			throw new SumkException(534254, e.getMessage(), e);
 		}

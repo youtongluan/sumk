@@ -17,7 +17,6 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.common.context.ActionContext;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpException;
 import org.yx.http.kit.HttpSettings;
@@ -26,23 +25,24 @@ import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
+import org.yx.util.WebUtil;
 
 @Bean
 public class ReqUserHandler implements HttpHandler {
 
 	@Override
 	public int order() {
-		return 1000;
+		return 1200;
 	}
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (ctx.web().requireLogin() || ctx.web().requestType().isEncrypt()) {
-			checkSession(HttpContextHolder.sessionId());
+		if (ctx.node().requireLogin()) {
+			checkSession(WebUtil.getSessionId(), WebUtil.getUserFlag(ctx.httpRequest()));
 		}
 	}
 
-	public void checkSession(String sessionId) {
+	public void checkSession(String sessionId, String userId) {
 		if (!WebSessions.getSessionIdVerifier().test(sessionId)) {
 			Logs.http().warn("sessionId:{}, is not valid", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "token无效");
@@ -52,10 +52,9 @@ public class ReqUserHandler implements HttpHandler {
 
 		if (obj == null) {
 			if (HttpSettings.isSingleLogin()) {
-				String userId = HttpContextHolder.userFlag();
 				if (StringUtil.isNotEmpty(userId)) {
 
-					if (session.isLogin(userId)) {
+					if (session.sessionId(userId) != null) {
 						Logs.http().info("sessionId:{}, login by other", sessionId);
 						throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
 					}

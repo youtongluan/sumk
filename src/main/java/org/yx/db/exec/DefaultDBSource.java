@@ -20,31 +20,31 @@ import java.util.Objects;
 import org.yx.db.enums.DBType;
 import org.yx.db.enums.TransactionType;
 
-public class DefaultDatabase implements Database {
+public class DefaultDBSource implements DBSource {
 	private final String dbName;
 	private final DBType type;
 	private final TransactionType transactionType;
 
-	protected DefaultDatabase(String dbName, DBType type, TransactionType transactionType) {
+	public DefaultDBSource(String dbName, DBType type, TransactionType transactionType) {
 		this.dbName = Objects.requireNonNull(dbName);
 		this.type = Objects.requireNonNull(type);
 		this.transactionType = Objects.requireNonNull(transactionType);
 	}
 
-	public static DefaultDatabase create(String dbName, DBType type, TransactionType transactionType) {
-		return new DefaultDatabase(dbName, type, transactionType);
+	public static DefaultDBSource create(String dbName, DBType type, TransactionType transactionType) {
+		return new DefaultDBSource(dbName, type, transactionType);
 	}
 
-	public String getDbName() {
+	public String dbName() {
 		return dbName;
 	}
 
-	public DBType getType() {
+	public DBType dbType() {
 		return type;
 	}
 
 	@Override
-	public TransactionType getTransactionType() {
+	public TransactionType transactionType() {
 		return this.transactionType;
 	}
 

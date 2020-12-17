@@ -16,6 +16,7 @@
 package org.yx.rpc;
 
 import org.yx.common.context.ActionContext;
+import org.yx.conf.AppInfo;
 import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
@@ -25,6 +26,11 @@ public final class InnerRpcKit {
 		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
 		return ActionContext.rpcContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
 				req.getAttachments());
+	}
+
+	public static String parseRpcIntfPrefix(Class<?> intfClz) {
+
+		return parseClassName2Prefix(intfClz.getName(), AppInfo.getInt("sumk.rpc.intf.name.partcount", 3));
 	}
 
 	public static String parseClassName2Prefix(String name, int partCount) {

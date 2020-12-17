@@ -16,9 +16,9 @@
 package org.yx.http.act;
 
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Objects;
 
-import org.yx.annotation.Param;
 import org.yx.annotation.http.Upload;
 import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojo;
@@ -27,17 +27,24 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpJson;
+import org.yx.http.MessageType;
 import org.yx.http.kit.HttpException;
 import org.yx.log.Logs;
+import org.yx.util.CollectionUtil;
 
 import com.google.gson.JsonParseException;
 
 public final class HttpActionNode extends CalleeNode {
 
-	private final Web action;
+	private final boolean requireLogin;
+	private final MessageType requestType;
+	private final boolean sign;
+	private final MessageType responseType;
+	private final String[] method;
+	private final List<String> tags;
 
 	public Web action() {
-		return this.action;
+		return this.getAnnotation(Web.class);
 	}
 
 	public Upload upload() {
@@ -58,15 +65,56 @@ public final class HttpActionNode extends CalleeNode {
 		try {
 			return HttpJson.operator().fromJson(data, argClz);
 		} catch (JsonParseException e) {
-			Logs.rpc().debug("json解析异常", e);
+			Logs.http().warn("json解析异常", e);
 			throw HttpException.create(HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
 		}
 	}
 
-	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
-			Web action) {
-		super(obj, method, argClz, argNames, params, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
+	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Web action) {
+		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
-		this.action = action;
+		this.method = action.method();
+		this.requestType = action.requestType();
+		this.responseType = action.responseType();
+		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
+				|| action().requestType().isEncrypt() || action().responseType().isEncrypt();
+		this.sign = action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);
+		this.tags = CollectionUtil.unmodifyList(action.tags());
 	}
+
+	/**
+	 * 返回值受@Web、sumk.http.login.enable配置、requestType、responseType影响。<BR>
+	 * 如果requestType、responseType中有一个为需要加密，它就返回true。
+	 * 
+	 * @return true表示接口需要登录后才能访问
+	 */
+	public boolean requireLogin() {
+		return requireLogin;
+	}
+
+	public MessageType requestType() {
+		return requestType;
+	}
+
+	public boolean sign() {
+		return sign;
+	}
+
+	public MessageType responseType() {
+		return responseType;
+	}
+
+	public boolean acceptMethod(String httpMethod) {
+		for (String m : method) {
+			if (m.equals(httpMethod)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public List<String> tags() {
+		return this.tags;
+	}
+
 }

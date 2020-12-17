@@ -20,7 +20,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.yx.log.Log;
 
-public final class HttpHandlerChain implements HttpHandler {
+public final class HttpHandlerChain {
 
 	private Logger LOG = Log.get("sumk.http.chain");
 	private HttpHandler[] handlers;
@@ -36,7 +36,6 @@ public final class HttpHandlerChain implements HttpHandler {
 		this.handlers = handlers.toArray(new HttpHandler[0]);
 	}
 
-	@Override
 	public void handle(WebContext ctx) throws Throwable {
 		try {
 			for (HttpHandler h : this.handlers) {

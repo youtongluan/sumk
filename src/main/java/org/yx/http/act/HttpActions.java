@@ -28,12 +28,13 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.yx.annotation.http.Web;
-import org.yx.common.ActInfoUtil;
+import org.yx.common.action.ActInfoUtil;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
+import org.yx.http.MessageType;
 import org.yx.http.select.DefaultHttpActionSelector;
 import org.yx.http.select.HttpActionSelector;
 import org.yx.log.Logs;
@@ -123,7 +124,7 @@ public final class HttpActions {
 		return raws;
 	}
 
-	public static List<Map<String, Object>> infos() {
+	public static List<Map<String, Object>> infos(boolean full) {
 		if (!SumkServer.isHttpEnable()) {
 			return Collections.emptyList();
 		}
@@ -132,17 +133,24 @@ public final class HttpActions {
 		infos.sort((a, b) -> a.rawAct().compareTo(b.rawAct()));
 		for (HttpActionInfo info : infos) {
 			HttpActionNode http = info.node();
-			Map<String, Object> map = ActInfoUtil.infoMap(info.rawAct(), http);
+			Map<String, Object> map = full ? ActInfoUtil.fullInfoMap(info.rawAct(), http)
+					: ActInfoUtil.simpleInfoMap(info.rawAct(), http);
 			ret.add(map);
 			if (http.action() != null) {
 				Web web = http.action();
 				map.put("cnName", web.cnName());
-				map.put("requireLogin", web.requireLogin());
-				map.put("requestEncrypt", web.requestType());
-				map.put("responseEncrypt", web.responseType());
-				map.put("sign", web.sign());
-				if (web.toplimit() > 0) {
-					map.put("toplimit", web.toplimit());
+				map.put("requireLogin", http.requireLogin());
+				if (http.requestType() != MessageType.PLAIN) {
+					map.put("requestEncrypt", http.requestType());
+				}
+				if (http.responseType() != MessageType.PLAIN) {
+					map.put("responseEncrypt", http.responseType());
+				}
+				if (http.sign()) {
+					map.put("sign", http.sign());
+				}
+				if (http.toplimit() != AppInfo.getInt("sumk.http.thread.priority.default", 100000)) {
+					map.put("toplimit", http.toplimit());
 				}
 				if (web.custom().length() > 0) {
 					map.put("custom", web.custom());
@@ -150,12 +158,15 @@ public final class HttpActions {
 				if (web.tags().length > 0) {
 					map.put("tags", web.tags());
 				}
+				map.put("httpMethod", web.method());
 
 				if (StringUtil.isNotEmpty(http.comment())) {
 					map.put("comment", http.comment());
 				}
 			}
-			map.put("upload", http.upload() != null);
+			if (http.upload() != null) {
+				map.put("upload", true);
+			}
 		}
 		return ret;
 	}

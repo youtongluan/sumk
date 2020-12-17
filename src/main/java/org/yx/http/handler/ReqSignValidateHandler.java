@@ -43,7 +43,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().sign()) {
+		if (!ctx.node().sign()) {
 			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();

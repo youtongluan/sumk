@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.yx.annotation.rpc.Soa;
-import org.yx.common.ActInfoUtil;
+import org.yx.common.action.ActInfoUtil;
 import org.yx.conf.AppInfo;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
@@ -58,15 +58,19 @@ public final class RpcActions {
 
 	public static List<String> publishSoaSet() {
 		List<String> list = new ArrayList<>(actMap.size());
-		actMap.forEach((method, v) -> {
-			if (AppInfo.getBoolean("sumk.rpc.server.zk.publish", v.publish())) {
-				list.add(method);
+		actMap.forEach((api, v) -> {
+			if (needPublish(api, v)) {
+				list.add(api);
 			}
 		});
 		return list;
 	}
 
-	public static List<Map<String, Object>> infos() {
+	static boolean needPublish(String api, RpcActionNode node) {
+		return AppInfo.getBoolean("sumk.rpc.publish.".concat(api), node.publish());
+	}
+
+	public static List<Map<String, Object>> infos(boolean full) {
 		if (!SumkServer.isRpcEnable()) {
 			return Collections.emptyList();
 		}
@@ -78,7 +82,7 @@ public final class RpcActions {
 			if (rpc == null) {
 				continue;
 			}
-			Map<String, Object> map = ActInfoUtil.infoMap(name, rpc);
+			Map<String, Object> map = full ? ActInfoUtil.fullInfoMap(name, rpc) : ActInfoUtil.simpleInfoMap(name, rpc);
 			ret.add(map);
 			Soa soa = rpc.getAnnotation(Soa.class);
 			if (soa != null) {
@@ -87,7 +91,12 @@ public final class RpcActions {
 					map.put("comment", rpc.comment());
 				}
 			}
-			map.put("toplimit", rpc.toplimit());
+			if (!needPublish(name, rpc)) {
+				map.put("publish", Boolean.FALSE);
+			}
+			if (rpc.toplimit() != AppInfo.getInt("sumk.rpc.thread.priority.default", 100000)) {
+				map.put("toplimit", rpc.toplimit());
+			}
 		}
 		return ret;
 	}

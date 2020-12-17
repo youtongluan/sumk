@@ -23,17 +23,25 @@ import java.net.URLConnection;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.slf4j.Logger;
+import org.yx.bean.Loader;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
-public final class DefaultClassNameScaner implements Function<Collection<String>, Collection<String>> {
-	private static final String DOT_CLASS = ".class";
+public final class FileNameScaner implements Function<Collection<String>, Collection<String>> {
+	private final String subfix;
+	private Logger log = Logs.system();
+
+	public FileNameScaner(String subfix) {
+		this.subfix = Objects.requireNonNull(subfix);
+	}
 
 	@Override
 	public Collection<String> apply(Collection<String> packageNames) {
@@ -42,7 +50,6 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 			return classNameList;
 		}
 		String packagePath;
-		ClassLoader classLoader = DefaultClassNameScaner.class.getClassLoader();
 		File file;
 		URL url;
 		Enumeration<URL> eUrl;
@@ -55,9 +62,10 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 				packagePath += "/";
 			}
 			try {
-				eUrl = classLoader.getResources(packagePath);
+				eUrl = Loader.getResources(packagePath);
 				while (eUrl.hasMoreElements()) {
 					url = eUrl.nextElement();
+					log.debug("find {}", url.getFile());
 					if (JarFileUtil.URL_PROTOCOL_JAR.equals(url.getProtocol())
 							|| JarFileUtil.URL_PROTOCOL_ZIP.equals(url.getProtocol())) {
 						this.findClassInJar(classNameList, url, packagePath);
@@ -70,7 +78,7 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 					this.parseFile(classNameList, file, packagePath);
 				}
 			} catch (Exception ex) {
-				Logs.system().error("parse " + packageName + "failed", ex);
+				log.error("parse " + packageName + "failed", ex);
 				throw new SumkException(23423, ex.getMessage(), ex);
 			}
 		}
@@ -85,11 +93,11 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 		for (File file : subFiles) {
 			if (file.isDirectory()) {
 				this.parseFile(classNameList, file, packagePath);
-			} else if (file.getName().endsWith(DOT_CLASS)) {
+			} else if (file.getName().endsWith(subfix)) {
 				String absolutePath = file.getAbsolutePath().replace('\\', '/');
 				int index = absolutePath.indexOf('/' + packagePath) + 1;
 				if (index < 1) {
-					Logs.system().error(absolutePath + " donot contain " + packagePath);
+					log.error(absolutePath + " donot contain " + packagePath);
 					continue;
 				}
 				addClz(classNameList, absolutePath.substring(index));
@@ -98,10 +106,13 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 	}
 
 	private void addClz(Collection<String> classNameList, String classPath) {
-		if (!classPath.endsWith(DOT_CLASS) || classPath.contains("$")) {
+		if (!classPath.endsWith(subfix) || classPath.contains("$")) {
+			if (log.isTraceEnabled()) {
+				log.trace("文件{}不满足条件", classPath);
+			}
 			return;
 		}
-		String className = classPath.substring(0, classPath.length() - 6).replace('/', '.');
+		String className = classPath.substring(0, classPath.length() - this.subfix.length()).replace('/', '.');
 		if (!classNameList.contains(className)) {
 			classNameList.add(className);
 		}
@@ -113,7 +124,7 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 
 			URLConnection conn = url.openConnection();
 			if (!JarURLConnection.class.isInstance(conn)) {
-				Logs.system().error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
+				log.error("the connection of {} is {}", url.getPath(), conn.getClass().getName());
 				throw new SumkException(25345643, conn.getClass().getName() + " is not JarURLConnection");
 			}
 			jarFile = ((JarURLConnection) conn).getJarFile();
@@ -125,6 +136,10 @@ public final class DefaultClassNameScaner implements Function<Collection<String>
 				}
 				if (entityName.startsWith(packagePath)) {
 					addClz(classNameList, entityName);
+				} else {
+					if (log.isTraceEnabled()) {
+						log.trace("{}不满足条件", entityName);
+					}
 				}
 			}
 		} finally {

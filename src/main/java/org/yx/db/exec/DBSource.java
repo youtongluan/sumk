@@ -13,22 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.server;
+package org.yx.db.exec;
 
-import org.yx.rpc.RpcActionNode;
-import org.yx.rpc.codec.Request;
+import org.yx.db.enums.DBType;
+import org.yx.db.enums.TransactionType;
 
-public abstract class RpcVisitor {
+public interface DBSource {
 
-	public RpcVisitor(Request req) {
-		this.req = req;
-	}
+	String dbName();
 
-	protected final Request req;
+	DBType dbType();
 
-	public Request req() {
-		return req;
-	}
+	TransactionType transactionType();
 
-	public abstract Object visit(RpcActionNode info) throws Throwable;
 }

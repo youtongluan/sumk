@@ -17,7 +17,7 @@ package org.yx.exception;
 
 import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
-import org.yx.validate.ParamInfo;
+import org.yx.validate.ParameterInfo;
 
 /**
  * 这个异常表示是参数验证失败
@@ -29,9 +29,9 @@ public class InvalidParamException extends Exception {
 
 	private static final long serialVersionUID = 125465546L;
 
-	private ParamInfo info;
+	private ParameterInfo info;
 
-	public InvalidParamException(String message, ParamInfo info) {
+	public InvalidParamException(String message, ParameterInfo info) {
 		super(message);
 		this.info = info;
 	}
@@ -45,9 +45,8 @@ public class InvalidParamException extends Exception {
 		if (info == null) {
 			return ret.replace("#", "参数");
 		}
-		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && info.getParam() != null
-				&& StringUtil.isNotEmpty(info.getParam().value())) {
-			return ret.replace("#", info.getParam().value());
+		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && StringUtil.isNotEmpty(info.getCnName())) {
+			return ret.replace("#", info.getCnName());
 		}
 		if (AppInfo.getBoolean("sumk.valid.name.raw", true)) {
 			return ret.replace("#", info.getParamName());
@@ -55,7 +54,7 @@ public class InvalidParamException extends Exception {
 		return ret.replace("#", "参数");
 	}
 
-	public ParamInfo getInfo() {
+	public ParameterInfo getInfo() {
 		return info;
 	}
 

@@ -29,6 +29,7 @@ import org.yx.bean.Loader;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
+import org.yx.validate.FieldParameterHolder;
 import org.yx.validate.ParamInfo;
 import org.yx.validate.Validators;
 
@@ -46,12 +47,12 @@ public abstract class CalleeNode {
 
 	protected final Method method;
 
-	public CalleeNode(Object owner, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
-			int toplimit) {
+	public CalleeNode(Object owner, Method method, Class<? extends ArgPojo> argClz, String[] argNames, int toplimit) {
 		this.owner = Objects.requireNonNull(owner);
 		this.argClz = Objects.requireNonNull(argClz);
 		this.argNames = Objects.requireNonNull(argNames);
 		this.method = Objects.requireNonNull(method);
+		Param[] params = this.resolveParamAnnotation(method);
 		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
 		this.toplimit = toplimit;
 		if (this.paramInfos != null) {
@@ -63,6 +64,19 @@ public abstract class CalleeNode {
 				}
 				paramInfos[i] = new ParamInfo(p, argNames[i], argTypes[i]);
 			}
+		}
+		registerFieldInfos();
+	}
+
+	protected void registerFieldInfos() {
+		if (this.paramInfos == null) {
+			return;
+		}
+		for (ParamInfo pf : this.paramInfos) {
+			if (pf == null) {
+				continue;
+			}
+			FieldParameterHolder.registerFieldInfo(pf.getParamType());
 		}
 	}
 
@@ -172,5 +186,20 @@ public abstract class CalleeNode {
 	public String comment() {
 		Comment c = getAnnotation(Comment.class);
 		return c == null ? "" : c.value();
+	}
+
+	private Param[] resolveParamAnnotation(Method m) {
+		Annotation[][] paramAnno = m.getParameterAnnotations();
+		Param[] params = new Param[paramAnno.length];
+		for (int i = 0; i < paramAnno.length; i++) {
+			Annotation[] a = paramAnno[i];
+			for (Annotation a2 : a) {
+				if (Param.class == a2.annotationType()) {
+					params[i] = (Param) a2;
+					break;
+				}
+			}
+		}
+		return params;
 	}
 }

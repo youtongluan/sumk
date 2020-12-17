@@ -16,21 +16,32 @@
 package org.yx.validate;
 
 import org.yx.annotation.Bean;
+import org.yx.conf.AppInfo;
 import org.yx.exception.InvalidParamException;
 import org.yx.util.M;
 
 @Bean
-public class MaxValidator implements Validator {
+public class SimpleParamValidator implements Validator {
 
 	@Override
-	public void valid(ParamInfo info, Object arg) throws InvalidParamException {
-		String msg = this.buildMessage(info.param.max(), arg);
+	public void valid(ParameterInfo info, Object arg) throws InvalidParamException {
+		if (info.isRequired()) {
+			if (arg == null || "".equals(arg)) {
+				throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), info);
+			}
+		}
+		String msg = buildMaxMessage(info.getMax(), arg);
+		if (msg != null) {
+			throw new InvalidParamException(msg, info);
+		}
+
+		msg = buildMinMessage(info.getMin(), arg);
 		if (msg != null) {
 			throw new InvalidParamException(msg, info);
 		}
 	}
 
-	public String buildMessage(int expect, Object arg) {
+	public static String buildMaxMessage(int expect, Object arg) {
 		if (expect < 0 || arg == null) {
 			return null;
 		}
@@ -45,6 +56,27 @@ public class MaxValidator implements Validator {
 			int n = ((Number) arg).intValue();
 			if (n > expect) {
 				return M.get("sumk.valid.msg.max", "#的值不能大于{0},实际却是{1}", expect, arg);
+			}
+		}
+		return null;
+	}
+
+	public static String buildMinMessage(int expect, Object arg) {
+		if (expect < 0 || arg == null) {
+			return null;
+		}
+		Class<?> clz = arg.getClass();
+		if (String.class == clz) {
+			String s = (String) arg;
+			if (s.length() < expect) {
+				return M.get("sumk.valid.msg.minLength", "#的长度不能小于{0},实际却是{1}", expect, s.length());
+			}
+		}
+
+		if (Number.class.isAssignableFrom(clz)) {
+			long n = ((Number) arg).longValue();
+			if (n < expect) {
+				return M.get("sumk.valid.msg.min", "#的值不能小于{0},实际却是{1}", expect, arg);
 			}
 		}
 		return null;

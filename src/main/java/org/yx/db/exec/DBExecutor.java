@@ -18,5 +18,5 @@ package org.yx.db.exec;
 @FunctionalInterface
 public interface DBExecutor<T> {
 
-	T execute(Database d) throws Exception;
+	T execute(DBSource d) throws Exception;
 }

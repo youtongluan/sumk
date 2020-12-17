@@ -33,7 +33,6 @@ import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
-import org.yx.validate.ParamFactory;
 
 public final class WebAnnotationResolver {
 
@@ -68,17 +67,14 @@ public final class WebAnnotationResolver {
 		if (exclude.test(clz.getName())) {
 			return null;
 		}
-		Method[] methods = clz.getDeclaredMethods();
+		Method[] methods = clz.getMethods();
 		List<Method> httpMethods = new ArrayList<>();
 		for (final Method m : methods) {
-			if (AsmUtils.isFilted(m.getName())) {
-				continue;
-			}
 			if (!m.isAnnotationPresent(Web.class)) {
 				continue;
 			}
 			if (AsmUtils.notPublicOnly(m.getModifiers())) {
-				Logs.http().error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(), m.getName());
+				Logs.http().warn("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(), m.getName());
 				continue;
 			}
 			httpMethods.add(m);
@@ -92,8 +88,7 @@ public final class WebAnnotationResolver {
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
-			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
-					ParamFactory.create(m), act);
+			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), act);
 
 			List<String> names = rawNames(m, act);
 			if (names == null || names.isEmpty()) {

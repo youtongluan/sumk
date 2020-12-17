@@ -21,7 +21,7 @@ import java.nio.charset.Charset;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.ActStatis;
+import org.yx.common.action.ActStatis;
 
 public interface HttpKit {
 

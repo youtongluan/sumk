@@ -15,6 +15,8 @@
  */
 package org.yx.exception;
 
+import org.yx.conf.AppInfo;
+
 public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;
@@ -33,6 +35,9 @@ public class BizException extends CodeException {
 
 	@Override
 	public Throwable fillInStackTrace() {
+		if (AppInfo.getBoolean("sumk.bizexception.fullstack", false)) {
+			return super.fillInStackTrace();
+		}
 		return this;
 	}
 }

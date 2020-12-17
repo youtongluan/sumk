@@ -127,7 +127,8 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	}
 
 	protected void setSessionCookie(HttpServletRequest req, HttpServletResponse resp, final String sid, String attr) {
-		StringBuilder cookie = new StringBuilder(HttpHeaderName.sessionId()).append('=').append(sid).append(attr);
+		StringBuilder cookie = new StringBuilder(64).append(HttpHeaderName.sessionId()).append('=').append(sid)
+				.append(attr);
 
 		resp.addHeader("Set-Cookie", cookie.toString());
 	}

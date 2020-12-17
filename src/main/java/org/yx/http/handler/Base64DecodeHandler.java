@@ -30,7 +30,7 @@ public class Base64DecodeHandler implements HttpHandler {
 	@Override
 	public void handle(WebContext ctx) throws Exception {
 
-		if (!ctx.web().requestType().isBase64() || ctx.httpNode().isEmptyArgument()
+		if (!ctx.node().requestType().isBase64() || ctx.node().isEmptyArgument()
 				|| HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}

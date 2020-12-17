@@ -24,6 +24,8 @@ import org.yx.common.context.ActionContext;
 import org.yx.common.route.Router;
 import org.yx.rpc.RpcAttachment;
 import org.yx.rpc.client.route.RpcRoutes;
+import org.yx.rpc.server.LocalRpcContext;
+import org.yx.rpc.server.RpcContext;
 
 public final class RpcUtil {
 
@@ -66,5 +68,9 @@ public final class RpcUtil {
 			return Collections.emptyList();
 		}
 		return route.aliveSources();
+	}
+
+	public static RpcContext context() {
+		return LocalRpcContext.getCtx();
 	}
 }

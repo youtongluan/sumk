@@ -29,12 +29,12 @@ public class EncryptHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().responseType().isEncrypt() || HttpSettings.allowPlain(ctx.httpRequest())) {
+		if (!ctx.node().responseType().isEncrypt() || HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = (byte[]) ctx.result();
 		byte[] data = HttpCiphers.getEncryptor().encrypt(bs, ctx);
-		ctx.result(data);
+		ctx.result(data, false);
 	}
 
 }

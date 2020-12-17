@@ -38,8 +38,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.yx.conf.AppInfo;
 
 public final class WriterHelper {
-	public static final int SINGLE = AppInfo.getInt("sumk.aop.single", 1);
-	public static final int WIDTH = AppInfo.getInt("sumk.aop.width", 2);
+	public static final int SINGLE = AppInfo.getInt("sumk.asm.single", 1);
+	public static final int WIDTH = AppInfo.getInt("sumk.asm.width", 2);
 
 	public static void visitInt(MethodVisitor mv, int num) {
 		if (num == -1) {

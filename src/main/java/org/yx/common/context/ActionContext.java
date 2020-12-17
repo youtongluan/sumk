@@ -122,12 +122,15 @@ public final class ActionContext implements org.yx.common.Attachable, Cloneable 
 	}
 
 	@Override
-	public void setAttachments(Map<String, String> attachments) {
-		this.logContext = LogContext.create(this.logContext, attachments);
-	}
-
-	@Override
 	public void setAttachment(String key, String value) {
+		if (value == null) {
+			if (this.logContext.attachments != null) {
+				Map<String, String> attachments = new HashMap<>(this.logContext.attachments);
+				attachments.remove(key);
+				this.logContext = LogContext.create(this.logContext, attachments);
+			}
+			return;
+		}
 		Map<String, String> attachments = this.logContext.attachments;
 		attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
 		attachments.put(key, value);
@@ -156,7 +159,7 @@ public final class ActionContext implements org.yx.common.Attachable, Cloneable 
 		if (sp == null) {
 			return String.valueOf(seed);
 		}
-		return new StringBuilder(lc.spanId).append('.').append(seed).toString();
+		return new StringBuilder().append(lc.spanId).append('.').append(seed).toString();
 	}
 
 	public static void recover(ActionContext context) {

@@ -16,11 +16,12 @@
 package org.yx.db;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.exec.DBExecutor;
+import org.yx.db.exec.DBSource;
 import org.yx.db.exec.DBTransaction;
-import org.yx.db.exec.Database;
 import org.yx.db.sql.DBFactory;
 import org.yx.db.sql.Delete;
 import org.yx.db.sql.Insert;
@@ -128,8 +129,8 @@ public final class DB {
 		pool.rollback();
 	}
 
-	public static <T> T execute(Database ds, DBExecutor<T> executor) throws RuntimeException {
-		DBTransaction tran = new DBTransaction(ds.getDbName(), ds.getType(), ds.getTransactionType());
+	public static <T> T execute(DBSource ds, DBExecutor<T> executor) throws RuntimeException {
+		DBTransaction tran = new DBTransaction(Objects.requireNonNull(ds));
 		T ret = null;
 		try {
 			tran.begin();

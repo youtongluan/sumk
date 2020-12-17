@@ -15,8 +15,9 @@
  */
 package org.yx.util;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
@@ -24,7 +25,7 @@ import org.yx.common.SimpleZkSerializer;
 import org.yx.log.Logs;
 
 public final class ZkClientHelper {
-	private static final ConcurrentMap<String, ZkClient> map = new ConcurrentHashMap<>();
+	private static Map<String, ZkClient> CLIENTS = Collections.emptyMap();
 
 	public static void makeSure(ZkClient client, final String dataPath) {
 		int start = 0, index;
@@ -56,26 +57,32 @@ public final class ZkClientHelper {
 	}
 
 	public static ZkClient getZkClient(String url) {
-		ZkClient zk = map.get(url);
+		ZkClient zk = CLIENTS.get(url);
 		if (zk != null) {
 			return zk;
 		}
 		synchronized (ZkClientHelper.class) {
+			Map<String, ZkClient> map = new HashMap<>(CLIENTS);
 			zk = map.get(url);
 			if (zk != null) {
 				return zk;
 			}
 			zk = new ZkClient(url, 30000);
 			zk.setZkSerializer(new SimpleZkSerializer());
-			if (map.putIfAbsent(url, zk) != null) {
-				zk.close();
-			}
+			map.put(url, zk);
+			CLIENTS = map;
 		}
-		return map.get(url);
+		return CLIENTS.get(url);
 	}
 
-	public static ZkClient remove(String url) {
-		return map.remove(url);
+	public static synchronized ZkClient remove(String url) {
+		Map<String, ZkClient> map = new HashMap<>(CLIENTS);
+		ZkClient zk = map.remove(url);
+		if (zk == null) {
+			return null;
+		}
+		CLIENTS = map;
+		return zk;
 	}
 
 }

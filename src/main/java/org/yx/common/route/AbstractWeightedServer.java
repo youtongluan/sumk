@@ -21,7 +21,7 @@ public abstract class AbstractWeightedServer<T> implements WeightedServer<T> {
 
 	protected final T source;
 
-	private int weight;
+	private int weight = 1;
 
 	public AbstractWeightedServer(T source) {
 		this.source = Objects.requireNonNull(source);

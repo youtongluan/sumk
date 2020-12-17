@@ -58,7 +58,7 @@ public final class ResultSetUtils {
 			rowData = new HashMap<>(columnCount * 2);
 			for (int i = 1; i <= columnCount; i++) {
 				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
-				Objects.requireNonNull(cm, md.getColumnName(i) + " has no mapper");
+				Objects.requireNonNull(cm, md.getColumnName(i) + "这个字段没有在java的pojo类中定义");
 				rowData.put(cm.getFieldName(), rs.getObject(i));
 			}
 			list.add(rowData);

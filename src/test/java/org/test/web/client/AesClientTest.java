@@ -40,7 +40,6 @@ public class AesClientTest {
 		String charset = "UTF-8";
 		HttpClient client = HttpClientBuilder.create().build();
 		HttpResponse resp = login(client);
-		String logined = EntityUtils.toString(resp.getEntity());
 		String key_str = resp.getFirstHeader("skey").getValue();
 		Log.get("login").info("key:{}", key_str);
 		byte[] key = Base64.getMimeDecoder().decode(key_str);

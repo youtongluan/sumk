@@ -50,7 +50,7 @@ public class MultipartServer extends AbstractHttpServer {
 			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE,
 					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTIPART_FORMDATA, wc.rawAct()));
 		}
-		if (wc.httpNode().upload() == null) {
+		if (wc.node().upload() == null) {
 			log.error("{}缺少 @upload", wc.rawAct());
 			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS,
 					M.get("sumk.http.upload.error.annocation", "不是上传接口", wc.rawAct()));

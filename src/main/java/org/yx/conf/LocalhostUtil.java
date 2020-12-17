@@ -153,7 +153,7 @@ public final class LocalhostUtil {
 		if (ipList.isEmpty()) {
 			return new String[0];
 		}
-		localIps = ipList.toArray(new String[0]);
+		localIps = ipList.toArray(new String[ipList.size()]);
 		return localIps;
 	}
 

@@ -22,7 +22,6 @@ import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.log.Logs;
 import org.yx.rpc.InnerRpcKit;
 
@@ -47,8 +46,7 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 			Logs.rpc().warn("{}的@SoaClass的value不是它的接口或超类", targetClass.getName());
 			return null;
 		}
-		return InnerRpcKit.parseClassName2Prefix(refer.getName(),
-				AppInfo.getInt("sumk.rpc.intf.name.partcount", Const.DEFAULT_INTF_PREFIX_PART_COUNT));
+		return InnerRpcKit.parseRpcIntfPrefix(refer);
 	}
 
 	@Override

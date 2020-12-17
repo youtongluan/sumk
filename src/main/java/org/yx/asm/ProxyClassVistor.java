@@ -36,7 +36,6 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
 import org.yx.annotation.Box;
-import org.yx.conf.Const;
 
 public class ProxyClassVistor extends ClassVisitor {
 
@@ -45,7 +44,7 @@ public class ProxyClassVistor extends ClassVisitor {
 	private final String clzName;
 
 	public ProxyClassVistor(final ClassVisitor cv, String newClzName, Class<?> clz, Collection<Method> aopMethods) {
-		super(Const.ASM_VERSION, cv);
+		super(AsmUtils.asmVersion(), cv);
 		this.orginClz = clz;
 		this.aopMethods = aopMethods.toArray(new Method[0]);
 		this.clzName = newClzName;

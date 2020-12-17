@@ -101,14 +101,18 @@ public class Select extends SelectBuilder {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Select setCompare(int index, Map<String, Object> map) {
+	protected Select addCompares(int index, Object pojo) {
+		Map<String, Object> map = this.populate(pojo, false);
 		if (CollectionUtil.isEmpty(map)) {
 			return this;
 		}
 		if (_compare == null) {
 			_compare = new HashMap[COMPARES.length];
 		}
-		this._compare[index] = map;
+		if (this._compare[index] == null) {
+			this._compare[index] = new HashMap<>();
+		}
+		this._compare[index].putAll(map);
 		return this;
 	}
 
@@ -178,42 +182,42 @@ public class Select extends SelectBuilder {
 		return setCompare(NOT, key, value);
 	}
 
-	public Select bigThan(Map<String, Object> map) {
-		return setCompare(BIG, map);
+	public Select bigThan(Object pojo) {
+		return addCompares(BIG, pojo);
 	}
 
 	/**
 	 * 大于等于
 	 * 
-	 * @param map
-	 *            对map中所有的kv做大于等于操作
+	 * @param pojo
+	 *            对pojo中所有的kv做大于等于操作
 	 * @return 当前对象
 	 */
-	public Select bigOrEqual(Map<String, Object> map) {
-		return setCompare(BIG_EQUAL, map);
+	public Select bigOrEqual(Object pojo) {
+		return addCompares(BIG_EQUAL, pojo);
 	}
 
-	public Select lessThan(Map<String, Object> map) {
-		return setCompare(LESS, map);
+	public Select lessThan(Object pojo) {
+		return addCompares(LESS, pojo);
 	}
 
 	/**
 	 * 小于或等于
 	 * 
-	 * @param map
-	 *            对map中所有的kv做小于等于操作
+	 * @param pojo
+	 *            对pojo中所有的kv做小于等于操作
 	 * @return 当前对象
 	 */
-	public Select lessOrEqual(Map<String, Object> map) {
-		return setCompare(LESS_EQUAL, map);
+	public Select lessOrEqual(Object pojo) {
+		return addCompares(LESS_EQUAL, pojo);
 	}
 
-	public Select like(Map<String, Object> map) {
-		return setCompare(LIKE, map);
+	public Select like(Object pojo) {
+		return addCompares(LIKE, pojo);
 	}
 
-	public Select not(Map<String, Object> map) {
-		return setCompare(NOT, map);
+	public Select not(Object pojo) {
+		return addCompares(NOT, pojo);
 	}
 
 	/**
@@ -341,19 +345,21 @@ public class Select extends SelectBuilder {
 	 * 传入多个条件
 	 * 
 	 * @param ins
-	 *            集合各元素之间是or关系，map中各个kv是and关系
+	 *            集合各元素之间是or关系，对象中各个kv是and关系
 	 * @return 当前对象
 	 */
-	public Select addEquals(Collection<Map<String, Object>> ins) {
-		this.in.addAll(ins);
+	public Select addEquals(Collection<?> ins) {
+		for (Object src : ins) {
+			this._addIn(src);
+		}
 		return this;
 	}
 
 	/**
-	 * 通过数据库主键列表查询主键，本方法只支持单主键类型。多主键请用addEqual()或addEquals()方法
+	 * 通过数据库主键列表查询主键，单主键ids就只有一个，多主键就传入多个 <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids
-	 *            id列表，顺序跟pojo中定义的一致（按order顺序或书写顺序）
+	 *            id列表，顺序跟pojo中定义的一致(按order顺序或书写顺序)
 	 * @return 注意：调用本方法之前，要确保调用过tableClass()方法
 	 */
 	public Select byDatabaseId(Object... ids) {
@@ -361,8 +367,7 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 通过redis主键列表查询主键，是addEquals()的快捷方式，本方法只支持单主键类型。多主键请用addEqual()或addEquals()
-	 * 方法<BR>
+	 * 通过redis主键列表查询主键，单主键ids就只有一个，多主键就传入多个<BR>
 	 * <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids
@@ -382,7 +387,7 @@ public class Select extends SelectBuilder {
 		List<ColumnMeta> cms = databaseId ? this.pojoMeta.getDatabaseIds() : this.pojoMeta.getCacheIDs();
 		Asserts.requireTrue(cms != null && cms.size() == ids.length, pojoMeta.getTableName() + "没有设置主键，或者主键个数跟参数个数不一致");
 		Map<String, Object> map = new HashMap<>();
-		for (int i = 0; i < cms.size(); i++) {
+		for (int i = 0; i < ids.length; i++) {
 			map.put(cms.get(i).getFieldName(), ids[i]);
 		}
 		_addInByMap(map);
@@ -481,7 +486,7 @@ public class Select extends SelectBuilder {
 	 * 
 	 * @return 符合条件的数据库记录数
 	 */
-	public int count() {
+	public long count() {
 		return new Count(this).execute();
 	}
 }

@@ -17,11 +17,13 @@ package org.yx.http.kit;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public final class HttpSettings {
@@ -41,6 +43,8 @@ public final class HttpSettings {
 	private static boolean singleLogin;
 
 	private static String traceHeaderName;
+
+	private static Map<String, String> headers;
 
 	public static int errorHttpStatus() {
 		return errorHttpStatus;
@@ -87,6 +91,10 @@ public final class HttpSettings {
 		return plainKey != null && plainKey.equals(request.getParameter("plainKey"));
 	}
 
+	public static Map<String, String> responseHeaders() {
+		return headers;
+	}
+
 	public static void init() {
 		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 550);
 		String c = AppInfo.get("sumk.http.charset");
@@ -111,6 +119,9 @@ public final class HttpSettings {
 			HttpSettings.cookieEnable = AppInfo.getBoolean("sumk.http.header.usecookie", true);
 			HttpSettings.httpSessionTimeoutInMs = 1000L * AppInfo.getInt("sumk.http.session.timeout", 60 * 30);
 			HttpSettings.traceHeaderName = AppInfo.get("sumk.http.header.trace", "s-trace");
+
+			Map<String, String> map = CollectionUtil.unmodifyMap(AppInfo.subMap("s.http.response.header."));
+			HttpSettings.headers = map.isEmpty() ? null : map;
 		});
 	}
 

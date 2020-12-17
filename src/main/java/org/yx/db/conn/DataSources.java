@@ -20,14 +20,14 @@ import java.util.function.Function;
 
 public final class DataSources {
 
-	private static Function<String, DataSourceManager> managerFactory = new DefaultManagerContainer();
+	private static Function<String, DataSourceManager> managerSelector = new DefaultManagerSelector();
 
-	public static void setManagerFactory(Function<String, DataSourceManager> managerFactory) {
-		DataSources.managerFactory = Objects.requireNonNull(managerFactory);
+	public static void setManagerSelector(Function<String, DataSourceManager> selector) {
+		DataSources.managerSelector = Objects.requireNonNull(selector);
 	}
 
-	public static Function<String, DataSourceManager> getManagerFactory() {
-		return managerFactory;
+	public static Function<String, DataSourceManager> getManagerSelector() {
+		return managerSelector;
 	}
 
 	public static SumkDataSource writeDataSource(String dbName) {
@@ -39,7 +39,7 @@ public final class DataSources {
 	}
 
 	public static DataSourceManager getManager(String dbName) {
-		return managerFactory.apply(dbName);
+		return managerSelector.apply(dbName);
 	}
 
 }

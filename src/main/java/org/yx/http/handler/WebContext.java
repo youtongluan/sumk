@@ -16,19 +16,17 @@
 package org.yx.http.handler;
 
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.annotation.http.Web;
-import org.yx.http.HttpContextHolder;
+import org.yx.common.NodeContext;
 import org.yx.http.act.HttpActionNode;
-import org.yx.http.user.WebSessions;
 
-public class WebContext {
+public class WebContext extends NodeContext<HttpActionNode> {
 	private final String rawAct;
-	private final HttpActionNode node;
 	private final HttpServletRequest httpRequest;
 	private final HttpServletResponse httpResponse;
 	private final Charset charset;
@@ -41,16 +39,8 @@ public class WebContext {
 	private transient String str_data;
 	private transient String str_resp;
 	private final long beginTime;
-	private transient Object attach;
+
 	private boolean failed;
-
-	public Object getAttach() {
-		return attach;
-	}
-
-	public void setAttach(Object attach) {
-		this.attach = attach;
-	}
 
 	public long beginTime() {
 		return this.beginTime;
@@ -68,17 +58,17 @@ public class WebContext {
 		return result;
 	}
 
-	void result(Object result) {
+	void result(Object result, boolean cacheInStr) {
 		this.result = result;
-		if (result != null && String.class == result.getClass()) {
+		if (cacheInStr && result != null && String.class == result.getClass()) {
 			this.str_resp = (String) result;
 		}
 	}
 
 	public WebContext(String rawAct, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
 			long beginTime, Charset charset) {
+		super(node);
 		this.rawAct = Objects.requireNonNull(rawAct);
-		this.node = Objects.requireNonNull(node);
 		this.httpRequest = Objects.requireNonNull(req);
 		this.charset = Objects.requireNonNull(charset);
 		this.httpResponse = resp;
@@ -108,10 +98,6 @@ public class WebContext {
 		return httpResponse;
 	}
 
-	public HttpActionNode httpNode() {
-		return node;
-	}
-
 	public String sign() {
 		return sign;
 	}
@@ -125,14 +111,6 @@ public class WebContext {
 
 	void sign(String sign) {
 		this.sign = sign;
-	}
-
-	public byte[] key() {
-		String sessionId = HttpContextHolder.sessionId();
-		if (sessionId == null) {
-			return null;
-		}
-		return WebSessions.loadUserSession().getKey(sessionId);
 	}
 
 	/**
@@ -152,8 +130,8 @@ public class WebContext {
 		this.lowestOrder = lowestOrder;
 	}
 
-	public Web web() {
-		return this.node.action();
+	public List<String> tags() {
+		return this.node.tags();
 	}
 
 	public boolean isFailed() {

@@ -13,17 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.exec;
+package org.yx.http.kit;
 
-import org.yx.db.enums.DBType;
-import org.yx.db.enums.TransactionType;
+import org.yx.http.handler.WebContext;
 
-public interface Database {
+public class LocalWebContext {
+	private static final ThreadLocal<WebContext> CTX = new ThreadLocal<>();
 
-	String getDbName();
+	public static WebContext getCtx() {
+		return CTX.get();
+	}
 
-	DBType getType();
+	public static void setCtx(WebContext ctx) {
+		CTX.set(ctx);
+	}
 
-	TransactionType getTransactionType();
-
+	public static void remove() {
+		CTX.remove();
+	}
 }

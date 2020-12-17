@@ -85,7 +85,7 @@ public final class BeanPool {
 
 	public String[] beanNames() {
 		Set<String> names = map.keySet();
-		return names.toArray(new String[0]);
+		return names.toArray(new String[names.size()]);
 	}
 
 	Collection<BeanWrapper> allBeanWrapper() {
@@ -139,8 +139,7 @@ public final class BeanPool {
 	}
 
 	public <T> T putBean(String beanName, T bean) {
-		Objects.requireNonNull(bean);
-		Class<?> clz = bean.getClass();
+		Class<?> clz = Objects.requireNonNull(bean).getClass();
 		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
 				: Collections.singleton(beanName);
 		if (names == null || names.isEmpty()) {
@@ -270,7 +269,7 @@ public final class BeanPool {
 			return "empty bean";
 
 		StringBuilder sb = new StringBuilder();
-		for (;;) {
+		while (true) {
 			Entry<String, Object> e = i.next();
 			String key = e.getKey();
 			Object value = e.getValue();

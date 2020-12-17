@@ -25,10 +25,9 @@ public class TimedCachedObject {
 	final String json;
 	final byte[] key;
 
-	public TimedCachedObject(String json, byte[] key, long refreshTime) {
+	public TimedCachedObject(String json, byte[] key) {
 		this.json = Objects.requireNonNull(json);
 		this.key = Objects.requireNonNull(key);
-		this.refreshTime = refreshTime;
 	}
 
 	public long getRefreshTime() {
@@ -64,13 +63,13 @@ public class TimedCachedObject {
 		return ret;
 	}
 
-	public static TimedCachedObject deserialize(byte[] bv, long refreshTime) {
+	public static TimedCachedObject deserialize(byte[] bv) {
 		if (bv == null || bv.length < 3) {
 			return null;
 		}
 
 		int keyLength = (bv[0] & 0xff) << 8 | (bv[1] & 0xff);
 		String json = new String(bv, 2 + keyLength, bv.length - 2 - keyLength, AppInfo.UTF8);
-		return new TimedCachedObject(json, Arrays.copyOfRange(bv, 2, 2 + keyLength), refreshTime);
+		return new TimedCachedObject(json, Arrays.copyOfRange(bv, 2, 2 + keyLength));
 	}
 }

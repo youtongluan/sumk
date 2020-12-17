@@ -13,27 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.date;
+package org.yx.rpc.server;
 
-public class TimedObject {
+import org.yx.common.NodeContext;
+import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.codec.Request;
 
-	private long evictTime;
-	private Object target;
+public class RpcContext extends NodeContext<RpcActionNode> {
+	protected final Request req;
 
-	public long getEvictTime() {
-		return evictTime;
+	public RpcContext(RpcActionNode node, Request req) {
+		super(node);
+		this.req = req;
 	}
 
-	public void setEvictTime(long evictTime) {
-		this.evictTime = evictTime;
+	public Request req() {
+		return req;
 	}
-
-	public Object getTarget() {
-		return target;
-	}
-
-	public void setTarget(Object target) {
-		this.target = target;
-	}
-
 }

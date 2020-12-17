@@ -43,7 +43,7 @@ public class MultipartHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Throwable {
-		Upload upload = ctx.httpNode().upload();
+		Upload upload = ctx.node().upload();
 		Collection<Part> list = ctx.httpRequest().getParts();
 		if (list == null || list.isEmpty()) {
 			throw HttpException.create(HttpErrorCode.FILE_MISS, "没有文件");

@@ -71,30 +71,31 @@ public class TypeConverter {
 		if (v.getClass() == type) {
 			return (T) v;
 		}
-		if (Byte.class == type || byte.class == type) {
-			return (T) Byte.valueOf(v.byteValue());
-		}
-
-		if (Short.class == type || short.class == type) {
-			return (T) Short.valueOf(v.shortValue());
-		}
-
 		if (Integer.class == type || int.class == type) {
 			return (T) Integer.valueOf(v.intValue());
 		}
-
 		if (Long.class == type || long.class == type) {
 			return (T) Long.valueOf(v.longValue());
 		}
+		if (Double.class == type || double.class == type) {
+			return (T) Double.valueOf(v.doubleValue());
+		}
 
+		if (Byte.class == type || byte.class == type) {
+			return (T) Byte.valueOf(v.byteValue());
+		}
+		if (Short.class == type || short.class == type) {
+			return (T) Short.valueOf(v.shortValue());
+		}
 		if (Float.class == type || float.class == type) {
 			return (T) Float.valueOf(v.floatValue());
 		}
 
-		if (Double.class == type || double.class == type) {
-			return (T) Double.valueOf(v.doubleValue());
-		}
 		if (BigDecimal.class == type) {
+			if (Integer.class.isInstance(v) || Long.class.isInstance(v) || Short.class.isInstance(v)
+					|| Byte.class.isInstance(v)) {
+				return (T) new BigDecimal(v.longValue());
+			}
 			return (T) new BigDecimal(v.doubleValue());
 		}
 		if (failIfNotSupport || !Number.class.isAssignableFrom(type)) {

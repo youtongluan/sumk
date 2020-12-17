@@ -19,7 +19,6 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.yx.bean.IOC;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpException;
 import org.yx.log.Log;
@@ -53,17 +52,17 @@ public final class WebSessions {
 		WebSessions.sessionIdVerifier = Objects.requireNonNull(sessionIdVerifier);
 	}
 
-	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
-		return loadUserSession().getUserObject(HttpContextHolder.sessionId(), clz);
+	public static <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
+		return loadUserSession().getUserObject(sessionId, clz);
 	}
 
-	public static void remove() {
+	public static void remove(String sessionId) {
 		userSession();
 		if (session == null) {
 			Log.get("sumk.http.session").debug("has removed");
 			return;
 		}
-		session.removeSession(HttpContextHolder.sessionId());
+		session.removeSession(sessionId);
 	}
 
 	public static synchronized void initSession() {

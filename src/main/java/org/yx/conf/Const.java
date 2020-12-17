@@ -15,21 +15,17 @@
  */
 package org.yx.conf;
 
-import org.objectweb.asm.Opcodes;
+import java.lang.reflect.Modifier;
 
-public interface Const {
-	int DEFAULT_ORDER = 100;
+public final class Const {
+	public static final int DEFAULT_ORDER = 100;
 
-	int JVM_VERSION = Opcodes.V1_8;
+	public static final String DEFAULT_DB_NAME = "sumk";
 
-	int ASM_VERSION = Opcodes.ASM5;
+	public static final String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
 
-	String DEFAULT_DB_NAME = "sumk";
+	public static final String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
 
-	int DEFAULT_INTF_PREFIX_PART_COUNT = 3;
-
-	String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
-
-	String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";
+	public static final int NOT_PARSE_BEAN_FIELD = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
 
 }

@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.Box;
-import org.yx.db.mapper.SDB;
+import org.yx.db.SDB;
 import org.yx.util.SBuilder;
 
 @Bean

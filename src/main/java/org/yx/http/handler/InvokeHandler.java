@@ -28,6 +28,6 @@ public class InvokeHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Throwable {
-		ctx.result(WebHandler.handle(ctx));
+		ctx.result(WebHandler.handle(ctx), true);
 	}
 }

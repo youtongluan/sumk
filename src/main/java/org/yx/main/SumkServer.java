@@ -25,6 +25,7 @@ import java.util.Set;
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
+import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.bean.Scaners;
 import org.yx.common.StartConstants;
@@ -64,6 +65,16 @@ public final class SumkServer {
 		long begin = System.currentTimeMillis();
 		start(args);
 		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
+	}
+
+	public static void main(Class<?> startClass, String[] args) {
+		Loader.setClassLoader(startClass.getClassLoader());
+		main(args);
+	}
+
+	public static void start(Class<?> startClass, Collection<String> args) {
+		Loader.setClassLoader(startClass.getClassLoader());
+		start(args);
 	}
 
 	public static void start() {

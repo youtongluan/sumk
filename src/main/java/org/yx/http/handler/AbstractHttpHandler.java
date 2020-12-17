@@ -22,6 +22,10 @@ public abstract class AbstractHttpHandler implements HttpHandler {
 	}
 
 	protected void setResult(WebContext ctx, Object result) {
-		ctx.result(result);
+		ctx.result(result, true);
+	}
+
+	protected void setResultNoCache(WebContext ctx, Object result) {
+		ctx.result(result, false);
 	}
 }

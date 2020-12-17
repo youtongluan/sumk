@@ -18,23 +18,23 @@ package org.yx.rpc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.yx.annotation.Param;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
 import org.yx.common.CalleeNode;
 import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.rpc.codec.Request;
 import org.yx.util.S;
 
 public final class RpcActionNode extends CalleeNode {
-	private boolean publish;
+	private final boolean publish;
 
 	private final Field[] fields;
 
-	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Param[] params,
-			int toplimit, boolean publish) {
-		super(obj, method, argClz, argNames, params, toplimit);
+	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, int toplimit,
+			boolean publish) {
+		super(obj, method, argClz, argNames, toplimit);
 		this.publish = publish;
 		if (argNames.length > 0) {
 			this.fields = new Field[argNames.length];
@@ -56,22 +56,21 @@ public final class RpcActionNode extends CalleeNode {
 		return this.publish;
 	}
 
-	public Object invokeByJsonArg(String args) throws Throwable {
+	public ArgPojo createJsonArgPojo(Request req) throws Throwable {
 		if (this.isEmptyArgument()) {
-			return this.execute(this.getEmptyArgObj());
+			return this.getEmptyArgObj();
 		}
+		String args = req.getJsonedParam();
 
 		ArgPojo argObj = S.json().fromJson(args, argClz);
-		if (argObj == null) {
-			argObj = this.getEmptyArgObj();
-		}
-		return this.execute(argObj);
+		return argObj == null ? this.getEmptyArgObj() : argObj;
 	}
 
-	public Object invokeByOrder(String... args) throws Throwable {
+	public ArgPojo createOrderArgPojo(Request req) throws Throwable {
 		if (this.isEmptyArgument()) {
-			return this.execute(this.getEmptyArgObj());
+			return this.getEmptyArgObj();
 		}
+		String[] args = req.getParamArray();
 		if (args == null) {
 			throw new SumkException(12012, method.getName() + "的参数不能为空");
 		}
@@ -87,7 +86,7 @@ public final class RpcActionNode extends CalleeNode {
 			Field f = fields[i];
 			f.set(pojo, RpcJson.operator().fromJson(args[i], f.getGenericType()));
 		}
-		return this.execute(pojo);
+		return pojo;
 	}
 
 	public static void checkNode(String api, CalleeNode node) {

@@ -32,4 +32,23 @@ public final class SoftDeleteMeta {
 		this.equalValid = equal;
 	}
 
+	public String getColumnName() {
+		return columnName;
+	}
+
+	public Object getValidValue() {
+		return validValue;
+	}
+
+	public Object getInValidValue() {
+		return inValidValue;
+	}
+
+	public Class<?> getColumnType() {
+		return columnType;
+	}
+
+	public boolean isEqualValid() {
+		return equalValid;
+	}
 }

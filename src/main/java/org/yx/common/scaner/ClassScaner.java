@@ -27,7 +27,7 @@ import org.yx.bean.Loader;
 
 public final class ClassScaner {
 
-	private static Function<Collection<String>, Collection<String>> scaner = new DefaultClassNameScaner();
+	private static Function<Collection<String>, Collection<String>> scaner = new FileNameScaner(".class");
 
 	public static Function<Collection<String>, Collection<String>> getScaner() {
 		return scaner;

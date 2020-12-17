@@ -37,11 +37,6 @@ public class RpcAttachment implements Attachable {
 	}
 
 	@Override
-	public void setAttachments(Map<String, String> attachments) {
-		ActionContext.get().setAttachments(attachments);
-	}
-
-	@Override
 	public void setAttachment(String key, String value) {
 		ActionContext.get().setAttachment(key, value);
 	}

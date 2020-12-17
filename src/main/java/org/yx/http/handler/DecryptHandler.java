@@ -29,7 +29,7 @@ public class DecryptHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().requestType().isEncrypt() || ctx.httpNode().isEmptyArgument()
+		if (!ctx.node().requestType().isEncrypt() || ctx.node().isEmptyArgument()
 				|| HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}

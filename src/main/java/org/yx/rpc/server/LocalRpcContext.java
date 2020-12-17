@@ -13,20 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.rpc.server;
 
-import java.lang.annotation.Annotation;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+public class LocalRpcContext {
 
-public final class AopMetaHolder {
-	private static final ConcurrentMap<Integer, Annotation[]> map = new ConcurrentHashMap<>();
+	private static final ThreadLocal<RpcContext> CTX = new ThreadLocal<>();
 
-	public static void put(Integer key, Annotation[] value) {
-		map.put(key, value);
+	public static RpcContext getCtx() {
+		return CTX.get();
 	}
 
-	public static Annotation[] get(Integer key) {
-		return map.get(key);
+	public static void setCtx(RpcContext ctx) {
+		CTX.set(ctx);
+	}
+
+	public static void remove() {
+		CTX.remove();
 	}
 }

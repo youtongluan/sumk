@@ -24,9 +24,8 @@ import java.util.function.BiConsumer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.ActStatis;
+import org.yx.common.action.ActStatis;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
-import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Logs;
 
@@ -86,15 +85,6 @@ public final class InnerHttpUtil {
 
 	public static ActStatis getActStatic() {
 		return kit.actStatis();
-	}
-
-	public static boolean checkGetMethod(HttpServletResponse resp) throws IOException {
-		if (AppInfo.getBoolean("sumk.http.get.enable", true)) {
-			return true;
-		}
-		Logs.http().info("get方法被禁用了");
-		resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, "not allowd");
-		return false;
 	}
 
 	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {

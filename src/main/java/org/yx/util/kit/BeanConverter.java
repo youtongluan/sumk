@@ -16,7 +16,6 @@
 package org.yx.util.kit;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +26,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.yx.bean.Loader;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 
 /**
@@ -36,15 +36,13 @@ import org.yx.exception.SumkException;
 public class BeanConverter {
 	private static final String JAVA_PRE = "java";
 
-	private static final int NOT_PARSE = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
-
 	private Map<Class<?>, Field[]> cache = Collections
 			.synchronizedMap(new LinkedHashMap<Class<?>, Field[]>(32, 0.75f, true) {
 				private static final long serialVersionUID = 1L;
 
 				@Override
 				protected boolean removeEldestEntry(Entry<Class<?>, Field[]> eldest) {
-					return this.size() > 500;
+					return this.size() > 300;
 				}
 
 			});
@@ -61,7 +59,7 @@ public class BeanConverter {
 			}
 			fs = tempClz.getDeclaredFields();
 			for (Field f : fs) {
-				if ((f.getModifiers() & NOT_PARSE) != 0) {
+				if ((f.getModifiers() & Const.NOT_PARSE_BEAN_FIELD) != 0) {
 					continue;
 				}
 				f.setAccessible(true);
@@ -70,6 +68,12 @@ public class BeanConverter {
 			tempClz = tempClz.getSuperclass();
 		}
 		return list.toArray(new Field[list.size()]);
+	}
+
+	private Field[] getFieldsAndCache(Class<?> clz) {
+		Field[] fields = getFields(clz);
+		Field[] f2 = cache.putIfAbsent(clz, fields);
+		return f2 != null ? f2 : fields;
 	}
 
 	public Field[] getFields(Class<?> clz) {
@@ -82,8 +86,7 @@ public class BeanConverter {
 		if (clzName.startsWith(JAVA_PRE) || clzName.contains("$")) {
 			return fields;
 		}
-		Field[] f2 = cache.putIfAbsent(clz, fields);
-		return f2 != null ? f2 : fields;
+		return fields;
 	}
 
 	/**
@@ -104,7 +107,7 @@ public class BeanConverter {
 			return (Map<String, Object>) bean;
 		}
 		try {
-			Field[] fields = getFields(bean.getClass());
+			Field[] fields = getFieldsAndCache(bean.getClass());
 			Map<String, Object> map = new HashMap<>();
 			for (Field f : fields) {
 				Object v = f.get(bean);
@@ -148,7 +151,7 @@ public class BeanConverter {
 			tmp.put(k.toLowerCase().replace("_", ""), v);
 		});
 		map = tmp;
-		Field[] fields = getFields(bean.getClass());
+		Field[] fields = getFieldsAndCache(bean.getClass());
 		try {
 			for (Field f : fields) {
 				String fName = f.getName().toLowerCase().replace("_", "");
@@ -182,7 +185,7 @@ public class BeanConverter {
 			Map.class.cast(bean).putAll(map);
 			return bean;
 		}
-		Field[] fields = getFields(bean.getClass());
+		Field[] fields = getFieldsAndCache(bean.getClass());
 		try {
 			for (Field f : fields) {
 				if (map.containsKey(f.getName())) {
@@ -201,9 +204,10 @@ public class BeanConverter {
 		}
 		Class<?> srcClz = src.getClass();
 		if (!srcClz.isInstance(dest)) {
-			throw new SumkException(35432543, dest.getClass().getName() + " cannot convert to " + srcClz.getName());
+			Map<String, Object> map = this.beanToMap(src, false);
+			return this.fillBean(map, dest);
 		}
-		Field[] fields = getFields(srcClz);
+		Field[] fields = getFieldsAndCache(srcClz);
 		try {
 			for (Field f : fields) {
 				f.set(dest, f.get(src));

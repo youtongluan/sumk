@@ -18,14 +18,17 @@ package org.yx.util;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
-import org.yx.http.HttpContextHolder;
+import org.yx.http.HttpHeaderName;
 import org.yx.http.handler.MultipartHolder;
 import org.yx.http.handler.MultipartItem;
+import org.yx.http.handler.WebContext;
 import org.yx.http.kit.HttpKit;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.kit.LocalWebContext;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
 
@@ -35,18 +38,22 @@ import org.yx.http.user.WebSessions;
 public final class WebUtil {
 
 	public static <T extends SessionObject> T getUserObject(Class<T> clz) {
-		return WebSessions.getUserObject(clz);
+		return WebSessions.getUserObject(getSessionId(), clz);
 	}
 
 	/**
 	 * 移除session内容，也就是logout
 	 */
 	public static void removeUserObject() {
-		WebSessions.remove();
+		WebSessions.remove(getSessionId());
 	}
 
-	public static String getHeader(String name) {
-		return HttpContextHolder.getHeader(name);
+	public static String getHeader(HttpServletRequest req, String name) {
+		return req.getHeader(name);
+	}
+
+	public static WebContext context() {
+		return LocalWebContext.getCtx();
 	}
 
 	/**
@@ -55,29 +62,70 @@ public final class WebUtil {
 	 * @return HttpServletRequest对象
 	 */
 	public static HttpServletRequest getHttpRequest() {
-		return HttpContextHolder.getHttpRequest();
+		WebContext ctx = context();
+		if (ctx != null) {
+			return ctx.httpRequest();
+		}
+		return null;
 	}
 
 	/**
-	 * 获取http请求中的HttpServletResponse对象
-	 * 
-	 * @return HttpServletResponse对象
-	 */
-	public static HttpServletResponse getHttpResponse() {
-		return HttpContextHolder.getHttpResponse();
-	}
-
-	/**
-	 * 获取sessionId
+	 * 从request对象获取sessionId
 	 * 
 	 * @return sessionId
 	 */
-	public static String sessionId() {
-		return HttpContextHolder.sessionId();
+	public static String getSessionId() {
+		return fromHeaderOrCookieOrParamter(getHttpRequest(), HttpHeaderName.sessionId());
 	}
 
-	public static Charset charset() {
-		return InnerHttpUtil.charset(getHttpRequest());
+	private static String fromHeaderOrCookie(HttpServletRequest req, String name) {
+		if (req == null) {
+			return null;
+		}
+		String value = req.getHeader(name);
+		if (value != null && value.length() > 0) {
+			return value;
+		}
+		if (!HttpSettings.isCookieEnable()) {
+			return null;
+		}
+		Cookie[] cookies = req.getCookies();
+		if (cookies == null || cookies.length == 0) {
+			return null;
+		}
+		for (Cookie cookie : cookies) {
+			if (name.equals(cookie.getName())) {
+				return cookie.getValue();
+			}
+		}
+		return null;
+	}
+
+	public static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
+		if (req == null) {
+			return null;
+		}
+		String v = fromHeaderOrCookie(req, name);
+		if (v != null) {
+			return v;
+		}
+		v = req.getParameter(name);
+		if (v != null) {
+			return v;
+		}
+		Object attr = req.getAttribute(name);
+		if (attr != null && attr.getClass() == String.class) {
+			return String.class.cast(attr);
+		}
+		return null;
+	}
+
+	public static String getUserFlag(HttpServletRequest req) {
+		return fromHeaderOrCookieOrParamter(req, HttpHeaderName.userFlag());
+	}
+
+	public static Charset getCharset(HttpServletRequest req) {
+		return InnerHttpUtil.charset(req);
 	}
 
 	public static String getUserId() {
@@ -123,5 +171,13 @@ public final class WebUtil {
 
 	public static void setKit(HttpKit kit) {
 		InnerHttpUtil.setKit(kit);
+	}
+
+	public static byte[] getSessionEncryptKey() {
+		String sessionId = WebUtil.getSessionId();
+		if (sessionId == null) {
+			return null;
+		}
+		return WebSessions.loadUserSession().getEncryptKey(sessionId);
 	}
 }

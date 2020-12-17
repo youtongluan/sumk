@@ -26,6 +26,17 @@ import org.yx.log.RawLog;
 
 public final class Loader {
 
+	private static ClassLoader classLoader;
+
+	public static void setClassLoader(ClassLoader classLoader) {
+		Loader.classLoader = classLoader;
+	}
+
+	public static ClassLoader loader() {
+		ClassLoader l = classLoader;
+		return l != null ? l : Loader.class.getClassLoader();
+	}
+
 	public static <T> T newInstance(Class<T> clz) throws Exception {
 		Constructor<T> c = clz.getDeclaredConstructor();
 		c.setAccessible(true);
@@ -33,12 +44,12 @@ public final class Loader {
 	}
 
 	public static Object newInstance(String clz) throws Exception {
-		Class<?> clazz = Loader.loadClass(clz);
+		Class<?> clazz = loadClass(clz);
 		return newInstance(clazz);
 	}
 
 	public static Object newInstance(String clzName, Object[] params, Class<?>[] paramsType) throws Exception {
-		Class<?> clz = Class.forName(clzName);
+		Class<?> clz = Class.forName(clzName, true, loader());
 		Constructor<?> c = paramsType == null ? clz.getDeclaredConstructor() : clz.getDeclaredConstructor(paramsType);
 		c.setAccessible(true);
 		return c.newInstance(params);
@@ -49,7 +60,7 @@ public final class Loader {
 		String daoClz = AppInfo.get(key);
 		if (daoClz != null && daoClz.length() > 2) {
 			try {
-				return (T) Loader.newInstance(daoClz);
+				return (T) newInstance(daoClz);
 			} catch (Throwable e) {
 				RawLog.error("sumk.bean", e.getMessage(), e);
 				return null;
@@ -61,7 +72,7 @@ public final class Loader {
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
 		if (!clz.startsWith("org.") && !clz.startsWith("com.") && !clz.startsWith("net.") && !clz.startsWith("io.")) {
 			try {
-				return Loader.class.getClassLoader().loadClass("org.yx.".concat(clz));
+				return loader().loadClass("org.yx.".concat(clz));
 			} catch (Throwable e) {
 			}
 		}
@@ -73,16 +84,7 @@ public final class Loader {
 	}
 
 	public static InputStream getResourceAsStream(String name) {
-		name = name.replace('.', '/');
-		InputStream in = loader().getResourceAsStream(name + "-impl");
-		if (in != null) {
-			return in;
-		}
 		return loader().getResourceAsStream(name);
-	}
-
-	public static ClassLoader loader() {
-		return Loader.class.getClassLoader();
 	}
 
 	public static Enumeration<URL> getResources(String name) throws IOException {

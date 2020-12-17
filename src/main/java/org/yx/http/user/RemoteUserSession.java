@@ -15,40 +15,23 @@
  */
 package org.yx.http.user;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
-import org.yx.log.Log;
 import org.yx.redis.Redis;
 import org.yx.util.S;
 import org.yx.util.StringUtil;
 import org.yx.util.Task;
 
-public class RemoteUserSession implements UserSession {
+public class RemoteUserSession extends AbstractUserSession {
 	private static final byte[] NX = { 'N', 'X' };
 	private static final byte[] PX = { 'P', 'X' };
-	private Logger log = Log.get("sumk.http.session");
 
-	protected final ConcurrentMap<String, TimedCachedObject> cache = new ConcurrentHashMap<>();
 	protected int maxSize = AppInfo.getInt("sumk.http.session.catch.maxsize", 5000);
 	protected int noFreshTime = AppInfo.getInt("sumk.http.session.catch.nofreshtime", 1000 * 2);
 
 	private final Redis redis;
-
-	protected final String singleKey(String userId) {
-		return "_SINGLE_SES_".concat(userId);
-	}
-
-	protected final byte[] bigKey(String sessionId) {
-		if (sessionId == null || sessionId.isEmpty()) {
-			return null;
-		}
-		return ("_SES_#" + sessionId).getBytes(AppInfo.UTF8);
-	}
 
 	public RemoteUserSession(Redis redis) {
 		this.redis = redis;
@@ -67,31 +50,43 @@ public class RemoteUserSession implements UserSession {
 		}, seconds, seconds, TimeUnit.SECONDS);
 	}
 
-	protected TimedCachedObject load(byte[] bigKey, long refreshTime) {
-		byte[] bv = redis.get(bigKey);
-		return TimedCachedObject.deserialize(bv, refreshTime);
+	protected final String singleKey(String userId) {
+		return "_SINGLE_SES_".concat(userId);
 	}
 
-	protected TimedCachedObject loadUserObject(String sid) {
+	protected final byte[] redisSessionKey(String sessionId) {
+		if (sessionId == null || sessionId.isEmpty()) {
+			return null;
+		}
+		return ("_SES_#" + sessionId).getBytes(AppInfo.UTF8);
+	}
+
+	@Override
+	protected TimedCachedObject loadTimedCachedObject(String sid, boolean needRefresh) {
 		if (sid == null) {
 			return null;
 		}
-		byte[] bigKey = this.bigKey(sid);
+		byte[] bigKey = this.redisSessionKey(sid);
 		TimedCachedObject to = cache.get(sid);
 		long now = System.currentTimeMillis();
 		if (to == null) {
-			to = this.load(bigKey, now);
+			byte[] bv = redis.get(bigKey);
+			to = TimedCachedObject.deserialize(bv);
 			if (to == null) {
-				log.trace("{} cannot found from redis", sid);
+				if (log.isTraceEnabled()) {
+					log.trace("{} cannot found from redis", sid);
+				}
 				return null;
 			}
-			if (cache.size() < this.maxSize) {
-				log.trace("{} add to local cache", sid);
+			if (cache.size() < this.maxSize && needRefresh) {
+				if (log.isTraceEnabled()) {
+					log.trace("{} add to local cache", sid);
+				}
 				cache.put(sid, to);
 			}
 		}
 
-		if (to.refreshTime + this.noFreshTime < now) {
+		if (needRefresh && to.refreshTime + this.noFreshTime < now) {
 			long durationInMS = HttpSettings.httpSessionTimeoutInMs();
 			Long v = redis.pexpire(bigKey, durationInMS);
 			if (v == null || v.intValue() == 0) {
@@ -99,52 +94,34 @@ public class RemoteUserSession implements UserSession {
 				log.trace("{} was pexpire by redis,and remove from local cache", sid);
 				return null;
 			}
-			log.trace("{} was refresh in redis", sid);
+			if (log.isTraceEnabled()) {
+				log.trace("{} was refresh in redis", sid);
+			}
 			to.refreshTime = now;
 		}
 		return to;
 	}
 
 	@Override
-	public byte[] getKey(String sid) {
-		TimedCachedObject obj = this.loadUserObject(sid);
-		if (obj == null) {
-			return null;
-		}
-		return obj.getKey();
-	}
-
-	@Override
-	public <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
-		TimedCachedObject obj = this.loadUserObject(sessionId);
-		if (obj == null) {
-			return null;
-		}
-		return S.json().fromJson(obj.json, clz);
-	}
-
-	@Override
 	public void removeSession(String sessionId) {
-		byte[] bigKey = this.bigKey(sessionId);
+		byte[] bigKey = this.redisSessionKey(sessionId);
 		if (bigKey == null) {
 			return;
 		}
-		redis.del(bigKey);
-		this.cache.remove(sessionId);
-	}
-
-	@Override
-	public boolean isLogin(String userId) {
-		if (StringUtil.isEmpty(userId)) {
-			return false;
+		if (HttpSettings.isSingleLogin()) {
+			SessionObject t = getUserObjectBySessionId(sessionId);
+			if (t != null) {
+				redis.del(this.singleKey(t.getUserId()));
+			}
 		}
-		return Boolean.TRUE.equals(redis.exists(this.singleKey(userId)));
+		this.cache.remove(sessionId);
+		redis.del(bigKey);
 	}
 
 	@Override
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
 		long sessionTimeout = HttpSettings.httpSessionTimeoutInMs();
-		byte[] bigKey = this.bigKey(sessionId);
+		byte[] bigKey = this.redisSessionKey(sessionId);
 		String json = S.json().toJson(sessionObj);
 		byte[] data = TimedCachedObject.toBytes(json, key);
 		String ret = redis.set(bigKey, data, NX, PX, sessionTimeout);
@@ -155,18 +132,24 @@ public class RemoteUserSession implements UserSession {
 			return true;
 		}
 
-		String userSessionKey = singleKey(sessionObj.userId);
-		String oldSessionId = redis.get(userSessionKey);
-		if (StringUtil.isNotEmpty(oldSessionId)) {
-			redis.del(bigKey(oldSessionId));
+		String singleUserKey = singleKey(sessionObj.userId);
+		String oldSessionId = redis.get(singleUserKey);
+		if (StringUtil.isNotEmpty(oldSessionId) && !oldSessionId.equals(sessionId)) {
+			redis.del(redisSessionKey(oldSessionId));
 			cache.remove(oldSessionId);
 		}
-		redis.psetex(userSessionKey, sessionTimeout, sessionId);
+		long expireTime = sessionObj.getExpiredTime() != null ? sessionObj.getExpiredTime() - System.currentTimeMillis()
+				: -1;
+		if (expireTime < 1) {
+
+			expireTime = AppInfo.getLong("sumk.http.session.single.maxTime", 1000L * 3600 * 20);
+		}
+		redis.psetex(singleUserKey, expireTime, sessionId);
 		return true;
 	}
 
 	@Override
-	public int localCacheSize() {
-		return this.cache.size();
+	public String getSessionIdByUserFlag(String userId) {
+		return redis.get(this.singleKey(userId));
 	}
 }

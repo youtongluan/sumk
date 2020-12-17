@@ -38,17 +38,15 @@ import static org.yx.asm.WriterHelper.buildParamArray;
 import static org.yx.asm.WriterHelper.loadFromLocalVariable;
 import static org.yx.asm.WriterHelper.storeToLocalVariable;
 
-import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.bean.AopMetaHolder;
-import org.yx.conf.AppInfo;
+import org.yx.annotation.Box;
+import org.yx.bean.AopExcutorFactory;
 
 public final class ProxyMethodWritor {
 
@@ -75,6 +73,7 @@ public final class ProxyMethodWritor {
 	}
 
 	private static class ProxyBuilder {
+		private static final String AOP_EXCUTOR = "org/yx/common/AopExcutor";
 		private final MethodVisitor mv;
 		private final AsmMethod asmMethod;
 		private final Class<?>[] params;
@@ -82,8 +81,6 @@ public final class ProxyMethodWritor {
 		private final String superowener;
 
 		private final int aopExcutorIndex;
-
-		private static final AtomicInteger SEQ = new AtomicInteger(AppInfo.getInt("sumk.aop.seq", 12345));
 
 		private void jReturn() {
 			ProxyMethodWritor.jReturn(mv, returnType);
@@ -127,51 +124,45 @@ public final class ProxyMethodWritor {
 			mv.visitTryCatchBlock(l0, l1, l3, null);
 			mv.visitTryCatchBlock(l2, l4, l3, null);
 			mv.visitIntInsn(SIPUSH, key);
-			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-			mv.visitMethodInsn(INVOKESTATIC, "org/yx/bean/AopExcutorFactory", "create",
-					"(Ljava/lang/Integer;)Lorg/yx/common/AopExcutor;", false);
+			mv.visitMethodInsn(INVOKESTATIC, "org/yx/bean/AopExcutorFactory", "create", "(I)Lorg/yx/common/AopExcutor;",
+					false);
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex);
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			buildParamArray(mv, params);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "before", "([Ljava/lang/Object;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "before", "([Ljava/lang/Object;)V", false);
 			this.callSuperMethod();
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			mv.visitInsn(ACONST_NULL);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "after", "(Ljava/lang/Object;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "after", "(Ljava/lang/Object;)V", false);
 			mv.visitLabel(l1);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			mv.visitInsn(RETURN);
 			mv.visitLabel(l2);
 			this.visitFullFrame();
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex + 1);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex + 1);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "onError", "(Ljava/lang/Throwable;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "onError", "(Ljava/lang/Throwable;)V", false);
 			mv.visitLabel(l4);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			Label l5 = new Label();
 			mv.visitJumpInsn(GOTO, l5);
 			mv.visitLabel(l3);
 			mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] { "java/lang/Throwable" });
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex + 2);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex + 2);
 			mv.visitInsn(ATHROW);
 			mv.visitLabel(l5);
 		}
 
 		public void write() {
-			Annotation[] annotations = asmMethod.method.getAnnotations();
-			int key = 0;
-			if (annotations != null && annotations.length > 0) {
-				key = SEQ.getAndIncrement();
-
-				AopMetaHolder.put(key, annotations);
-			}
+			Box box = asmMethod.method.getAnnotation(Box.class);
+			int key = AopExcutorFactory.add(box);
 			mv.visitCode();
 
 			boolean hasReturn = returnType != null && returnType != Void.TYPE;
@@ -203,22 +194,21 @@ public final class ProxyMethodWritor {
 			mv.visitTryCatchBlock(l0, l1, l3, null);
 			mv.visitTryCatchBlock(l2, l4, l3, null);
 			mv.visitIntInsn(SIPUSH, key);
-			mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-			mv.visitMethodInsn(INVOKESTATIC, "org/yx/bean/AopExcutorFactory", "create",
-					"(Ljava/lang/Integer;)Lorg/yx/common/AopExcutor;", false);
+			mv.visitMethodInsn(INVOKESTATIC, "org/yx/bean/AopExcutorFactory", "create", "(I)Lorg/yx/common/AopExcutor;",
+					false);
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex);
 			mv.visitLabel(l0);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			buildParamArray(mv, params);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "before", "([Ljava/lang/Object;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "before", "([Ljava/lang/Object;)V", false);
 			this.callSuperMethod();
 			int returnWidth = this.storeReuturnToLocalVariable(this.aopExcutorIndex + 1);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			loadFromLocalVariable(mv, this.returnType, this.aopExcutorIndex + 1, true);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "after", "(Ljava/lang/Object;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "after", "(Ljava/lang/Object;)V", false);
 			mv.visitLabel(l1);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			loadFromLocalVariable(mv, this.returnType, this.aopExcutorIndex + 1, false);
 			this.jReturn();
 			mv.visitLabel(l2);
@@ -226,17 +216,17 @@ public final class ProxyMethodWritor {
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex + 1);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex + 1);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "onError", "(Ljava/lang/Throwable;)V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "onError", "(Ljava/lang/Throwable;)V", false);
 			mv.visitLabel(l4);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			Label l5 = new Label();
 			mv.visitJumpInsn(GOTO, l5);
 			mv.visitLabel(l3);
 			mv.visitFrame(Opcodes.F_SAME1, 0, null, 1, new Object[] { "java/lang/Throwable" });
 			mv.visitVarInsn(ASTORE, this.aopExcutorIndex + 1 + returnWidth);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex);
-			mv.visitMethodInsn(INVOKEVIRTUAL, "org/yx/common/AopExcutor", "close", "()V", false);
+			mv.visitMethodInsn(INVOKEVIRTUAL, AOP_EXCUTOR, "close", "()V", false);
 			mv.visitVarInsn(ALOAD, this.aopExcutorIndex + 1 + returnWidth);
 			mv.visitInsn(ATHROW);
 			mv.visitLabel(l5);
@@ -249,7 +239,7 @@ public final class ProxyMethodWritor {
 			List<Object> list = new ArrayList<>();
 			list.add(currentClz);
 			list.addAll(argTypes);
-			list.add("org/yx/common/AopExcutor");
+			list.add(AOP_EXCUTOR);
 			Object[] frames = list.toArray(new Object[list.size()]);
 			mv.visitFrame(Opcodes.F_FULL, frames.length, frames, 1, new Object[] { "java/lang/Throwable" });
 		}

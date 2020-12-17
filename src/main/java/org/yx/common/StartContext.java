@@ -24,6 +24,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import org.yx.conf.AppInfo;
 import org.yx.main.SumkThreadPool;
 
+/**
+ * 这个只在系统启动的时候才能使用
+ */
 public final class StartContext {
 
 	private static final StartContext inst = new StartContext();

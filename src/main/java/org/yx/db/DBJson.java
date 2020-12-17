@@ -17,7 +17,7 @@ package org.yx.db;
 
 import java.util.Objects;
 
-import org.yx.common.ByteArrayTypeAdapter;
+import org.yx.common.json.ByteArrayTypeAdapter;
 import org.yx.common.json.GsonHelper;
 import org.yx.common.json.GsonOperator;
 

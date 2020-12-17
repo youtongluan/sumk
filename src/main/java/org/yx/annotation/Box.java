@@ -25,6 +25,9 @@ import org.yx.conf.Const;
 import org.yx.db.enums.DBType;
 import org.yx.db.enums.TransactionType;
 
+/**
+ * 注解在当前类的public或protected方法上。不支持在超类或接口上进行注解
+ */
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented

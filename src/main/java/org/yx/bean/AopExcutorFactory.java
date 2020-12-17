@@ -15,24 +15,48 @@
  */
 package org.yx.bean;
 
-import java.lang.annotation.Annotation;
+import java.util.Objects;
 
 import org.yx.annotation.Box;
 import org.yx.common.AopExcutor;
 import org.yx.db.exec.DBTransaction;
-import org.yx.exception.SumkException;
+import org.yx.db.exec.DBSource;
+import org.yx.db.exec.DefaultDBSource;
 
 public class AopExcutorFactory {
-	public static AopExcutor create(Integer key) {
-		Annotation[] annotations = AopMetaHolder.get(key);
-		if (annotations != null && annotations.length > 0) {
-			for (Annotation a : annotations) {
-				if (Box.class.isInstance(a)) {
-					Box b = (Box) a;
-					return new AopExcutor(new DBTransaction(b.value(), b.dbType(), b.transaction()));
-				}
+	private static DBSource[] boxs = new DBSource[0];
+
+	public static synchronized int add(Box box) {
+		Objects.requireNonNull(box);
+		final DBSource[] boxs = AopExcutorFactory.boxs;
+		DBSource db = null;
+		for (DBSource tmp : boxs) {
+			if (tmp.dbName().equals(box.value()) && tmp.dbType().equals(box.dbType())
+					&& tmp.transactionType().equals(box.transaction())) {
+				db = tmp;
+				break;
 			}
 		}
-		throw new SumkException(-3451435, "不支持aop");
+		int index = boxs.length;
+		DBSource[] box2 = new DBSource[index + 1];
+		System.arraycopy(boxs, 0, box2, 0, boxs.length);
+		if (db == null) {
+			db = new DefaultDBSource(box.value(), box.dbType(), box.transaction());
+		}
+		box2[index] = db;
+		AopExcutorFactory.boxs = box2;
+		return index;
+	}
+
+	public static DBSource get(int index) {
+		return boxs[index];
+	}
+
+	public static int length() {
+		return boxs.length;
+	}
+
+	public static AopExcutor create(int key) {
+		return new AopExcutor(new DBTransaction(boxs[key]));
 	}
 }

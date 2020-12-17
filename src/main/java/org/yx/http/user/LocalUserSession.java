@@ -19,21 +19,15 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.S;
-import org.yx.util.StringUtil;
 import org.yx.util.Task;
 
-public class LocalUserSession implements UserSession {
-
-	protected final ConcurrentMap<String, TimedCachedObject> map = new ConcurrentHashMap<>();
+public class LocalUserSession extends AbstractUserSession {
 
 	protected Map<String, String> userSessionMap = Collections.synchronizedMap(new LinkedHashMap<String, String>() {
 		private static final long serialVersionUID = 1L;
@@ -45,59 +39,48 @@ public class LocalUserSession implements UserSession {
 
 	});
 
-	private String singleKey(String userId) {
-		return userId;
+	public LocalUserSession() {
+		log.info("$$$use local user session");
+		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
+		Task.scheduleAtFixedRate(() -> CacheHelper.expire(cache, HttpSettings.httpSessionTimeoutInMs()), seconds,
+				seconds, TimeUnit.SECONDS);
 	}
 
 	@Override
 	public boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin) {
-		long now = System.currentTimeMillis();
-		TimedCachedObject to = new TimedCachedObject(S.json().toJson(sessionObj), key, now);
-		if (map.putIfAbsent(sessionId, to) != null) {
+		TimedCachedObject to = new TimedCachedObject(S.json().toJson(sessionObj), key);
+		to.refreshTime = System.currentTimeMillis();
+		if (cache.putIfAbsent(sessionId, to) != null) {
 			return false;
 		}
 		if (!singleLogin) {
 			return true;
 		}
-		String oldSessionId = userSessionMap.put(singleKey(sessionObj.getUserId()), sessionId);
-		if (oldSessionId != null) {
-			map.remove(oldSessionId);
+		String oldSessionId = userSessionMap.put(sessionObj.getUserId(), sessionId);
+		if (oldSessionId != null && !oldSessionId.equals(sessionId)) {
+			cache.remove(oldSessionId);
 		}
 		return true;
 	}
 
-	public LocalUserSession() {
-		Log.get("sumk.http.session").info("$$$use local user session");
-		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
-		Task.scheduleAtFixedRate(() -> CacheHelper.expire(map, HttpSettings.httpSessionTimeoutInMs()), seconds, seconds,
-				TimeUnit.SECONDS);
-	}
-
-	protected TimedCachedObject loadUserObject(String sid) {
+	protected TimedCachedObject loadTimedCachedObject(String sid, boolean needRefresh) {
 		if (sid == null) {
 			return null;
 		}
-		TimedCachedObject to = map.get(sid);
+		TimedCachedObject to = cache.get(sid);
 		if (to == null) {
 			return null;
 		}
 		long now = System.currentTimeMillis();
 		if (to.refreshTime + HttpSettings.httpSessionTimeoutInMs() < now) {
 			Logs.http().debug("session:{}实际上已经过期了", sid);
-			map.remove(sid);
+			cache.remove(sid);
 			return null;
 		}
-		to.refreshTime = now;
+		if (needRefresh) {
+			to.refreshTime = now;
+		}
 		return to;
-	}
-
-	@Override
-	public <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
-		TimedCachedObject to = this.loadUserObject(sessionId);
-		if (to == null) {
-			return null;
-		}
-		return S.json().fromJson(to.getJson(), clz);
 	}
 
 	@Override
@@ -105,29 +88,17 @@ public class LocalUserSession implements UserSession {
 		if (sessionId == null) {
 			return;
 		}
-		map.remove(sessionId);
-	}
-
-	@Override
-	public byte[] getKey(String sid) {
-		TimedCachedObject to = this.loadUserObject(sid);
-		if (to == null) {
-			return null;
+		TimedCachedObject to = cache.remove(sessionId);
+		if (to == null || userSessionMap.isEmpty()) {
+			return;
 		}
-		return to.getKey();
+		SessionObject obj = S.json().fromJson(to.json, SessionObject.class);
+		this.userSessionMap.remove(obj.userId);
 	}
 
 	@Override
-	public boolean isLogin(String userId) {
-		if (StringUtil.isEmpty(userId)) {
-			return false;
-		}
-		return this.userSessionMap.containsKey(singleKey(userId));
-	}
-
-	@Override
-	public int localCacheSize() {
-		return this.map.size();
+	public String getSessionIdByUserFlag(String userId) {
+		return this.userSessionMap.get(userId);
 	}
 
 }

@@ -47,7 +47,7 @@ public class DBPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
-		DBSettings.register();
+		DBSettings.init();
 		buildDBListeners();
 		loadSDBResources();
 		Plugins.setDbStarted();

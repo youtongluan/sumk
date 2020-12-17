@@ -409,4 +409,9 @@ public final class PojoMeta implements Cloneable {
 		Comment c = this.pojoClz.getAnnotation(Comment.class);
 		return c == null ? "" : c.value();
 	}
+
+	public SoftDeleteMeta getSoftDelete() {
+		return softDelete;
+	}
+
 }

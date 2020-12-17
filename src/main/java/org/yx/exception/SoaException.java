@@ -79,7 +79,7 @@ public final class SoaException extends CodeException {
 	}
 
 	private String buildStackTraceMessage() {
-		StringBuilder sb = new StringBuilder(this.toString());
+		StringBuilder sb = new StringBuilder().append(this.toString());
 		if (this.exceptionClz != null && this.exceptionClz.length() > 0) {
 			sb.append("\n\tcause by " + this.exceptionClz);
 			if (this.detailError != null && this.detailError.length() > 0) {

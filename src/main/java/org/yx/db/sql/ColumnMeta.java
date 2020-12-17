@@ -72,7 +72,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		return owner.containsKey(field.getName());
 	}
 
-	void setValue(Object owner, final Object value) throws Exception {
+	public void setValue(Object owner, final Object value) throws Exception {
 		if (Map.class.isInstance(owner)) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) owner;

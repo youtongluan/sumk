@@ -19,8 +19,13 @@ import java.util.Map;
 
 public interface Attachable {
 
-	void setAttachments(Map<String, String> attachments);
-
+	/**
+	 * 设置上下文的附加属性
+	 * 
+	 * @param key
+	 * @param value
+	 *            如果value为null，就相当于remove
+	 */
 	void setAttachment(String key, String value);
 
 	String getAttachment(String key);

@@ -15,7 +15,6 @@ import org.yx.annotation.http.Web;
 import org.yx.exception.BizException;
 import org.yx.http.MessageType;
 import org.yx.http.handler.MultipartItem;
-import org.yx.http.user.WebSessions;
 import org.yx.util.StreamUtil;
 import org.yx.util.WebUtil;
 
@@ -58,7 +57,7 @@ public class PlainServer {
 	//本接口要等陆后才能用
 	@Web(value = "plain_sign", sign = true,requireLogin=true)
 	public String plain_sign(String name) {
-		return "hello " + name+"，来自"+WebSessions.getUserObject(DemoSessionObject.class).getUserId()+"的问候";
+		return "hello " + name+"，来自"+WebUtil.getUserObject(DemoSessionObject.class).getUserId()+"的问候";
 	}
 
 	@Web(requestType = MessageType.ENCRYPT_BASE64, responseType = MessageType.ENCRYPT_BASE64)

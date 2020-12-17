@@ -34,6 +34,7 @@ import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.RpcJson;
+import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.RpcRoutes;
 import org.yx.rpc.codec.Request;
@@ -82,6 +83,9 @@ public final class Client {
 	}
 
 	public Client paramInArray(Object... args) {
+		if (args == null) {
+			args = new String[0];
+		}
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
 			params[i] = RpcJson.operator().toJson(args[i]);
@@ -116,7 +120,7 @@ public final class Client {
 		Req req = Rpc.req(this.api);
 		req.setParams(this.paramType.protocol(), this.params);
 		if (this.totalTimeout < 1) {
-			this.totalTimeout = AppInfo.getInt("sumk.rpc.timeout", 30000);
+			this.totalTimeout = RpcSettings.clientDefaultTimeout();
 		}
 		RpcFuture f = sendAsync(req, this.totalStart + this.totalTimeout);
 		if (f.getClass() == ErrorRpcFuture.class) {

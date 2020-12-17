@@ -75,7 +75,7 @@ public final class SLock implements Lock {
 			this.endTime = 1;
 		}
 		long waitEndTime = now + maxWaitTime;
-		for (;;) {
+		while (true) {
 			if (tryLock()) {
 				return true;
 			}

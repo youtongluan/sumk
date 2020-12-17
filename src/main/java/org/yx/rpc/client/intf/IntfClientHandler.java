@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.annotation.rpc.SoaClient;
-import org.yx.common.JsonTypes;
+import org.yx.common.json.JsonTypes;
 import org.yx.rpc.client.Client;
 import org.yx.rpc.client.Rpc;
 import org.yx.util.ExceptionUtil;

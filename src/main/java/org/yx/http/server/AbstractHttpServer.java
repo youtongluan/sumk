@@ -27,13 +27,13 @@ import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.exception.InvalidParamException;
-import org.yx.http.HttpContextHolder;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.kit.LocalWebContext;
 import org.yx.http.log.HttpLogs;
 import org.yx.log.Logs;
 import org.yx.util.M;
@@ -55,7 +55,9 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			this.setRespHeader(req, resp, charset);
 
 			String rawAct = getRawAct(req);
-			log.trace("raw act={}", rawAct);
+			if (log.isTraceEnabled()) {
+				log.trace("raw act={}", rawAct);
+			}
 			if (rawAct == null || rawAct.isEmpty()) {
 				log.error("raw act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
 				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
@@ -70,14 +72,13 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			if (info.node().overflowThreshold()) {
 				throw BizException.create(HttpErrorCode.THREAD_THRESHOLD_OVER, "系统限流降级");
 			}
-			HttpContextHolder.set(req, resp);
 			String traceId = UUIDSeed.seq18();
 			ActionContext.newContext(rawAct, traceId, req.getParameter("thisIsTest"));
-			setTraceIdForResponse(req, resp, traceId);
 			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
 			wc.setAttach(info.getAttach());
+			LocalWebContext.setCtx(wc);
+			setTraceIdForResponse(req, resp, traceId);
 			handle(wc);
-
 		} catch (Throwable e) {
 			try {
 				ex = handleError(req, resp, e);
@@ -88,12 +89,11 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;
 			HttpLogs.log(wc, req, ex, time);
-			HttpContextHolder.clear();
-			ActionContext.remove();
 			if (wc != null) {
 
 				InnerHttpUtil.record(wc.rawAct(), time, ex == null && !wc.isFailed());
 			}
+			LocalWebContext.remove();
 		}
 	}
 

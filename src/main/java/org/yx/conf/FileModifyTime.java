@@ -30,4 +30,16 @@ public class FileModifyTime {
 		return file + ":" + lastModify;
 	}
 
+	public long getLastModify() {
+		return lastModify;
+	}
+
+	public void setLastModify(long lastModify) {
+		this.lastModify = lastModify;
+	}
+
+	public String getFile() {
+		return file;
+	}
+
 }

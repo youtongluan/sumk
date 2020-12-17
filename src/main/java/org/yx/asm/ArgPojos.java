@@ -29,8 +29,7 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.conf.Const;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.UUIDSeed;
 
 public class ArgPojos {
@@ -39,10 +38,12 @@ public class ArgPojos {
 	public static Class<? extends ArgPojo> create(MethodParamInfo p) throws Exception {
 		final Method method = p.getMethod();
 		String fullName = String.join("_", p.getDeclaringClass().getSimpleName(), method.getName(), UUIDSeed.seq());
-		Log.get("sumk.asm").trace("begin generate paramters pojo :{}", fullName);
+		if (Logs.asm().isTraceEnabled()) {
+			Logs.asm().trace("begin generate paramters pojo :{}", fullName);
+		}
 
 		ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
-		cw.visit(Const.JVM_VERSION, ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",
+		cw.visit(AsmUtils.jvmVersion(), ACC_PUBLIC | ACC_SUPER, fullName, null, "java/lang/Object",
 				new String[] { "org/yx/asm/ArgPojo" });
 		Arg[] args = new Arg[p.getArgNames().length];
 		for (int i = 0; i < args.length; i++) {
@@ -83,7 +84,7 @@ public class ArgPojos {
 		Class<?> returnType = method.getReturnType();
 		if (void.class == method.getReturnType()) {
 			mv.visitInsn(Opcodes.ACONST_NULL);
-			Log.get("sumk.asm").debug("{} has no return", fullName);
+			Logs.asm().debug("{} has no return", fullName);
 		} else if (returnType.isPrimitive()) {
 			WriterHelper.boxPrimitive(mv, returnType);
 		}

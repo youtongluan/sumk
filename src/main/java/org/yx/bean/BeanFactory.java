@@ -83,7 +83,7 @@ public class BeanFactory extends AbstractBeanListener {
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SumkException(-345365, "IOC error", e);
+			throw new SumkException(-345365, "IOC error on " + event.getSource(), e);
 		}
 
 	}

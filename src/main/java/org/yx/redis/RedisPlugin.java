@@ -18,6 +18,7 @@ package org.yx.redis;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.annotation.Bean;
+import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.bean.Plugins;
 import org.yx.common.lock.Locker;
@@ -41,7 +42,7 @@ public class RedisPlugin implements Plugin {
 			return;
 		}
 		try {
-			Class.forName("redis.clients.jedis.Jedis");
+			Loader.loadClassExactly("redis.clients.jedis.Jedis");
 		} catch (Throwable e) {
 			Logs.redis().warn("Jedis is not in use because of " + e.getMessage());
 			return;

@@ -57,12 +57,12 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 		}
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
-			List<Map<String, Object>> list = HttpActions.infos();
+			List<Map<String, Object>> list = HttpActions.infos("1".equals(req.getParameter("full")));
 			write(resp, gson.toJson(list));
 			return;
 		}
 		if (mode.equals("rpc")) {
-			List<Map<String, Object>> list = RpcActions.infos();
+			List<Map<String, Object>> list = RpcActions.infos("1".equals(req.getParameter("full")));
 			write(resp, gson.toJson(list));
 			return;
 		}

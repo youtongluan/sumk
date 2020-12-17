@@ -35,12 +35,10 @@ import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.util.StringUtil;
-import org.yx.validate.ParamFactory;
 
 public class SoaAnnotationResolver {
 	private SoaClassResolver soaClassResolver;
@@ -73,6 +71,9 @@ public class SoaAnnotationResolver {
 		}
 		Method[] methods = refer.getMethods();
 		for (Method m : methods) {
+			if (m.getDeclaringClass() == Object.class) {
+				continue;
+			}
 			Method methodInTarget = targetClass.getMethod(m.getName(), m.getParameterTypes());
 			if (!m.getReturnType().isAssignableFrom(methodInTarget.getReturnType())) {
 				throw new SumkException(234324, targetClass.getName() + "." + methodInTarget.getName() + "的返回值类型是"
@@ -110,12 +111,8 @@ public class SoaAnnotationResolver {
 		}
 		List<Method> soaMethods = new ArrayList<>(map.size());
 		for (Method m : map.keySet()) {
-			if (AsmUtils.isFilted(m.getName())) {
-				continue;
-			}
 			if (AsmUtils.notPublicOnly(m.getModifiers())) {
-				Log.get("sumk.asm").error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(),
-						m.getName());
+				Logs.asm().error("$$$ {}.{} has bad modifiers, maybe static or private", clz.getName(), m.getName());
 				continue;
 			}
 			soaMethods.add(m);
@@ -137,8 +134,8 @@ public class SoaAnnotationResolver {
 			int toplimit = act != null && act.toplimit() > 0 ? act.toplimit()
 					: AppInfo.getInt("sumk.rpc.thread.priority.default", 100000);
 			boolean publish = act != null ? act.publish() : true;
-			RpcActionNode node = new RpcActionNode(bean, m, ArgPojos.create(info), info.getArgNames(),
-					ParamFactory.create(m), toplimit, publish);
+			RpcActionNode node = new RpcActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), toplimit,
+					publish);
 
 			for (String soaName : soaNames) {
 				if (soaName == null || soaName.isEmpty()) {

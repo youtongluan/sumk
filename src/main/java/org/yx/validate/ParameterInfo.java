@@ -15,21 +15,25 @@
  */
 package org.yx.validate;
 
-import org.yx.annotation.Bean;
-import org.yx.conf.AppInfo;
-import org.yx.exception.InvalidParamException;
+public interface ParameterInfo {
 
-@Bean
-public class RequiredValidator implements Validator {
+	String getParamName();
 
-	@Override
-	public void valid(ParamInfo param, Object arg) throws InvalidParamException {
-		if (!param.param.required()) {
-			return;
-		}
-		if (arg == null || "".equals(arg)) {
-			throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), param);
-		}
-	}
+	String getCnName();
 
+	boolean isRequired();
+
+	int getMax();
+
+	int getMin();
+
+	Class<?> getParamType();
+
+	boolean isComplex();
+
+	String custom();
+
+	String example();
+
+	String comment();
 }

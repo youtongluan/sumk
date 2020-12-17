@@ -20,7 +20,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -103,7 +102,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 
 	@Override
 	public Set<String> keys() {
-		return new HashSet<>(this.map.keySet());
+		return Collections.unmodifiableSet(this.map.keySet());
 	}
 
 	@Override

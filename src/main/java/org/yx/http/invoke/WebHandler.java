@@ -57,6 +57,7 @@ public final class WebHandler {
 	}
 
 	public static Object handle(WebContext ctx) throws Throwable {
+		ctx.setArgPojo(ctx.node().buildArgPojo(ctx.data()));
 		return filter.doFilter(ctx);
 	}
 

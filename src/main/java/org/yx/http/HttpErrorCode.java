@@ -64,6 +64,12 @@ public interface HttpErrorCode {
 	int UPLOAD_NOT_MULTI_TYPE = 931;
 
 	int UPLOAD_ANNOTATION_MISS = 932;
+
+	/**
+	 * 加密用的key没有找到
+	 */
+	int SESSION_KEY_NOT_FOUND = 940;
+
 	/**
 	 * 请求处理出错
 	 */
@@ -88,4 +94,9 @@ public interface HttpErrorCode {
 	 * 接口没有定义，类似于404
 	 */
 	int ACT_NOT_FOUND = 954;
+
+	/**
+	 * 不支持该http方法，比如GET
+	 */
+	int METHOD_UNSUPPORT = 960;
 }

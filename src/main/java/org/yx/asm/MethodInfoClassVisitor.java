@@ -29,10 +29,8 @@ import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.ModuleVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
-import org.slf4j.Logger;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
 class MethodInfoClassVisitor extends ClassVisitor {
@@ -40,7 +38,7 @@ class MethodInfoClassVisitor extends ClassVisitor {
 	private final List<MethodParamInfo> infos;
 
 	public MethodInfoClassVisitor(List<Method> methods) {
-		super(Const.ASM_VERSION);
+		super(AsmUtils.asmVersion());
 		this.infos = new ArrayList<>(Objects.requireNonNull(methods).size());
 		for (Method method : methods) {
 			infos.add(createMethodInfo(method));
@@ -75,7 +73,7 @@ class MethodInfoClassVisitor extends ClassVisitor {
 		if (info == null || info.getArgNames().length == 0) {
 			return null;
 		}
-		return new ParseParamsMethodVisitor(Const.ASM_VERSION, info);
+		return new ParseParamsMethodVisitor(AsmUtils.asmVersion(), info);
 	}
 
 	@Override
@@ -131,11 +129,10 @@ class MethodInfoClassVisitor extends ClassVisitor {
 	}
 
 	public List<MethodParamInfo> getMethodInfos() {
-		Logger log = Log.get("sumk.asm");
 		for (MethodParamInfo info : this.infos) {
 			for (String name : info.getArgNames()) {
 				if (StringUtil.isEmpty(name)) {
-					log.error("{}.{}() has empty name。params:{}", info.getMethod().getClass().getSimpleName(),
+					Logs.asm().error("{}.{}() has empty name。params:{}", info.getMethod().getClass().getSimpleName(),
 							info.getMethod().getName(), Arrays.toString(info.getArgNames()));
 					throw new SumkException(362655465, "params not full parsed");
 				}

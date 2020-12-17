@@ -96,11 +96,11 @@ public final class NamedExecutor {
 		}
 	}
 
-	public static int count(SqlParser sql, Map<String, Object> map) {
+	public static long count(SqlParser sql, Map<String, Object> map) {
 		try {
 			List<?> list = Visitors.singleListQueryVisitor.visit(createSqlBuilder(sql, map));
 			Number n = (Number) list.get(0);
-			return n.intValue();
+			return n.longValue();
 		} catch (Exception e) {
 			throw SumkException.wrap(e);
 		}

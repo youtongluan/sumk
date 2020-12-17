@@ -183,12 +183,17 @@ public class SumkLoaderListener implements ServletContextListener {
 		}
 	}
 
-	/**
-	 * @param context
-	 */
+	private static InputStream openResourceAsStream(String name) {
+		InputStream in = Loader.getResourceAsStream(name + "-impl");
+		if (in != null) {
+			return in;
+		}
+		return Loader.getResourceAsStream(name);
+	}
+
 	private void addListeners(ServletContext context) {
 		try {
-			InputStream in = Loader.getResourceAsStream("META-INF/http.listeners");
+			InputStream in = openResourceAsStream("META-INF/http/listeners");
 			addListener(context, CollectionUtil.loadList(in));
 		} catch (Exception e) {
 			Log.printStack("sumk.error", e);
@@ -198,7 +203,7 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	private void addListener(ServletContext context, List<String> intfs) throws ClassNotFoundException {
 		for (String intf : intfs) {
-			Class<?> clz = Class.forName(intf);
+			Class<?> clz = Loader.loadClassExactly(intf);
 			if (!EventListener.class.isAssignableFrom(clz)) {
 				Logs.http().info(intf + " is not implement EventListener");
 				continue;

@@ -19,14 +19,11 @@ import java.lang.reflect.InvocationHandler;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.rpc.InnerRpcKit;
 
 public final class InvocationHandlerFactory {
 	private static Function<Class<?>, InvocationHandler> factory = intf -> {
-		String prefix = InnerRpcKit.parseClassName2Prefix(intf.getName(),
-				AppInfo.getInt("sumk.rpc.intfclient.name.partcount", Const.DEFAULT_INTF_PREFIX_PART_COUNT));
+		String prefix = InnerRpcKit.parseRpcIntfPrefix(intf);
 		return new IntfClientHandler(prefix, intf);
 	};
 

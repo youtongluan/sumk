@@ -45,4 +45,8 @@ public final class Logs {
 	public static Logger ioc() {
 		return Log.get("sumk.ioc");
 	}
+
+	public static Logger asm() {
+		return Log.get("sumk.asm");
+	}
 }

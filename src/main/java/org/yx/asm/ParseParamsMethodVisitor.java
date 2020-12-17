@@ -20,12 +20,13 @@ import java.util.Collections;
 import java.util.List;
 
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.slf4j.Logger;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 
-public class ParseParamsMethodVisitor extends EmptyMethodVisitor {
+public class ParseParamsMethodVisitor extends MethodVisitor {
 
 	private final MethodParamInfo info;
 
@@ -53,7 +54,7 @@ public class ParseParamsMethodVisitor extends EmptyMethodVisitor {
 
 	@Override
 	public void visitEnd() {
-		Logger log = Log.get("sumk.asm");
+		Logger log = Logs.asm();
 		String methodName = info.getMethod().getName();
 		Type[] args = info.getArgumentTypes();
 		Collections.sort(argPojos);

@@ -113,11 +113,11 @@ public class SoaServer implements Lifecycle {
 	}
 
 	private byte[] createZkPathData() throws Exception {
-		List<String> methods = RpcActions.publishSoaSet();
+		List<String> apis = RpcActions.publishSoaSet();
 		final Map<String, String> map = new HashMap<>();
-		for (String method : methods) {
+		for (String api : apis) {
 
-			map.put(ZKConst.METHODS + method, AppInfo.get("sumk.rpc.method." + method));
+			map.put(ZKConst.METHODS + api, AppInfo.get("sumk.rpc.api." + api));
 		}
 		map.put(ZKConst.FEATURE, Profile.featureInHex());
 		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));

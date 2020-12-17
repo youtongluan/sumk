@@ -31,14 +31,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
+import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 
 public final class AsmUtils {
-
-	private static final String[] blanks = { "getClass", "wait", "equals", "notify", "notifyAll", "toString",
-			"hashCode" };
 
 	private static final ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
 	private static Method defineClass;
@@ -60,26 +59,17 @@ public final class AsmUtils {
 		return name.substring(0, index) + ".sumkbox" + name.substring(index);
 	}
 
-	private static ClassLoader loader() {
-		ClassLoader load = Thread.currentThread().getContextClassLoader();
-		if (load != null) {
-			return load;
-		}
-		return AsmUtils.class.getClassLoader();
+	public static int asmVersion() {
+		return AppInfo.getInt("sumk.asm.version", Opcodes.ASM7);
+	}
+
+	public static int jvmVersion() {
+		return AppInfo.getInt("sumk.asm.jvm.version", Opcodes.V1_8);
 	}
 
 	public static InputStream openStreamForClass(String name) {
 		String internalName = name.replace('.', '/') + ".class";
-		return loader().getResourceAsStream(internalName);
-	}
-
-	public static boolean isFilted(String method) {
-		for (String m : blanks) {
-			if (m.equals(method)) {
-				return true;
-			}
-		}
-		return false;
+		return Loader.getResourceAsStream(internalName);
 	}
 
 	public static boolean sameType(Type[] types, Class<?>[] clazzes) {
@@ -151,8 +141,8 @@ public final class AsmUtils {
 					fos.flush();
 				}
 			} catch (Exception e) {
-				if (Log.isTraceEnable("sumk.asm")) {
-					Log.printStack("sumk.error", e);
+				if (Logs.asm().isTraceEnabled()) {
+					Logs.asm().error(e.getLocalizedMessage(), e);
 				}
 			}
 		}
@@ -166,7 +156,7 @@ public final class AsmUtils {
 			if (clz != null) {
 				return clz;
 			}
-			clz = (Class<?>) defineClass.invoke(loader(), fullName, b, 0, b.length);
+			clz = (Class<?>) defineClass.invoke(Loader.loader(), fullName, b, 0, b.length);
 			if (clz == null) {
 				throw new SumkException(-235345436, "cannot load class " + fullName);
 			}

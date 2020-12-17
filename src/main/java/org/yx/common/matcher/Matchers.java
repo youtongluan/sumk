@@ -96,13 +96,20 @@ public class Matchers {
 		}
 
 		Set<String> exacts = exact.size() > 0 ? exact : null;
-		String[] matchStarts = matchStart.size() > 0 ? matchStart.toArray(new String[0]) : null;
-		String[] matchEnds = matchEnd.size() > 0 ? matchEnd.toArray(new String[0]) : null;
-		String[] matchContains = matchContain.size() > 0 ? matchContain.toArray(new String[0]) : null;
+		String[] matchStarts = toArray(matchStart);
+		String[] matchEnds = toArray(matchEnd);
+		String[] matchContains = toArray(matchContain);
 		if (exacts == null && matchStarts == null && matchEnds == null && matchContains == null) {
 			return BooleanMatcher.FALSE;
 		}
 		return new WildcardMatcher(exacts, matchStarts, matchEnds, matchContains);
+	}
+
+	private static String[] toArray(Collection<String> src) {
+		if (src.size() == 0) {
+			return null;
+		}
+		return src.toArray(new String[src.size()]);
 	}
 
 	/**

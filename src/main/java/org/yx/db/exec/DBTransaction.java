@@ -16,59 +16,51 @@
 package org.yx.db.exec;
 
 import java.sql.SQLException;
+import java.util.Objects;
 
 import org.yx.db.conn.ConnectionPool;
-import org.yx.db.enums.DBType;
-import org.yx.db.enums.TransactionType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 
 public final class DBTransaction implements AutoCloseable {
 
 	private ConnectionPool dbCtx = null;
-	private final TransactionType transaction;
-	private final String dbName;
-	private final DBType dbType;
+	private final DBSource box;
 
-	public DBTransaction(String dbName, DBType dbType, TransactionType transaction) {
-		this.transaction = transaction;
-		this.dbName = dbName;
-		this.dbType = dbType;
+	public DBTransaction(DBSource box) {
+		this.box = Objects.requireNonNull(box);
 	}
 
 	public void begin() {
-		switch (transaction) {
+		switch (box.transactionType()) {
 		case AUTO_COMMIT:
-			dbCtx = ConnectionPool.create(dbName, dbType, true);
+			dbCtx = ConnectionPool.create(box.dbName(), box.dbType(), true);
 			return;
 		case REQUIRES_NEW:
-			dbCtx = ConnectionPool.create(dbName, dbType, false);
+			dbCtx = ConnectionPool.create(box.dbName(), box.dbType(), false);
 			return;
 		case REQUIRED:
 
-			dbCtx = ConnectionPool.createIfAbsent(dbName, dbType);
+			dbCtx = ConnectionPool.createIfAbsent(box.dbName(), box.dbType());
 			return;
 		default:
 			return;
 		}
 	}
 
-	public boolean isAutoCommit() {
-		return this.transaction == TransactionType.AUTO_COMMIT;
-	}
-
 	public void rollback(Throwable e) {
-		if (dbCtx != null && !this.isAutoCommit()) {
-			try {
-				dbCtx.rollback();
-			} catch (SQLException e1) {
-				Log.printStack("sumk.sql.error", e1);
-			}
+		if (dbCtx == null || dbCtx.isAutoCommit()) {
+			return;
+		}
+		try {
+			dbCtx.rollback();
+		} catch (SQLException e1) {
+			Log.printStack("sumk.sql.error", e1);
 		}
 	}
 
 	public void commit() {
-		if (dbCtx == null || this.isAutoCommit()) {
+		if (dbCtx == null || dbCtx.isAutoCommit()) {
 			return;
 		}
 		try {
@@ -93,6 +85,10 @@ public final class DBTransaction implements AutoCloseable {
 
 	public ConnectionPool getConnectionPool() {
 		return dbCtx;
+	}
+
+	public DBSource getDBSource() {
+		return box;
 	}
 
 }

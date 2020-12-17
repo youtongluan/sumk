@@ -18,19 +18,18 @@ package org.yx.rpc.server.impl;
 import java.util.List;
 
 import org.yx.bean.IOC;
-import org.yx.rpc.RpcActionNode;
+import org.yx.rpc.server.LocalRpcContext;
+import org.yx.rpc.server.RpcContext;
 import org.yx.rpc.server.RpcFilter;
-import org.yx.rpc.server.RpcVisitor;
 
 public final class RpcHandler {
 
 	private static RpcFilter filter;
 	private static final RpcFilter LAST = new RpcFilter() {
 		@Override
-		public Object doFilter(RpcActionNode node, RpcVisitor visitor) throws Throwable {
-			return visitor.visit(node);
+		public Object doFilter(RpcContext ctx) throws Throwable {
+			return ctx.node().execute(ctx.getArgPojo());
 		}
-
 	};
 
 	public static synchronized void init() {
@@ -54,8 +53,17 @@ public final class RpcHandler {
 		filter = list.get(0);
 	}
 
-	public static Object handle(RpcActionNode node, RpcVisitor visitor) throws Throwable {
-		return filter.doFilter(node, visitor);
+	public static Object handle(RpcContext ctx) throws Throwable {
+		RpcContext old = LocalRpcContext.getCtx();
+		LocalRpcContext.setCtx(ctx);
+		try {
+			return filter.doFilter(ctx);
+		} finally {
+			if (old == null) {
+				LocalRpcContext.remove();
+			} else {
+				LocalRpcContext.setCtx(old);
+			}
+		}
 	}
-
 }

@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target(ElementType.PARAMETER)
+@Target({ ElementType.PARAMETER, ElementType.FIELD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Param {
@@ -33,6 +33,8 @@ public @interface Param {
 	String value() default "";
 
 	/**
+	 * 为了调试方便，可以在启动的时候设置sumk.param.required.enable=0来禁用它
+	 * 
 	 * @return true表示是必传参数，不允许为null或空字符串
 	 */
 	boolean required() default true;
@@ -42,12 +44,12 @@ public @interface Param {
 	 * 
 	 * @return 字符串的最大长度或正整数的最大值(包含)，小于0表示不限
 	 */
-	int max() default Integer.MIN_VALUE;
+	int max() default -1;
 
 	/**
 	 * @return 字符串的最小长度或正整数的最小值(包含)，小于0表示不限
 	 */
-	int min() default Integer.MIN_VALUE;
+	int min() default -1;
 
 	/**
 	 * @return 自定义属性。作用留给开发者自己扩展
@@ -63,4 +65,12 @@ public @interface Param {
 	 * @return 文档中的备注信息，也可用于扩展
 	 */
 	String comment() default "";
+
+	/**
+	 * 只有本属性为true的参数，才会校验内部字段<BR>
+	 * 它能支持数组，包括int[]这种原始数组。但<B>不支持泛型，包括集合类型</B>。
+	 * 
+	 * @return true表示该参数或字段是复合类型，会对内部的字段进行校验
+	 */
+	boolean complex() default false;
 }

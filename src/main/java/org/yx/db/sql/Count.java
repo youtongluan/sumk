@@ -34,7 +34,7 @@ public class Count {
 		this.select = select;
 	}
 
-	public int execute() {
+	public long execute() {
 		List<Object> paramters = new ArrayList<>(8);
 		select.pojoMeta = select.parsePojoMeta(true);
 		Objects.requireNonNull(select.pojoMeta, "pojo meta cannot be null");

@@ -13,27 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.validate;
+package org.yx.http.handler;
 
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
+import org.yx.annotation.Bean;
+import org.yx.http.HttpErrorCode;
+import org.yx.http.kit.HttpException;
 
-import org.yx.annotation.Param;
+@Bean
+public class ReqMethodChecker implements HttpHandler {
 
-public class ParamFactory {
-
-	public static Param[] create(Method m) {
-		Annotation[][] paramAnno = m.getParameterAnnotations();
-		Param[] params = new Param[paramAnno.length];
-		for (int i = 0; i < paramAnno.length; i++) {
-			Annotation[] a = paramAnno[i];
-			for (Annotation a2 : a) {
-				if (Param.class == a2.annotationType()) {
-					params[i] = (Param) a2;
-					break;
-				}
-			}
-		}
-		return params;
+	@Override
+	public int order() {
+		return 1100;
 	}
+
+	@Override
+	public void handle(WebContext ctx) throws Exception {
+		String method = ctx.httpRequest().getMethod();
+		if (ctx.node().acceptMethod(method)) {
+			return;
+		}
+		throw HttpException.create(HttpErrorCode.METHOD_UNSUPPORT, "本接口不支持方法" + method);
+	}
+
 }

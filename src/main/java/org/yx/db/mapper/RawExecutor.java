@@ -118,11 +118,11 @@ public class RawExecutor {
 	 *            参数
 	 * @return 记录数
 	 */
-	public static int count(String sql, Object... params) {
+	public static long count(String sql, Object... params) {
 		try {
 			List<?> list = Visitors.singleListQueryVisitor.visit(new RawSqlBuilder(sql, params));
 			Number n = (Number) list.get(0);
-			return n.intValue();
+			return n.longValue();
 		} catch (Exception e) {
 			throw SumkException.wrap(e);
 		}

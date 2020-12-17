@@ -17,7 +17,7 @@ package org.yx.http.user;
 
 public interface UserSession {
 
-	byte[] getKey(String sessionId);
+	byte[] getEncryptKey(String sessionId);
 
 	<T extends SessionObject> T getUserObject(String sessionId, Class<T> clz);
 
@@ -25,7 +25,7 @@ public interface UserSession {
 
 	void removeSession(String sessionId);
 
-	boolean isLogin(String userId);
+	String sessionId(String userId);
 
 	int localCacheSize();
 }

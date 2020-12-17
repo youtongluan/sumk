@@ -16,45 +16,39 @@
 package org.yx.common;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicLongArray;
 
 public class StatisItem {
 	private final String name;
 
-	private final AtomicInteger count = new AtomicInteger(0);
-
-	private final AtomicLong time = new AtomicLong(0);
-
-	private final AtomicInteger failedCount = new AtomicInteger(0);
-	private final AtomicLong failedTime = new AtomicLong(0);
+	private final AtomicLongArray counter = new AtomicLongArray(4);
 
 	public StatisItem(String name) {
 		this.name = Objects.requireNonNull(name);
 	}
 
 	public void successVisit(long t) {
-		this.count.incrementAndGet();
-		this.time.addAndGet(t);
+		counter.incrementAndGet(0);
+		counter.addAndGet(1, t);
 	}
 
 	public void failedVisit(long t) {
-		this.failedCount.incrementAndGet();
-		this.failedTime.addAndGet(t);
+		counter.incrementAndGet(2);
+		counter.addAndGet(3, t);
 	}
 
 	@Override
 	public String toString() {
-		return name + ": count=" + count + ", time=" + time + ", failedCount=" + failedCount + ", failedTime="
-				+ failedTime;
+		return name + ": count=" + getSuccessCount() + ", time=" + getSuccessTime() + ", failedCount="
+				+ getFailedCount() + ", failedTime=" + getFailedTime();
 	}
 
 	public String toSimpleString() {
-		long c = count.get();
-		long t = time.get();
+		long c = getSuccessCount();
+		long t = getSuccessTime();
 		double avg = c == 0 ? 0 : t * 1d / c;
 		return String.join("   ", name, String.valueOf(c), String.valueOf(t), String.valueOf(Math.round(avg)),
-				String.valueOf(failedCount.get()), String.valueOf(failedTime.get()));
+				String.valueOf(getFailedCount()), String.valueOf(getFailedTime()));
 	}
 
 	public static String header() {
@@ -65,20 +59,20 @@ public class StatisItem {
 		return name;
 	}
 
-	public int getSuccessCount() {
-		return count.get();
+	public long getSuccessCount() {
+		return counter.get(0);
 	}
 
 	public long getSuccessTime() {
-		return time.get();
+		return counter.get(1);
 	}
 
-	public int getFailedCount() {
-		return failedCount.get();
+	public long getFailedCount() {
+		return counter.get(2);
 	}
 
 	public long getFailedTime() {
-		return failedTime.get();
+		return counter.get(3);
 	}
 
 }

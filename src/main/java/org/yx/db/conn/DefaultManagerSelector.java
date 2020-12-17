@@ -21,10 +21,12 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
+import org.yx.conf.Const;
+import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 
-public class DefaultManagerContainer implements Function<String, DataSourceManager> {
+public class DefaultManagerSelector implements Function<String, DataSourceManager> {
 
 	/**
 	 * 这个属性是不可变的
@@ -56,8 +58,16 @@ public class DefaultManagerContainer implements Function<String, DataSourceManag
 		return old;
 	}
 
+	protected String reform(String dbName) {
+		if (Const.DEFAULT_DB_NAME.equals(dbName) && DBSettings.customDbName() != null) {
+			return DBSettings.customDbName();
+		}
+		return dbName;
+	}
+
 	@Override
 	public DataSourceManager apply(String dbName) {
+		dbName = reform(dbName);
 		DataSourceManager factory = factoryMap.get(dbName);
 		if (factory != null) {
 			return factory;

@@ -20,5 +20,5 @@ import org.yx.exception.InvalidParamException;
 
 public interface Validator extends Ordered {
 
-	void valid(ParamInfo info, Object arg) throws InvalidParamException;
+	void valid(ParameterInfo info, Object arg) throws InvalidParamException;
 }

@@ -15,30 +15,35 @@
  */
 package org.yx.validate;
 
+import java.util.Objects;
+
 import org.yx.annotation.Param;
 
-public class ParamInfo {
-	final Param param;
+public class ParamInfo extends AbstractParamInfo {
 
-	final String paramName;
+	private final String paramName;
 
-	final Class<?> paramType;
+	private final Class<?> paramType;
+
+	private final boolean complex;
 
 	public ParamInfo(Param param, String paramName, Class<?> type) {
-		this.param = param;
-		this.paramName = paramName;
-		this.paramType = type;
+		super(param);
+		this.paramName = Objects.requireNonNull(paramName);
+		this.paramType = Objects.requireNonNull(type);
+		this.complex = param.complex();
 	}
 
 	public String getParamName() {
 		return paramName;
 	}
 
-	public Param getParam() {
-		return param;
-	}
-
-	public Class<?> getType() {
+	public Class<?> getParamType() {
 		return paramType;
 	}
+
+	public boolean isComplex() {
+		return complex;
+	}
+
 }

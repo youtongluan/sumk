@@ -23,7 +23,7 @@ import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.rpc.server.RpcVisitor;
+import org.yx.rpc.server.RpcContext;
 
 @Bean
 public class OrderedParamReqHandler implements RequestHandler {
@@ -38,7 +38,9 @@ public class OrderedParamReqHandler implements RequestHandler {
 			String api = req.getApi();
 			RpcActionNode node = RpcActions.getActionNode(api);
 			RpcActionNode.checkNode(api, node);
-			Object ret = RpcHandler.handle(node, new OrderedRpcVisitor(req));
+			RpcContext ctx = new RpcContext(node, req);
+			ctx.setArgPojo(node.createOrderArgPojo(req));
+			Object ret = RpcHandler.handle(ctx);
 			resp.json(RpcJson.operator().toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
@@ -46,18 +48,4 @@ public class OrderedParamReqHandler implements RequestHandler {
 		}
 		return true;
 	}
-
-	private static final class OrderedRpcVisitor extends RpcVisitor {
-
-		public OrderedRpcVisitor(Request req) {
-			super(req);
-		}
-
-		@Override
-		public Object visit(RpcActionNode info) throws Throwable {
-			return info.invokeByOrder(req.getParamArray());
-		}
-
-	};
-
 }

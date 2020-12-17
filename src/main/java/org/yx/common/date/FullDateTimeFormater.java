@@ -18,9 +18,6 @@ package org.yx.common.date;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
-/**
- * yyyy-MM-dd HH:mm:ss.SSS
- */
 public final class FullDateTimeFormater implements SumkDateFormater {
 	public static final FullDateTimeFormater inst = new FullDateTimeFormater();
 

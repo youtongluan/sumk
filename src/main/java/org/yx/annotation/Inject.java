@@ -40,5 +40,10 @@ public @interface Inject {
 
 	String handler() default "";
 
-	String tag() default "";
+	/**
+	 * 数组、集合类型不可能为null，但是可以为空
+	 * 
+	 * @return 如果为true，表示可以为null或空集合
+	 */
+	boolean allowEmpty() default false;
 }

@@ -22,6 +22,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
+import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
 import org.yx.common.StartConstants;
@@ -110,7 +111,7 @@ public class HttpPlugin implements Plugin {
 		if (!hs.contains(".")) {
 			return;
 		}
-		Class<?> httpClz = Class.forName(hs);
+		Class<?> httpClz = Loader.loadClassExactly(hs);
 		Constructor<?> c = httpClz.getConstructor(int.class);
 		this.server = (Lifecycle) c.newInstance(port);
 	}
@@ -145,7 +146,7 @@ public class HttpPlugin implements Plugin {
 			return false;
 		}
 		try {
-			Class.forName("javax.servlet.http.HttpServlet");
+			Loader.loadClassExactly("javax.servlet.http.HttpServlet");
 		} catch (Exception e) {
 			Logs.http().error("javax-servlet-api-**.jar is not imported");
 			return false;

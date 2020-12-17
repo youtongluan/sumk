@@ -23,8 +23,8 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.ActStatis;
-import org.yx.common.ActStatisImpl;
+import org.yx.common.action.ActStatis;
+import org.yx.common.action.ActStatisImpl;
 import org.yx.http.HttpJson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;

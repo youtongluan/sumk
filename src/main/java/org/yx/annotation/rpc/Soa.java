@@ -43,5 +43,11 @@ public @interface Soa {
 
 	int toplimit() default 0;
 
+	/**
+	 * 可以通过sumk.rpc.publish.[api名称]配置来覆盖本属性。<BR>
+	 * 设置sumk.rpc.server.register=0可以将整个应用的zk注册给禁用掉
+	 * 
+	 * @return 是否将接口发布到zk上
+	 */
 	boolean publish() default true;
 }

@@ -18,6 +18,7 @@ package org.yx.db.conn;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
@@ -38,8 +39,7 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 
 	};
-	private final Logger LOG_CONN_OPEN = Log.get("sumk.conn.open");
-	private final Logger LOG_CONN = Log.get("sumk.conn");
+	private static final Logger LOGGER = Log.get("sumk.conn");
 
 	private final String dbName;
 
@@ -65,7 +65,7 @@ public final class ConnectionPool implements AutoCloseable {
 
 	public static ConnectionPool createIfAbsent(String dbName, DBType dbType) {
 		List<ConnectionPool> list = connectionHolder.get();
-		if (list.size() > 0) {
+		if (list.size() > 0 && list.get(0).getDbName().equals(dbName)) {
 
 			return null;
 		}
@@ -73,8 +73,8 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	private ConnectionPool(String dbName, DBType dbType, boolean autoCommit) {
-		this.dbName = dbName;
-		this.dbType = dbType;
+		this.dbName = Objects.requireNonNull(dbName);
+		this.dbType = Objects.requireNonNull(dbType);
 		this.autoCommit = autoCommit;
 	}
 
@@ -97,13 +97,13 @@ public final class ConnectionPool implements AutoCloseable {
 			return;
 		}
 		try {
-			Log.get("sumk.conn").error("### connection leak:" + list.size());
+			LOGGER.error("### connection leak:" + list.size());
 			while (list.size() > 0) {
 				list.get(0).close();
 			}
 			connectionHolder.remove();
 		} catch (Exception e) {
-			Log.get("sumk.conn").error(e.getMessage(), e);
+			LOGGER.error(e.getMessage(), e);
 		}
 		EventLane.removeALL();
 	}
@@ -160,14 +160,16 @@ public final class ConnectionPool implements AutoCloseable {
 			throw new SumkException(124234154, dbName + "没有可用的读数据源");
 		}
 		if (this.writeConn != null && this.writeConn.dataSource == dataSource) {
-			if (LOG_CONN.isTraceEnabled()) {
-				LOG_CONN.trace("{}写锁分身出读锁", this.dbName);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("{}写锁分身出读锁", this.dbName);
 			}
 			this.readConn = this.writeConn.copy();
 			return this.readConn;
 		}
 		this.readConn = dataSource.getConnection();
-		LOG_CONN_OPEN.trace("open read connection:{}", readConn);
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("open read connection:{}", readConn);
+		}
 		return readConn;
 	}
 
@@ -181,12 +183,14 @@ public final class ConnectionPool implements AutoCloseable {
 		}
 		if (this.readConn != null && this.readConn.dataSource == dataSource) {
 			this.writeConn = this.readConn.copy();
-			if (LOG_CONN.isTraceEnabled()) {
-				LOG_CONN.trace("{}读锁升级出写锁", this.dbName);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("{}读锁升级出写锁", this.dbName);
 			}
 		} else {
 			this.writeConn = dataSource.getConnection();
-			LOG_CONN_OPEN.trace("open write connection:{}", writeConn);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("open write connection:{}", writeConn);
+			}
 		}
 		this.writeConn.setAutoCommit(this.autoCommit);
 		return writeConn;
@@ -194,14 +198,18 @@ public final class ConnectionPool implements AutoCloseable {
 
 	public void commit() throws SQLException {
 		if (this.writeConn != null) {
-			LOG_CONN.trace("commit {}", this.dbName);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("commit {}", this.dbName);
+			}
 			this.writeConn.commit();
 		}
 	}
 
 	public void rollback() throws SQLException {
 		if (this.writeConn != null) {
-			LOG_CONN.trace("rollback {}", this.dbName);
+			if (LOGGER.isTraceEnabled()) {
+				LOGGER.trace("rollback {}", this.dbName);
+			}
 			this.writeConn.rollback();
 		}
 	}
@@ -227,8 +235,8 @@ public final class ConnectionPool implements AutoCloseable {
 		List<ConnectionPool> list = connectionHolder.get();
 		int size = list.size();
 		list.remove(this);
-		if (LOG_CONN.isTraceEnabled()) {
-			LOG_CONN.trace("Close connection context [{}], from size {} to {}", this.dbName, size, list.size());
+		if (LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Close connection context [{}], from size {} to {}", this.dbName, size, list.size());
 		}
 	}
 
@@ -240,4 +248,7 @@ public final class ConnectionPool implements AutoCloseable {
 		return dbType;
 	}
 
+	public boolean isAutoCommit() {
+		return autoCommit;
+	}
 }

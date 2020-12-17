@@ -42,7 +42,7 @@ public class ReqDataHandler implements HttpHandler {
 			Logs.http().debug("data is not null");
 			return;
 		}
-		if (ctx.httpNode().isEmptyArgument()) {
+		if (ctx.node().isEmptyArgument()) {
 			return;
 		}
 		HttpServletRequest req = ctx.httpRequest();

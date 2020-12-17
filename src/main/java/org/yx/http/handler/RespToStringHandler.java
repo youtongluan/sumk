@@ -30,11 +30,11 @@ public class RespToStringHandler implements HttpHandler {
 	public void handle(WebContext ctx) throws Throwable {
 		Object obj = ctx.result();
 		if (obj == null) {
-			if (ctx.httpNode().getReturnType() == void.class) {
-				ctx.result(new byte[0]);
+			if (ctx.node().getReturnType() == void.class) {
+				ctx.result(new byte[0], false);
 				return;
 			}
-			ctx.result(HttpJson.operator().toJson(obj));
+			ctx.result(HttpJson.operator().toJson(obj), true);
 			return;
 		}
 		Class<?> clz = obj.getClass();
@@ -42,10 +42,10 @@ public class RespToStringHandler implements HttpHandler {
 			return;
 		}
 		if (clz.isPrimitive() || clz.equals(String.class)) {
-			ctx.result(String.valueOf(obj));
+			ctx.result(String.valueOf(obj), true);
 			return;
 		}
-		ctx.result(HttpJson.operator().toJson(obj));
+		ctx.result(HttpJson.operator().toJson(obj), true);
 	}
 
 }

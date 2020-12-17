@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.yx.http.MessageType;
+import org.yx.http.server.HttpMethod;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -35,10 +36,21 @@ public @interface Web {
 
 	String cnName() default "";
 
-	boolean requireLogin() default false;
+	/**
+	 * 本功能默认关闭。需要在启动的时候设置sumk.http.login.enable=1才能开启。
+	 * 开启本功能后，session中的userId会在整个调用链路上传递
+	 * 
+	 * @return 如果已经开启了，并且该值为true，框架会校验当前用户是否存在session,以及是否过期
+	 */
+	boolean requireLogin() default true;
 
 	MessageType requestType() default MessageType.PLAIN;
 
+	/**
+	 * 为了调试方便，可以在启动的时候设置sumk.http.sign.enable=0来禁用它
+	 * 
+	 * @return 如果设为true，框架会校验请求的签名
+	 */
 	boolean sign() default false;
 
 	MessageType responseType() default MessageType.PLAIN;
@@ -54,4 +66,5 @@ public @interface Web {
 
 	int toplimit() default 0;
 
+	String[] method() default { HttpMethod.POST, HttpMethod.GET };
 }

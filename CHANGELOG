@@ -222,4 +222,19 @@ v2.9.3
 1、SumkDate支持在DB和SDB中使用，但不支持mbatis、hibernate等外置数据库操作
 2、支持使用配置的方式替代@SoaClass注解
 3、S.bean()支持日期类型、数字类型的模糊匹配
+4、@Web添加method属性
+5、SumkServer.main增加class参数，以支持sumk.jar和工程代码不在一个classloader里
 
+v2.9.4
+1、@Param支持pojo以及数组方式
+2、BizException允许通过配置输出堆栈
+3、WebUtil和RpcUtil提供所有参数组成的map，并且map的遍历顺序与参数顺序一致
+4、通过sumk.db.default可以配置默认的数据库名称
+5、修改SDB的包名
+
+v2.9.5
+1、SDB的count改为返回long
+2、s.http.response.header.开头的配置会被添加到web的响应header中
+
+v2.9.6
+1、将@Web的requireLogin默认值改为true，但是默认禁用，要配置sumk.http.login.enable=1才能启用

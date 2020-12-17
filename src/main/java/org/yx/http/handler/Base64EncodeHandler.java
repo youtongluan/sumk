@@ -29,12 +29,12 @@ public class Base64EncodeHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.web().responseType().isBase64() || HttpSettings.allowPlain(ctx.httpRequest())) {
+		if (!ctx.node().responseType().isBase64() || HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = (byte[]) ctx.result();
 		byte[] data = S.base64().encode(bs);
-		ctx.result(data);
+		ctx.result(data, false);
 	}
 
 }

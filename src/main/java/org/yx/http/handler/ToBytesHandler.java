@@ -32,7 +32,7 @@ public class ToBytesHandler implements HttpHandler {
 			return;
 		}
 		String bs = (String) result;
-		ctx.result(bs.getBytes(ctx.charset()));
+		ctx.result(bs.getBytes(ctx.charset()), false);
 	}
 
 }
