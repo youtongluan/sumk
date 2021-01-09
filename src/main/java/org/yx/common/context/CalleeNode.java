@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.context;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedType;
@@ -161,7 +161,7 @@ public abstract class CalleeNode {
 			return argObj.invoke(owner);
 		} catch (Throwable e) {
 
-			if (InvocationTargetException.class.isInstance(e)) {
+			if (e instanceof InvocationTargetException) {
 				InvocationTargetException te = (InvocationTargetException) e;
 				if (te.getTargetException() != null) {
 					throw te.getTargetException();

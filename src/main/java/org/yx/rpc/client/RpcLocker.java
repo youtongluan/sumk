@@ -27,7 +27,7 @@ import org.yx.common.Host;
 import org.yx.common.context.ActionContext;
 import org.yx.common.context.LogContext;
 import org.yx.exception.SoaException;
-import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.log.RpcLog;
@@ -45,7 +45,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 	private final AtomicReference<Thread> awaitThread = new AtomicReference<>();
 
 	RpcLocker(Req req, Consumer<RpcResult> callback) {
-		this.req = req;
+		this.req = Objects.requireNonNull(req);
 		this.callback = callback;
 		this.originLogContext = ActionContext.get().logContext();
 	}
@@ -66,8 +66,15 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		return this.result.get() != null;
 	}
 
-	public void wakeup(RpcResult result) {
-		long receiveTime = System.currentTimeMillis();
+	public void wakeupAndLog(RpcResult result) {
+		this.wakeup0(result, true);
+	}
+
+	public void discard(RpcResult result) {
+		this.wakeup0(result, false);
+	}
+
+	private void wakeup0(RpcResult result, boolean finish) {
 		Objects.requireNonNull(result, "result cannot be null");
 		if (this.isWaked()) {
 			return;
@@ -75,6 +82,11 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		if (!this.result.compareAndSet(null, result)) {
 			return;
 		}
+		if (!finish) {
+			return;
+		}
+
+		long receiveTime = System.currentTimeMillis();
 		Thread thread = awaitThread.getAndSet(null);
 		if (thread != null) {
 			LockSupport.unpark(thread);
@@ -83,7 +95,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 			try {
 				callback.accept(result);
 			} catch (Throwable e) {
-				Log.printStack("sumk.rpc", e);
+				Logs.rpc().error(e.getLocalizedMessage(), e);
 			}
 		}
 		RpcLogs.clientLog(new RpcLog(this.url, this.req, this.originLogContext, result, receiveTime));
@@ -101,7 +113,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 			if (url != null) {
 				HostChecker.get().addDownUrl(url);
 			}
-			wakeup(RpcResult.sendFailed(req, future.getException()));
+			wakeupAndLog(RpcResult.sendFailed(req, future.getException()));
 		});
 	}
 

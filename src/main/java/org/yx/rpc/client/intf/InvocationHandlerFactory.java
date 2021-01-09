@@ -19,11 +19,11 @@ import java.lang.reflect.InvocationHandler;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.yx.rpc.InnerRpcKit;
+import org.yx.rpc.InnerRpcUtil;
 
 public final class InvocationHandlerFactory {
 	private static Function<Class<?>, InvocationHandler> factory = intf -> {
-		String prefix = InnerRpcKit.parseRpcIntfPrefix(intf);
+		String prefix = InnerRpcUtil.parseRpcIntfPrefix(intf);
 		return new IntfClientHandler(prefix, intf);
 	};
 

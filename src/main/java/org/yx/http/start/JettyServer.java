@@ -37,11 +37,11 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.util.thread.ExecutorThreadPool;
 import org.yx.bean.IOC;
 import org.yx.common.Lifecycle;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.main.SumkLoaderListener;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -139,7 +139,7 @@ public class JettyServer implements Lifecycle {
 			addUserHandlers(context);
 			server.setHandler(context);
 		} catch (Throwable e) {
-			Log.printStack("sumk.http", e);
+			Logs.http().error(e.getLocalizedMessage(), e);
 			StartContext.startFail();
 		}
 
@@ -176,7 +176,7 @@ public class JettyServer implements Lifecycle {
 			server.start();
 			started = true;
 		} catch (Throwable e) {
-			Log.printStack("sumk.http", e);
+			Logs.http().error(e.getLocalizedMessage(), e);
 			throw new SumkException(234234, "jetty启动失败");
 		}
 

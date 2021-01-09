@@ -67,7 +67,7 @@ public class ForeachParser implements SqlParser {
 			}
 			return null;
 		}
-		if (Collection.class.isInstance(obj)) {
+		if (obj instanceof Collection) {
 			Collection<?> list = (Collection<?>) obj;
 			List<MapedSql> mapeds = new ArrayList<>(list.size());
 
@@ -75,7 +75,7 @@ public class ForeachParser implements SqlParser {
 			for (Object v : list) {
 				if (this.itemName == null) {
 					builder = new MapedSqlBuilder(template, param);
-				} else if (Map.class.isInstance(v)) {
+				} else if (v instanceof Map) {
 					builder = new MapedSqlBuilder(template,
 							new ComposeMapHandler(param, (Map<String, Object>) v, this.itemName + "."));
 				} else {

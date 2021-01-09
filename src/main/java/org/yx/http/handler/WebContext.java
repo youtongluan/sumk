@@ -22,7 +22,7 @@ import java.util.Objects;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.NodeContext;
+import org.yx.common.context.NodeContext;
 import org.yx.http.act.HttpActionNode;
 
 public class WebContext extends NodeContext<HttpActionNode> {
@@ -84,7 +84,7 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	}
 
 	public byte[] getDataInByteArray() {
-		if (String.class.isInstance(data)) {
+		if (data instanceof String) {
 			return ((String) data).getBytes(charset());
 		}
 		return (byte[]) data;

@@ -56,8 +56,8 @@ public abstract class AbstractJedis2Executor implements Jedis2Executor {
 	}
 
 	protected boolean isConnectException(Throwable e) {
-		return JedisConnectionException.class.isInstance(e)
-				|| (e.getCause() != null && JedisConnectionException.class.isInstance(e.getCause()));
+		return e instanceof JedisConnectionException
+				|| (e.getCause() != null && e.getCause() instanceof JedisConnectionException);
 	}
 
 	@Override

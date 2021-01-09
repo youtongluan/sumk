@@ -54,7 +54,7 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	}
 
 	protected void logError(String msg, Throwable ex) {
-		if (BizException.class.isInstance(ex)) {
+		if (ex instanceof BizException) {
 			log.warn(msg, ex);
 			return;
 		}

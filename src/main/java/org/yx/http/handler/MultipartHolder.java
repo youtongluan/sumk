@@ -28,7 +28,7 @@ public class MultipartHolder {
 		items.set(fs);
 	}
 
-	static void remove() {
+	public static void remove() {
 		items.remove();
 	}
 

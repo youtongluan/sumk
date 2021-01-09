@@ -16,8 +16,13 @@
 package org.yx.http.server;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,8 +33,10 @@ import org.yx.common.Monitors;
 import org.yx.common.json.GsonHelper;
 import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 import org.yx.rpc.RpcActions;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 
 import com.google.gson.Gson;
@@ -43,7 +50,7 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		if (!ServerHelper.preHandle(req, resp, "sumk.acts.info")) {
+		if (!InnerHttpUtil.preServerHandle(req, resp, "sumk.acts.info")) {
 			return;
 		}
 		String mode = req.getParameter("mode");
@@ -58,11 +65,13 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 		Gson gson = builder.create();
 		if (mode.equals("http")) {
 			List<Map<String, Object>> list = HttpActions.infos("1".equals(req.getParameter("full")));
+			list = this.filter(list, req);
 			write(resp, gson.toJson(list));
 			return;
 		}
 		if (mode.equals("rpc")) {
 			List<Map<String, Object>> list = RpcActions.infos("1".equals(req.getParameter("full")));
+			list = this.filter(list, req);
 			write(resp, gson.toJson(list));
 			return;
 		}
@@ -70,6 +79,55 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 			write(resp, beans());
 			return;
 		}
+	}
+
+	private List<Map<String, Object>> filter(List<Map<String, Object>> list, HttpServletRequest req) {
+		if (list == null || list.isEmpty() || AppInfo.getBoolean("sumk.acts.search.disable", false)) {
+			return list;
+		}
+		Set<String> keys = new HashSet<>();
+		for (Map<String, Object> map : list) {
+			keys.addAll(map.keySet());
+		}
+		Map<String, String> params = this.getFilterParams(req, keys);
+		if (params.isEmpty()) {
+			return list;
+		}
+		List<Map<String, Object>> ret = new ArrayList<>(list.size());
+		for (Map<String, Object> map : list) {
+			if (contain(map, params)) {
+				ret.add(map);
+			}
+		}
+		return ret;
+	}
+
+	private Map<String, String> getFilterParams(HttpServletRequest req, Collection<String> keys) {
+		Map<String, String> map = new HashMap<>();
+		for (String key : keys) {
+			String v = req.getParameter("_" + key);
+			if (v != null) {
+				v = v.toLowerCase().trim();
+			}
+			if (StringUtil.isNotEmpty(v)) {
+				map.put(key, v);
+			}
+		}
+		return map;
+	}
+
+	private boolean contain(Map<String, Object> source, Map<String, String> params) {
+		for (String key : params.keySet()) {
+			Object obj = source.get(key);
+			if (obj == null) {
+				return false;
+			}
+			String v = S.json().toJson(obj);
+			if (!v.toLowerCase().contains(params.get(key))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	private String beans() {

@@ -24,6 +24,12 @@ public final class RpcSettings {
 	private static long infoTime;
 	private static long warnTime;
 	private static int clientDefaultTimeout;
+	private static boolean disableLocalRoute;
+	private static int clientTryCount;
+
+	public static boolean disableLocalRoute() {
+		return disableLocalRoute;
+	}
 
 	public static int clientDefaultTimeout() {
 		return clientDefaultTimeout;
@@ -41,6 +47,10 @@ public final class RpcSettings {
 		return serverLogDisable;
 	}
 
+	public static int clientTryCount() {
+		return clientTryCount;
+	}
+
 	public static boolean isClientLogDisable() {
 		return clientLogDisable;
 	}
@@ -56,6 +66,8 @@ public final class RpcSettings {
 			RpcSettings.serverLogDisable = AppInfo.getBoolean("sumk.rpc.log.server.disable", false);
 			RpcSettings.clientLogDisable = AppInfo.getBoolean("sumk.rpc.log.client.disable", false);
 			RpcSettings.clientDefaultTimeout = AppInfo.getInt("sumk.rpc.call.timeout", 30000);
+			RpcSettings.clientTryCount = AppInfo.getInt("sumk.rpc.client.trycount", 3);
+			RpcSettings.disableLocalRoute = AppInfo.getBoolean("sumk.rpc.localroute.disable", false);
 		});
 	}
 }

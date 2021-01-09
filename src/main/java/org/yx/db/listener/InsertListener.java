@@ -34,7 +34,7 @@ public class InsertListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!DBSettings.toCache() || !InsertEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !(ev instanceof InsertEvent)) {
 			return;
 		}
 		InsertEvent event = InsertEvent.class.cast(ev);

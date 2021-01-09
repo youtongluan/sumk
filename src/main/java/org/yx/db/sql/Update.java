@@ -121,7 +121,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	 */
 	@SuppressWarnings("unchecked")
 	public Update updateTo(Object pojo) {
-		if (Map.class.isInstance(pojo)) {
+		if (pojo instanceof Map) {
 			this.updateTo = new HashMap<>((Map<String, Object>) pojo);
 			return this;
 		}

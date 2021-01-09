@@ -21,12 +21,12 @@ import java.util.List;
 import java.util.function.Predicate;
 
 import org.yx.annotation.Bean;
-import org.yx.common.StartConstants;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.main.StartConstants;
 
 public class BeanFactory extends AbstractBeanListener {
 

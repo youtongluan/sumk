@@ -103,7 +103,7 @@ public class BeanConverter {
 		if (bean == null) {
 			return Collections.emptyMap();
 		}
-		if (Map.class.isInstance(bean)) {
+		if (bean instanceof Map) {
 			return (Map<String, Object>) bean;
 		}
 		try {
@@ -139,7 +139,7 @@ public class BeanConverter {
 		if (map == null || bean == null || map.isEmpty()) {
 			return bean;
 		}
-		if (Map.class.isInstance(bean)) {
+		if (bean instanceof Map) {
 			Map.class.cast(bean).putAll(map);
 			return bean;
 		}
@@ -181,7 +181,7 @@ public class BeanConverter {
 		if (map == null || bean == null || map.isEmpty()) {
 			return bean;
 		}
-		if (Map.class.isInstance(bean)) {
+		if (bean instanceof Map) {
 			Map.class.cast(bean).putAll(map);
 			return bean;
 		}

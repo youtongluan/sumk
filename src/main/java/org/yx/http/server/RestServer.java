@@ -28,6 +28,6 @@ public class RestServer extends AbstractHttpServer {
 
 	@Override
 	protected void handle(WebContext wc) throws Throwable {
-		HttpHandlerChain.inst.handle(wc);
+		HttpHandlerChain.rest.handle(wc);
 	}
 }

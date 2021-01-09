@@ -18,6 +18,8 @@ package org.yx.http.kit;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,21 +31,19 @@ import org.yx.http.HttpJson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
-import com.google.gson.JsonObject;
-
 public class DefaultHttpKit implements HttpKit {
 
 	private static final int MAX_EXPECT_SIZE = 1024 * 1024;
 	private static final int MIN_EXPECT_SIZE = 64;
 
-	protected final ActStatis actStatic;
+	protected final ActStatis actStatis;
 
 	public DefaultHttpKit() {
-		this.actStatic = new ActStatisImpl();
+		this.actStatis = new ActStatisImpl();
 	}
 
-	public DefaultHttpKit(ActStatis actStatic) {
-		this.actStatic = Objects.requireNonNull(actStatic);
+	public DefaultHttpKit(ActStatis actStatis) {
+		this.actStatis = Objects.requireNonNull(actStatis);
 	}
 
 	public Charset charset(HttpServletRequest req) {
@@ -65,10 +65,10 @@ public class DefaultHttpKit implements HttpKit {
 	@Override
 	public void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
 		resp.setStatus(HttpSettings.errorHttpStatus());
-		JsonObject jo = new JsonObject();
-		jo.addProperty("code", code);
-		jo.addProperty("message", errorMsg);
-		resp.getOutputStream().write(HttpJson.operator().toJson(jo).getBytes(charset));
+		Map<String, Object> map = new LinkedHashMap<>(2, 1);
+		map.put("code", code);
+		map.put("message", errorMsg);
+		resp.getOutputStream().write(HttpJson.operator().toJson(map).getBytes(charset));
 	}
 
 	public void noCache(HttpServletResponse resp) {
@@ -78,12 +78,12 @@ public class DefaultHttpKit implements HttpKit {
 
 	@Override
 	public void record(String act, long time, boolean isSuccess) {
-		actStatic.visit(act, time, isSuccess);
+		actStatis.visit(act, time, isSuccess);
 	}
 
 	@Override
 	public ActStatis actStatis() {
-		return this.actStatic;
+		return this.actStatis;
 	}
 
 	@Override

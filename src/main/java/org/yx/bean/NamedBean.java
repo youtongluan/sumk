@@ -37,7 +37,7 @@ public final class NamedBean implements ComplexBean {
 		if (beanName.isEmpty()) {
 			throw new SimpleSumkException(233654645, "bean name can not be empty");
 		}
-		if (ComplexBean.class.isInstance(bean)) {
+		if (bean instanceof ComplexBean) {
 			throw new SimpleSumkException(233654645, "bean can not be a ComplexBean object");
 		}
 		this.beanName = beanName;

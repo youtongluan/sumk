@@ -21,6 +21,7 @@ import org.yx.common.StartOnceLifecycle;
 import org.yx.log.RawLog;
 
 public abstract class AbstractRefreshableSystemConfig extends StartOnceLifecycle implements RefreshableSystemConfig {
+	protected static final String LOG_NAME = "sumk.conf";
 	protected Consumer<RefreshableSystemConfig> observer;
 
 	@Override

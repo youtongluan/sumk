@@ -28,7 +28,7 @@ public class RawSqlBuilder implements SqlBuilder {
 		this._sql = sql;
 		if (params == null || params.length == 0) {
 			this._params = new ArrayList<>();
-		} else if (params.length == 1 && List.class.isInstance(params[0])) {
+		} else if (params.length == 1 && params[0] instanceof List) {
 			this._params = (List<Object>) params[0];
 		} else {
 			this._params = Arrays.asList(params);

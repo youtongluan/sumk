@@ -25,11 +25,9 @@ import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.context.ActionContext;
 import org.yx.common.route.Router;
-import org.yx.conf.AppInfo;
 import org.yx.exception.SoaException;
-import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.rpc.InnerRpcKit;
+import org.yx.rpc.InnerRpcUtil;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.RpcErrorCode;
@@ -37,29 +35,32 @@ import org.yx.rpc.RpcJson;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.RpcRoutes;
+import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
 import org.yx.util.S;
+import org.yx.util.UUIDSeed;
 
 public final class Client {
 
 	private static final Host LOCAL = Host.create("local", 0);
+	private static final AtomicInteger COUNTER = new AtomicInteger();
 	private final String api;
 	private Object params;
 	private ParamType paramType;
 	private int totalTimeout;
 
-	private long totalStart;
-
 	private Host[] directUrls;
 
 	private boolean backup;
-	private static AtomicInteger counter = new AtomicInteger();
+	private int tryCount;
 	private Consumer<RpcResult> callback;
 
-	Client(String api) {
-		this.api = api;
+	public Client(String api) {
+		this.api = Objects.requireNonNull(api).trim();
+		this.totalTimeout = RpcSettings.clientDefaultTimeout();
+		this.tryCount = RpcSettings.clientTryCount();
 	}
 
 	public Client directUrls(Host... urls) {
@@ -67,13 +68,32 @@ public final class Client {
 		return this;
 	}
 
+	/**
+	 * 设置发送的尝试次数。只有发送失败会重试，其它的不会
+	 * 
+	 * @param tryCount
+	 *            尝试次数，包含第一次发送
+	 * @return 当前对象
+	 */
+	public Client tryCount(int tryCount) {
+		this.tryCount = tryCount > 0 ? tryCount : 1;
+		return this;
+	}
+
+	/**
+	 * 设置直连url不能用的时候，是否使用注册中心上的地址
+	 * 
+	 * @param backup
+	 *            失败时是否启用注册中心上的地址
+	 * @return 当前对象
+	 */
 	public Client backup(boolean backup) {
 		this.backup = backup;
 		return this;
 	}
 
 	public Client timeout(int timeout) {
-		this.totalTimeout = timeout;
+		this.totalTimeout = timeout > 0 ? timeout : 1;
 		return this;
 	}
 
@@ -105,6 +125,24 @@ public final class Client {
 		return paramInJson(S.json().toJson(map));
 	}
 
+	protected Req createReq() {
+		Req req = new Req();
+		ActionContext context = ActionContext.get();
+		if (context.isTest()) {
+			req.setTest(true);
+		}
+		req.setStart(System.currentTimeMillis());
+		String sn = UUIDSeed.seq18();
+		req.setFullSn(sn, context.traceId(), context.nextSpanId());
+		req.setUserId(context.userId());
+		req.setApi(this.api);
+		req.setFrom(Rpc.appId());
+		req.initAcceptResponseTypes(Protocols.RESPONSE_ACCEPT_TYPES);
+
+		req.setAttachments(context.attachmentView());
+		return req;
+	}
+
 	/**
 	 * 本方法调用之后，不允许再调用本对象的任何方法<BR>
 	 * 
@@ -112,31 +150,34 @@ public final class Client {
 	 *         通信异常是SoaException；如果是业务类异常，则是BizException
 	 */
 	public RpcFuture execute() {
-		if (api == null || api.isEmpty()) {
-			throw new SumkException(657645465, "api cannot be empty");
-		}
 		Objects.requireNonNull(this.paramType, "param have not been set");
-		this.totalStart = System.currentTimeMillis();
-		Req req = Rpc.req(this.api);
+		Req req = this.createReq();
+		long endTime = req.getStart() + this.totalTimeout;
 		req.setParams(this.paramType.protocol(), this.params);
-		if (this.totalTimeout < 1) {
-			this.totalTimeout = RpcSettings.clientDefaultTimeout();
+		int count = this.tryCount;
+		while (true) {
+			RpcFuture f = sendAsync(req, endTime);
+			if (f.getClass() == ErrorRpcFuture.class) {
+				ErrorRpcFuture errorFuture = ErrorRpcFuture.class.cast(f);
+				RpcLocker locker = errorFuture.locker;
+				LockHolder.remove(locker.req.getSn());
+				if (--count > 0 && errorFuture.rpcResult().exception().getCode() == RpcErrorCode.SEND_FAILED
+						&& System.currentTimeMillis() + 5 < endTime) {
+					locker.discard(errorFuture.rpcResult());
+					Logs.rpc().warn("无法发送数据到{}，重试rpc请求", locker.url());
+					continue;
+				}
+				locker.wakeupAndLog(errorFuture.rpcResult());
+			}
+			return f;
 		}
-		RpcFuture f = sendAsync(req, this.totalStart + this.totalTimeout);
-		if (f.getClass() == ErrorRpcFuture.class) {
-			ErrorRpcFuture errorFuture = ErrorRpcFuture.class.cast(f);
-			RpcLocker locker = errorFuture.locker;
-			LockHolder.remove(locker.req.getSn());
-			locker.wakeup(errorFuture.rpcResult());
-		}
-		return f;
 	}
 
-	private Host useDirectUrl() {
-		int index = counter.incrementAndGet();
+	private Host selectDirectUrl() {
+		int index = COUNTER.incrementAndGet();
 		if (index < 0) {
-			counter.set((int) (System.nanoTime() & 0xff));
-			index = counter.incrementAndGet();
+			COUNTER.set((int) (System.nanoTime() & 0xff));
+			index = COUNTER.incrementAndGet();
 		}
 		for (int i = 0; i < this.directUrls.length; i++) {
 			index %= directUrls.length;
@@ -148,11 +189,11 @@ public final class Client {
 		return null;
 	}
 
-	private RpcFuture sendAsync(Req req, long endTime) {
+	private RpcFuture sendAsync(final Req req, final long endTime) {
 		final RpcLocker locker = new RpcLocker(req, callback);
 		Host url = null;
 		if (this.directUrls != null && this.directUrls.length > 0) {
-			url = useDirectUrl();
+			url = selectDirectUrl();
 			if (url == null && !this.backup) {
 				SoaException ex = new SoaException(RpcErrorCode.NO_NODE_AVAILABLE,
 						"all directUrls is disabled:" + Arrays.toString(this.directUrls), null);
@@ -182,9 +223,9 @@ public final class Client {
 		req.setServerProtocol(RpcRoutes.getServerProtocol(url));
 		WriteFuture f = null;
 		try {
-			ReqSession session = ReqSessionHolder.getSession(url);
+			ReqSession reqSession = ReqSessionHolder.getSession(url);
 			LockHolder.register(locker, endTime);
-			f = session.write(req);
+			f = reqSession.write(req);
 		} catch (Exception e) {
 			Logs.rpc().error(e.getLocalizedMessage(), e);
 		}
@@ -202,7 +243,7 @@ public final class Client {
 			return null;
 		}
 
-		if (AppInfo.getBoolean("sumk.rpc.localroute.disable", false) && route != null) {
+		if (RpcSettings.disableLocalRoute() && route != null) {
 			return null;
 		}
 
@@ -211,11 +252,11 @@ public final class Client {
 
 		ActionContext context = ActionContext.get().clone();
 		try {
-			InnerRpcKit.rpcContext(request, context.isTest());
+			InnerRpcUtil.rpcContext(request, context.isTest());
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
 			ActionContext.recover(context);
-			locker.wakeup(new RpcResult(resp.json(), resp.exception(), request.getSn()));
+			locker.wakeupAndLog(new RpcResult(resp.json(), resp.exception(), request.getSn()));
 		} finally {
 			ActionContext.recover(context);
 		}

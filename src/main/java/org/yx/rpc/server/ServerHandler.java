@@ -29,7 +29,7 @@ import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
-import org.yx.rpc.InnerRpcKit;
+import org.yx.rpc.InnerRpcUtil;
 import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.codec.ProtocolDeserializer;
 import org.yx.rpc.codec.Request;
@@ -99,10 +99,10 @@ public class ServerHandler implements IoHandler {
 				return;
 			}
 			message = null;
-			if (Request.class.isInstance(obj)) {
+			if (obj instanceof Request) {
 				req = (Request) obj;
 				resp.setClientAcceptedProtocol(req.getAcceptResponseTypes());
-				InnerRpcKit.rpcContext(req, req.isTest());
+				InnerRpcUtil.rpcContext(req, req.isTest());
 				for (RequestHandler h : handlers) {
 					if (h.handle(req, resp)) {
 						resp.serviceInvokeMilTime(System.currentTimeMillis() - req.getStartInServer());

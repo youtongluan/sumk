@@ -38,7 +38,6 @@ import org.yx.annotation.http.SumkFilter;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
-import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.user.HttpLoginWrapper;

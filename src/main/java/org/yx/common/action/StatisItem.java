@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.common.action;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLongArray;
@@ -52,7 +52,7 @@ public class StatisItem {
 	}
 
 	public static String header() {
-		return "name  count  time  avg  failedCount  failedTime";
+		return "name  success  time  avg  failed  failedTime";
 	}
 
 	public String getName() {

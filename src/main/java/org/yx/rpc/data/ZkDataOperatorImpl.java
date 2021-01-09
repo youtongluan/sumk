@@ -22,7 +22,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
-import org.yx.conf.NamePairs;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.rpc.ZKConst;
@@ -34,11 +33,12 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 
 	private static final String SERVER = "_server";
 	private Logger logger = Log.get("sumk.rpc.data");
+	private static final String SMALL_SPLIT = "=";
 
 	@Override
 	public RouteInfo deserialize(ZKPathData data) throws IOException {
 		final String v = new String(data.data(), AppInfo.UTF8);
-		Map<String, String> map = NamePairs.createByString(v).values();
+		Map<String, String> map = CollectionUtil.fillMapFromText(new HashMap<>(), v, AppInfo.LN, SMALL_SPLIT);
 		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS);
 		if (methodMap.isEmpty()) {
 			return null;
@@ -88,7 +88,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 	public byte[] serialize(Host host, Map<String, String> data) throws Exception {
 		data = new HashMap<>(data);
 		data.put(SERVER, host.toString());
-		String s = CollectionUtil.saveMapToText(data, AppInfo.LN, "=");
+		String s = CollectionUtil.saveMapToText(data, AppInfo.LN, SMALL_SPLIT);
 		if (logger.isTraceEnabled()) {
 			logger.trace("原始数据: {}\n序列化后: {}", data, s);
 		}

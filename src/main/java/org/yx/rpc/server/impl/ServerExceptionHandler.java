@@ -27,7 +27,7 @@ public final class ServerExceptionHandler {
 	public static void handle(Request req, Response resp, Throwable e) {
 		resp.json(null);
 		resp.exception(new SoaException(e, RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage()));
-		if (!BizException.class.isInstance(e)) {
+		if (!(e instanceof BizException)) {
 			Log.get("sumk.rpc.log.server.exception").error(e.toString(), e);
 		}
 	}

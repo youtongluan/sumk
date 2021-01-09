@@ -28,7 +28,9 @@ public class RespBodyHandler implements HttpHandler {
 	@Override
 	public void handle(WebContext ctx) throws Throwable {
 		byte[] data = (byte[]) ctx.result();
-		ctx.httpResponse().getOutputStream().write(data);
+		if (data != null && data.length > 0) {
+			ctx.httpResponse().getOutputStream().write(data);
+		}
 	}
 
 }

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.main;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +22,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import org.yx.conf.AppInfo;
-import org.yx.main.SumkThreadPool;
 
 /**
  * 这个只在系统启动的时候才能使用

@@ -20,11 +20,11 @@ import org.yx.conf.AppInfo;
 import org.yx.rpc.client.Req;
 import org.yx.util.StringUtil;
 
-public final class InnerRpcKit {
+public final class InnerRpcUtil {
 
 	public static ActionContext rpcContext(Req req, boolean isTest) {
 		String traceId = StringUtil.isEmpty(req.getTraceId()) ? null : req.getTraceId();
-		return ActionContext.rpcContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
+		return ActionContext.newContext(req.getApi(), traceId, req.getSpanId(), req.getUserId(), isTest,
 				req.getAttachments());
 	}
 

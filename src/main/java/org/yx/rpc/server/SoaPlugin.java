@@ -22,14 +22,15 @@ import org.yx.annotation.Bean;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.main.StartContext;
 import org.yx.main.SumkServer;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.server.impl.RpcHandler;
 import org.yx.rpc.server.start.SoaAnnotationResolver;
+import org.yx.validate.Validators;
 
 @Bean
 public class SoaPlugin implements Plugin {
@@ -47,6 +48,7 @@ public class SoaPlugin implements Plugin {
 			RpcSettings.init();
 			resolveSoaAnnotation(StartContext.inst().getBeans());
 			RpcHandler.init();
+			Validators.init();
 
 			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
 			Class<?> clz = Loader.loadClassExactly(clzName);

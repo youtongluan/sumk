@@ -22,7 +22,7 @@ import org.yx.common.sumk.UnsafeStringWriter;
 public final class ExceptionUtil {
 
 	public static RuntimeException toRuntimeException(Throwable e) {
-		if (RuntimeException.class.isInstance(e)) {
+		if (e instanceof RuntimeException) {
 			return (RuntimeException) e;
 		}
 		return new RuntimeException(e);

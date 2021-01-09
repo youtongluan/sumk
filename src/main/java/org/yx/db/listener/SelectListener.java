@@ -35,7 +35,7 @@ public class SelectListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!DBSettings.toCache() || !QueryEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !(ev instanceof QueryEvent)) {
 			return;
 		}
 		QueryEvent event = QueryEvent.class.cast(ev);

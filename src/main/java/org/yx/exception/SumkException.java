@@ -35,7 +35,7 @@ public class SumkException extends CodeException {
 	}
 
 	public static SumkException wrap(Throwable e) {
-		if (SumkException.class.isInstance(e)) {
+		if (e instanceof SumkException) {
 			throw (SumkException) e;
 		}
 		return new SumkException(-34534565, e.getMessage(), e);

@@ -25,8 +25,6 @@ import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
-import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
@@ -40,9 +38,12 @@ import org.yx.http.kit.HttpSettings;
 import org.yx.http.start.WebAnnotationResolver;
 import org.yx.http.user.WebSessions;
 import org.yx.log.Logs;
+import org.yx.main.StartConstants;
+import org.yx.main.StartContext;
 import org.yx.main.SumkServer;
 import org.yx.util.ExceptionUtil;
 import org.yx.util.StringUtil;
+import org.yx.validate.Validators;
 
 @Bean
 public class HttpPlugin implements Plugin {
@@ -87,6 +88,7 @@ public class HttpPlugin implements Plugin {
 		try {
 			HttpHeaderName.init();
 			HttpSettings.init();
+			Validators.init();
 			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();
@@ -103,14 +105,9 @@ public class HttpPlugin implements Plugin {
 			return;
 		}
 
-		final String HTTP_SERVER_CLASS = "org.yx.http.start.JettyServer";
-		final String HTTPS_SERVER_CLASS = "org.yx.http.start.JettyHttpsServer";
-		String httpServerClass = StringUtil.isEmpty(AppInfo.get(Const.KEY_STORE_PATH)) ? HTTP_SERVER_CLASS
-				: HTTPS_SERVER_CLASS;
-		String hs = AppInfo.get("sumk.http.starter.class", httpServerClass);
-		if (!hs.contains(".")) {
-			return;
-		}
+		String httpServerClass = StringUtil.isEmpty(AppInfo.get(Const.KEY_STORE_PATH)) ? "JettyServer"
+				: "JettyHttpsServer";
+		String hs = AppInfo.get("sumk.http.starter.class", "org.yx.http.start." + httpServerClass);
 		Class<?> httpClz = Loader.loadClassExactly(hs);
 		Constructor<?> c = httpClz.getConstructor(int.class);
 		this.server = (Lifecycle) c.newInstance(port);
@@ -128,7 +125,7 @@ public class HttpPlugin implements Plugin {
 				uploadHandlers.add(h);
 			}
 		}
-		HttpHandlerChain.inst.setHandlers(restHandlers);
+		HttpHandlerChain.rest.setHandlers(restHandlers);
 		Logger logger = Logs.http();
 		if (logger.isDebugEnabled()) {
 			logger.debug("rest  handlers:{}", this.buildString(restHandlers));
@@ -172,4 +169,7 @@ public class HttpPlugin implements Plugin {
 		return sb.toString();
 	}
 
+	public Lifecycle getServer() {
+		return server;
+	}
 }

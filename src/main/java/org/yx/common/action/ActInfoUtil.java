@@ -24,9 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Param;
-import org.yx.common.CalleeNode;
+import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.util.S;
 import org.yx.util.SumkDate;
 import org.yx.validate.FieldParameterHolder;
@@ -50,20 +49,12 @@ public final class ActInfoUtil {
 			return Collections.emptyList();
 		}
 		Map<String, Object> map = new LinkedHashMap<>();
-		Class<?> tempClz = clazz;
-		while (tempClz != null && !tempClz.getName().startsWith("java.")) {
-			if (AppInfo.getBoolean("sumk.http.act.output.class", false)) {
-				map.put("$class", tempClz.getName());
-			}
-
-			Field[] fs = tempClz.getDeclaredFields();
-			for (Field f : fs) {
-				if ((f.getModifiers() & Const.NOT_PARSE_BEAN_FIELD) != 0) {
-					continue;
-				}
-				map.putIfAbsent(f.getName(), describe(f.getType()));
-			}
-			tempClz = tempClz.getSuperclass();
+		Field[] fs = S.bean().getFields(clazz);
+		if (AppInfo.getBoolean("sumk.http.act.output.class", false)) {
+			map.put("$class", clazz.getName());
+		}
+		for (Field f : fs) {
+			map.putIfAbsent(f.getName(), describe(f.getType()));
 		}
 		return map;
 	}
@@ -73,6 +64,7 @@ public final class ActInfoUtil {
 		map.put("name", name);
 		map.put("class", node.getDeclaringClass().getName());
 		map.put("method", node.getMethodName());
+		map.put("resultType", node.rawMethod().getGenericReturnType().getTypeName());
 		return map;
 	}
 
@@ -122,7 +114,7 @@ public final class ActInfoUtil {
 		return map;
 	}
 
-	private static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex) {
+	public static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex) {
 		if (clazz.isArray()) {
 			ParamDescript pd = fullDescribe(clazz.getComponentType(), info, supportComplex);
 			pd.setType(pd.getType() + "[]");

@@ -49,6 +49,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		String user = null;
 		Charset charset = InnerHttpUtil.charset(req);
 		try {
+			InnerHttpUtil.startContext(req, resp, LOGIN_NAME);
 			if (!acceptMethod(req, resp)) {
 				Logs.http().warn("不是login的有效method，比如HEAD等方法可能不支持");
 				return;
@@ -65,10 +66,14 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, obj.getErrorMsg(), charset);
 				return;
 			}
+			if (obj.getSessionObject() == null || StringUtil.isEmpty(obj.getSessionObject().getUserId())) {
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "未正确设置session对象，或者session对象中的userId为空",
+						charset);
+				return;
+			}
 			byte[] key = createEncryptKey(req);
-			boolean singleLogin = HttpSettings.isSingleLogin();
-			if (!session.setSession(sid, obj.getSessionObject(), key, singleLogin)) {
-				Logs.http().debug("{} :sid:{} login failed", user, sid);
+			if (!session.setSession(sid, obj.getSessionObject(), key, HttpSettings.isSingleLogin())) {
+				Logs.http().debug("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
 				return;
 			}
@@ -98,7 +103,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		} catch (Throwable e) {
 			ex = e;
 			Logs.http().error("user:" + user + ",message:" + e.getLocalizedMessage(), e);
-			if (BizException.class.isInstance(e)) {
+			if (e instanceof BizException) {
 				BizException be = (BizException) e;
 				InnerHttpUtil.sendError(resp, be.getCode(), be.getMessage(), charset);
 			} else {
@@ -179,5 +184,5 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	 *            用户请求的HttpServletRequest对象
 	 * @return 登录信息，无论成功与否，返回值不能是null
 	 */
-	protected abstract LoginObject login(String sessionId, String userName, HttpServletRequest req);
+	protected abstract LoginObject login(String sessionId, String userName, HttpServletRequest req) throws Exception;
 }

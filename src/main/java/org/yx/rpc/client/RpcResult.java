@@ -44,7 +44,7 @@ public final class RpcResult {
 		if (e == null) {
 			return null;
 		}
-		if (!CodeException.class.isInstance(e)) {
+		if (!(e instanceof CodeException)) {
 			return new SoaException(e, RpcErrorCode.UNKNOW, e.getMessage());
 		}
 		if (SoaException.class == e.getClass()) {

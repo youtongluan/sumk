@@ -15,7 +15,7 @@
  */
 package org.yx.rpc.server;
 
-import org.yx.common.NodeContext;
+import org.yx.common.context.NodeContext;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Request;
 

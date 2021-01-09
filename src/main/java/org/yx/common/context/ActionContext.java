@@ -21,7 +21,7 @@ import java.util.Map;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 
-public final class ActionContext implements org.yx.common.Attachable, Cloneable {
+public final class ActionContext implements org.yx.common.context.Attachable, Cloneable {
 
 	private static final String TEST = "sumk.test";
 
@@ -79,12 +79,10 @@ public final class ActionContext implements org.yx.common.Attachable, Cloneable 
 		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
 			test = true;
 		}
-		ActionContext c = new ActionContext(act, traceId, null, null, test, null);
-		holder.set(c);
-		return c;
+		return newContext(act, traceId, null, null, test, null);
 	}
 
-	public static ActionContext rpcContext(String act, String traceId, String spanId, String userId, boolean isTest,
+	public static ActionContext newContext(String act, String traceId, String spanId, String userId, boolean isTest,
 			Map<String, String> attachments) {
 		ActionContext c = new ActionContext(act, traceId, spanId, userId, isTest, attachments);
 		holder.set(c);

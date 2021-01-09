@@ -36,7 +36,7 @@ public class UpdateListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!DBSettings.toCache() || !UpdateEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !(ev instanceof UpdateEvent)) {
 			return;
 		}
 		UpdateEvent event = UpdateEvent.class.cast(ev);

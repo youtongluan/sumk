@@ -23,7 +23,7 @@ import java.util.function.BiFunction;
 
 import org.yx.common.date.TimeUtil;
 import org.yx.exception.SumkException;
-import org.yx.util.StreamUtil;
+import org.yx.util.IOUtil;
 
 public class TypeConverter {
 
@@ -49,19 +49,19 @@ public class TypeConverter {
 			return type.cast(value);
 		}
 
-		if (Number.class.isAssignableFrom(type) && Number.class.isInstance(value)) {
+		if (Number.class.isAssignableFrom(type) && value instanceof Number) {
 			T t = (T) toType((Number) value, type, false);
 			if (t != null) {
 				return t;
 			}
 		}
-		if (type == byte[].class && Blob.class.isInstance(value)) {
+		if (type == byte[].class && value instanceof Blob) {
 			Blob v = (Blob) value;
-			return (T) StreamUtil.readAllBytes(v.getBinaryStream(), true);
+			return (T) IOUtil.readAllBytes(v.getBinaryStream(), true);
 		}
-		if (type == String.class && Clob.class.isInstance(value)) {
+		if (type == String.class && value instanceof Clob) {
 			Clob v = (Clob) value;
-			return (T) StreamUtil.readAll(v.getCharacterStream(), true);
+			return (T) IOUtil.readAll(v.getCharacterStream(), true);
 		}
 		return (T) customConverter.apply(value, type);
 	}
@@ -92,8 +92,7 @@ public class TypeConverter {
 		}
 
 		if (BigDecimal.class == type) {
-			if (Integer.class.isInstance(v) || Long.class.isInstance(v) || Short.class.isInstance(v)
-					|| Byte.class.isInstance(v)) {
+			if (v instanceof Integer || v instanceof Long || v instanceof Short || v instanceof Byte) {
 				return (T) new BigDecimal(v.longValue());
 			}
 			return (T) new BigDecimal(v.doubleValue());

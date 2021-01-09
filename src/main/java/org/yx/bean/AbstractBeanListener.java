@@ -58,7 +58,7 @@ public abstract class AbstractBeanListener implements BeanEventListener {
 		if (!valid) {
 			return false;
 		}
-		if (!BeanEvent.class.isInstance(event)) {
+		if (!(event instanceof BeanEvent)) {
 			return false;
 		}
 		String clzName = ((BeanEvent) event).clz().getName();

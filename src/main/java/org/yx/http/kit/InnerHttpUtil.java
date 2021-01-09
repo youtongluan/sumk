@@ -18,6 +18,7 @@ package org.yx.http.kit;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 import java.util.function.BiConsumer;
 
@@ -25,9 +26,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.action.ActStatis;
+import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
+import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
 import org.yx.log.Logs;
+import org.yx.util.S;
+import org.yx.util.UUIDSeed;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
@@ -83,7 +88,7 @@ public final class InnerHttpUtil {
 		kit.record(act, time, isSuccess);
 	}
 
-	public static ActStatis getActStatic() {
+	public static ActStatis getActStatis() {
 		return kit.actStatis();
 	}
 
@@ -99,4 +104,29 @@ public final class InnerHttpUtil {
 		kit.setRespHeader(resp, charset);
 	}
 
+	public static boolean preServerHandle(HttpServletRequest req, HttpServletResponse resp, String firstKey) {
+		InnerHttpUtil.noCache(resp);
+		resp.setContentType("text/plain;charset=UTF-8");
+		String md5 = AppInfo.get(firstKey, "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
+		String sign = req.getParameter("sign");
+		if (sign == null) {
+			Logs.http().debug("sign is empty");
+			return false;
+		}
+		try {
+			String signed = S.hash().digest(sign, StandardCharsets.UTF_8);
+			if (!md5.equalsIgnoreCase(signed)) {
+				Logs.http().debug("signed:{},need:{}", signed, md5);
+				return false;
+			}
+		} catch (Exception e) {
+		}
+		return true;
+	}
+
+	public static void startContext(HttpServletRequest req, HttpServletResponse resp, String act) {
+		String traceId = UUIDSeed.seq18();
+		ActionContext.newContext(act, traceId, req.getParameter("thisIsTest"));
+		resp.setHeader(HttpSettings.traceHeaderName(), traceId);
+	}
 }

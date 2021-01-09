@@ -72,7 +72,7 @@ public class ThreadPools {
 
 			if (PriorityRunnable.class == r.getClass()
 					&& PriorityRunnable.class.cast(r).priority() < pool.threshold()) {
-				String msg = new StringBuilder().append("Task ").append(r.toString()).append(" rejected from ")
+				String msg = new StringBuilder("Task ").append(r.toString()).append(" rejected from ")
 						.append(e.toString()).append(", because of ").append(PriorityRunnable.class.cast(r).priority())
 						.append(" lower than ").append(pool.threshold()).toString();
 				throw new RejectedExecutionException(msg);

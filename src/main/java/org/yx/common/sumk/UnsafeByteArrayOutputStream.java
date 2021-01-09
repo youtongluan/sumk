@@ -7,7 +7,7 @@ import java.util.Arrays;
 
 public class UnsafeByteArrayOutputStream extends OutputStream {
 
-	private byte buf[];
+	private byte[] buf;
 
 	private int count;
 

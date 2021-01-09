@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -75,11 +76,11 @@ public class SqlSessionFactory {
 	private static Supplier<MultiResourceLoader> resourceLoader = new LocalMultiResourceLoaderSupplier(
 			AppInfo.get("sumk.db.mybatis.path", AppInfo.CLASSPATH_URL_PREFIX + "batis"));
 
-	public static void resourceLoader(Supplier<MultiResourceLoader> resourceLoader) {
-		SqlSessionFactory.resourceLoader = resourceLoader;
+	public static void setResourceLoader(Supplier<MultiResourceLoader> resourceLoader) {
+		SqlSessionFactory.resourceLoader = Objects.requireNonNull(resourceLoader);
 	}
 
-	public static Supplier<MultiResourceLoader> resourceLoader() {
+	public static Supplier<MultiResourceLoader> getResourceLoader() {
 		return resourceLoader;
 	}
 

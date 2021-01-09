@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import org.yx.exception.SumkException;
 import org.yx.log.RawLog;
 import org.yx.util.CollectionUtil;
-import org.yx.util.StreamUtil;
+import org.yx.util.IOUtil;
 import org.yx.util.Task;
 
 public class UrlSystemConfig extends MultiNodeConfig {
@@ -111,7 +111,7 @@ public class UrlSystemConfig extends MultiNodeConfig {
 				return null;
 			}
 			InputStream in = conn.getInputStream();
-			return StreamUtil.readAllBytes(in, true);
+			return IOUtil.readAllBytes(in, true);
 		} catch (Exception e) {
 			RawLog.error(LOG_NAME, e);
 			return null;

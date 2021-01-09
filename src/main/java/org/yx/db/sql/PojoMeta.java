@@ -32,13 +32,13 @@ import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
 import org.yx.annotation.doc.Comment;
 import org.yx.bean.Loader;
-import org.yx.common.StartContext;
 import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.redis.RedisPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -176,7 +176,7 @@ public final class PojoMeta implements Cloneable {
 		if (ttl > 0) {
 			this.ttlSec = ttl;
 		} else if (ttl == 0) {
-			this.ttlSec = AppInfo.getInt("sumk.cache.ttl", 3600 * 6);
+			this.ttlSec = AppInfo.getInt("sumk.cache.ttl", 3600);
 		} else {
 			this.ttlSec = -1;
 		}
@@ -214,7 +214,7 @@ public final class PojoMeta implements Cloneable {
 			}
 			return true;
 		}
-		if (Map.class.isInstance(condition)) {
+		if (condition instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) condition;
 			if (map.size() != this.cacheIDs.size()) {
@@ -262,7 +262,7 @@ public final class PojoMeta implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> populate(Object source, boolean keepNull)
 			throws InstantiationException, IllegalAccessException {
-		if (Map.class.isInstance(source)) {
+		if (source instanceof Map) {
 			return (Map<String, Object>) source;
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -296,7 +296,7 @@ public final class PojoMeta implements Cloneable {
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> populateByDbColumn(Object source, boolean withnull)
 			throws InstantiationException, IllegalAccessException {
-		if (Map.class.isInstance(source)) {
+		if (source instanceof Map) {
 			return (Map<String, Object>) source;
 		}
 		Map<String, Object> map = new HashMap<>();
@@ -353,7 +353,7 @@ public final class PojoMeta implements Cloneable {
 
 	@SuppressWarnings("unchecked")
 	public String joinColumns(Object source, boolean exceptionIfHasNull, List<ColumnMeta> cols) throws Exception {
-		if (Map.class.isInstance(source)) {
+		if (source instanceof Map) {
 			return this.joinColumnsFromMap((Map<String, Object>) source, exceptionIfHasNull, cols);
 		}
 		StringBuilder key = new StringBuilder();

@@ -32,9 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.common.Monitors;
-import org.yx.common.StatisItem;
 import org.yx.common.action.ActStatis;
+import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
+import org.yx.conf.AppInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.UserSession;
@@ -51,7 +52,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServerHelper.preHandle(req, resp, "sumk.http.monitor")) {
+		if (!InnerHttpUtil.preServerHandle(req, resp, "sumk.http.monitor")) {
 			return;
 		}
 
@@ -67,6 +68,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		this.outputThreadPool(req, writer);
 		this.outputLogLevels(req, writer);
 		this.outputLocalSessions(req, writer);
+		this.outputAppInfo(req, writer);
 
 		writer.flush();
 		String ret = writer.toString();
@@ -117,18 +119,22 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		if (!"1".equals(req.getParameter("statis"))) {
 			return;
 		}
-		ActStatis actStatic = InnerHttpUtil.getActStatic();
-		String reset = req.getParameter("statis.reset");
-		Map<String, StatisItem> map = "1".equals(reset) ? actStatic.getAndReset() : actStatic.getAll();
+		ActStatis actStatic = InnerHttpUtil.getActStatis();
+		boolean needReset = "1".equals(req.getParameter("statis.reset"))
+				&& AppInfo.getBoolean("sumk.http.statis.reset.allow", true);
+		Map<String, StatisItem> map = needReset ? actStatic.getAndReset() : actStatic.getAll();
 		List<StatisItem> values = new ArrayList<>(map.values());
 		values.sort((a, b) -> Long.compare(b.getSuccessTime(), a.getSuccessTime()));
 		long totalSuccessCount = 0;
 		long totalSuccessTime = 0;
 		long totalFailCount = 0;
 		long totalFailTime = 0;
-		StringBuilder sb = new StringBuilder();
-		sb.append("##").append(StatisItem.header()).append(LN);
+		boolean onlyfailed = "1".equals(req.getParameter("statis.onlyfailed"));
+		StringBuilder sb = new StringBuilder("##").append(StatisItem.header()).append(LN);
 		for (StatisItem v : values) {
+			if (onlyfailed && v.getFailedCount() == 0) {
+				continue;
+			}
 			sb.append(v.toSimpleString()).append(LN);
 			totalSuccessCount += v.getSuccessCount();
 			totalSuccessTime += v.getSuccessTime();
@@ -182,6 +188,18 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		writer.append(Monitors.logLevels());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputAppInfo(HttpServletRequest req, Writer writer) throws IOException {
+		if (!"1".equals(req.getParameter("appinfo")) || !AppInfo.getBoolean("sumk.appinfo.monitor", false)) {
+			return;
+		}
+		StringBuilder sb = new StringBuilder();
+		AppInfo.subMap("").forEach((k, v) -> {
+			sb.append(k).append(" = ").append(v).append(LN);
+		});
+		writer.append(sb.toString());
 		writer.append(TYPE_SPLIT);
 	}
 }

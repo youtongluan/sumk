@@ -32,7 +32,7 @@ public class DeleteListener implements DBEventListener {
 
 	@Override
 	public void listen(SumkEvent ev) {
-		if (!DBSettings.toCache() || !DeleteEvent.class.isInstance(ev)) {
+		if (!DBSettings.toCache() || !(ev instanceof DeleteEvent)) {
 			return;
 		}
 		DeleteEvent event = DeleteEvent.class.cast(ev);

@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
+import org.yx.db.kit.DBKits;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.SqlLog;
@@ -65,7 +66,8 @@ public class SumkStatement {
 				ps.setObject(i + 1, parameterObj);
 			}
 		} catch (Exception e) {
-			throw new SumkException(-3643654, "设置PreparedStatement的参数失败", e);
+			throw new SumkException(-3643654,
+					"设置PreparedStatement的参数失败，sql语句: " + DBKits.getSqlOfStatement(ps) + " ,参数: " + params, e);
 		}
 	};
 
@@ -208,17 +210,8 @@ public class SumkStatement {
 		statementParamAttacher.accept(statement, maped.getParamters());
 		if (LOG.isDebugEnabled()) {
 			StringBuilder sb = new StringBuilder();
-			LOG.debug(marker, sb.append("<=> ").append(getSql()).toString());
+			LOG.debug(marker, sb.append("<=> ").append(DBKits.getSqlOfStatement(this.statement.get())).toString());
 		}
-	}
-
-	private String getSql() {
-		String sql = statement.toString();
-		int index = sql.indexOf(": ");
-		if (index < 10 || index + 10 > sql.length()) {
-			return sql;
-		}
-		return sql.substring(index + 2);
 	}
 
 	public ResultSet getGeneratedKeys() throws SQLException {

@@ -19,17 +19,18 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yx.common.sumk.UnmodifiableArrayList;
+import org.yx.conf.AppInfo;
 
 /**
  * 本类的许多方法都会对key、value做trim()处理
@@ -37,13 +38,7 @@ import org.yx.common.sumk.UnmodifiableArrayList;
 
 public final class CollectionUtil {
 
-	public static Map<String, String> loadMap(InputStream in, boolean keepNullValue) throws IOException {
-		if (in == null) {
-			return null;
-		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-		return loadMap(reader, keepNullValue);
-	}
+	private static final String INGORE_PREFIX = "#";
 
 	public static Map<String, String> loadMapFromText(String text, String bigDelimiter, String smallDelimiter) {
 		return fillMapFromText(new HashMap<String, String>(), text, bigDelimiter, smallDelimiter);
@@ -83,30 +78,18 @@ public final class CollectionUtil {
 		return sb.toString();
 	}
 
-	public static Map<String, String> loadMap(Reader in, boolean keepNullValue) throws IOException {
-		BufferedReader reader = BufferedReader.class.isInstance(in) ? (BufferedReader) in : new BufferedReader(in);
-		Map<String, String> map = new HashMap<>();
-		try {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (line.startsWith("#")) {
-					continue;
-				}
-				String[] vs = line.split("=", 2);
-				if (vs.length != 2) {
-					if (keepNullValue) {
-						map.put(vs[0].trim(), null);
-					}
-					continue;
-				}
-				map.put(vs[0].trim(), vs[1].trim());
-			}
-		} finally {
-			reader.close();
+	public static Map<String, String> fillConfigFromText(final Map<String, String> map, String text) {
+		if (text == null || text.isEmpty()) {
+			return map;
 		}
+		Map<String, String> temp = fillMapFromText(new LinkedHashMap<String, String>(), text, AppInfo.LN, "=");
+		temp.forEach((k, v) -> {
+			if (k.startsWith(INGORE_PREFIX) || v == null || v.isEmpty()) {
+				return;
+			}
+			map.put(k, v);
+		});
 		return map;
-
 	}
 
 	public static List<String> loadList(InputStream in) throws IOException {
@@ -119,7 +102,7 @@ public final class CollectionUtil {
 			String line = null;
 			while ((line = reader.readLine()) != null) {
 				line = line.trim();
-				if (line.startsWith("#") || line.isEmpty()) {
+				if (line.isEmpty()) {
 					continue;
 				}
 				list.add(line);

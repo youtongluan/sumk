@@ -56,7 +56,7 @@ public final class DB {
 	 * @return Insert对象
 	 */
 	public static Insert insert(Object pojo) {
-		if (Class.class.isInstance(pojo)) {
+		if (pojo instanceof Class) {
 			return insert().tableClass((Class<?>) pojo);
 		}
 		return insert().insert(pojo);
@@ -83,7 +83,7 @@ public final class DB {
 	 * @return Update对象
 	 */
 	public static Update update(Object pojo) {
-		if (Class.class.isInstance(pojo)) {
+		if (pojo instanceof Class) {
 			return update().tableClass((Class<?>) pojo);
 		}
 		return update().updateTo(pojo);
@@ -102,7 +102,7 @@ public final class DB {
 	 * @return Delete对象
 	 */
 	public static Delete delete(Object pojo) {
-		if (Class.class.isInstance(pojo)) {
+		if (pojo instanceof Class) {
 			return delete().tableClass((Class<?>) pojo);
 		}
 		return delete().delete(pojo);
@@ -113,7 +113,7 @@ public final class DB {
 	}
 
 	public static Select select(Object pojo) {
-		if (Class.class.isInstance(pojo)) {
+		if (pojo instanceof Class) {
 			return select().tableClass((Class<?>) pojo);
 		}
 		return select().addEqual(pojo);

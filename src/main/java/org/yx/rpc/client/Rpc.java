@@ -18,16 +18,14 @@ package org.yx.rpc.client;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
-import org.yx.common.StartContext;
-import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
-import org.yx.rpc.codec.Protocols;
-import org.yx.util.UUIDSeed;
+import org.yx.validate.Validators;
 
 public final class Rpc {
 	private Rpc() {
@@ -36,6 +34,10 @@ public final class Rpc {
 	private static volatile boolean strated;
 
 	private static String appId;
+
+	static String appId() {
+		return appId;
+	}
 
 	private static ExecutorService clientExecutor = SumkThreadPool.executor();
 
@@ -54,6 +56,7 @@ public final class Rpc {
 		try {
 			appId = AppInfo.appId("sumk");
 			RpcSettings.init();
+			Validators.init();
 			Rpc.clientExecutor = StartContext.inst().getExecutorService("sumk.rpc.client.executor");
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
@@ -65,33 +68,15 @@ public final class Rpc {
 		}
 	}
 
-	static Req req(String method) {
-		Req req = new Req();
-		ActionContext context = ActionContext.get();
-		if (context.isTest()) {
-			req.setTest(true);
-		}
-		req.setStart(System.currentTimeMillis());
-		String sn = UUIDSeed.seq18();
-		req.setFullSn(sn, context.traceId(), context.nextSpanId());
-		req.setUserId(context.userId());
-		req.setApi(method);
-		req.setFrom(appId);
-		req.initAcceptResponseTypes(Protocols.RESPONSE_ACCEPT_TYPES);
-
-		req.setAttachments(context.attachmentView());
-		return req;
-	}
-
-	public static Client create(String method) {
-		return new Client(method);
+	public static Client create(String api) {
+		return new Client(api);
 	}
 
 	/**
 	 * 根据参数顺序调用rpc方法<BR>
 	 * 参数对象是原始的参数对象，不需要进行gson转化
 	 * 
-	 * @param method
+	 * @param api
 	 *            注册的接口名称，如a.b.c
 	 * @param args
 	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型。
@@ -101,14 +86,13 @@ public final class Rpc {
 	 * @throws org.yx.exception.BizException
 	 *             业务异常
 	 */
-	public static String call(String method, Object... args) {
-		return new Client(method).paramInArray(args).timeout(RpcSettings.clientDefaultTimeout()).execute()
-				.getOrException();
+	public static String call(String api, Object... args) {
+		return callAsync(api, args).getOrException();
 	}
 
 	/**
 	 * 
-	 * @param method
+	 * @param api
 	 *            注册的接口名称，如a.b.c
 	 * @param json
 	 *            用json序列化的参数对象
@@ -118,43 +102,41 @@ public final class Rpc {
 	 * @throws org.yx.exception.BizException
 	 *             业务异常
 	 */
-	public static String callInJson(String method, String json) {
-		return new Client(method).paramInJson(json).timeout(RpcSettings.clientDefaultTimeout()).execute()
-				.getOrException();
+	public static String callInJson(String api, String json) {
+		return callInJsonAsync(api, json).getOrException();
 	}
 
-	public static String callInMap(String method, Map<String, ?> map) {
-		return new Client(method).paramInMap(map).timeout(RpcSettings.clientDefaultTimeout()).execute()
-				.getOrException();
+	public static String callInMap(String api, Map<String, ?> map) {
+		return callInMapAsync(api, map).getOrException();
 	}
 
 	/**
 	 * 根据参数顺序<b>异步</b>调用rpc方法
 	 * 
-	 * @param method
+	 * @param api
 	 *            注册的接口名称，如a.b.c
 	 * @param args
 	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
 	 * @return json格式的服务器响应结果
 	 */
-	public static RpcFuture callAsync(String method, Object... args) {
-		return new Client(method).paramInArray(args).execute();
+	public static RpcFuture callAsync(String api, Object... args) {
+		return create(api).paramInArray(args).execute();
 	}
 
 	/**
 	 * 
-	 * @param method
+	 * @param api
 	 *            注册的接口名称，如a.b.c
 	 * @param json
 	 *            用json序列化的参数对象
 	 * @return json格式的服务器响应结果
 	 */
-	public static RpcFuture callInJsonAsync(String method, String json) {
-		return new Client(method).paramInJson(json).execute();
+	public static RpcFuture callInJsonAsync(String api, String json) {
+		return create(api).paramInJson(json).execute();
 	}
 
-	public static RpcFuture callInMapAsync(String method, Map<String, ?> map) {
-		return new Client(method).paramInMap(map).execute();
+	public static RpcFuture callInMapAsync(String api, Map<String, ?> map) {
+		return create(api).paramInMap(map).execute();
 	}
 
 }

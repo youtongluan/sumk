@@ -34,7 +34,7 @@ public final class ReqSession {
 	protected volatile IoSession session;
 
 	private static Supplier<SocketConnector> connectorSupplier = new SocketConnectorSupplier();
-	private Host addr;
+	private final Host addr;
 	private final Lock lock = new ReentrantLock();
 
 	public static void setConnectorSupplier(Supplier<SocketConnector> connectorSupplier) {
@@ -43,6 +43,10 @@ public final class ReqSession {
 
 	public static Supplier<SocketConnector> getConnectorSupplier() {
 		return connectorSupplier;
+	}
+
+	public ReqSession(Host host) {
+		this.addr = Objects.requireNonNull(host);
 	}
 
 	public SocketConnector getConnector() {
@@ -67,10 +71,10 @@ public final class ReqSession {
 			}
 		} catch (Exception e1) {
 			Logs.rpc().error(this.addr + " - " + e1.toString(), e1);
-			HostChecker.get().addDownUrl(addr);
 		}
 
 		if (session == null || session.isClosing()) {
+			HostChecker.get().addDownUrl(addr);
 			return false;
 		}
 		return true;
@@ -82,7 +86,7 @@ public final class ReqSession {
 			Logs.rpc().debug("create session for {}", addr);
 			ConnectFuture cf = connector.connect(addr.toInetSocketAddress());
 
-			cf.await(connector.getConnectTimeoutMillis() + 1);
+			cf.await(connector.getConnectTimeoutMillis() + 20);
 			IoSession se = cf.getSession();
 			if (se != null) {
 				this.session = se;
@@ -91,10 +95,6 @@ public final class ReqSession {
 			cf.cancel();
 
 		}
-	}
-
-	public ReqSession(Host host) {
-		addr = host;
 	}
 
 	public WriteFuture write(Req req) {

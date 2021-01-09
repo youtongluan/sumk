@@ -23,7 +23,7 @@ import java.io.Reader;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.log.RawLog;
 
-public final class StreamUtil {
+public final class IOUtil {
 
 	public static byte[] readAllBytes(InputStream in, boolean closeInput) throws IOException {
 		UnsafeByteArrayOutputStream out = new UnsafeByteArrayOutputStream(1024);

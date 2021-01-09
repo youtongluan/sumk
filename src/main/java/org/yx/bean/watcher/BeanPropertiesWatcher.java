@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * 只被调用一次
  */
-public interface BeanPropertiesWatcher extends Watcher {
+public interface BeanPropertiesWatcher extends BeanWatcher {
 
 	void afterInject(List<Object> beans);
 }

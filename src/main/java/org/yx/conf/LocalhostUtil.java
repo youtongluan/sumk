@@ -45,7 +45,7 @@ public final class LocalhostUtil {
 	}
 
 	private static boolean isValid(InetAddress ia) {
-		if (Inet6Address.class.isInstance(ia) && AppInfo.getBoolean("sumk.local.ipv6.disable", false)) {
+		if (ia instanceof Inet6Address && AppInfo.getBoolean("sumk.local.ipv6.disable", false)) {
 			return false;
 		}
 		return !ia.isAnyLocalAddress() && !ia.isLoopbackAddress();

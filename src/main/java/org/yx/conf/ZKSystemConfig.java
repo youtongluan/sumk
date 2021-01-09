@@ -29,6 +29,9 @@ import org.yx.log.RawLog;
 import org.yx.util.CollectionUtil;
 import org.yx.util.ZkClientHelper;
 
+/**
+ * 用于操作zk中的appinfo对应的变量信息， node在前的优先级高
+ */
 public class ZKSystemConfig extends MultiNodeConfig {
 
 	private final List<String> dataPaths;

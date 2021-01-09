@@ -29,6 +29,7 @@ import org.yx.conf.AppInfo;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.db.sql.VisitCounter;
+import org.yx.http.kit.InnerHttpUtil;
 
 @Bean
 @SumkServlet(value = { "/_sumk_cache_monitor" }, loadOnStartup = -1, appKey = "sumkCacheMonitor")
@@ -39,7 +40,7 @@ public class VisitServer extends AbstractCommonHttpServlet {
 
 	@Override
 	protected void handle(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-		if (!ServerHelper.preHandle(req, resp, "sumk.http.cache.monitor")) {
+		if (!InnerHttpUtil.preServerHandle(req, resp, "sumk.http.cache.monitor")) {
 			return;
 		}
 		resp.getOutputStream().write(visitInfo().getBytes(StandardCharsets.UTF_8));
@@ -51,6 +52,9 @@ public class VisitServer extends AbstractCommonHttpServlet {
 		sb.append("##tableName").append(BLANK).append("visitCount").append(BLANK).append("cachedMeeted")
 				.append(AppInfo.LN);
 		for (PojoMeta p : list) {
+			if (p.isNoCache()) {
+				continue;
+			}
 			VisitCounter c = p.getCounter();
 			sb.append(p.getTableName()).append(BLANK).append(c.getVisitCount()).append(BLANK).append(c.getCachedMeet())
 					.append(AppInfo.LN);

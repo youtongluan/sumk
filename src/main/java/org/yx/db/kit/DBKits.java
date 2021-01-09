@@ -15,7 +15,10 @@
  */
 package org.yx.db.kit;
 
+import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Function;
 
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
@@ -25,6 +28,23 @@ import org.yx.redis.RecordRepository;
 import org.yx.util.StringUtil;
 
 public final class DBKits {
+
+	private static Function<PreparedStatement, String> plainSqlParse = statement -> {
+		String sql = String.valueOf(statement);
+		int index = sql.indexOf(": ");
+		if (index < 10 || index + 10 > sql.length()) {
+			return sql;
+		}
+		return sql.substring(index + 2);
+	};
+
+	public static void setPlainSqlParse(Function<PreparedStatement, String> plainSqlParse) {
+		DBKits.plainSqlParse = Objects.requireNonNull(plainSqlParse);
+	}
+
+	public static String getSqlOfStatement(PreparedStatement statement) {
+		return plainSqlParse.apply(statement);
+	}
 
 	public static <T> T queryOne(List<T> list) {
 		if (list == null || list.isEmpty()) {

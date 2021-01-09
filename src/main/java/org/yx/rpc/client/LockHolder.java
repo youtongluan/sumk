@@ -16,17 +16,18 @@
 package org.yx.rpc.client;
 
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-import org.yx.exception.CodeException;
+import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.server.Response;
 import org.yx.util.Task;
 
 public final class LockHolder {
-	private static final ConcurrentHashMap<String, RpcLocker> locks = new ConcurrentHashMap<>();
+	private static final ConcurrentMap<String, RpcLocker> locks = new ConcurrentHashMap<>();
 
 	static final LockTimeoutMonitor monitor = new LockTimeoutMonitor();
 	static {
@@ -35,10 +36,11 @@ public final class LockHolder {
 
 	static void register(RpcLocker r, long endTime) {
 		Req req = r.req;
-		monitor.add(req.getSn(), endTime);
 		if (locks.putIfAbsent(req.getSn(), r) != null) {
-			throw new CodeException(-111111111, req.getSn() + " duplicate!!!!!!!!!!!!!!!!!!!!!");
+
+			throw new SumkException(-111111111, req.getSn() + " duplicate!!!!!!!!!!!!!!!!!!!!!");
 		}
+		monitor.add(req.getSn(), endTime);
 	}
 
 	static void unLockAndSetResult(Response resp) {
@@ -48,7 +50,7 @@ public final class LockHolder {
 			return;
 		}
 		RpcResult result = new RpcResult(resp.json(), resp.exception());
-		r.wakeup(result);
+		r.wakeupAndLog(result);
 	}
 
 	static RpcLocker remove(String sn) {
@@ -74,7 +76,7 @@ public final class LockHolder {
 				while ((delay = QUEUE.poll()) != null) {
 					RpcLocker locker = LockHolder.remove(delay.sn);
 					if (locker != null) {
-						locker.wakeup(RpcResult.timeout(locker.req));
+						locker.wakeupAndLog(RpcResult.timeout(locker.req));
 					}
 				}
 			} catch (Exception e) {

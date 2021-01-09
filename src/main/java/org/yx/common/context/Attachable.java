@@ -13,9 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.common.context;
 
-import org.yx.common.Ordered;
+import java.util.Map;
 
-public interface Watcher extends Ordered {
+public interface Attachable {
+
+	/**
+	 * 设置上下文的附加属性
+	 * 
+	 * @param key
+	 * @param value
+	 *            如果value为null，就相当于remove
+	 */
+	void setAttachment(String key, String value);
+
+	String getAttachment(String key);
+
+	Map<String, String> attachmentView();
 }

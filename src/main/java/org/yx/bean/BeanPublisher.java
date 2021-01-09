@@ -28,14 +28,13 @@ import org.yx.annotation.Inject;
 import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanPropertiesWatcher;
 import org.yx.bean.watcher.PluginHandler;
-import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.exception.SimpleSumkException;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
-import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.main.StartConstants;
+import org.yx.main.StartContext;
 import org.yx.util.CollectionUtil;
 import org.yx.util.kit.PriorityKits;
 
@@ -94,11 +93,9 @@ public final class BeanPublisher {
 		autoWiredAll();
 	}
 
-	private Object getBean(Field f, Class<?> clz) {
+	private Object getBean(Field f) {
 		String name = f.getName();
-		if (clz == Object.class) {
-			clz = f.getType();
-		}
+		Class<?> clz = f.getType();
 		Object target = IOC.get(name, clz);
 		if (target != null) {
 			return target;
@@ -138,7 +135,7 @@ public final class BeanPublisher {
 
 	private void injectProperties(Object bean) throws Exception {
 		Class<?> tempClz = bean.getClass();
-		Class<?> clz, fieldType;
+		Class<?> fieldType;
 		while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
 			Field[] fs = tempClz.getDeclaredFields();
@@ -147,23 +144,14 @@ public final class BeanPublisher {
 				if (inject == null) {
 					continue;
 				}
-				clz = inject.beanClz();
 				fieldType = f.getType();
 				Object target = null;
-				if (inject.handler().length() > 0) {
-					try {
-						target = InjectParser.get(f, inject, bean);
-					} catch (Exception e) {
-						Log.printStack("sumk.error", e);
-						throw new SimpleSumkException(-235435628, bean.getClass().getName() + "." + f.getName()
-								+ " cannot injected with " + inject.handler());
-					}
-				} else if (fieldType.isArray()) {
-					target = getArrayField(f, clz, bean, inject.allowEmpty());
+				if (fieldType.isArray()) {
+					target = getArrayField(f, bean, inject.allowEmpty());
 				} else if (List.class == fieldType || Collection.class == fieldType) {
-					target = getListField(f, clz, bean, inject.allowEmpty());
+					target = getListField(f, bean, inject.allowEmpty());
 				} else {
-					target = getBean(f, clz);
+					target = getBean(f);
 				}
 				if (target == null) {
 					if (inject.allowEmpty()) {
@@ -178,16 +166,14 @@ public final class BeanPublisher {
 		}
 	}
 
-	private List<?> getListField(Field f, Class<?> clz, Object bean, boolean allowEmpty) throws ClassNotFoundException {
-		if (clz == null || clz == Object.class) {
-			String genericName = f.getGenericType().getTypeName();
-			if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
-				throw new SimpleSumkException(-239845611,
-						bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
-			}
-			genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
-			clz = Loader.loadClassExactly(genericName);
+	private List<?> getListField(Field f, Object bean, boolean allowEmpty) throws ClassNotFoundException {
+		String genericName = f.getGenericType().getTypeName();
+		if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
+			throw new SimpleSumkException(-239845611,
+					bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
 		}
+		genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
+		Class<?> clz = Loader.loadClassExactly(genericName);
 		if (clz == Object.class) {
 			throw new SimpleSumkException(-23984568,
 					bean.getClass().getName() + "." + f.getName() + ": beanClz of @Inject in list type cannot be null");
@@ -202,22 +188,16 @@ public final class BeanPublisher {
 		return target;
 	}
 
-	private Object[] getArrayField(Field f, Class<?> clz, Object bean, boolean allowEmpty) {
-		Class<?> filedType = f.getType().getComponentType();
-		if (clz == null || clz == Object.class) {
-			clz = filedType;
-		} else if (!filedType.isAssignableFrom(clz)) {
-			throw new SimpleSumkException(-239864568, bean.getClass().getName() + "." + f.getName() + " is "
-					+ filedType.getSimpleName() + "[], is not " + clz.getSimpleName() + "[]");
-		}
+	private Object[] getArrayField(Field f, Object bean, boolean allowEmpty) {
+		Class<?> clz = f.getType().getComponentType();
 		List<?> target = IOC.getBeans(clz);
 		if (target == null || target.isEmpty()) {
 			if (!allowEmpty) {
 				throw new SimpleSumkException(-235435651, bean.getClass().getName() + "." + f.getName() + " is empty.");
 			}
-			return (Object[]) Array.newInstance(filedType, 0);
+			return (Object[]) Array.newInstance(clz, 0);
 		}
-		return target.toArray((Object[]) Array.newInstance(filedType, target.size()));
+		return target.toArray((Object[]) Array.newInstance(clz, target.size()));
 	}
 
 	private void publish(BeanEvent event) {

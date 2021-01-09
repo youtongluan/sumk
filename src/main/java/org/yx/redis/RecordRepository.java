@@ -40,7 +40,7 @@ public final class RecordRepository {
 		return s;
 	}
 
-	protected static String getKey(PojoMeta m, String id) {
+	public static String getKey(PojoMeta m, String id) {
 		return m.getPre() + id;
 	}
 
@@ -48,7 +48,7 @@ public final class RecordRepository {
 		return muteRedis(m.getTableName()).get(getKey(m, id));
 	}
 
-	private static Redis muteRedis(String tableName) {
+	public static Redis muteRedis(String tableName) {
 		return RedisPool.get(tableName).mute();
 	}
 
@@ -64,18 +64,24 @@ public final class RecordRepository {
 		int ttl = m.getTtlSec();
 		if (ttl <= 0) {
 			muteRedis(tableName).set(key, json);
-			logger.trace("{} >> SET {} = {}", tableName, key, json);
+			if (logger.isTraceEnabled()) {
+				logger.trace("{} >> SET {} = {}", tableName, key, json);
+			}
 			return;
 		}
 		muteRedis(tableName).setex(key, ttl, json);
-		logger.trace("{} >> SETEX {} = {}", tableName, key, json);
+		if (logger.isTraceEnabled()) {
+			logger.trace("{} >> SETEX {} = {}", tableName, key, json);
+		}
 	}
 
 	public static void del(PojoMeta m, String id) {
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		muteRedis(tableName).del(key);
-		logger.trace("{} >> DELETE {}", tableName, key);
+		if (logger.isTraceEnabled()) {
+			logger.trace("{} >> DELETE {}", tableName, key);
+		}
 	}
 
 	protected static String[] getKeys(PojoMeta m, String[] ids) {

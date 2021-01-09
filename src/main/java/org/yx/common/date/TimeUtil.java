@@ -44,7 +44,7 @@ public class TimeUtil {
 		if (type == SumkDate.class) {
 			return toSumkDate(v, failIfNotSupport);
 		}
-		if (Date.class.isInstance(v)) {
+		if (v instanceof Date) {
 			return toType((Date) v, type, failIfNotSupport);
 		}
 		Class<?> sourceClz = v.getClass();
@@ -71,16 +71,16 @@ public class TimeUtil {
 
 	@SuppressWarnings("unchecked")
 	private static <T> T toSumkDate(Object v, boolean failIfNotSupport) {
-		if (Date.class.isInstance(v)) {
+		if (v instanceof Date) {
 			return (T) SumkDate.of((Date) v);
 		}
-		if (LocalDateTime.class.isInstance(v)) {
+		if (v instanceof LocalDateTime) {
 			return (T) SumkDate.of((LocalDateTime) v);
 		}
-		if (LocalDate.class.isInstance(v)) {
+		if (v instanceof LocalDate) {
 			return (T) SumkDate.of((LocalDate) v, null);
 		}
-		if (LocalTime.class.isInstance(v)) {
+		if (v instanceof LocalTime) {
 			return (T) SumkDate.of(null, (LocalTime) v);
 		}
 		if (failIfNotSupport) {

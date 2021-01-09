@@ -36,10 +36,6 @@ import java.lang.annotation.Target;
 @Documented
 public @interface Inject {
 
-	Class<?> beanClz() default Object.class;
-
-	String handler() default "";
-
 	/**
 	 * 数组、集合类型不可能为null，但是可以为空
 	 * 

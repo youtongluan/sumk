@@ -72,7 +72,7 @@ public class ClientHandler implements IoHandler {
 		if (obj == null) {
 			return;
 		}
-		if (Response.class.isInstance(obj)) {
+		if (obj instanceof Response) {
 			Response resp = (Response) obj;
 			LockHolder.unLockAndSetResult(resp);
 			return;

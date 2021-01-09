@@ -31,14 +31,12 @@ import org.yx.http.HttpErrorCode;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
-import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.kit.LocalWebContext;
 import org.yx.http.log.HttpLogs;
 import org.yx.log.Logs;
 import org.yx.util.M;
 import org.yx.util.StringUtil;
-import org.yx.util.UUIDSeed;
 
 public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 
@@ -72,12 +70,10 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 			if (info.node().overflowThreshold()) {
 				throw BizException.create(HttpErrorCode.THREAD_THRESHOLD_OVER, "系统限流降级");
 			}
-			String traceId = UUIDSeed.seq18();
-			ActionContext.newContext(rawAct, traceId, req.getParameter("thisIsTest"));
+			InnerHttpUtil.startContext(req, resp, rawAct);
 			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
 			wc.setAttach(info.getAttach());
 			LocalWebContext.setCtx(wc);
-			setTraceIdForResponse(req, resp, traceId);
 			handle(wc);
 		} catch (Throwable e) {
 			try {
@@ -94,11 +90,8 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 				InnerHttpUtil.record(wc.rawAct(), time, ex == null && !wc.isFailed());
 			}
 			LocalWebContext.remove();
+			ActionContext.remove();
 		}
-	}
-
-	protected void setTraceIdForResponse(HttpServletRequest req, HttpServletResponse resp, String traceId) {
-		resp.setHeader(HttpSettings.traceHeaderName(), traceId);
 	}
 
 	protected void sendError(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) {
@@ -121,16 +114,16 @@ public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
 
 	protected Throwable handleError(HttpServletRequest req, HttpServletResponse resp, Throwable e) {
 		Throwable temp = e;
-		if (InvocationTargetException.class.isInstance(temp)) {
+		if (temp instanceof InvocationTargetException) {
 			temp = ((InvocationTargetException) temp).getTargetException();
 		}
-		if (InvalidParamException.class.isInstance(temp)) {
+		if (temp instanceof InvalidParamException) {
 			sendError(req, resp, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
 			return temp;
 		}
 		Throwable root = temp;
 		do {
-			if (BizException.class.isInstance(temp)) {
+			if (temp instanceof BizException) {
 				BizException be = (BizException) temp;
 				String msg2 = AppInfo.get("sumk.http.error." + be.getCode(), null);
 				if (msg2 != null && msg2.length() > 0) {

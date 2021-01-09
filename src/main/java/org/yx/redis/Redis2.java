@@ -30,7 +30,7 @@ public abstract class Redis2 implements Redis, Cloneable {
 
 	public Redis2(Jedis2Executor executor) {
 		this.jedis2Executor = executor;
-		if (Checkable.class.isInstance(this.jedis2Executor)) {
+		if (this.jedis2Executor instanceof Checkable) {
 			RedisChecker.get().addRedis(Checkable.class.cast(this.jedis2Executor));
 		}
 	}
@@ -51,7 +51,7 @@ public abstract class Redis2 implements Redis, Cloneable {
 
 	public void shutdownPool() {
 		this.jedis2Executor.shutdownPool();
-		if (Checkable.class.isInstance(this.jedis2Executor)) {
+		if (this.jedis2Executor instanceof Checkable) {
 			RedisChecker.get().remove(Checkable.class.cast(this.jedis2Executor));
 		}
 	}

@@ -17,10 +17,10 @@ package org.yx.rpc.client.intf;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
-import org.yx.common.StartConstants;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
+import org.yx.main.StartConstants;
+import org.yx.main.StartContext;
 import org.yx.rpc.client.Rpc;
 
 @Bean

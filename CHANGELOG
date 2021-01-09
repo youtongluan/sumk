@@ -238,3 +238,11 @@ v2.9.5
 
 v2.9.6
 1、将@Web的requireLogin默认值改为true，但是默认禁用，要配置sumk.http.login.enable=1才能启用
+
+v2.9.7
+1、StreamUtil改名为IOUtil
+2、@Inject去掉beanClz()和handler()
+3、接口文档增加一级属性的模糊搜索功能，比如name用_name=XX来搜索
+4、微服务增加发送失败自动重发的机制
+5、修改StartConstants和StartContext的包名
+

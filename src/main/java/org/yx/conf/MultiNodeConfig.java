@@ -15,17 +15,23 @@
  */
 package org.yx.conf;
 
+import static org.yx.conf.AppInfo.LN;
+
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
 
+import org.yx.util.CollectionUtil;
+
 public abstract class MultiNodeConfig extends AbstractRefreshableSystemConfig {
-	protected static final String LOG_NAME = "sumk.conf";
 	protected Map<String, String> config = Collections.emptyMap();
-	private Function<byte[], Map<String, String>> dataParser = data -> new NamePairs(new String(data, AppInfo.UTF8))
-			.values();
+	private Function<byte[], Map<String, String>> dataParser = data -> {
+		String s = new String(data, AppInfo.UTF8).trim().replace("\r\n", LN).replace("\r", LN);
+		return CollectionUtil.fillConfigFromText(new HashMap<>(), s);
+	};
 
 	public Function<byte[], Map<String, String>> getDataParser() {
 		return dataParser;

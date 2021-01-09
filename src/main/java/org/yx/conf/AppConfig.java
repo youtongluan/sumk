@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.log.RawLog;
 import org.yx.util.CollectionUtil;
+import org.yx.util.IOUtil;
 import org.yx.util.Task;
 
 public class AppConfig extends AbstractRefreshableSystemConfig {
@@ -61,7 +64,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 		if (f.exists()) {
 			return new FileInputStream(f);
 		}
-		RawLog.info("sumk.conf", "can not found " + this.fileName);
+		RawLog.info(LOG_NAME, "can not found " + this.fileName);
 		return null;
 	}
 
@@ -70,10 +73,12 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 			if (in == null) {
 				return;
 			}
-			Map<String, String> conf = CollectionUtil.loadMap(in, false);
+			byte[] bs = IOUtil.readAllBytes(in, true);
+			Map<String, String> conf = CollectionUtil.fillConfigFromText(new HashMap<>(),
+					new String(bs, StandardCharsets.UTF_8));
 			if (conf != null && !conf.equals(this.map)) {
 				if (this.showLog) {
-					RawLog.info("sumk.conf", fileName + " loaded");
+					RawLog.info(LOG_NAME, fileName + " loaded");
 				}
 				this.map = conf;
 				if (!isFirst) {
@@ -82,7 +87,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 			}
 			this.isFirst = false;
 		} catch (Exception e) {
-			RawLog.error("sumk.conf", e.getMessage(), e);
+			RawLog.error(LOG_NAME, e.getMessage(), e);
 		}
 	}
 

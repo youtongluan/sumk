@@ -17,31 +17,29 @@ package org.yx.validate;
 
 import java.util.List;
 
-import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
-import org.yx.bean.Plugin;
 import org.yx.exception.InvalidParamException;
 
-@Bean
-public class Validators implements Plugin {
+public class Validators {
 
-	private static Validator[] validators;
+	private static Validator[] validators = new Validator[0];
 
 	public static void check(ParameterInfo info, Object arg) throws InvalidParamException {
-		Validator[] validators = Validators.validators;
-		if (info == null || validators == null) {
+		if (info == null) {
 			return;
 		}
+		Validator[] validators = Validators.validators;
 		for (Validator v : validators) {
 			v.valid(info, arg);
 		}
 	}
 
-	@Override
-	public void startAsync() {
+	public static synchronized void init() {
+		if (validators.length > 0) {
+			return;
+		}
 		List<Validator> list = IOC.getBeans(Validator.class);
 		if (list == null || list.isEmpty()) {
-			validators = null;
 			return;
 		}
 		validators = list.toArray(new Validator[list.size()]);

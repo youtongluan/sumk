@@ -81,8 +81,7 @@ public class PluginHandler {
 
 	private void preHotCoreThreads(SumkExecutorService executor) {
 		if (AppInfo.getBoolean("sumk.thread.prestartAllCoreThreads", true)
-				&& (SumkServer.isHttpEnable() || SumkServer.isRpcEnable())
-				&& (ThreadPoolExecutor.class.isInstance(executor))) {
+				&& (SumkServer.isHttpEnable() || SumkServer.isRpcEnable()) && executor instanceof ThreadPoolExecutor) {
 			ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;
 			pool.prestartAllCoreThreads();
 		}

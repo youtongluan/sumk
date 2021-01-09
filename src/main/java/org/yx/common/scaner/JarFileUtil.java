@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
-import org.yx.util.StreamUtil;
+import org.yx.util.IOUtil;
 
 public class JarFileUtil {
 	public static final String URL_PROTOCOL_JAR = "jar";
@@ -64,7 +64,7 @@ public class JarFileUtil {
 				if (tester != null && !tester.test(entityName)) {
 					continue;
 				}
-				byte[] bs = StreamUtil.readAllBytes(jarFile.getInputStream(entry), true);
+				byte[] bs = IOUtil.readAllBytes(jarFile.getInputStream(entry), true);
 				map.put(entityName, bs);
 			}
 		} finally {

@@ -31,7 +31,7 @@ public class ReqToStringHandler implements HttpHandler {
 		if (obj == null) {
 			return;
 		}
-		if (!byte[].class.isInstance(obj)) {
+		if (!(obj instanceof byte[])) {
 			return;
 		}
 		byte[] bs = (byte[]) obj;

@@ -83,7 +83,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		if (src == null) {
 			return Collections.emptyMap();
 		}
-		if (Map.class.isInstance(src)) {
+		if (src instanceof Map) {
 			return new HashMap<>((Map<String, Object>) src);
 		}
 
@@ -135,7 +135,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		try {
 			return visitor.visit(this);
 		} catch (Exception e) {
-			if (SumkException.class.isInstance(e)) {
+			if (e instanceof SumkException) {
 				throw (SumkException) e;
 			}
 			throw new SumkException(-53172189, e.getMessage(), e);

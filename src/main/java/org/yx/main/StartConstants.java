@@ -13,22 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.main;
 
-import java.util.Map;
+public abstract class StartConstants {
 
-public interface Attachable {
+	public static final String INNER_PACKAGE = String.join(".", "o" + "r" + "g", "y" + "x");
+	public static final String IOC_PACKAGES = "sumk.ioc";
 
-	/**
-	 * 设置上下文的附加属性
-	 * 
-	 * @param key
-	 * @param value
-	 *            如果value为null，就相当于remove
-	 */
-	void setAttachment(String key, String value);
-
-	String getAttachment(String key);
-
-	Map<String, String> attachmentView();
+	public static final String NOSOA = "nosoa";
+	public static final String NOSOA_ClIENT = "nosoaClient";
+	public static final String NOHTTP = "nohttp";
+	public static final String NOJETTY = "sumk.http.nojetty";
+	public static final String THREAD_ON_DEAMON = "daemon";
 }

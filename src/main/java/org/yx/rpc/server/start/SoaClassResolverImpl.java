@@ -23,7 +23,7 @@ import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
-import org.yx.rpc.InnerRpcKit;
+import org.yx.rpc.InnerRpcUtil;
 
 public class SoaClassResolverImpl implements SoaClassResolver {
 
@@ -46,7 +46,7 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 			Logs.rpc().warn("{}的@SoaClass的value不是它的接口或超类", targetClass.getName());
 			return null;
 		}
-		return InnerRpcKit.parseRpcIntfPrefix(refer);
+		return InnerRpcUtil.parseRpcIntfPrefix(refer);
 	}
 
 	@Override

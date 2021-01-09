@@ -17,8 +17,6 @@ package org.yx.common.action;
 
 import java.util.Map;
 
-import org.yx.common.StatisItem;
-
 public interface ActStatis {
 
 	void visit(String name, long time, boolean success);

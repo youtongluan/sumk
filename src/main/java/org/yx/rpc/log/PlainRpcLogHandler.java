@@ -18,7 +18,7 @@ package org.yx.rpc.log;
 import static org.yx.conf.AppInfo.LN;
 
 import org.slf4j.Logger;
-import org.yx.exception.BizException;
+import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.Req;
@@ -111,7 +111,7 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 		}
 		Logger logger = Log.get("sumk.rpc.log.server");
 		long totalTime = -1;
-		Exception e = null;
+		SoaException e = null;
 		if (resp != null) {
 			totalTime = resp.serviceInvokeMilTime();
 			e = resp.exception();
@@ -139,8 +139,8 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 			}
 			return;
 		}
-		if (BizException.class.isInstance(e)) {
-			logger.warn(sb.toString(), e.toString());
+		if (e != null && e.isBizException()) {
+			logger.warn(sb.append(LN).append(e.toString()).toString());
 		} else {
 			logger.error(sb.toString(), e);
 		}

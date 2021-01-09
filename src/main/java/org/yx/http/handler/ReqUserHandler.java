@@ -51,14 +51,10 @@ public class ReqUserHandler implements HttpHandler {
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
 
 		if (obj == null) {
-			if (HttpSettings.isSingleLogin()) {
-				if (StringUtil.isNotEmpty(userId)) {
 
-					if (session.sessionId(userId) != null) {
-						Logs.http().info("sessionId:{}, login by other", sessionId);
-						throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
-					}
-				}
+			if (HttpSettings.isSingleLogin() && StringUtil.isNotEmpty(userId) && session.sessionId(userId) != null) {
+				Logs.http().info("sessionId:{}, login by other place", sessionId);
+				throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
 			}
 			Logs.http().info("sessionId:{}, 没找到对应的session", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");

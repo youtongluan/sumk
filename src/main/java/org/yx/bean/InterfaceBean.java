@@ -26,7 +26,7 @@ public final class InterfaceBean implements ComplexBean {
 
 	public InterfaceBean(Class<?> intf, Object bean) {
 		this.intf = Objects.requireNonNull(intf);
-		if (ComplexBean.class.isInstance(bean)) {
+		if (bean instanceof ComplexBean) {
 			throw new SimpleSumkException(233654645, "bean can not be a ComplexBean object");
 		}
 		this.bean = Objects.requireNonNull(bean);

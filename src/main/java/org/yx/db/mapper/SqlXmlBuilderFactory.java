@@ -26,7 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.xml.sax.InputSource;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
-import org.yx.util.StreamUtil;
+import org.yx.util.IOUtil;
 
 public class SqlXmlBuilderFactory implements Supplier<DocumentBuilder> {
 	protected final DocumentBuilderFactory dbf;
@@ -53,7 +53,7 @@ public class SqlXmlBuilderFactory implements Supplier<DocumentBuilder> {
 				if (in == null) {
 					return null;
 				}
-				byte[] bs = StreamUtil.readAllBytes(in, true);
+				byte[] bs = IOUtil.readAllBytes(in, true);
 				if (bs == null || bs.length == 0) {
 					return null;
 				}

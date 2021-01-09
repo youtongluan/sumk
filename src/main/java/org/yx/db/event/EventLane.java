@@ -45,7 +45,7 @@ public final class EventLane {
 		if (event == null) {
 			return;
 		}
-		if (ModifyEvent.class.isInstance(event) && !isAutoCommit(conn)) {
+		if (event instanceof ModifyEvent && !isAutoCommit(conn)) {
 			EventLane pool = pool(conn);
 			if (pool == null) {
 				pool = new EventLane();

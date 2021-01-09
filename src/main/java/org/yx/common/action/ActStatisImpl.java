@@ -19,8 +19,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.common.StatisItem;
-
 public class ActStatisImpl implements ActStatis {
 
 	private Map<String, StatisItem> actStatis;

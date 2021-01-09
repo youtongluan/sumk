@@ -17,9 +17,9 @@ package org.yx.db.sql;
 
 import org.yx.bean.AbstractBeanListener;
 import org.yx.bean.BeanEvent;
-import org.yx.common.StartConstants;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.main.StartConstants;
 
 public class PojoMetaListener extends AbstractBeanListener {
 

@@ -15,20 +15,11 @@
  */
 package org.yx.exception;
 
-public class CodeException extends RuntimeException {
+public abstract class CodeException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
 	protected final int code;
-
-	public int getCode() {
-		return code;
-	}
-
-	@Override
-	public String getLocalizedMessage() {
-		return new StringBuilder().append(this.getMessage()).append(" (").append(code).append(")").toString();
-	}
 
 	public CodeException(int code, String msg) {
 		super(msg);
@@ -38,6 +29,15 @@ public class CodeException extends RuntimeException {
 	public CodeException(int code, String msg, Throwable exception) {
 		super(msg, exception);
 		this.code = code;
+	}
+
+	public int getCode() {
+		return code;
+	}
+
+	@Override
+	public String getLocalizedMessage() {
+		return new StringBuilder().append(this.getMessage()).append(" (").append(code).append(")").toString();
 	}
 
 	@Override

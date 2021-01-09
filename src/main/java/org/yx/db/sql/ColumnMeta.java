@@ -60,7 +60,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	}
 
 	public Object value(Object owner) throws IllegalArgumentException, IllegalAccessException {
-		if (Map.class.isInstance(owner)) {
+		if (owner instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) owner;
 			return map.get(field.getName());
@@ -73,7 +73,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	}
 
 	public void setValue(Object owner, final Object value) throws Exception {
-		if (Map.class.isInstance(owner)) {
+		if (owner instanceof Map) {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> map = (Map<String, Object>) owner;
 			map.put(field.getName(), value);

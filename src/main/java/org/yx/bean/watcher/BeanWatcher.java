@@ -13,16 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.bean.watcher;
 
-public abstract class StartConstants {
+import org.yx.common.Ordered;
 
-	public static final String INNER_PACKAGE = String.join(".", "o" + "r" + "g", "y" + "x");
-	public static final String IOC_PACKAGES = "sumk.ioc";
-
-	public static final String NOSOA = "nosoa";
-	public static final String NOSOA_ClIENT = "nosoaClient";
-	public static final String NOHTTP = "nohttp";
-	public static final String NOJETTY = "sumk.http.nojetty";
-	public static final String THREAD_ON_DEAMON = "daemon";
+public interface BeanWatcher extends Ordered {
 }

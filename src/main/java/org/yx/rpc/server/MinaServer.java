@@ -31,12 +31,12 @@ import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
-import org.yx.common.StartContext;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.util.ExceptionUtil;
 
@@ -102,7 +102,7 @@ public class MinaServer implements Runnable {
 			acceptor.setHandler(handler);
 
 			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(Const.SOA_SESSION_IDLE, 600));
-			if (SocketSessionConfig.class.isInstance(acceptor.getSessionConfig())) {
+			if (acceptor.getSessionConfig() instanceof SocketSessionConfig) {
 				SocketSessionConfig conf = (SocketSessionConfig) acceptor.getSessionConfig();
 				conf.setKeepAlive(AppInfo.getBoolean("sumk.rpc.server.conf.keepAlive", true));
 				conf.setReceiveBufferSize(AppInfo.getInt("sumk.rpc.server.conf.receiveBufferSize", 100));

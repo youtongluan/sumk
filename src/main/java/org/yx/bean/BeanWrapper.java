@@ -28,7 +28,7 @@ public class BeanWrapper {
 	}
 
 	public boolean isProxy() {
-		return Boxed.class.isInstance(bean);
+		return bean instanceof Boxed;
 	}
 
 	public Class<?> getTargetClass() {

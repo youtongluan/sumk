@@ -62,7 +62,7 @@ public class ComplexValidator implements Validator {
 				Validators.check(info, info.field.get(obj));
 			}
 		} catch (Exception e) {
-			if (InvalidParamException.class.isInstance(e)) {
+			if (e instanceof InvalidParamException) {
 				throw (InvalidParamException) e;
 			}
 			Logs.system().warn("参数校验发生异常，" + e.getLocalizedMessage(), e);

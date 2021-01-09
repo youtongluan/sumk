@@ -38,11 +38,11 @@ public final class SoaException extends CodeException {
 	}
 
 	public SoaException(Throwable e, int code, String msg) {
-		super(BizException.class.isInstance(e) ? ((BizException) e).getCode() : code,
-				BizException.class.isInstance(e) ? e.getMessage() : msg);
+		super(e instanceof BizException ? ((BizException) e).getCode() : code,
+				e instanceof BizException ? e.getMessage() : msg);
 		this.exceptionClz = e == null ? null : e.getClass().getName();
 		this.detailError = getException(e);
-		this.bizException = BizException.class.isInstance(e);
+		this.bizException = e instanceof BizException;
 	}
 
 	public SoaException(int code, String msg, String detail) {

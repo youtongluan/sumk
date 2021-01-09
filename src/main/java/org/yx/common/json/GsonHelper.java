@@ -41,7 +41,7 @@ public final class GsonHelper {
 
 		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
 
-		if (AppInfo.getBoolean(module + ".gson.disableHtmlEscaping", false)) {
+		if (AppInfo.getBoolean(module + ".gson.disableHtmlEscaping", true)) {
 			gb.disableHtmlEscaping();
 		}
 		if (AppInfo.getBoolean(module + ".gson.shownull", false)) {

@@ -22,6 +22,7 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.handler.HttpHandlerChain;
+import org.yx.http.handler.MultipartHolder;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.HttpException;
 import org.yx.util.M;
@@ -55,7 +56,11 @@ public class MultipartServer extends AbstractHttpServer {
 			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS,
 					M.get("sumk.http.upload.error.annocation", "不是上传接口", wc.rawAct()));
 		}
-		HttpHandlerChain.multipart.handle(wc);
+		try {
+			HttpHandlerChain.multipart.handle(wc);
+		} finally {
+			MultipartHolder.remove();
+		}
 	}
 
 }

@@ -44,7 +44,7 @@ public class ReqSessionHolder {
 
 	@SuppressWarnings("unchecked")
 	public static ReqSession _getSession(Object obj) {
-		if (ReqSession.class.isInstance(obj)) {
+		if (obj instanceof ReqSession) {
 			return (ReqSession) obj;
 		}
 

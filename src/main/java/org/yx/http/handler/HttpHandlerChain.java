@@ -22,36 +22,28 @@ import org.yx.log.Log;
 
 public final class HttpHandlerChain {
 
-	private Logger LOG = Log.get("sumk.http.chain");
-	private HttpHandler[] handlers;
-
-	public static final HttpHandlerChain inst = new HttpHandlerChain();
+	public static final HttpHandlerChain rest = new HttpHandlerChain();
 	public static final HttpHandlerChain multipart = new HttpHandlerChain();
 
-	private HttpHandlerChain() {
-
-	}
+	private Logger LOG = Log.get("sumk.http.chain");
+	private HttpHandler[] handlers;
 
 	public void setHandlers(List<HttpHandler> handlers) {
 		this.handlers = handlers.toArray(new HttpHandler[0]);
 	}
 
 	public void handle(WebContext ctx) throws Throwable {
-		try {
-			for (HttpHandler h : this.handlers) {
-				if (h.order() < ctx.getLowestOrder()) {
-					continue;
-				}
-				if (LOG.isTraceEnabled()) {
-					if (String.class.isInstance(ctx.data())) {
-						String s = ((String) ctx.data());
-						LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
-					}
-				}
-				h.handle(ctx);
+		for (HttpHandler h : this.handlers) {
+			if (h.order() < ctx.getLowestOrder()) {
+				continue;
 			}
-		} finally {
-			MultipartHolder.remove();
+			if (LOG.isTraceEnabled()) {
+				if (ctx.data() instanceof String) {
+					String s = ((String) ctx.data());
+					LOG.trace("{} - {} with data:{}", ctx.rawAct(), h.getClass().getSimpleName(), s);
+				}
+			}
+			h.handle(ctx);
 		}
 	}
 }
