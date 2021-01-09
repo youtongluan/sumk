@@ -1,5 +1,6 @@
 package org.test.orm;
 
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.text.ParseException;
 import java.util.Random;
@@ -9,7 +10,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.demo.member.DemoUser;
+import org.yx.main.SumkServer;
 import org.yx.orm.DemoUserDao;
+import org.yx.util.IOUtil;
 
 //单主键的测试
 public class SinglePrimaryTest extends BaseOrmTest{
@@ -44,4 +47,12 @@ public class SinglePrimaryTest extends BaseOrmTest{
 		dao.select();
 	}
 
+	@Test
+	public void lockFile() throws Exception {
+		InputStream in=SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del");
+		byte[] bs=IOUtil.readAllBytes(in, true);
+		Assert.assertEquals(95, bs.length);
+		String script=new String(bs);
+		Assert.assertFalse(script.contains("\r"));
+	}
 }
