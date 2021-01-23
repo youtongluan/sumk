@@ -15,6 +15,7 @@
  */
 package org.yx.common.action;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,9 +24,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.yx.annotation.ExcludeFromParams;
+import org.yx.annotation.ExcludeFromResponse;
 import org.yx.annotation.Param;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 import org.yx.util.S;
 import org.yx.util.SumkDate;
 import org.yx.validate.FieldParameterHolder;
@@ -35,9 +39,9 @@ import org.yx.validate.ParameterInfo;
 
 public final class ActInfoUtil {
 
-	public static Object describe(Class<?> clazz) {
+	public static Object describe(Class<?> clazz, Class<? extends Annotation> exclude) {
 		if (clazz.isArray()) {
-			return new Object[] { describe(clazz.getComponentType()) };
+			return new Object[] { describe(clazz.getComponentType(), exclude) };
 		}
 		if (clazz.isPrimitive() || clazz.getName().startsWith("java.") || clazz == SumkDate.class) {
 			return clazz.getSimpleName();
@@ -48,13 +52,21 @@ public final class ActInfoUtil {
 		if (Collection.class.isAssignableFrom(clazz)) {
 			return Collections.emptyList();
 		}
+		if (clazz.isAnnotationPresent(exclude)) {
+
+			Logs.http().warn("{}被{}注解了，可能引起一些奇怪的业务反应", clazz.getName(), exclude.getSimpleName());
+			return null;
+		}
 		Map<String, Object> map = new LinkedHashMap<>();
 		Field[] fs = S.bean().getFields(clazz);
 		if (AppInfo.getBoolean("sumk.http.act.output.class", false)) {
 			map.put("$class", clazz.getName());
 		}
 		for (Field f : fs) {
-			map.putIfAbsent(f.getName(), describe(f.getType()));
+			if (f.isAnnotationPresent(exclude) || f.getType().isAnnotationPresent(exclude)) {
+				continue;
+			}
+			map.putIfAbsent(f.getName(), describe(f.getType(), exclude));
 		}
 		return map;
 	}
@@ -75,10 +87,10 @@ public final class ActInfoUtil {
 		Class<?>[] paramTypes = node.getParameterTypes();
 		for (int i = 0; i < paramSize; i++) {
 			Class<?> paramType = paramTypes[i];
-			param.put(node.argNames().get(i), describe(paramType));
+			param.put(node.argNames().get(i), describe(paramType, ExcludeFromParams.class));
 		}
 		map.put("params", param);
-		map.put("result", describe(node.getReturnType()));
+		map.put("result", describe(node.getReturnType(), ExcludeFromResponse.class));
 		return map;
 	}
 
@@ -99,7 +111,7 @@ public final class ActInfoUtil {
 					pi = mp;
 				}
 				boolean supportComplex = pi == null ? false : pi.isComplex();
-				ParamDescript pd = fullDescribe(paramType, pi, supportComplex);
+				ParamDescript pd = fullDescribe(paramType, pi, supportComplex, ExcludeFromParams.class);
 				list.add(pd);
 			}
 		}
@@ -110,13 +122,14 @@ public final class ActInfoUtil {
 		if (!returnClz.isPrimitive()) {
 			mp.setComplex(true);
 		}
-		map.put("result", fullDescribe(returnClz, mp, false));
+		map.put("result", fullDescribe(returnClz, mp, false, ExcludeFromResponse.class));
 		return map;
 	}
 
-	public static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex) {
+	public static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex,
+			Class<? extends Annotation> exclude) {
 		if (clazz.isArray()) {
-			ParamDescript pd = fullDescribe(clazz.getComponentType(), info, supportComplex);
+			ParamDescript pd = fullDescribe(clazz.getComponentType(), info, supportComplex, exclude);
 			pd.setType(pd.getType() + "[]");
 			pd.setArray(true);
 			return pd;
@@ -126,10 +139,18 @@ public final class ActInfoUtil {
 				|| Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz)) {
 			return pd.setType(clazz.getName());
 		}
+		if (clazz.isAnnotationPresent(exclude)) {
+
+			Logs.http().warn("{}被{}注解了，可能引起一些奇怪的业务反应", clazz.getName(), exclude.getSimpleName());
+			return null;
+		}
 		List<ParamDescript> list = new ArrayList<>();
 		Field[] fs = S.bean().getFields(clazz);
 		Map<Field, FieldParameterInfo> infoMap = FieldParameterHolder.getFieldParameterMap(clazz);
 		for (Field f : fs) {
+			if (f.isAnnotationPresent(exclude) || f.getType().isAnnotationPresent(exclude)) {
+				continue;
+			}
 			ParameterInfo fp = infoMap.get(f);
 			if (fp == null) {
 				Param param = f.getAnnotation(Param.class);
@@ -143,7 +164,7 @@ public final class ActInfoUtil {
 				}
 			}
 
-			list.add(fullDescribe(f.getType(), fp, supportComplex && fp.isComplex()));
+			list.add(fullDescribe(f.getType(), fp, supportComplex && fp.isComplex(), exclude));
 		}
 		pd.setComplexFields(list);
 		return pd;

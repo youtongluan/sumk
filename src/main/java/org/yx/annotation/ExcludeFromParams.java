@@ -13,13 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.annotation;
 
-import java.lang.reflect.Field;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import org.yx.annotation.Inject;
-
-public interface BeanHandler {
-
-	Object handle(Inject inject, Field field);
+/**
+ * 表示不作为参数。它对http和rpc的参数起作用
+ */
+@Target({ ElementType.FIELD, ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface ExcludeFromParams {
 }

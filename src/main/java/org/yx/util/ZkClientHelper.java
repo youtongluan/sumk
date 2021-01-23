@@ -17,7 +17,9 @@ package org.yx.util;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
@@ -83,6 +85,10 @@ public final class ZkClientHelper {
 		}
 		CLIENTS = map;
 		return zk;
+	}
+
+	public static Set<String> cachedUrls() {
+		return new HashSet<>(CLIENTS.keySet());
 	}
 
 }

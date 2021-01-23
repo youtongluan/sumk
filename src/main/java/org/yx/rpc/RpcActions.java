@@ -58,11 +58,12 @@ public final class RpcActions {
 
 	public static List<String> publishSoaSet() {
 		List<String> list = new ArrayList<>(actMap.size());
-		actMap.forEach((api, v) -> {
-			if (needPublish(api, v)) {
+		for (Map.Entry<String, RpcActionNode> entry : actMap.entrySet()) {
+			String api = entry.getKey();
+			if (needPublish(api, entry.getValue())) {
 				list.add(api);
 			}
-		});
+		}
 		return list;
 	}
 

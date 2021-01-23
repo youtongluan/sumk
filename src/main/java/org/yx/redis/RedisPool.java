@@ -36,7 +36,7 @@ public final class RedisPool {
 		_defaultRedis = r;
 	}
 
-	static List<String> keys() {
+	public static List<String> names() {
 		return new ArrayList<String>(cache.keySet());
 	}
 
@@ -55,15 +55,31 @@ public final class RedisPool {
 		return _defaultRedis;
 	}
 
-	public static synchronized void put(String alias, Redis redis) {
+	public static synchronized Redis put(String alias, Redis redis) {
 		Map<String, Redis> map = new HashMap<>(cache);
 		Redis old = map.put(alias, Objects.requireNonNull(redis));
 		cache = map;
-		Logs.redis().trace("redis name {} : {}", alias, redis);
-		if (old != null) {
-			old.shutdownPool();
-			Logs.redis().info("shutdown old redis {} : {}", alias, redis);
+		Logs.redis().info("redis name replace to {} : {}", alias, redis);
+		return old;
+	}
+
+	public static synchronized boolean putIfAbsent(String alias, Redis redis) {
+		Map<String, Redis> map = new HashMap<>(cache);
+		Redis old = map.putIfAbsent(alias, Objects.requireNonNull(redis));
+		if (old == null) {
+			cache = map;
+			return true;
 		}
+		return false;
+	}
+
+	public static synchronized Redis remove(String alias) {
+		Map<String, Redis> map = new HashMap<>(cache);
+		Redis old = map.remove(alias);
+		if (old != null) {
+			cache = map;
+		}
+		return old;
 	}
 
 	public static void shutdown() {

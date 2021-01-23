@@ -38,7 +38,7 @@ public class SelectListener implements DBEventListener {
 		if (!DBSettings.toCache() || !(ev instanceof QueryEvent)) {
 			return;
 		}
-		QueryEvent event = QueryEvent.class.cast(ev);
+		QueryEvent event = (QueryEvent) ev;
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache() || event.getResult() == null) {

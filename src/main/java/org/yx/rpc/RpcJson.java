@@ -17,20 +17,58 @@ package org.yx.rpc;
 
 import java.util.Objects;
 
+import org.yx.annotation.ExcludeFromParams;
 import org.yx.common.json.GsonHelper;
 import org.yx.common.json.GsonOperator;
+import org.yx.common.json.JsonOperator;
+import org.yx.common.json.ServerJsonExclusionStrategy;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 
 public final class RpcJson {
 
-	private static GsonOperator operator = new GsonOperator(GsonHelper.builder("sumk.rpc")
+	private static GsonBuilder gsonBuilder() {
 
-			.create());
+		return GsonHelper.builder("sumk.rpc");
+	}
 
-	public static GsonOperator operator() {
+	private static Gson createServerGson() {
+		return ServerJsonExclusionStrategy.addServerExclusionStrategy(gsonBuilder()).create();
+	}
+
+	private static Gson createClientGson() {
+		return gsonBuilder().addSerializationExclusionStrategy(new ServerJsonExclusionStrategy(ExcludeFromParams.class))
+				.create();
+	}
+
+	private static JsonOperator server = new GsonOperator(createServerGson());
+
+	private static JsonOperator client = new GsonOperator(createClientGson());
+
+	private static JsonOperator operator = new GsonOperator(gsonBuilder().create());
+
+	public static JsonOperator operator() {
 		return operator;
 	}
 
-	public static void setOperator(GsonOperator operator) {
+	public static void setOperator(JsonOperator operator) {
 		RpcJson.operator = Objects.requireNonNull(operator);
+	}
+
+	public static JsonOperator server() {
+		return server;
+	}
+
+	public static void setServerOperator(JsonOperator operator) {
+		RpcJson.server = Objects.requireNonNull(operator);
+	}
+
+	public static JsonOperator client() {
+		return client;
+	}
+
+	public static void setClientOperator(JsonOperator operator) {
+		RpcJson.client = Objects.requireNonNull(operator);
 	}
 }

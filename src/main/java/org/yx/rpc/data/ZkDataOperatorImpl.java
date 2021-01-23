@@ -66,9 +66,11 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 			}
 		}
 		info.setWeight(map.get(ZKConst.WEIGHT));
-		methodMap.forEach((m, value) -> {
+		for (Map.Entry<String, String> entry : methodMap.entrySet()) {
+			String m = entry.getKey();
+			String value = entry.getValue();
 			if (m.length() == 0) {
-				return;
+				continue;
 			}
 			IntfInfo intf = new IntfInfo();
 			intf.setName(m);
@@ -77,7 +79,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
 				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
 			}
-		});
+		}
 		if (logger.isTraceEnabled()) {
 			logger.trace("反序列化:  {}\nzk上的数据: {}\ninfo:  {}", data.name(), v, S.json().toJson(info));
 		}

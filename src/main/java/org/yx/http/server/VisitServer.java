@@ -49,15 +49,15 @@ public class VisitServer extends AbstractCommonHttpServlet {
 	public static String visitInfo() {
 		List<PojoMeta> list = PojoMetaHolder.allPojoMeta();
 		StringBuilder sb = new StringBuilder(32);
-		sb.append("##tableName").append(BLANK).append("visitCount").append(BLANK).append("cachedMeeted")
-				.append(AppInfo.LN);
+		sb.append("##tableName").append(BLANK).append("modifyCount").append(BLANK).append("visitCount").append(BLANK)
+				.append("cachedMeeted").append(AppInfo.LN);
 		for (PojoMeta p : list) {
 			if (p.isNoCache()) {
 				continue;
 			}
 			VisitCounter c = p.getCounter();
-			sb.append(p.getTableName()).append(BLANK).append(c.getVisitCount()).append(BLANK).append(c.getCachedMeet())
-					.append(AppInfo.LN);
+			sb.append(p.getTableName()).append(BLANK).append(c.getModifyCount()).append(BLANK).append(c.getVisitCount())
+					.append(BLANK).append(c.getCachedMeet()).append(AppInfo.LN);
 		}
 		return sb.toString();
 	}

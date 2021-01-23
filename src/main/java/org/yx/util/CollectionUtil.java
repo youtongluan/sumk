@@ -15,12 +15,11 @@
  */
 package org.yx.util;
 
-import java.io.BufferedReader;
+import static org.yx.conf.Const.LN;
+
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -30,7 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.yx.common.sumk.UnmodifiableArrayList;
-import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 
 /**
  * 本类的许多方法都会对key、value做trim()处理
@@ -68,13 +67,15 @@ public final class CollectionUtil {
 
 	public static String saveMapToText(Map<String, ?> map, String bigDelimiter, String smallDelimiter) {
 		StringBuilder sb = new StringBuilder();
-		map.forEach((k, v) -> {
+		for (Map.Entry<String, ?> entry : map.entrySet()) {
+			String k = entry.getKey();
+			Object v = entry.getValue();
 			sb.append(k);
 			if (v != null) {
 				sb.append(smallDelimiter).append(v);
 			}
 			sb.append(bigDelimiter);
-		});
+		}
 		return sb.toString();
 	}
 
@@ -82,13 +83,18 @@ public final class CollectionUtil {
 		if (text == null || text.isEmpty()) {
 			return map;
 		}
-		Map<String, String> temp = fillMapFromText(new LinkedHashMap<String, String>(), text, AppInfo.LN, "=");
-		temp.forEach((k, v) -> {
+		final String CONFIG_NEW_LINE2 = Const.CONFIG_NEW_LINE.replace("\t", "  ");
+
+		text = StringUtil.formatNewLineFlag(text).replace(Const.CONFIG_NEW_LINE, "").replace(CONFIG_NEW_LINE2, "");
+		Map<String, String> temp = fillMapFromText(new LinkedHashMap<String, String>(), text, Const.LN, "=");
+		for (Map.Entry<String, String> entry : temp.entrySet()) {
+			String k = entry.getKey();
+			String v = entry.getValue();
 			if (k.startsWith(INGORE_PREFIX) || v == null || v.isEmpty()) {
-				return;
+				continue;
 			}
 			map.put(k, v);
-		});
+		}
 		return map;
 	}
 
@@ -96,39 +102,13 @@ public final class CollectionUtil {
 		if (in == null) {
 			return Collections.emptyList();
 		}
-		BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-		List<String> list = new ArrayList<>();
-		try {
-			String line = null;
-			while ((line = reader.readLine()) != null) {
-				line = line.trim();
-				if (line.isEmpty()) {
-					continue;
-				}
-				list.add(line);
-			}
-			return list;
-		} finally {
-			reader.close();
-		}
-
-	}
-
-	public static List<String> splitToList(String text, String delimiter) {
-		if (text == null || text.isEmpty()) {
+		byte[] bs = IOUtil.readAllBytes(in, true);
+		if (bs == null || bs.length == 0) {
 			return Collections.emptyList();
 		}
-		String[] arrray = text.split(delimiter);
-		List<String> list = new ArrayList<>(arrray.length);
-		for (String data : list) {
-			data = data.trim();
-			if (data == null || data.isEmpty()) {
-				continue;
-			}
-			list.add(data);
-		}
-		return list;
-
+		String text = new String(bs, StandardCharsets.UTF_8);
+		text = StringUtil.formatNewLineFlag(text);
+		return StringUtil.splitAndTrim(text, LN);
 	}
 
 	public static boolean isEmpty(Map<?, ?> map) {
@@ -177,22 +157,26 @@ public final class CollectionUtil {
 	public static <T> Map<String, T> subMap(Map<String, T> source, String prefix) {
 		int len = prefix.length();
 		Map<String, T> map = new HashMap<>();
-		source.forEach((key, value) -> {
+		for (Map.Entry<String, T> entry : source.entrySet()) {
+			String key = entry.getKey();
+			T value = entry.getValue();
 			if (key.startsWith(prefix)) {
 				map.put(key.substring(len), value);
 			}
-		});
+		}
 		return map;
 	}
 
 	public static <K, V> Map<K, V> removeNull(Map<K, V> map) {
 		Map<K, V> ret = new HashMap<>();
-		map.forEach((k, v) -> {
+		for (Map.Entry<K, V> entry : map.entrySet()) {
+			K k = entry.getKey();
+			V v = entry.getValue();
 			if (k == null || v == null) {
-				return;
+				continue;
 			}
 			ret.put(k, v);
-		});
+		}
 		return ret;
 	}
 

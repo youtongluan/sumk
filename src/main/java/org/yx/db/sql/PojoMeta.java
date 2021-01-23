@@ -65,7 +65,6 @@ public final class PojoMeta implements Cloneable {
 
 	private final CacheType cacheType;
 
-	private long lastHitTime;
 	private String tableName;
 	final SoftDeleteMeta softDelete;
 
@@ -118,14 +117,6 @@ public final class PojoMeta implements Cloneable {
 		return this.softDelete != null;
 	}
 
-	public long getLastHitTime() {
-		return lastHitTime;
-	}
-
-	public void setLastHitTime(long lastHitTime) {
-		this.lastHitTime = lastHitTime;
-	}
-
 	public VisitCounter getCounter() {
 		return counter;
 	}
@@ -162,7 +153,7 @@ public final class PojoMeta implements Cloneable {
 		this.cacheIDs = CollectionUtil.unmodifyList(rids);
 		this.databaseIds = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids);
 		this.createColumns = CollectionUtil.unmodifyList(ctimes);
-		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class));
+		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class), this.fieldMetas);
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}

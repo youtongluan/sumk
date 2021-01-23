@@ -22,12 +22,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.yx.annotation.Inject;
 import org.yx.bean.watcher.BeanCreateWatcher;
-import org.yx.bean.watcher.BeanPropertiesWatcher;
+import org.yx.bean.watcher.BeanInjectWatcher;
 import org.yx.bean.watcher.PluginHandler;
+import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.exception.SimpleSumkException;
 import org.yx.listener.ListenerGroup;
@@ -43,6 +45,7 @@ public final class BeanPublisher {
 	private ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
 	private Logger logger = Logs.ioc();
 
+	@SuppressWarnings("unchecked")
 	public synchronized void publishBeans(List<String> packageNames) throws Exception {
 		if (packageNames.isEmpty()) {
 			logger.warn("property [sumk.ioc] is empty");
@@ -51,10 +54,19 @@ public final class BeanPublisher {
 		packageNames.remove(StartConstants.INNER_PACKAGE);
 		packageNames.add(0, StartConstants.INNER_PACKAGE);
 
+		Predicate<String> optional = BooleanMatcher.FALSE;
+		Object obj = StartContext.inst().get("sumk.bean.scan.option");
+		if (obj instanceof Predicate) {
+			optional = (Predicate<String>) obj;
+		}
+
 		Collection<String> clzs = ClassScaner.listClasses(packageNames);
 		List<Class<?>> clazzList = new ArrayList<>(clzs.size());
 		for (String c : clzs) {
 			try {
+				if (logger.isTraceEnabled()) {
+					logger.trace("{} begin loading");
+				}
 
 				Class<?> clz = Loader.loadClassExactly(c);
 				if ((clz.getModifiers() & (Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PUBLIC
@@ -64,10 +76,12 @@ public final class BeanPublisher {
 				}
 				clazzList.add(clz);
 			} catch (LinkageError e) {
-				if (!c.startsWith("org.yx.")) {
-					throw e;
+				if (c.startsWith("org.yx.") || optional.test(c)) {
+					logger.debug("{} ignored because: {}", c, e.getMessage());
+					continue;
 				}
-				logger.debug("{} ignored.{}", c, e.getMessage());
+				logger.error("{}加载失败，原因是:{}", c, e.getLocalizedMessage());
+				throw e;
 			} catch (Exception e) {
 				logger.error(c + "加载失败", e);
 			}
@@ -78,10 +92,13 @@ public final class BeanPublisher {
 			try {
 				publish(new BeanEvent(clz));
 			} catch (LinkageError e) {
-				if (!clz.getName().startsWith("org.yx.")) {
-					throw e;
+				String c = clz.getName();
+				if (c.startsWith("org.yx.") || optional.test(c)) {
+					logger.debug("{} ignored in publish because: {}", c, e.getMessage());
+					continue;
 				}
-				logger.debug("{} ignored.{}", clz.getName(), e.getMessage());
+				logger.error("{} publish失败，原因是:{}", c, e.getLocalizedMessage());
+				throw e;
 			}
 		}
 		if (clazzList.size() > 5 && logger.isDebugEnabled()) {
@@ -120,15 +137,17 @@ public final class BeanPublisher {
 		final List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans());
 		StartContext.inst().setBeans(beans);
 		logger.trace("after beans create...");
-		IOC.getBeans(BeanCreateWatcher.class).forEach(w -> w.afterCreate(beans));
+		for (BeanCreateWatcher w : IOC.getBeans(BeanCreateWatcher.class)) {
+			w.afterCreate(beans);
+		}
 		logger.trace("inject beans properties...");
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
 		logger.trace("after beans installed...");
-		IOC.getBeans(BeanPropertiesWatcher.class).forEach(watcher -> {
+		for (BeanInjectWatcher watcher : IOC.getBeans(BeanInjectWatcher.class)) {
 			watcher.afterInject(beans);
-		});
+		}
 		logger.trace("plugins starting...");
 		PluginHandler.instance.start();
 	}

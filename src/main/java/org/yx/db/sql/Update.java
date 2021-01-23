@@ -15,6 +15,7 @@
  */
 package org.yx.db.sql;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -143,7 +144,10 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	}
 
 	public MapedSql toMapedSql() throws Exception {
-		if (this.updateTo == null || this.updateTo.isEmpty()) {
+		if (this.updateTo == null) {
+			this.updateTo = Collections.emptyMap();
+		}
+		if (this.updateTo.isEmpty() && CollectionUtil.isEmpty(this.incrMap)) {
 			throw new SumkException(-34601, "updateTo is null or empty");
 		}
 		this.pojoMeta = this.parsePojoMeta(true);

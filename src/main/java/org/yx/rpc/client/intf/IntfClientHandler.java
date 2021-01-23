@@ -53,6 +53,10 @@ public class IntfClientHandler implements InvocationHandler {
 
 	@Override
 	public Object invoke(Object proxy, Method method, Object[] args) {
+
+		if ("toString".equals(method.getName()) && (args == null || args.length == 0)) {
+			return this.getApi(method);
+		}
 		try {
 			return this.onInvoke(proxy, method, args);
 		} catch (Throwable e) {

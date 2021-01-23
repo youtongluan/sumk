@@ -246,3 +246,9 @@ v2.9.7
 4、微服务增加发送失败自动重发的机制
 5、修改StartConstants和StartContext的包名
 
+v2.9.8
+1、增加@ExcludeInParams和@ExcludeInResponse，它用来标识dto中非参数字段或不是用于返回的字段。在web和rpc中都有效
+2、允许pojo中存在跟@SoftDelete同名的字段，以达到复用软删除标识位的目的。这种情况下，往往只有一种状态是标识删除，其它状态都是非删除的
+3、去掉sumk.db.default参数，增加s.alias.db.{name}参数
+4、BeanPropertiesWatcher接口改名为BeanInjectWatcher
+

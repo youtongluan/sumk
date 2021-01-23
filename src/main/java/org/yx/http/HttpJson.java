@@ -19,13 +19,15 @@ import java.util.Objects;
 
 import org.yx.common.json.GsonHelper;
 import org.yx.common.json.GsonOperator;
+import org.yx.common.json.JsonOperator;
+import org.yx.common.json.ServerJsonExclusionStrategy;
 import org.yx.conf.AppInfo;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.LongSerializationPolicy;
 
 public final class HttpJson {
-	private static GsonOperator operator = new GsonOperator(gsonBuilder().create());
+	private static JsonOperator operator = new GsonOperator(gsonBuilder().create());
 
 	private static GsonBuilder gsonBuilder() {
 		GsonBuilder gb = GsonHelper.builder("sumk.http");
@@ -33,14 +35,15 @@ public final class HttpJson {
 		if (AppInfo.getBoolean("sumk.http.json.long2String", true)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
-		return gb;
+
+		return ServerJsonExclusionStrategy.addServerExclusionStrategy(gb);
 	}
 
-	public static GsonOperator operator() {
+	public static JsonOperator operator() {
 		return operator;
 	}
 
-	public static void setOperator(GsonOperator operator) {
+	public static void setOperator(JsonOperator operator) {
 		HttpJson.operator = Objects.requireNonNull(operator);
 	}
 }

@@ -33,8 +33,9 @@ public class MapConfig implements SystemConfig {
 		return map;
 	}
 
-	public void replace(Map<String, String> config) {
+	public MapConfig replace(Map<String, String> config) {
 		map = Objects.requireNonNull(config);
+		return this;
 	}
 
 	@Override
@@ -73,7 +74,6 @@ public class MapConfig implements SystemConfig {
 
 	@Override
 	public String toString() {
-		return "MapConfig " + map;
+		return "MapConfig: " + map;
 	}
-
 }

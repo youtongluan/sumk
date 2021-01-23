@@ -35,7 +35,7 @@ public final class RecordRepository {
 		}
 		String s = _get(m, id);
 		if (s != null) {
-			m.getCounter().incCacheMeet();
+			m.getCounter().incrCacheMeet();
 		}
 		return s;
 	}
@@ -59,6 +59,7 @@ public final class RecordRepository {
 		if (id == null || id.isEmpty()) {
 			throw new SumkException(657645465, "key of redis value cannot be null");
 		}
+		m.getCounter().incrModifyCount();
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		int ttl = m.getTtlSec();
@@ -76,6 +77,7 @@ public final class RecordRepository {
 	}
 
 	public static void del(PojoMeta m, String id) {
+		m.getCounter().incrModifyCount();
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		muteRedis(tableName).del(key);
@@ -96,6 +98,7 @@ public final class RecordRepository {
 		if (ids == null || ids.length == 0) {
 			return;
 		}
+		m.getCounter().incrModifyCount();
 		String[] keys = getKeys(m, ids);
 		muteRedis(m.getTableName()).del(keys);
 		if (logger.isTraceEnabled()) {
@@ -117,7 +120,7 @@ public final class RecordRepository {
 		String[] keys = getKeys(m, ids.toArray(new String[ids.size()]));
 		List<String> ret = muteRedis(m.getTableName()).mget(keys);
 		if (ret != null && ret.size() > 0) {
-			m.getCounter().incCacheMeet();
+			m.getCounter().incrCacheMeet();
 		}
 		return ret;
 	}

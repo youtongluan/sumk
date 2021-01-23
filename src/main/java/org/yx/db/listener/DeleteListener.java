@@ -35,7 +35,7 @@ public class DeleteListener implements DBEventListener {
 		if (!DBSettings.toCache() || !(ev instanceof DeleteEvent)) {
 			return;
 		}
-		DeleteEvent event = DeleteEvent.class.cast(ev);
+		DeleteEvent event = (DeleteEvent) ev;
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache()) {

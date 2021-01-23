@@ -39,7 +39,7 @@ public class UpdateListener implements DBEventListener {
 		if (!DBSettings.toCache() || !(ev instanceof UpdateEvent)) {
 			return;
 		}
-		UpdateEvent event = UpdateEvent.class.cast(ev);
+		UpdateEvent event = (UpdateEvent) ev;
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			if (pm == null || pm.isNoCache()) {
@@ -73,7 +73,7 @@ public class UpdateListener implements DBEventListener {
 				}
 			}
 		}
-		if (event.isFullUpdate()) {
+		if (event.isFullUpdate() && event.getIncrMap() == null) {
 			String id_new = pm.getCacheID(to, true);
 			if (!id.equals(id_new)) {
 				RecordRepository.del(pm, id);

@@ -16,6 +16,7 @@
 package org.yx.http.server;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.function.BiConsumer;
 
 import javax.servlet.GenericServlet;
@@ -45,9 +46,9 @@ public abstract class AbstractCommonHttpServlet extends GenericServlet {
 
 	protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 		if (HttpSettings.responseHeaders() != null) {
-			HttpSettings.responseHeaders().forEach((k, v) -> {
-				resp.setHeader(k, v);
-			});
+			for (Map.Entry<String, String> entry : HttpSettings.responseHeaders().entrySet()) {
+				resp.setHeader(entry.getKey(), entry.getValue());
+			}
 		}
 		String method = req.getMethod().toUpperCase();
 		if (!HttpMethod.METHODS.contains(method)) {

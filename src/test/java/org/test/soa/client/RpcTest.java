@@ -49,7 +49,7 @@ public class RpcTest {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo);
 			map.put("names", names);
-			ret = Rpc.callInJson(soaName("echo"), S.json().toJson(map));
+			ret = Rpc.callInMap(soaName("echo"), map);
 			Assert.assertEquals(new EchoAction().echo(echo, names), S.json().fromJson(ret, List.class));
 			ret = Rpc.call(soaName("echo"), echo, names);
 			Assert.assertEquals(new EchoAction().echo(echo, names), S.json().fromJson(ret, List.class));
@@ -78,7 +78,7 @@ public class RpcTest {
 			String ret;
 			Map<String, Object> map = new HashMap<>();
 			map.put("users", list);
-			ret = Rpc.callInJson(soaName("add"), S.json().toJson(map));
+			ret = Rpc.callInMap(soaName("add"), map);
 			System.out.println("返回的信息：" + ret);
 			Assert.assertEquals(list.size() + "", ret);
 
@@ -101,7 +101,7 @@ public class RpcTest {
 			Map<String, Object> map = new HashMap<>();
 			map.put("echo", echo + i);
 			map.put("names", names);
-			retList.add(Rpc.callInJsonAsync(soaName("echo"), S.json().toJson(map)));
+			retList.add(Rpc.callInMapAsync(soaName("echo"), map));
 			retList2.add(Rpc.callAsync(soaName("echo"), echo + i, names));
 		}
 

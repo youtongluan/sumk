@@ -115,7 +115,7 @@ public final class WebUtil {
 		}
 		Object attr = req.getAttribute(name);
 		if (attr != null && attr.getClass() == String.class) {
-			return String.class.cast(attr);
+			return (String) attr;
 		}
 		return null;
 	}

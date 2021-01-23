@@ -26,6 +26,7 @@ import javax.sql.DataSource;
 
 import org.yx.db.enums.DBType;
 import org.yx.exception.SumkException;
+import org.yx.log.Logs;
 
 public class SumkDataSource implements DataSource {
 	private final String name;
@@ -110,6 +111,23 @@ public class SumkDataSource implements DataSource {
 
 	public void setEnable(boolean enable) {
 		this.enable = enable;
+	}
+
+	public boolean close() {
+		if (!(this.proxy instanceof AutoCloseable)) {
+			Logs.db().warn("DataSource {} unsupport close", proxy);
+			return false;
+		}
+		try {
+			AutoCloseable c = (AutoCloseable) proxy;
+			Logs.db().info("DataSource {} begin closing...", c);
+			c.close();
+			Logs.db().info("DataSource {} closed", c);
+			return true;
+		} catch (Throwable e) {
+			Logs.db().error(e.getMessage(), e);
+			return false;
+		}
 	}
 
 }

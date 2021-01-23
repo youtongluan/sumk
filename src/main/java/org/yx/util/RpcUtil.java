@@ -30,15 +30,15 @@ import org.yx.rpc.server.RpcContext;
 public final class RpcUtil {
 
 	public static String userId() {
-		return ActionContext.get().userId();
+		return ActionContext.current().userId();
 	}
 
 	public static void setUserId(String userId) {
-		ActionContext.get().userId(userId);
+		ActionContext.current().userId(userId);
 	}
 
 	public static boolean setUserIdIfEmpty(String userId) {
-		ActionContext tc = ActionContext.get();
+		ActionContext tc = ActionContext.current();
 		if (tc.userId() == null) {
 			tc.userId(userId);
 			return true;

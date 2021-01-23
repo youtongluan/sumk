@@ -18,12 +18,10 @@ package org.yx.common.context;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
+import org.yx.main.SumkServer;
 
 public final class ActionContext implements org.yx.common.context.Attachable, Cloneable {
-
-	private static final String TEST = "sumk.test";
 
 	private LogContext logContext;
 
@@ -36,19 +34,7 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 		return logContext.test;
 	}
 
-	private boolean parseTest(boolean isTest) {
-		if (!isTest) {
-			return false;
-		}
-		return AppInfo.getBoolean(TEST, false);
-	}
-
-	private ActionContext(String act, String traceId, String spanId, String userId, boolean isTest,
-			Map<String, String> attachments) {
-		this.logContext = LogContext.create(act, traceId, spanId, userId, this.parseTest(isTest), attachments);
-	}
-
-	private ActionContext(LogContext logContext) {
+	ActionContext(LogContext logContext) {
 		this.logContext = logContext;
 	}
 
@@ -74,22 +60,28 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 
 	};
 
-	public static ActionContext newContext(String act, String traceId, String thisIsTest) {
-		boolean test = false;
-		if (thisIsTest != null && thisIsTest.equals(AppInfo.get(TEST))) {
-			test = true;
-		}
+	public static ActionContext newContext(String act, String traceId, boolean test) {
 		return newContext(act, traceId, null, null, test, null);
 	}
 
 	public static ActionContext newContext(String act, String traceId, String spanId, String userId, boolean isTest,
 			Map<String, String> attachments) {
-		ActionContext c = new ActionContext(act, traceId, spanId, userId, isTest, attachments);
+		LogContext logContext = LogContext.create(act, traceId, spanId, userId, isTest && SumkServer.isTest(),
+				attachments);
+		return newContext(logContext);
+	}
+
+	public static ActionContext newContext(LogContext logContext) {
+		ActionContext c = new ActionContext(logContext);
 		holder.set(c);
 		return c;
 	}
 
-	public static ActionContext get() {
+	public static void store(ActionContext c) {
+		holder.set(c);
+	}
+
+	public static ActionContext current() {
 		return holder.get();
 	}
 
@@ -158,10 +150,6 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 			return String.valueOf(seed);
 		}
 		return new StringBuilder().append(lc.spanId).append('.').append(seed).toString();
-	}
-
-	public static void recover(ActionContext context) {
-		holder.set(context);
 	}
 
 	public LogContext logContext() {

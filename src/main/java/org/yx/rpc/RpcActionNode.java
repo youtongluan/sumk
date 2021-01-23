@@ -25,7 +25,6 @@ import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.rpc.codec.Request;
-import org.yx.util.S;
 
 public final class RpcActionNode extends CalleeNode {
 	private final boolean publish;
@@ -61,8 +60,7 @@ public final class RpcActionNode extends CalleeNode {
 			return this.getEmptyArgObj();
 		}
 		String args = req.getJsonedParam();
-
-		ArgPojo argObj = S.json().fromJson(args, argClz);
+		ArgPojo argObj = RpcJson.server().fromJson(args, argClz);
 		return argObj == null ? this.getEmptyArgObj() : argObj;
 	}
 
@@ -84,7 +82,7 @@ public final class RpcActionNode extends CalleeNode {
 				continue;
 			}
 			Field f = fields[i];
-			f.set(pojo, RpcJson.operator().fromJson(args[i], f.getGenericType()));
+			f.set(pojo, RpcJson.server().fromJson(args[i], f.getGenericType()));
 		}
 		return pojo;
 	}

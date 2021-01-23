@@ -17,11 +17,15 @@ package org.yx.db.sql;
 
 public interface VisitCounter {
 
-	long getVisitCount();
+	int getVisitCount();
 
-	long getCachedMeet();
+	int getCachedMeet();
 
-	void incCacheMeet();
+	int getModifyCount();
+
+	void incrCacheMeet();
+
+	void incrModifyCount();
 
 	boolean visit();
 }

@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.server;
+package org.yx.bean.watcher;
 
-import org.yx.annotation.Bean;
-import org.yx.annotation.http.SumkServlet;
-import org.yx.http.handler.HttpHandlerChain;
-import org.yx.http.handler.WebContext;
+import java.util.List;
 
-@Bean
-@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
-public class RestServer extends AbstractActionServer {
+/**
+ * 只被调用一次，beans参数是额外参数，如果用不到可以忽略它。 beans里的对象不一定是原始对象，有可能是代理后的对象，通过 是否实现Boxed来判断。
+ */
+public interface BeanInjectWatcher extends BeanWatcher {
 
-	private static final long serialVersionUID = 7437235491L;
-
-	@Override
-	protected void handle(WebContext wc) throws Throwable {
-		HttpHandlerChain.rest.handle(wc);
-	}
+	void afterInject(List<Object> beans);
 }

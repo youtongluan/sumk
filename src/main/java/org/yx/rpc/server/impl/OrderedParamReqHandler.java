@@ -41,7 +41,7 @@ public class OrderedParamReqHandler implements RequestHandler {
 			RpcContext ctx = new RpcContext(node, req);
 			ctx.setArgPojo(node.createOrderArgPojo(req));
 			Object ret = RpcHandler.handle(ctx);
-			resp.json(RpcJson.operator().toJson(ret));
+			resp.json(RpcJson.server().toJson(ret));
 			resp.exception(null);
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);

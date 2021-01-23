@@ -59,7 +59,7 @@ public class ReqUserHandler implements HttpHandler {
 			Logs.http().info("sessionId:{}, 没找到对应的session", sessionId);
 			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
-		ActionContext.get().userId(obj.getUserId());
+		ActionContext.current().userId(obj.getUserId());
 
 		Long deadTime = obj.getExpiredTime();
 		if (deadTime != null) {

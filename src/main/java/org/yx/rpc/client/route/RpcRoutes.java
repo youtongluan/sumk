@@ -26,6 +26,7 @@ import org.yx.common.Host;
 import org.yx.common.route.Router;
 import org.yx.common.route.WeightedServer;
 import org.yx.log.Log;
+import org.yx.rpc.data.IntfInfo;
 import org.yx.rpc.data.RouteInfo;
 
 public final class RpcRoutes {
@@ -73,39 +74,47 @@ public final class RpcRoutes {
 		}
 	}
 
+	private static void fillWeightedServer(Map<String, WeightedServer<Host>> source,
+			Map<String, Set<WeightedServer<Host>>> dest) {
+		for (Map.Entry<String, WeightedServer<Host>> entry : source.entrySet()) {
+			String m = entry.getKey();
+			WeightedServer<Host> serverMachine = entry.getValue();
+			Set<WeightedServer<Host>> server = dest.get(m);
+			if (server == null) {
+				server = new HashSet<>();
+				dest.put(m, server);
+			}
+			server.add(serverMachine);
+		}
+	}
+
 	public static synchronized void refresh(Map<Host, RouteInfo> datas) {
 		Map<String, Set<WeightedServer<Host>>> map = new HashMap<>();
 		for (RouteInfo r : datas.values()) {
-			Map<String, WeightedServer<Host>> ms = createServerMachine(r);
-			ms.forEach((m, serverMachine) -> {
-				Set<WeightedServer<Host>> server = map.get(m);
-				if (server == null) {
-					server = new HashSet<>();
-					map.put(m, server);
-				}
-				server.add(serverMachine);
-			});
+			fillWeightedServer(createServerMachine(r), map);
 		}
 		Map<String, Router<Host>> routes = new HashMap<>();
-		map.forEach((method, servers) -> {
+		for (Map.Entry<String, Set<WeightedServer<Host>>> entry : map.entrySet()) {
+			String method = entry.getKey();
+			Set<WeightedServer<Host>> servers = entry.getValue();
 			if (servers == null || servers.isEmpty()) {
-				return;
+				continue;
 			}
 			Router<Host> route = RouteHolder.createRouter(method, servers);
 			if (route != null) {
 				routes.put(method, route);
 			}
-		});
+		}
 		_refresh(datas, routes);
 	}
 
 	private static Map<String, WeightedServer<Host>> createServerMachine(RouteInfo data) {
 		Map<String, WeightedServer<Host>> servers = new HashMap<>();
 		int weight = data.weight() > 0 ? data.weight() : 100;
-		data.intfs().forEach(intf -> {
+		for (IntfInfo intf : data.intfs()) {
 			WeightedServer<Host> server = new WeightedHost(data.host(), weight);
 			servers.put(intf.getName(), server);
-		});
+		}
 		return servers;
 	}
 

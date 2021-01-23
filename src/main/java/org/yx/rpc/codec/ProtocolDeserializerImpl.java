@@ -35,7 +35,7 @@ public class ProtocolDeserializerImpl implements ProtocolDeserializer {
 		if (!(message instanceof ProtocolObject)) {
 			throw new SumkException(458223, message.getClass().getName() + " is error type");
 		}
-		ProtocolObject obj = ProtocolObject.class.cast(message);
+		ProtocolObject obj = (ProtocolObject) message;
 		if (obj.getData().length == 0) {
 			return null;
 		}

@@ -65,7 +65,7 @@ public final class Log {
 
 	public static boolean isON(Logger log) {
 
-		return log.isTraceEnabled() && log instanceof SumkLogger && SumkLogger.class.cast(log).isON();
+		return log.isTraceEnabled() && log instanceof SumkLogger && ((SumkLogger) log).isON();
 	}
 
 }

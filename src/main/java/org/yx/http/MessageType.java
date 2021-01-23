@@ -16,13 +16,21 @@
 package org.yx.http;
 
 public enum MessageType {
-	PLAIN, BASE64, ENCRYPT_BASE64, ENCRYPT;
+	DEFAULT(false, false), PLAIN(false, false), BASE64(false, true), ENCRYPT_BASE64(true, true), ENCRYPT(true, false);
+
+	private final boolean encrypt;
+	private final boolean base64;
+
+	private MessageType(boolean encrypt, boolean base64) {
+		this.encrypt = encrypt;
+		this.base64 = base64;
+	}
 
 	public boolean isEncrypt() {
-		return this == ENCRYPT_BASE64 || this == ENCRYPT;
+		return this.encrypt;
 	}
 
 	public boolean isBase64() {
-		return this == ENCRYPT_BASE64 || this == BASE64;
+		return this.base64;
 	}
 }

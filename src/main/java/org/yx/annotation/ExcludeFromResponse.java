@@ -13,18 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.codec.decoders;
+package org.yx.annotation;
 
-import org.yx.rpc.codec.Protocols;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public final class DeserializeKits {
-
-	public static int nextSplitIndex(byte[] data, int start) {
-		for (int i = start; i < data.length; i++) {
-			if (data[i] == Protocols.LINE_SPLIT_BYTE) {
-				return i;
-			}
-		}
-		return data.length;
-	}
+/**
+ * 表示不作为响应内容。它对http和rpc的参数起作用
+ */
+@Target({ ElementType.FIELD, ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface ExcludeFromResponse {
 }

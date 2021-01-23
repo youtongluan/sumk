@@ -145,7 +145,7 @@ public class HttpPlugin implements Plugin {
 		try {
 			Loader.loadClassExactly("javax.servlet.http.HttpServlet");
 		} catch (Exception e) {
-			Logs.http().error("javax-servlet-api-**.jar is not imported");
+			Logs.http().warn("javax-servlet-api-**.jar is not imported");
 			return false;
 		}
 		return true;

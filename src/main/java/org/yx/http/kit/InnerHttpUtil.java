@@ -30,7 +30,9 @@ import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpErrorCode;
+import org.yx.http.MessageType;
 import org.yx.log.Logs;
+import org.yx.main.SumkServer;
 import org.yx.util.S;
 import org.yx.util.UUIDSeed;
 
@@ -80,10 +82,6 @@ public final class InnerHttpUtil {
 		return kit.charset(req);
 	}
 
-	public static void noCache(HttpServletResponse resp) {
-		kit.noCache(resp);
-	}
-
 	public static void record(String act, long time, boolean isSuccess) {
 		kit.record(act, time, isSuccess);
 	}
@@ -105,7 +103,6 @@ public final class InnerHttpUtil {
 	}
 
 	public static boolean preServerHandle(HttpServletRequest req, HttpServletResponse resp, String firstKey) {
-		InnerHttpUtil.noCache(resp);
 		resp.setContentType("text/plain;charset=UTF-8");
 		String md5 = AppInfo.get(firstKey, "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
 		String sign = req.getParameter("sign");
@@ -126,7 +123,26 @@ public final class InnerHttpUtil {
 
 	public static void startContext(HttpServletRequest req, HttpServletResponse resp, String act) {
 		String traceId = UUIDSeed.seq18();
-		ActionContext.newContext(act, traceId, req.getParameter("thisIsTest"));
+		ActionContext.newContext(act, traceId,
+				SumkServer.isTest() && "1".equals(req.getParameter(HttpSettings.testKey())));
 		resp.setHeader(HttpSettings.traceHeaderName(), traceId);
+	}
+
+	public static MessageType parseMessageType(String name) {
+		if (name == null || name.isEmpty()) {
+			return MessageType.PLAIN;
+		}
+		name = name.toUpperCase();
+		if (name.equals("ENCRYPT_BASE64") || name.equals("ENCRYPTBASE64")) {
+			return MessageType.ENCRYPT_BASE64;
+		}
+		if (name.equals("BASE64")) {
+			return MessageType.BASE64;
+		}
+		if (name.equals("ENCRYPT")) {
+			return MessageType.ENCRYPT;
+		}
+		Logs.http().warn("配置值{}对应的MessageType是PLAIN", name);
+		return MessageType.PLAIN;
 	}
 }

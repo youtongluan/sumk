@@ -25,6 +25,7 @@ import org.yx.rpc.Profile;
 import org.yx.rpc.RpcJson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.server.Response;
+import org.yx.util.S;
 
 @Bean
 public class SplitResponseDeserializer implements SumkMinaDeserializer<Response> {
@@ -36,7 +37,7 @@ public class SplitResponseDeserializer implements SumkMinaDeserializer<Response>
 
 	@Override
 	public Response decode(int protocol, byte[] data) {
-		int index = DeserializeKits.nextSplitIndex(data, 0);
+		int index = DeSerializeKits.nextSplitIndex(data, 0);
 		Response resp = new Response(new String(data, 0, index, Profile.UTF8));
 		if (index == data.length) {
 			return resp;
@@ -61,7 +62,7 @@ public class SplitResponseDeserializer implements SumkMinaDeserializer<Response>
 		index += 4;
 		if (len != Integer.MIN_VALUE) {
 			resp.json(new String(data, index, data.length - index, Profile.UTF8));
-			resp.exception(RpcJson.operator().fromJson(new String(data, index, len, Profile.UTF8), SoaException.class));
+			resp.exception(S.json().fromJson(new String(data, index, len, Profile.UTF8), SoaException.class));
 		}
 		return resp;
 	}

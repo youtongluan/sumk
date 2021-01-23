@@ -29,10 +29,9 @@ import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpJson;
 import org.yx.http.MessageType;
 import org.yx.http.kit.HttpException;
+import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
-
-import com.google.gson.JsonParseException;
 
 public final class HttpActionNode extends CalleeNode {
 
@@ -64,18 +63,25 @@ public final class HttpActionNode extends CalleeNode {
 		}
 		try {
 			return HttpJson.operator().fromJson(data, argClz);
-		} catch (JsonParseException e) {
+		} catch (Exception e) {
 			Logs.http().warn("json解析异常", e);
 			throw HttpException.create(HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
 		}
+	}
+
+	private MessageType getMessageType(MessageType configed, String key) {
+		if (configed != MessageType.DEFAULT) {
+			return configed;
+		}
+		return InnerHttpUtil.parseMessageType(AppInfo.get(key));
 	}
 
 	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Web action) {
 		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.method = action.method();
-		this.requestType = action.requestType();
-		this.responseType = action.responseType();
+		this.requestType = getMessageType(action.requestType(), "sumk.http.request.type");
+		this.responseType = getMessageType(action.responseType(), "sumk.http.response.type");
 		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
 				|| action().requestType().isEncrypt() || action().responseType().isEncrypt();
 		this.sign = action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);

@@ -33,17 +33,17 @@ public class RpcAttachment implements Attachable {
 
 	@Override
 	public Map<String, String> attachmentView() {
-		return ActionContext.get().attachmentView();
+		return ActionContext.current().attachmentView();
 	}
 
 	@Override
 	public void setAttachment(String key, String value) {
-		ActionContext.get().setAttachment(key, value);
+		ActionContext.current().setAttachment(key, value);
 	}
 
 	@Override
 	public String getAttachment(String key) {
-		return ActionContext.get().getAttachment(key);
+		return ActionContext.current().getAttachment(key);
 	}
 
 }

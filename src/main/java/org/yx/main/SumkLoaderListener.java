@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.List;
@@ -64,7 +65,7 @@ public class SumkLoaderListener implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		Logs.http().debug("contextInitialized");
 		try {
-			SumkServer.start(new String[] { StartConstants.NOJETTY });
+			SumkServer.start(Collections.singleton(StartConstants.NOJETTY));
 			if (!SumkServer.isHttpEnable()) {
 				return;
 			}

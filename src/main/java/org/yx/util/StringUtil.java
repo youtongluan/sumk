@@ -20,10 +20,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 
 public final class StringUtil {
+
+	public static String formatNewLineFlag(String text) {
+		return text.replace("\r\n", Const.LN).replace("\r", Const.LN);
+	}
 
 	public static String uncapitalize(String str) {
 		int strLen;
@@ -34,14 +41,40 @@ public final class StringUtil {
 				.toString();
 	}
 
+	/**
+	 * 这个会自动对每个子项做trim()操作，并且过滤掉空值
+	 * 
+	 * @param source
+	 *            原始字符串，不能为null
+	 * @param splitRegex
+	 *            分隔符
+	 * @param otherSplits
+	 *            其它的分隔符，这些分隔符不支持正则表达式。结果集会根据所有的分隔符进行分割
+	 * @return 结果不包含null和空字符串。返回值不为null
+	 */
+	public static List<String> splitAndTrim(String source, String splitRegex, String... otherSplits) {
+		if (otherSplits != null && otherSplits.length > 0) {
+			for (String r : otherSplits) {
+				source = source.replace(r, splitRegex);
+			}
+		}
+		String[] vs = source.split(splitRegex);
+		List<String> list = new ArrayList<>(vs.length);
+		for (String v : vs) {
+			v = v.trim();
+			if (v.isEmpty()) {
+				continue;
+			}
+			list.add(v);
+		}
+		return list;
+	}
+
 	public static boolean isEmpty(CharSequence str) {
 		return str == null || str.length() == 0;
 	}
 
 	public static String toLatin(String v) {
-		if (v == null || v.isEmpty()) {
-			return v;
-		}
 		return v.replace('，', ',').replace('；', ';').replace('　', ' ').replace('：', ':').replace('。', '.').replace('？',
 				'?');
 	}

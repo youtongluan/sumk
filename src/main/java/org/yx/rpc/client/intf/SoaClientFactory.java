@@ -40,6 +40,7 @@ import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -50,7 +51,7 @@ public class SoaClientFactory implements FactoryBean {
 
 	protected Set<String> getInterfaceNames() {
 		Predicate<String> exclude = BooleanMatcher.FALSE;
-		String patterns = AppInfo.get("sumk.rpc.intfclient.exclude", null);
+		String patterns = AppInfo.getLatin("sumk.rpc.intfclient.exclude", null);
 		if (patterns != null) {
 			exclude = Matchers.createWildcardMatcher(patterns, 1);
 		}
@@ -58,7 +59,7 @@ public class SoaClientFactory implements FactoryBean {
 		String packs = AppInfo.getLatin("sumk.rpc.intfclient.package", null);
 		Set<String> clzNames = new HashSet<>();
 		if (packs != null) {
-			String[] ps = packs.split(",");
+			String[] ps = packs.split(Const.COMMA);
 			Collection<String> temp = ClassScaner.listClasses(Arrays.asList(ps));
 			for (String c : temp) {
 				if (exclude.test(c)) {

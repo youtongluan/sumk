@@ -140,16 +140,18 @@ public class BeanConverter {
 			return bean;
 		}
 		if (bean instanceof Map) {
-			Map.class.cast(bean).putAll(map);
+			((Map<String, Object>) bean).putAll(map);
 			return bean;
 		}
 		Map<String, Object> tmp = new HashMap<>();
-		map.forEach((k, v) -> {
+		for (Map.Entry<String, Object> entry : map.entrySet()) {
+			String k = entry.getKey();
+			Object v = entry.getValue();
 			if (k == null || v == null) {
-				return;
+				continue;
 			}
 			tmp.put(k.toLowerCase().replace("_", ""), v);
-		});
+		}
 		map = tmp;
 		Field[] fields = getFieldsAndCache(bean.getClass());
 		try {
@@ -182,7 +184,7 @@ public class BeanConverter {
 			return bean;
 		}
 		if (bean instanceof Map) {
-			Map.class.cast(bean).putAll(map);
+			((Map<String, Object>) bean).putAll(map);
 			return bean;
 		}
 		Field[] fields = getFieldsAndCache(bean.getClass());

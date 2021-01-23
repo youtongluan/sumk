@@ -17,29 +17,58 @@ package org.yx.db.conn;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
+import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
-import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.util.StringUtil;
 
 public class DefaultManagerSelector implements Function<String, DataSourceManager> {
 
 	/**
-	 * 这个属性是不可变的
+	 * factoryMap只能重新赋值，不能修改
 	 */
 	private Map<String, DataSourceManager> factoryMap = Collections.emptyMap();
 
-	private Function<String, DataSourceManager> managerFactory = name -> new DataSourceManagerImpl(name);
+	protected Map<String, String> aliasMap;
+
+	private Function<String, DataSourceManager> managerFactory = DataSourceManagerImpl::new;
+
+	public DefaultManagerSelector() {
+		Map<String, String> configMap = AppInfo.subMap("s.alias.db.");
+		if (configMap.size() > 0) {
+			Map<String, String> temp = new HashMap<>();
+			for (Map.Entry<String, String> entry : configMap.entrySet()) {
+				String name = entry.getKey();
+				String value = entry.getValue();
+				if (name.isEmpty() || StringUtil.isEmpty(value)) {
+					continue;
+				}
+				List<String> aliases = StringUtil.splitAndTrim(StringUtil.toLatin(value), Const.COMMA);
+				for (String alias : aliases) {
+					if (temp.putIfAbsent(alias, name) != null) {
+						Logs.redis().error("redis别名{}重复了", name);
+					}
+				}
+			}
+			if (temp.size() > 0) {
+				this.aliasMap = new HashMap<>(temp);
+			}
+		}
+	}
 
 	public void setManagerFactory(Function<String, DataSourceManager> managerFactory) {
 		this.managerFactory = Objects.requireNonNull(managerFactory);
 	}
 
-	public synchronized DataSourceManager addManager(String dbName, DataSourceManager factory) {
+	public synchronized DataSourceManager addManagerIfAbsent(String dbName, DataSourceManager factory) {
 		Map<String, DataSourceManager> map = new HashMap<>(this.factoryMap);
 		DataSourceManager pre = map.putIfAbsent(dbName, factory);
 		if (pre == null) {
@@ -53,21 +82,20 @@ public class DefaultManagerSelector implements Function<String, DataSourceManage
 		DataSourceManager old = map.remove(dbName);
 		if (old != null) {
 			this.factoryMap = map;
-			old.destroy();
 		}
 		return old;
 	}
 
-	protected String reform(String dbName) {
-		if (Const.DEFAULT_DB_NAME.equals(dbName) && DBSettings.customDbName() != null) {
-			return DBSettings.customDbName();
+	protected String getDbName(String dbName) {
+		if (this.aliasMap == null) {
+			return dbName;
 		}
-		return dbName;
+		return aliasMap.getOrDefault(dbName, dbName);
 	}
 
 	@Override
 	public DataSourceManager apply(String dbName) {
-		dbName = reform(dbName);
+		dbName = getDbName(dbName);
 		DataSourceManager factory = factoryMap.get(dbName);
 		if (factory != null) {
 			return factory;
@@ -83,7 +111,7 @@ public class DefaultManagerSelector implements Function<String, DataSourceManage
 						continue;
 					}
 					Logs.db().info("create dataSource manager: {}", dbName);
-					DataSourceManager pre = this.addManager(dbName, factory);
+					DataSourceManager pre = this.addManagerIfAbsent(dbName, factory);
 					if (pre == null) {
 						return factory;
 					}
@@ -98,4 +126,11 @@ public class DefaultManagerSelector implements Function<String, DataSourceManage
 		}
 	}
 
+	public Map<String, String> aliasMap() {
+		return new HashMap<>(aliasMap);
+	}
+
+	public Set<String> dbNames() {
+		return new HashSet<>(this.factoryMap.keySet());
+	}
 }

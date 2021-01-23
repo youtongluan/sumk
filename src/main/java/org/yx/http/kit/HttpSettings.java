@@ -28,6 +28,7 @@ import org.yx.util.StringUtil;
 
 public final class HttpSettings {
 
+	private static final String DEFAULT_TEST_KEY = "thisIsTest";
 	private static int errorHttpStatus;
 
 	private static long httpSessionTimeoutInMs;
@@ -44,7 +45,13 @@ public final class HttpSettings {
 
 	private static String traceHeaderName;
 
+	private static String testKey = DEFAULT_TEST_KEY;
+
 	private static Map<String, String> headers;
+
+	public static String testKey() {
+		return testKey;
+	}
 
 	public static int errorHttpStatus() {
 		return errorHttpStatus;
@@ -122,6 +129,7 @@ public final class HttpSettings {
 
 			Map<String, String> map = CollectionUtil.unmodifyMap(AppInfo.subMap("s.http.response.header."));
 			HttpSettings.headers = map.isEmpty() ? null : map;
+			HttpSettings.testKey = AppInfo.get("sumk.http.testkey", DEFAULT_TEST_KEY);
 		});
 	}
 

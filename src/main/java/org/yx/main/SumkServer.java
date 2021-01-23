@@ -16,11 +16,10 @@
 package org.yx.main;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import org.yx.bean.BeanPublisher;
 import org.yx.bean.IOC;
@@ -41,6 +40,8 @@ public final class SumkServer {
 	private static volatile boolean destoryed;
 	private static volatile boolean httpEnable;
 	private static volatile boolean rpcEnable;
+
+	private static boolean test;
 	private static long startTime;
 
 	public static long startTime() {
@@ -61,7 +62,7 @@ public final class SumkServer {
 
 	public static void main(String[] args) {
 		long begin = System.currentTimeMillis();
-		start(args);
+		start(args == null ? Collections.emptyList() : Arrays.asList(args));
 		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
 	}
 
@@ -70,25 +71,17 @@ public final class SumkServer {
 		main(args);
 	}
 
+	public static void start(String... args) {
+		start(args == null ? Collections.emptyList() : Arrays.asList(args));
+	}
+
 	public static void start(Class<?> startClass, Collection<String> args) {
 		Loader.setClassLoader(startClass.getClassLoader());
 		start(args);
 	}
 
-	public static void start() {
-		start(Collections.emptyList());
-	}
-
 	public static void startAsTool() {
-		start(StartConstants.NOHTTP, StartConstants.NOSOA, StartConstants.NOSOA_ClIENT);
-	}
-
-	public static void start(String... args) {
-		Set<String> argSet = new HashSet<>();
-		if (args != null && args.length > 0) {
-			Collections.addAll(argSet, args);
-		}
-		start(argSet);
+		start(Arrays.asList(StartConstants.NOHTTP, StartConstants.NOSOA, StartConstants.NOSOA_ClIENT));
 	}
 
 	public static void start(SystemConfig config, Collection<String> args) {
@@ -115,6 +108,7 @@ public final class SumkServer {
 			if (StartContext.inst().get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
+			SumkServer.test = AppInfo.getBoolean("sumk.test", false);
 			BeanPublisher publisher = new BeanPublisher();
 			publisher.setListeners(Scaners.supplier().get());
 			List<String> ps = new ArrayList<>();
@@ -147,14 +141,14 @@ public final class SumkServer {
 		if (args == null) {
 			return;
 		}
-		args.forEach(arg -> {
+		for (String arg : args) {
 			if (arg.contains("=")) {
 				String[] kv = arg.split("=", 2);
 				StartContext.inst().put(kv[0], kv[1]);
-				return;
+				continue;
 			}
 			StartContext.inst().put(arg, Boolean.TRUE);
-		});
+		}
 
 	}
 
@@ -177,6 +171,10 @@ public final class SumkServer {
 		return list;
 	}
 
+	public static boolean isTest() {
+		return test;
+	}
+
 	public static boolean isStarted() {
 		return started;
 	}
@@ -197,13 +195,13 @@ public final class SumkServer {
 		List<Plugin> lifes = IOC.getBeans(Plugin.class);
 		if (lifes != null && lifes.size() > 0) {
 			Collections.reverse(lifes);
-			lifes.forEach(b -> {
+			for (Plugin b : lifes) {
 				try {
 					b.stop();
 				} catch (Exception e) {
 					Log.printStack("sumk.error", e);
 				}
-			});
+			}
 		}
 		try {
 			RedisPool.shutdown();

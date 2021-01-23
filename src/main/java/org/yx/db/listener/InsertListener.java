@@ -37,7 +37,7 @@ public class InsertListener implements DBEventListener {
 		if (!DBSettings.toCache() || !(ev instanceof InsertEvent)) {
 			return;
 		}
-		InsertEvent event = InsertEvent.class.cast(ev);
+		InsertEvent event = (InsertEvent) ev;
 		try {
 			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
 			List<Map<String, Object>> list = event.getPojos();

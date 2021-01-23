@@ -122,7 +122,7 @@ public final class SumkConnection implements Connection {
 
 	@Override
 	public void commit() throws SQLException {
-		if (ActionContext.get().isTest()) {
+		if (ActionContext.current().isTest()) {
 			this.rollback();
 			return;
 		}

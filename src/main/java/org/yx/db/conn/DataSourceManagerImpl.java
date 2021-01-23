@@ -63,6 +63,9 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public void destroy() {
+		for (SumkDataSource ds : this.allDataSources()) {
+			ds.close();
+		}
 	}
 
 	private void parseDatasource() throws Exception {

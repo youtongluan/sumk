@@ -19,9 +19,11 @@ import org.yx.conf.AppInfo;
 
 public class DefaultVisitCounter implements VisitCounter {
 
-	private long visitCount = 0;
+	private int visitCount;
 
-	private long cacheMeet = 0;
+	private int cacheMeet;
+
+	private int modifyCount;
 
 	private final int interval;
 
@@ -29,11 +31,11 @@ public class DefaultVisitCounter implements VisitCounter {
 		this.interval = interval > 0 ? interval : AppInfo.getInt("sumk.cache.count", 500);
 	}
 
-	public long getVisitCount() {
+	public int getVisitCount() {
 		return visitCount;
 	}
 
-	public long getCachedMeet() {
+	public int getCachedMeet() {
 		return cacheMeet;
 	}
 
@@ -42,13 +44,18 @@ public class DefaultVisitCounter implements VisitCounter {
 		return visitCount % interval != 0;
 	}
 
-	public void incCacheMeet() {
+	public void incrCacheMeet() {
 		cacheMeet++;
 	}
 
 	@Override
-	public String toString() {
-		return "visitCount=" + visitCount + ", cacheMeet=" + cacheMeet;
+	public int getModifyCount() {
+		return this.modifyCount;
+	}
+
+	@Override
+	public void incrModifyCount() {
+		this.modifyCount++;
 	}
 
 }

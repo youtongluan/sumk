@@ -44,7 +44,7 @@ public @interface Web {
 	 */
 	boolean requireLogin() default true;
 
-	MessageType requestType() default MessageType.PLAIN;
+	MessageType requestType() default MessageType.DEFAULT;
 
 	/**
 	 * 为了调试方便，可以在启动的时候设置sumk.http.sign.enable=0来禁用它
@@ -53,7 +53,7 @@ public @interface Web {
 	 */
 	boolean sign() default false;
 
-	MessageType responseType() default MessageType.PLAIN;
+	MessageType responseType() default MessageType.DEFAULT;
 
 	String custom() default "";
 

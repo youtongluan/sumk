@@ -41,7 +41,7 @@ public class JsonedParamReqHandler implements RequestHandler {
 			RpcContext ctx = new RpcContext(node, req);
 			ctx.setArgPojo(node.createJsonArgPojo(req));
 			Object ret = RpcHandler.handle(ctx);
-			resp.json(RpcJson.operator().toJson(ret));
+			resp.json(RpcJson.server().toJson(ret));
 		} catch (Throwable e) {
 			ServerExceptionHandler.handle(req, resp, e);
 		}

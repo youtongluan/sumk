@@ -52,7 +52,7 @@ public final class IOC {
 
 	public static Class<?> getTargetClassOfBean(Object bean) {
 		if (bean instanceof Boxed) {
-			return Boxed.class.cast(bean).targetRawClass();
+			return ((Boxed) bean).targetRawClass();
 		}
 		return bean.getClass();
 	}

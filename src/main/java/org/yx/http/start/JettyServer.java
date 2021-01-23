@@ -209,7 +209,9 @@ public class JettyServer implements Lifecycle {
 			if (CollectionUtil.isEmpty(listeners)) {
 				continue;
 			}
-			listeners.forEach(lis -> context.addEventListener(lis));
+			for (EventListener lis : listeners) {
+				context.addEventListener(lis);
+			}
 		}
 	}
 

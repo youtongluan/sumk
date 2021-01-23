@@ -51,7 +51,7 @@ public final class ConnectionPool implements AutoCloseable {
 	private SumkConnection writeConn;
 
 	public static ConnectionPool create(String dbName, DBType dbType, boolean autoCommit) {
-		if (ActionContext.get().isTest() && !autoCommit) {
+		if (ActionContext.current().isTest() && !autoCommit) {
 			if (connectionHolder.get().size() > 0) {
 				return null;
 			}
@@ -109,7 +109,7 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	public SumkConnection connection(DBType userType) throws SQLException {
-		if (ActionContext.get().isTest()) {
+		if (ActionContext.current().isTest()) {
 			return this.getWriteConnection();
 		}
 		switch (this.dbType) {
@@ -134,7 +134,7 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	private SumkConnection connectionByUserType(DBType type) throws SQLException {
-		if (ActionContext.get().isTest()) {
+		if (ActionContext.current().isTest()) {
 			return this.getWriteConnection();
 		}
 		if (type == DBType.ANY) {

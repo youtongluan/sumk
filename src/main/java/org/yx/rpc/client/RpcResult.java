@@ -56,12 +56,12 @@ public final class RpcResult {
 		return (CodeException) e;
 	}
 
-	RpcResult(String json, CodeException exception) {
+	public RpcResult(String json, CodeException exception) {
 		this.json = exception != null ? null : json;
 		this.exception = parseException(exception);
 	}
 
-	RpcResult(String json, CodeException exception, String sn) {
+	public RpcResult(String json, CodeException exception, String sn) {
 		this(json, exception);
 		this.sn = sn;
 	}

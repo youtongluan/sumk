@@ -17,7 +17,7 @@ package org.yx.bean;
 
 public class BeanWrapper {
 
-	private Object bean;
+	private final Object bean;
 
 	BeanWrapper(Object bean) {
 		this.bean = bean;
@@ -32,7 +32,7 @@ public class BeanWrapper {
 	}
 
 	public Class<?> getTargetClass() {
-		return isProxy() ? Boxed.class.cast(bean).targetRawClass() : bean.getClass();
+		return isProxy() ? ((Boxed) bean).targetRawClass() : bean.getClass();
 	}
 
 	@Override

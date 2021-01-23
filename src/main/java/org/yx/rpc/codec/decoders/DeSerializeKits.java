@@ -13,14 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.rpc.codec.decoders;
 
-import java.util.List;
+import org.yx.rpc.codec.Protocols;
 
-/**
- * 只被调用一次
- */
-public interface BeanPropertiesWatcher extends BeanWatcher {
+public final class DeSerializeKits {
 
-	void afterInject(List<Object> beans);
+	public static int nextSplitIndex(byte[] data, int start) {
+		for (int i = start; i < data.length; i++) {
+			if (data[i] == Protocols.LINE_SPLIT_BYTE) {
+				return i;
+			}
+		}
+		return data.length;
+	}
 }

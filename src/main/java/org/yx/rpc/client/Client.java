@@ -39,7 +39,6 @@ import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
-import org.yx.util.S;
 import org.yx.util.UUIDSeed;
 
 public final class Client {
@@ -108,7 +107,7 @@ public final class Client {
 		}
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
-			params[i] = RpcJson.operator().toJson(args[i]);
+			params[i] = RpcJson.client().toJson(args[i]);
 		}
 		this.params = params;
 		this.paramType = ParamType.JSONARRAY;
@@ -122,12 +121,12 @@ public final class Client {
 	}
 
 	public Client paramInMap(Map<String, ?> map) {
-		return paramInJson(S.json().toJson(map));
+		return paramInJson(RpcJson.client().toJson(map));
 	}
 
 	protected Req createReq() {
 		Req req = new Req();
-		ActionContext context = ActionContext.get();
+		ActionContext context = ActionContext.current();
 		if (context.isTest()) {
 			req.setTest(true);
 		}
@@ -158,7 +157,7 @@ public final class Client {
 		while (true) {
 			RpcFuture f = sendAsync(req, endTime);
 			if (f.getClass() == ErrorRpcFuture.class) {
-				ErrorRpcFuture errorFuture = ErrorRpcFuture.class.cast(f);
+				ErrorRpcFuture errorFuture = (ErrorRpcFuture) f;
 				RpcLocker locker = errorFuture.locker;
 				LockHolder.remove(locker.req.getSn());
 				if (--count > 0 && errorFuture.rpcResult().exception().getCode() == RpcErrorCode.SEND_FAILED
@@ -250,15 +249,15 @@ public final class Client {
 		Request request = Request.from(req);
 		req = null;
 
-		ActionContext context = ActionContext.get().clone();
+		ActionContext context = ActionContext.current().clone();
 		try {
 			InnerRpcUtil.rpcContext(request, context.isTest());
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
-			ActionContext.recover(context);
+			ActionContext.store(context);
 			locker.wakeupAndLog(new RpcResult(resp.json(), resp.exception(), request.getSn()));
 		} finally {
-			ActionContext.recover(context);
+			ActionContext.store(context);
 		}
 		return new RpcFutureImpl(locker);
 	}

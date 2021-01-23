@@ -28,7 +28,7 @@ import org.yx.util.SeqUtil;
 
 public class Insert extends AbstractSqlBuilder<Integer> {
 
-	private List<Object> src = new ArrayList<>();
+	protected List<Object> src = new ArrayList<>();
 
 	public Insert(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
@@ -79,12 +79,14 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");
 		List<ColumnMeta> fms = pojoMeta.fieldMetas;
 		int recodeSize = in.size();
+
+		boolean softDeleteAndNotProvided = pojoMeta.isSoftDelete() && !pojoMeta.softDelete.fieldProvided;
 		for (ColumnMeta fm : fms) {
 			String name = fm.dbColumn;
 			columns.item().append(name);
 			placeholder.item().append('?');
 		}
-		if (pojoMeta.isSoftDelete()) {
+		if (softDeleteAndNotProvided) {
 			String columnName = pojoMeta.softDelete.columnName;
 			columns.item().append(columnName);
 			placeholder.item().append('?');
@@ -116,7 +118,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 				continue;
 			}
 			cacheList.add(map);
-			if (pojoMeta.isSoftDelete()) {
+			if (softDeleteAndNotProvided) {
 				ms.addParam(pojoMeta.softDelete.validValue);
 			}
 		}

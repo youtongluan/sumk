@@ -38,7 +38,7 @@ import org.yx.log.Logs;
 import org.yx.util.M;
 import org.yx.util.StringUtil;
 
-public abstract class AbstractHttpServer extends AbstractCommonHttpServlet {
+public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 74378082364534491L;
 

@@ -16,6 +16,7 @@
 package org.yx.rpc.server;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.yx.bean.IOC;
 import org.yx.exception.SoaException;
@@ -32,7 +33,7 @@ public class LocalRequestHandler {
 	}
 
 	public void setHandlers(List<RequestHandler> handlers) {
-		this.handlers = handlers;
+		this.handlers = Objects.requireNonNull(handlers);
 	}
 
 	private LocalRequestHandler() {

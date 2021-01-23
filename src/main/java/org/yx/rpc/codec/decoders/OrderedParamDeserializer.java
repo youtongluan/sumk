@@ -32,10 +32,10 @@ public class OrderedParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public Request decode(int protocol, byte[] data) {
-		int splitIndex = DeserializeKits.nextSplitIndex(data, 0);
+		int splitIndex = DeSerializeKits.nextSplitIndex(data, 0);
 		String reqJson = new String(data, 0, splitIndex, Profile.UTF8);
 		Request req = RpcJson.operator().fromJson(reqJson, Request.class);
-		splitIndex = DeserializeKits.nextSplitIndex(data, splitIndex + 1);
+		splitIndex = DeSerializeKits.nextSplitIndex(data, splitIndex + 1);
 		int len = data[++splitIndex];
 		String[] params = new String[len];
 		if (len > 0) {
@@ -44,7 +44,7 @@ public class OrderedParamDeserializer implements SumkMinaDeserializer<Request> {
 				if (startIndex >= data.length) {
 					break;
 				}
-				splitIndex = DeserializeKits.nextSplitIndex(data, startIndex);
+				splitIndex = DeSerializeKits.nextSplitIndex(data, startIndex);
 
 				params[i] = splitIndex == startIndex ? ""
 						: new String(data, startIndex, splitIndex - startIndex, Profile.UTF8);

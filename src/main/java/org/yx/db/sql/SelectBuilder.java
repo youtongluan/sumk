@@ -214,22 +214,24 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		src.forEach((filedName, v) -> {
+		for (Map.Entry<String, Object> entry : src.entrySet()) {
+			String filedName = entry.getKey();
+			Object v = entry.getValue();
 
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
 					throw new SumkException(234, filedName + "这个字段没有在java的pojo类中定义");
 				}
-				return;
+				continue;
 			}
 			if (v == null) {
 				joiner.item().append(cm.dbColumn).append(" IS NULL ");
-				return;
+				continue;
 			}
 			joiner.item().append(cm.dbColumn).append("=? ");
 			paramters.add(v);
-		});
+		}
 
 		return joiner.toCharSequence();
 	}

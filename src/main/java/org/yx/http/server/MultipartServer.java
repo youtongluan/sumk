@@ -34,7 +34,7 @@ import org.yx.util.M;
 @Bean
 @SumkServlet(value = { "/upload/*" }, loadOnStartup = -1, appKey = "upload")
 @MultipartConfig(location = "", maxFileSize = -1L, maxRequestSize = -1L, fileSizeThreshold = -1)
-public class MultipartServer extends AbstractHttpServer {
+public class MultipartServer extends AbstractActionServer {
 
 	private static final long serialVersionUID = 1L;
 	private static final String MULTIPART_FORMDATA = "multipart/form-data";

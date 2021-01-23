@@ -57,25 +57,29 @@ public class CommonConfigFactory implements DBConfigFactory {
 		}
 		final Map<String, Map<String, String>> ret = new HashMap<String, Map<String, String>>();
 
-		objectMap.forEach((catagory, value) -> {
-			if (!Map.class.isInstance(value)) {
+		for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
+			String catagory = entry.getKey();
+			Object value = entry.getValue();
+			if (!(value instanceof Map)) {
 				Logs.db().info("{} is not valid config, value : {}", catagory, value);
-				return;
+				continue;
 			}
 			@SuppressWarnings("unchecked")
 			Map<String, Object> config = (Map<String, Object>) value;
 			Map<String, String> real = new HashMap<>();
-			config.forEach((propertyName, v) -> {
-				if (!String.class.isInstance(v)) {
+			for (Map.Entry<String, Object> e2 : config.entrySet()) {
+				String propertyName = e2.getKey();
+				Object v = e2.getValue();
+				if (!(v instanceof String)) {
 					Logs.db().info("{}.{} is not valid config,value:{}", catagory, propertyName, v);
-					return;
+					continue;
 				}
 				real.put(propertyName, (String) v);
-			});
+			}
 			if (real.size() > 0) {
 				ret.put(catagory, real);
 			}
-		});
+		}
 		return ret;
 	}
 

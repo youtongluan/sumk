@@ -17,13 +17,16 @@ package org.yx.log;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.conf.SystemConfig;
+import org.yx.util.StringUtil;
 
 public final class Loggers {
 	private static final String ROOT = "";
@@ -51,13 +54,8 @@ public final class Loggers {
 				Loggers.resetLevel(newLevels);
 				return;
 			}
-			temp = temp.replace(';', ',').replace("\r\n", ",").replace('\n', ',').replace('\r', ',');
-			String[] levelStrs = temp.split(",");
+			List<String> levelStrs = StringUtil.splitAndTrim(temp, Const.COMMA, Const.SEMICOLON, "\r", Const.LN);
 			for (String levelStr : levelStrs) {
-				levelStr = levelStr.trim();
-				if (levelStr.isEmpty()) {
-					continue;
-				}
 				String[] levelNamePair = levelStr.split(":");
 				switch (levelNamePair.length) {
 				case 1:

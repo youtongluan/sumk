@@ -47,7 +47,7 @@ public abstract class AbstractBeanListener implements BeanEventListener {
 	@Override
 	public void listen(SumkEvent event) {
 		if (this.accept(event)) {
-			this.onListen(BeanEvent.class.cast(event));
+			this.onListen((BeanEvent) event);
 		}
 
 	}

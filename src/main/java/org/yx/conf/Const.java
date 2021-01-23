@@ -28,4 +28,16 @@ public final class Const {
 
 	public static final int NOT_PARSE_BEAN_FIELD = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
 
+	/**
+	 * 分号 ;
+	 */
+	public static final String SEMICOLON = ";";
+	/**
+	 * 逗号 ,
+	 */
+	public static final String COMMA = ",";
+
+	public static final String CONFIG_NEW_LINE = "\t\\\n\t";
+
+	public static final String LN = "\n";
 }

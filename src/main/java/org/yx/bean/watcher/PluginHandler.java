@@ -55,7 +55,7 @@ public class PluginHandler {
 					latch.countDown();
 					Logs.ioc().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
-					Logs.ioc().warn("{} start failed", e);
+					Logs.ioc().warn(plugin.getClass().getSimpleName() + " start failed", e);
 					System.exit(1);
 				}
 			});

@@ -32,11 +32,11 @@ public class JsonParamDeserializer implements SumkMinaDeserializer<Request> {
 
 	@Override
 	public Request decode(int protocol, byte[] data) throws Exception {
-		int splitIndex = DeserializeKits.nextSplitIndex(data, 0);
+		int splitIndex = DeSerializeKits.nextSplitIndex(data, 0);
 
 		String reqJson = new String(data, 0, splitIndex, Profile.UTF8);
 		Request req = RpcJson.operator().fromJson(reqJson, Request.class);
-		splitIndex = DeserializeKits.nextSplitIndex(data, splitIndex + 1);
+		splitIndex = DeSerializeKits.nextSplitIndex(data, splitIndex + 1);
 		int startIndex = splitIndex + 1;
 		int length = data.length - startIndex;
 		if (length < 0) {

@@ -29,7 +29,7 @@ public final class HttpHandlerChain {
 	private HttpHandler[] handlers;
 
 	public void setHandlers(List<HttpHandler> handlers) {
-		this.handlers = handlers.toArray(new HttpHandler[0]);
+		this.handlers = handlers.toArray(new HttpHandler[handlers.size()]);
 	}
 
 	public void handle(WebContext ctx) throws Throwable {

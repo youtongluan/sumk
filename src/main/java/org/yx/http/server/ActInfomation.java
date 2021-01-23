@@ -32,6 +32,7 @@ import org.yx.annotation.http.SumkServlet;
 import org.yx.common.Monitors;
 import org.yx.common.json.GsonHelper;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
@@ -133,9 +134,9 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 	private String beans() {
 		List<String> names = Monitors.beans();
 		StringBuilder sb = new StringBuilder();
-		sb.append("##beans:").append(names.size()).append(AppInfo.LN);
+		sb.append("##beans:").append(names.size()).append(Const.LN);
 		for (String name : names) {
-			sb.append(name).append(AppInfo.LN);
+			sb.append(name).append(Const.LN);
 		}
 		return sb.toString();
 	}

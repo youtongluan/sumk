@@ -15,10 +15,10 @@
  */
 package org.yx.rpc.server.impl;
 
-import org.yx.exception.BizException;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.RpcErrorCode;
+import org.yx.rpc.RpcSettings;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.Response;
 
@@ -27,7 +27,7 @@ public final class ServerExceptionHandler {
 	public static void handle(Request req, Response resp, Throwable e) {
 		resp.json(null);
 		resp.exception(new SoaException(e, RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage()));
-		if (!(e instanceof BizException)) {
+		if (RpcSettings.showServerExceptionLog()) {
 			Log.get("sumk.rpc.log.server.exception").error(e.toString(), e);
 		}
 	}

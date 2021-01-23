@@ -50,7 +50,7 @@ public class ReqEncoder implements SumkMinaEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		Req req = Req.class.cast(message);
+		Req req = (Req) message;
 		String jsonedArg = req.getJsonedParam();
 		String[] params = req.getParamArray();
 

@@ -71,11 +71,6 @@ public class DefaultHttpKit implements HttpKit {
 		resp.getOutputStream().write(HttpJson.operator().toJson(map).getBytes(charset));
 	}
 
-	public void noCache(HttpServletResponse resp) {
-		resp.setHeader("cache-control", "no-store");
-		resp.setDateHeader("Expires", 0);
-	}
-
 	@Override
 	public void record(String act, long time, boolean isSuccess) {
 		actStatis.visit(act, time, isSuccess);

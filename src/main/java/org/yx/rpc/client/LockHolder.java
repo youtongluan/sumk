@@ -108,7 +108,7 @@ public final class LockHolder {
 
 		@Override
 		public int compareTo(Delayed other) {
-			long d = other instanceof DelayedObject ? this.endTime - DelayedObject.class.cast(other).endTime
+			long d = other instanceof DelayedObject ? this.endTime - ((DelayedObject) other).endTime
 					: this.getDelay(TimeUnit.MILLISECONDS) - other.getDelay(TimeUnit.MILLISECONDS);
 			return (d == 0) ? 0 : ((d < 0) ? -1 : 1);
 		}

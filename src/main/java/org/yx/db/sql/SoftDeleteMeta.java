@@ -19,17 +19,18 @@ public final class SoftDeleteMeta {
 	final String columnName;
 	final Object validValue;
 	final Object inValidValue;
-	final Class<?> columnType;
+
+	final boolean fieldProvided;
 
 	final boolean equalValid;
 
-	public SoftDeleteMeta(String columnName, Object validValue, Object inValidValue, Class<?> columnType,
-			boolean equal) {
+	public SoftDeleteMeta(String columnName, Object validValue, Object inValidValue, boolean equal,
+			boolean fieldProvided) {
 		this.columnName = columnName;
 		this.validValue = validValue;
 		this.inValidValue = inValidValue;
-		this.columnType = columnType;
 		this.equalValid = equal;
+		this.fieldProvided = fieldProvided;
 	}
 
 	public String getColumnName() {
@@ -44,11 +45,12 @@ public final class SoftDeleteMeta {
 		return inValidValue;
 	}
 
-	public Class<?> getColumnType() {
-		return columnType;
-	}
-
 	public boolean isEqualValid() {
 		return equalValid;
 	}
+
+	public boolean isFieldProvided() {
+		return fieldProvided;
+	}
+
 }

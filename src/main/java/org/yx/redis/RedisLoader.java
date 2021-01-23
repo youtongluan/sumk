@@ -48,11 +48,11 @@ public class RedisLoader {
 			initRedis(key, StringUtil.toLatin(map.get(key).trim()), configMap);
 		}
 		if (Logs.redis().isDebugEnabled()) {
-			Logs.redis().debug("redis的主键列表{},默认redis: {}", RedisPool.keys(), RedisPool.defaultRedis());
+			Logs.redis().debug("redis的主键列表{},默认redis: {}", RedisPool.names(), RedisPool.defaultRedis());
 		}
 	}
 
-	private static void initRedis(final String name, String host, Map<String, String> configMap) {
+	public static void initRedis(final String name, String host, Map<String, String> configMap) {
 		Logs.redis().info("开始初始化redis：{}={}", name, host);
 		try {
 			RedisConfig config = createConfig(host, configMap);
@@ -62,22 +62,18 @@ public class RedisLoader {
 			if ("*".equals(name) || "default".equals(name)) {
 				RedisPool.setDefaultRedis(redis);
 			} else {
-				RedisPool.put(name, redis);
+				RedisPool.putIfAbsent(name, redis);
 			}
 			String aliases = config.getAlias();
 			if (StringUtil.isNotEmpty(aliases)) {
-				String[] aas = StringUtil.toLatin(aliases).split(",");
-				for (String s : aas) {
-					s = s.trim();
-					if (s.isEmpty()) {
-						continue;
-					}
+				aliases = StringUtil.toLatin(aliases);
+				for (String s : StringUtil.splitAndTrim(aliases, ",")) {
 					if (RedisPool.getRedisExactly(s) != null) {
 						Logs.redis().warn("{}的redis配置已经存在了", s);
 						continue;
 					}
 					Logs.redis().debug("设置别名{} -> {}", s, name);
-					RedisPool.put(s, redis);
+					RedisPool.putIfAbsent(s, redis);
 				}
 			}
 		} catch (Exception e) {

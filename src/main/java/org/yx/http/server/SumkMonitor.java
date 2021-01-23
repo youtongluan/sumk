@@ -15,7 +15,7 @@
  */
 package org.yx.http.server;
 
-import static org.yx.conf.AppInfo.LN;
+import static org.yx.conf.Const.LN;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -36,6 +36,7 @@ import org.yx.common.action.ActStatis;
 import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.UserSession;
@@ -45,7 +46,7 @@ import org.yx.rpc.RpcActions;
 
 @Bean
 @SumkServlet(value = { "/_sumk_monitor" }, loadOnStartup = -1, appKey = "sumkMonitor")
-public class HttpMonitor extends AbstractCommonHttpServlet {
+public class SumkMonitor extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;
 	private static final String TYPE_SPLIT = "\n\n\n";
@@ -197,7 +198,7 @@ public class HttpMonitor extends AbstractCommonHttpServlet {
 		}
 		StringBuilder sb = new StringBuilder();
 		AppInfo.subMap("").forEach((k, v) -> {
-			sb.append(k).append(" = ").append(v).append(LN);
+			sb.append(k).append(" = ").append(v.replace(LN, Const.CONFIG_NEW_LINE)).append(LN);
 		});
 		writer.append(sb.toString());
 		writer.append(TYPE_SPLIT);

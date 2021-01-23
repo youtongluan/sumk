@@ -21,7 +21,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.TYPE })
+/**
+ * 本注解注释的接口，不会被<code>@SoaClient</code>解析。<BR>
+ * 本注解注释的pojo字段，不会被映射到数据库。
+ * 跟transient关键字效果类似，但是transient会影响S.json()、S.bean()，但是本注解不会
+ */
+@Target({ ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface Exclude {

@@ -27,8 +27,6 @@ public interface HttpKit {
 
 	Charset charset(HttpServletRequest req);
 
-	void noCache(HttpServletResponse resp);
-
 	void record(String act, long time, boolean isSuccess);
 
 	ActStatis actStatis();

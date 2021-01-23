@@ -20,17 +20,18 @@ import java.util.Objects;
 import org.yx.common.json.ByteArrayTypeAdapter;
 import org.yx.common.json.GsonHelper;
 import org.yx.common.json.GsonOperator;
+import org.yx.common.json.JsonOperator;
 
 public final class DBJson {
 
-	private static GsonOperator operator = new GsonOperator(
+	private static JsonOperator operator = new GsonOperator(
 			GsonHelper.builder("sumk.db").registerTypeAdapter(byte[].class, ByteArrayTypeAdapter.inst).create());
 
-	public static GsonOperator operator() {
+	public static JsonOperator operator() {
 		return operator;
 	}
 
-	public static void setOperator(GsonOperator operator) {
+	public static void setOperator(JsonOperator operator) {
 		DBJson.operator = Objects.requireNonNull(operator);
 	}
 }

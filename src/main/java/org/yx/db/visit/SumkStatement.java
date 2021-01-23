@@ -60,7 +60,7 @@ public class SumkStatement {
 					continue;
 				}
 				if (parameterObj.getClass() == SumkDate.class) {
-					ps.setTimestamp(i + 1, SumkDate.class.cast(parameterObj).toTimestamp());
+					ps.setTimestamp(i + 1, ((SumkDate) parameterObj).toTimestamp());
 					continue;
 				}
 				ps.setObject(i + 1, parameterObj);

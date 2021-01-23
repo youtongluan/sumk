@@ -20,10 +20,10 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.yx.annotation.Bean;
 import org.yx.rpc.Profile;
-import org.yx.rpc.RpcJson;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.SumkProtocolEncoder;
 import org.yx.rpc.server.Response;
+import org.yx.util.S;
 
 @Bean
 public class ResponseEncoder implements SumkMinaEncoder {
@@ -35,13 +35,14 @@ public class ResponseEncoder implements SumkMinaEncoder {
 
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		Response resp = Response.class.cast(message);
+		Response resp = (Response) message;
 		String sn = resp.sn();
 		if (sn == null) {
 			sn = "";
 		}
 		String json = resp.json();
-		String strException = resp.exception() == null ? null : RpcJson.operator().toJson(resp.exception());
+
+		String strException = resp.exception() == null ? null : S.json().toJson(resp.exception());
 		int strLength = sn.length();
 		if (json != null) {
 			strLength += json.length();

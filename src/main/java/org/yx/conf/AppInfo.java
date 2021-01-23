@@ -29,7 +29,7 @@ import org.yx.util.StringUtil;
 
 public final class AppInfo {
 	public static final String CLASSPATH_URL_PREFIX = "classpath:";
-	public static final String LN = "\n";
+	public static final String LN = Const.LN;
 
 	private static final List<Consumer<SystemConfig>> observers = new ArrayList<>();
 	public static final Charset UTF8 = StandardCharsets.UTF_8;
@@ -137,7 +137,7 @@ public final class AppInfo {
 
 	public static String getLatin(String name) {
 		String v = info.get(name);
-		return StringUtil.toLatin(v);
+		return v == null ? v : StringUtil.toLatin(v);
 	}
 
 	public static String getLatin(String name, String defaultValue) {

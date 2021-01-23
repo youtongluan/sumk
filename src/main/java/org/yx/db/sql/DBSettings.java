@@ -29,7 +29,6 @@ public final class DBSettings {
 	private static int UNION_LOG_TIME;
 	private static boolean UNION_LOG_ENABLE;
 	private static int DEBUG_LOG_SPEND_TIME;
-	private static String CUSTOM_DB_NAME;
 
 	public static int debugLogSpendTime() {
 		return DEBUG_LOG_SPEND_TIME;
@@ -63,16 +62,9 @@ public final class DBSettings {
 		return MAX_LOG_PARAM_LENGTH;
 	}
 
-	public static String customDbName() {
-		return CUSTOM_DB_NAME;
-	}
-
 	public static synchronized void init() {
 		if (LIMIT_AS_NO_LIMIT > 0) {
 			return;
-		}
-		if (customDbName() == null) {
-			CUSTOM_DB_NAME = AppInfo.get("sumk.db.default", null);
 		}
 		AppInfo.addObserver(info -> {
 			try {

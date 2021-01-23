@@ -24,7 +24,8 @@ import java.lang.annotation.Target;
 import org.yx.db.enums.ValidRecord;
 
 /**
- * 有这个标志，就说明是软删除
+ * 有这个标志，就说明是软删除<BR>
+ * 支持pojo中存在与软删除同名的字段（大小写不敏感），通常只在whatIsValid 这时insert和udpate的时候，要注意该字段的状态位。
  * 
  * @author 游夏
  *
@@ -40,7 +41,7 @@ public @interface SoftDelete {
 	String value();
 
 	/**
-	 * @return 只能是String、Integer、Byte、Short、Long、Boolean
+	 * @return 只能是String、Integer、Byte、Short、Long、Boolean或者它们的原始类型
 	 */
 	Class<?> type() default String.class;
 

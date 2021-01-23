@@ -96,25 +96,24 @@ public class BeanFactory extends AbstractBeanListener {
 		}
 	}
 
-	@SuppressWarnings("unchecked")
 	private void putBean(String name, Object obj) throws Exception {
 		if (obj == null) {
 			return;
 		}
 		Class<?> clz = obj.getClass();
 		if (clz == Class.class) {
-			InnerIOC.putClass(name, Class.class.cast(obj));
+			InnerIOC.putClass(name, (Class<?>) obj);
 			return;
 		}
 
 		if (clz == NamedBean.class) {
-			NamedBean named = NamedBean.class.cast(obj);
+			NamedBean named = (NamedBean) obj;
 			this.putBean(named.getBeanName(), named.getBean());
 			return;
 		}
 
 		if (clz == InterfaceBean.class) {
-			InterfaceBean complex = InterfaceBean.class.cast(obj);
+			InterfaceBean complex = (InterfaceBean) obj;
 			this.putBean(BeanPool.resloveBeanName(complex.getIntf()), complex.getBean());
 			return;
 		}

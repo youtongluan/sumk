@@ -25,6 +25,7 @@ import org.yx.main.StartContext;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
+import org.yx.util.S;
 import org.yx.validate.Validators;
 
 public final class Rpc {
@@ -90,24 +91,23 @@ public final class Rpc {
 		return callAsync(api, args).getOrException();
 	}
 
-	/**
-	 * 
-	 * @param api
-	 *            注册的接口名称，如a.b.c
-	 * @param json
-	 *            用json序列化的参数对象
-	 * @return json格式的服务器响应结果
-	 * @throws org.yx.exception.SoaException
-	 *             rpc异常
-	 * @throws org.yx.exception.BizException
-	 *             业务异常
-	 */
-	public static String callInJson(String api, String json) {
-		return callInJsonAsync(api, json).getOrException();
-	}
-
 	public static String callInMap(String api, Map<String, ?> map) {
 		return callInMapAsync(api, map).getOrException();
+	}
+
+	private static <T> T fromJson(String json, Class<T> resultClz) {
+		if (json == null) {
+			return null;
+		}
+		return S.json().fromJson(json, resultClz);
+	}
+
+	public static <T> T invoke(Class<T> resultClz, String api, Object... args) {
+		return fromJson(call(api, args), resultClz);
+	}
+
+	public static <T> T invokeInMap(Class<T> resultClz, String api, Map<String, ?> map) {
+		return fromJson(callInMap(api, map), resultClz);
 	}
 
 	/**
@@ -121,18 +121,6 @@ public final class Rpc {
 	 */
 	public static RpcFuture callAsync(String api, Object... args) {
 		return create(api).paramInArray(args).execute();
-	}
-
-	/**
-	 * 
-	 * @param api
-	 *            注册的接口名称，如a.b.c
-	 * @param json
-	 *            用json序列化的参数对象
-	 * @return json格式的服务器响应结果
-	 */
-	public static RpcFuture callInJsonAsync(String api, String json) {
-		return create(api).paramInJson(json).execute();
 	}
 
 	public static RpcFuture callInMapAsync(String api, Map<String, ?> map) {

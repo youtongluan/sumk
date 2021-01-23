@@ -47,7 +47,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 	RpcLocker(Req req, Consumer<RpcResult> callback) {
 		this.req = Objects.requireNonNull(req);
 		this.callback = callback;
-		this.originLogContext = ActionContext.get().logContext();
+		this.originLogContext = ActionContext.current().logContext();
 	}
 
 	public LogContext originLogContext() {
@@ -92,10 +92,14 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 			LockSupport.unpark(thread);
 		}
 		if (this.callback != null) {
+			ActionContext old = ActionContext.current().clone();
 			try {
+				ActionContext.store(ActionContext.newContext(this.originLogContext));
 				callback.accept(result);
 			} catch (Throwable e) {
 				Logs.rpc().error(e.getLocalizedMessage(), e);
+			} finally {
+				ActionContext.store(old);
 			}
 		}
 		RpcLogs.clientLog(new RpcLog(this.url, this.req, this.originLogContext, result, receiveTime));
