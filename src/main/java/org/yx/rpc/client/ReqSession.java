@@ -104,11 +104,16 @@ public final class ReqSession {
 		return this.session.write(req);
 	}
 
-	public void close() {
+	public void closeOnFlush() {
 		IoSession s = this.session;
 		if (s != null && s.isConnected()) {
-			this.session.closeNow();
+			this.session.closeOnFlush();
 		}
+	}
+
+	public boolean isIdle() {
+		IoSession s = this.session;
+		return s == null || s.isClosing();
 	}
 
 	public static void init() {

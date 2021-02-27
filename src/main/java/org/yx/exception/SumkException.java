@@ -16,10 +16,8 @@
 package org.yx.exception;
 
 /**
- * 这个异常表示是执行sumk框架中的某个方法抛出的异常<BR>
+ * 这个异常表示是执行sumk框架中的某个方法抛出的异常,它的code不能大于0<BR>
  * 框架内部使用，业务异常请用BizException
- * 
- * @author 游夏
  *
  */
 public class SumkException extends CodeException {
@@ -27,11 +25,15 @@ public class SumkException extends CodeException {
 	private static final long serialVersionUID = 3453246435546L;
 
 	public SumkException(int code, String msg) {
-		super(code, msg);
+		super(negative(code), msg);
 	}
 
 	public SumkException(int code, String msg, Throwable exception) {
-		super(code, msg, exception);
+		super(negative(code), msg, exception);
+	}
+
+	private static int negative(int code) {
+		return code > 0 ? -code : code;
 	}
 
 	public static SumkException wrap(Throwable e) {

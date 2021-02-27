@@ -23,10 +23,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.common.context.NodeContext;
+import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 
 public class WebContext extends NodeContext<HttpActionNode> {
-	private final String rawAct;
+
+	private final HttpActionInfo actionInfo;
 	private final HttpServletRequest httpRequest;
 	private final HttpServletResponse httpResponse;
 	private final Charset charset;
@@ -65,10 +67,10 @@ public class WebContext extends NodeContext<HttpActionNode> {
 		}
 	}
 
-	public WebContext(String rawAct, HttpActionNode node, HttpServletRequest req, HttpServletResponse resp,
-			long beginTime, Charset charset) {
-		super(node);
-		this.rawAct = Objects.requireNonNull(rawAct);
+	public WebContext(HttpActionInfo info, HttpServletRequest req, HttpServletResponse resp, long beginTime,
+			Charset charset) {
+		super(Objects.requireNonNull(info).node());
+		this.actionInfo = info;
 		this.httpRequest = Objects.requireNonNull(req);
 		this.charset = Objects.requireNonNull(charset);
 		this.httpResponse = resp;
@@ -116,10 +118,10 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	/**
 	 * 开发者定义的原始act，这里的act不包含逗号。 如果有逗号分隔，这里就只是@Web中的一段
 	 * 
-	 * @return 就是@Web上定义的act
+	 * @return 就是@Web上定义的act，不为null
 	 */
 	public String rawAct() {
-		return rawAct;
+		return this.actionInfo.rawAct();
 	}
 
 	public int getLowestOrder() {
@@ -142,4 +144,7 @@ public class WebContext extends NodeContext<HttpActionNode> {
 		this.failed = failed;
 	}
 
+	public HttpActionInfo actionInfo() {
+		return actionInfo;
+	}
 }

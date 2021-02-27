@@ -33,7 +33,6 @@ import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.slf4j.Logger;
-import org.yx.common.Host;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
@@ -70,7 +69,7 @@ public final class ZkRouteParser {
 	}
 
 	public void readRouteAndListen() throws IOException {
-		Map<Host, RouteInfo> datas = new HashMap<>();
+		Map<String, RouteInfo> datas = new HashMap<>();
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 		ZkClientHelper.makeSure(zk, SOA_ROOT);
 
@@ -87,10 +86,10 @@ public final class ZkRouteParser {
 				RouteInfo d = ZkDataOperators.inst().deserialize(new ZKPathData(dataPath, (byte[]) data));
 				if (d == null || d.intfs().isEmpty()) {
 					logger.debug("{} has no interface or is invalid node", dataPath);
-					parser.handle(RouteEvent.deleteEvent(Host.create(dataPath)));
+					parser.handle(RouteEvent.deleteEvent(dataPath));
 					return;
 				}
-				parser.handle(RouteEvent.modifyEvent(d));
+				parser.handle(RouteEvent.modifyEvent(dataPath, d));
 			}
 
 			@Override
@@ -127,13 +126,13 @@ public final class ZkRouteParser {
 					if (d == null) {
 						continue;
 					}
-					parser.handle(RouteEvent.createEvent(d));
+					parser.handle(RouteEvent.createEvent(create, d));
 					zk.subscribeDataChanges(parentPath + "/" + create, nodeListener);
 				}
 
 				for (String delete : deleteChilds) {
 					logger.trace("{} node deleted", delete);
-					parser.handle(RouteEvent.deleteEvent(Host.create(delete)));
+					parser.handle(RouteEvent.deleteEvent(delete));
 					zk.unsubscribeDataChanges(parentPath + "/" + delete, nodeListener);
 				}
 			}
@@ -153,7 +152,7 @@ public final class ZkRouteParser {
 				continue;
 			}
 			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
-			datas.put(d.host(), d);
+			datas.put(path, d);
 		}
 		RpcRoutes.refresh(datas);
 	}
@@ -196,7 +195,7 @@ public final class ZkRouteParser {
 				if (list.isEmpty()) {
 					return;
 				}
-				Map<Host, RouteInfo> map = new HashMap<>(RpcRoutes.currentDatas());
+				Map<String, RouteInfo> map = new HashMap<>(RpcRoutes.currentDatas());
 				if (handleData(map, list) > 0) {
 					RpcRoutes.refresh(map);
 				}
@@ -204,7 +203,7 @@ public final class ZkRouteParser {
 		});
 	}
 
-	private int handleData(Map<Host, RouteInfo> data, List<RouteEvent> list) {
+	private int handleData(Map<String, RouteInfo> data, List<RouteEvent> list) {
 		int count = 0;
 		for (RouteEvent event : list) {
 			if (event == null) {
@@ -214,20 +213,22 @@ public final class ZkRouteParser {
 			case CREATE:
 			case MODIFY:
 				if (logger.isDebugEnabled()) {
-					logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
+					logger.debug("{}: {} {}", count, event.getType(), event.getNodeName());
 					if (logger.isTraceEnabled()) {
 						logger.trace("event的接口列表：{}", event.getRoute().intfs());
 					}
 				}
-				data.put(event.getUrl(), event.getRoute());
+				data.put(event.getNodeName(), event.getRoute());
 				count++;
 				break;
 			case DELETE:
 
-				if (data.remove(event.getUrl()) != null) {
-					logger.debug("{}: {} {}", count, event.getType(), event.getUrl());
+				if (data.remove(event.getNodeName()) != null) {
+					logger.debug("{}: {} {}", count, event.getType(), event.getNodeName());
 					count++;
+					break;
 				}
+				logger.info("{}: {}已经被移除了", count, event.getNodeName());
 				break;
 			default:
 				break;

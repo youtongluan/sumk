@@ -25,7 +25,6 @@ import java.util.Set;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
-import org.yx.bean.Plugins;
 import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.db.conn.DataSources;
@@ -42,17 +41,20 @@ public class DBPlugin implements Plugin {
 
 	@Override
 	public int order() {
-		return 2;
+		return 90;
+	}
+
+	@Override
+	public void prepare() {
+		DBSettings.init();
+		buildDBListeners();
+		loadSDBResources();
+
+		preHotDataSource();
 	}
 
 	@Override
 	public void startAsync() {
-		DBSettings.init();
-		buildDBListeners();
-		loadSDBResources();
-		Plugins.setDbStarted();
-
-		preHotDataSource();
 	}
 
 	protected void preHotDataSource() {

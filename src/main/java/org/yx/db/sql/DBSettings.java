@@ -15,6 +15,8 @@
  */
 package org.yx.db.sql;
 
+import java.util.Objects;
+
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 
@@ -29,6 +31,16 @@ public final class DBSettings {
 	private static int UNION_LOG_TIME;
 	private static boolean UNION_LOG_ENABLE;
 	private static int DEBUG_LOG_SPEND_TIME;
+	private static byte[] PASSWORD_KEY = new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97, 110, 64, 115,
+			117, 109, 107 };
+
+	public static byte[] getPasswordKey() {
+		return PASSWORD_KEY;
+	}
+
+	public static void setPasswordKey(byte[] passwordKey) {
+		PASSWORD_KEY = Objects.requireNonNull(passwordKey);
+	}
 
 	public static int debugLogSpendTime() {
 		return DEBUG_LOG_SPEND_TIME;

@@ -28,7 +28,7 @@ import org.yx.annotation.rpc.SoaClass;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
-import org.yx.bean.IOC;
+import org.yx.bean.BeanKit;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
@@ -95,7 +95,7 @@ public class SoaAnnotationResolver {
 
 	public void resolve(Object bean) throws Exception {
 
-		Class<?> clz = IOC.getTargetClassOfBean(bean);
+		Class<?> clz = BeanKit.getTargetClass(bean);
 		if (this.exclude.test(clz.getName())) {
 			return;
 		}

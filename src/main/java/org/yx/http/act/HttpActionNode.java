@@ -24,11 +24,12 @@ import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojo;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
+import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.HttpJson;
 import org.yx.http.MessageType;
-import org.yx.http.kit.HttpException;
+import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
@@ -39,7 +40,7 @@ public final class HttpActionNode extends CalleeNode {
 	private final MessageType requestType;
 	private final boolean sign;
 	private final MessageType responseType;
-	private final String[] method;
+	private final List<String> method;
 	private final List<String> tags;
 
 	public Web action() {
@@ -65,7 +66,7 @@ public final class HttpActionNode extends CalleeNode {
 			return HttpJson.operator().fromJson(data, argClz);
 		} catch (Exception e) {
 			Logs.http().warn("json解析异常", e);
-			throw HttpException.create(HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
+			throw BizException.create(HttpErrorCode.DATA_FORMAT_ERROR, "数据格式错误");
 		}
 	}
 
@@ -76,10 +77,18 @@ public final class HttpActionNode extends CalleeNode {
 		return InnerHttpUtil.parseMessageType(AppInfo.get(key));
 	}
 
+	private List<String> httpMethod(Web web) {
+		String[] m = web.method();
+		if (m.length > 0) {
+			return CollectionUtil.unmodifyList(m);
+		}
+		return HttpSettings.defaultHttpMethods();
+	}
+
 	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Web action) {
 		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
-		this.method = action.method();
+		this.method = httpMethod(action);
 		this.requestType = getMessageType(action.requestType(), "sumk.http.request.type");
 		this.responseType = getMessageType(action.responseType(), "sumk.http.response.type");
 		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
@@ -111,16 +120,14 @@ public final class HttpActionNode extends CalleeNode {
 	}
 
 	public boolean acceptMethod(String httpMethod) {
-		for (String m : method) {
-			if (m.equals(httpMethod)) {
-				return true;
-			}
-		}
-		return false;
+		return this.method.contains(httpMethod);
 	}
 
 	public List<String> tags() {
 		return this.tags;
 	}
 
+	public List<String> methods() {
+		return this.method;
+	}
 }

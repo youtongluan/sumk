@@ -35,7 +35,6 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	final String dbColumn;
 
 	public ColumnMeta(Field field, Column c) {
-		super();
 		this.field = field;
 		this.meta = c == null ? ColumnType.NORMAL : c.type();
 		if (c == null) {
@@ -48,15 +47,11 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	}
 
 	public boolean isDBID() {
-		return ColumnType.ID_DB.accept(meta);
+		return this.meta.isDbID();
 	}
 
 	public boolean isCacheID() {
-		return ColumnType.ID_CACHE.accept(meta);
-	}
-
-	public boolean accept(ColumnType type) {
-		return meta.accept(type);
+		return this.meta.isCacheID();
 	}
 
 	public Object value(Object owner) throws IllegalArgumentException, IllegalAccessException {
@@ -89,7 +84,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 	@Override
 	public int compareTo(ColumnMeta o) {
 		if (this.columnOrder == o.columnOrder) {
-			return this.meta.order - o.meta.order;
+			return Integer.compare(this.meta.order(), o.meta.order());
 		}
 		return this.columnOrder > o.columnOrder ? 1 : -1;
 	}
@@ -108,7 +103,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		return meta;
 	}
 
-	public byte getColumnOrder() {
+	public int getColumnOrder() {
 		return columnOrder;
 	}
 

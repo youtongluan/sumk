@@ -32,7 +32,9 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.InnerIOC;
+import org.yx.bean.NameSlot;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.main.SumkServer;
@@ -131,6 +133,17 @@ public class Monitors {
 		}
 		Collections.sort(names);
 		return names;
+	}
+
+	public static String beansName() {
+		StringBuilder sb = new StringBuilder();
+		List<String> names = InnerIOC.beanNames();
+		Collections.sort(names);
+		for (String name : names) {
+			NameSlot slot = InnerIOC.getSlot(name);
+			sb.append(slot).append(Const.LN);
+		}
+		return sb.toString();
 	}
 
 	public static String logLevels() {

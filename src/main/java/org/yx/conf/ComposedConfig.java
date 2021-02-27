@@ -21,7 +21,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
+import org.yx.common.matcher.Matchers;
 import org.yx.log.RawLog;
 
 public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemConfig> {
@@ -39,6 +41,9 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 	}
 
 	public static ComposedConfig createSystemConfig(RefreshableSystemConfig conf) {
+		Predicate<String> exclude = Matchers.createWildcardMatcher(
+				"java.*,sun.*,awt.toolkit,file.encoding,file.encoding.pkg,file.separator,line.separator,os.arch,os.name,os.version,path.separator,user.country,user.dir,user.home,user.language,user.name,user.script,user.timezone,user.variant",
+				1);
 		Map<String, String> map = Collections.emptyMap();
 		for (int i = 0; i < 1000; i++) {
 			try {
@@ -46,7 +51,7 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 				System.getProperties().forEach((k, v) -> {
 					if (k != null && k.getClass() == String.class && v != null && v.getClass() == String.class) {
 						String key = (String) k;
-						if (key.startsWith("java") || key.startsWith("sun.") || key.equals("awt.toolkit")) {
+						if (exclude.test(key)) {
 							return;
 						}
 						tmp.put(key, (String) v);

@@ -147,10 +147,7 @@ public class JettyServer implements Lifecycle {
 
 	protected void addUserHandlers(ServletContextHandler context) {
 		Object obj = StartContext.inst().get(HandlerWrapper.class);
-		if (obj == null) {
-			return;
-		}
-		if (HandlerWrapper[].class.isInstance(obj)) {
+		if (obj instanceof HandlerWrapper[]) {
 			HandlerWrapper[] hs = (HandlerWrapper[]) obj;
 			for (HandlerWrapper h : hs) {
 				Logs.http().info("add jetty handler {}", h);
@@ -204,8 +201,7 @@ public class JettyServer implements Lifecycle {
 
 	private void addUserListener(ServletContextHandler context, List<Class<? extends EventListener>> intfs) {
 		for (Class<? extends EventListener> intf : intfs) {
-			@SuppressWarnings("unchecked")
-			List<EventListener> listeners = (List<EventListener>) IOC.getBeans(intf);
+			List<? extends EventListener> listeners = IOC.getBeans(intf);
 			if (CollectionUtil.isEmpty(listeners)) {
 				continue;
 			}

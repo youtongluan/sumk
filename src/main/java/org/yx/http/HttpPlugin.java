@@ -24,11 +24,12 @@ import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
+import org.yx.common.KeyValuePair;
 import org.yx.common.Lifecycle;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
-import org.yx.http.act.HttpActionInfo;
+import org.yx.http.act.HttpActionNode;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.HttpHandler;
 import org.yx.http.handler.HttpHandlerChain;
@@ -66,9 +67,9 @@ public class HttpPlugin implements Plugin {
 	protected void resolveWebAnnotation(List<Object> beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
-			List<HttpActionInfo> infos = new ArrayList<>(100);
+			List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(100);
 			for (Object bean : beans) {
-				List<HttpActionInfo> acts = factory.resolve(bean);
+				List<KeyValuePair<HttpActionNode>> acts = factory.resolve(bean);
 				if (acts != null && acts.size() > 0) {
 					infos.addAll(acts);
 				}

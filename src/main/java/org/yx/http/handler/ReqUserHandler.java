@@ -17,8 +17,8 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.common.context.ActionContext;
+import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.HttpException;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.UserSession;
@@ -45,7 +45,7 @@ public class ReqUserHandler implements HttpHandler {
 	public void checkSession(String sessionId, String userId) {
 		if (!WebSessions.getSessionIdVerifier().test(sessionId)) {
 			Logs.http().warn("sessionId:{}, is not valid", sessionId);
-			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "token无效");
+			throw BizException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
 		UserSession session = WebSessions.loadUserSession();
 		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
@@ -54,10 +54,10 @@ public class ReqUserHandler implements HttpHandler {
 
 			if (HttpSettings.isSingleLogin() && StringUtil.isNotEmpty(userId) && session.sessionId(userId) != null) {
 				Logs.http().info("sessionId:{}, login by other place", sessionId);
-				throw HttpException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
+				throw BizException.create(HttpErrorCode.LOGIN_AGAIN, "您已在其他地方登录！");
 			}
 			Logs.http().info("sessionId:{}, 没找到对应的session", sessionId);
-			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
+			throw BizException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
 		ActionContext.current().userId(obj.getUserId());
 
@@ -65,7 +65,7 @@ public class ReqUserHandler implements HttpHandler {
 		if (deadTime != null) {
 			if (deadTime < System.currentTimeMillis()) {
 				Logs.http().warn("sessionId:{}, expiredTime:{}，使用时间太长", sessionId, deadTime);
-				throw HttpException.create(HttpErrorCode.SESSION_ERROR, "session使用时间太长");
+				throw BizException.create(HttpErrorCode.SESSION_ERROR, "session使用时间太长");
 			}
 		}
 	}

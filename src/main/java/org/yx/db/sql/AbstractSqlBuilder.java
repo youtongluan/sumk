@@ -64,7 +64,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 					continue MAPKEY;
 				}
 			}
-			throw new SumkException(743257, key + " is not a field in " + pm.pojoClz);
+			throw new SumkException(-743257, key + " is not a field in " + pm.pojoClz);
 		}
 	}
 
@@ -90,13 +90,13 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		if (this.pojoMeta == null) {
 			this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass(), sub);
 			if (this.pojoMeta == null) {
-				throw new SumkException(3654, src.getClass() + " does not config as a table");
+				throw new SumkException(-1893654, src.getClass() + " does not config as a table");
 			}
 		}
 		try {
 			return this.pojoMeta.populate(src, keepNull);
 		} catch (Exception e) {
-			throw new SumkException(534254, e.getMessage(), e);
+			throw new SumkException(-42534254, e.getMessage(), e);
 		}
 	}
 

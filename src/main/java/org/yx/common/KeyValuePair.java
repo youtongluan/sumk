@@ -13,27 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.handler;
+package org.yx.common;
 
-import org.yx.annotation.Bean;
-import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.HttpException;
+import java.util.Objects;
 
-@Bean
-public class ReqMethodChecker implements HttpHandler {
+public class KeyValuePair<T> {
+	private final String key;
+	private final T value;
 
-	@Override
-	public int order() {
-		return 1100;
+	public KeyValuePair(String key, T value) {
+		this.key = Objects.requireNonNull(key);
+		this.value = value;
 	}
 
-	@Override
-	public void handle(WebContext ctx) throws Exception {
-		String method = ctx.httpRequest().getMethod();
-		if (ctx.node().acceptMethod(method)) {
-			return;
-		}
-		throw HttpException.create(HttpErrorCode.METHOD_UNSUPPORT, "本接口不支持方法" + method);
+	public String key() {
+		return key;
 	}
 
+	public T value() {
+		return value;
+	}
 }

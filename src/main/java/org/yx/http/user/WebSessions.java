@@ -19,8 +19,8 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 import org.yx.bean.IOC;
+import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.HttpException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.redis.Redis;
@@ -39,7 +39,7 @@ public final class WebSessions {
 	public static UserSession loadUserSession() {
 		if (session == null) {
 			Log.get("sumk.http.session").info("session has not created");
-			throw HttpException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
+			throw BizException.create(HttpErrorCode.SESSION_ERROR, "请重新登录");
 		}
 		return session;
 	}

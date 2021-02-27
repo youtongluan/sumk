@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.yx.exception.BizException;
+import org.yx.http.act.HttpActions;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.HttpSettings;
 import org.yx.log.Log;
@@ -41,15 +42,15 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 	}
 
 	protected void logError(HttpServletRequest req, Throwable ex, long time) {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = newStringBuilder(req);
 		sb.append(req.getRequestURI()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time);
 		logError(sb.toString(), ex);
 	}
 
 	protected void logError(WebContext wc, Throwable ex, long time) {
-		StringBuilder sb = new StringBuilder(64);
-		sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(wc.httpRequest())).append("   time:").append(time)
-				.append(LN).append("   param: ").append(getParam(wc, HttpSettings.maxReqLogSize()));
+		StringBuilder sb = newStringBuilder(wc.httpRequest());
+		sb.append(getRawAct(wc)).append("   remote:").append(remoteAddr(wc.httpRequest())).append("   time:")
+				.append(time).append(LN).append("   param: ").append(getParam(wc, HttpSettings.maxReqLogSize()));
 		logError(sb.toString(), ex);
 	}
 
@@ -61,10 +62,14 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 		log.error(msg, ex);
 	}
 
+	protected StringBuilder newStringBuilder(HttpServletRequest req) {
+		return new StringBuilder(64).append("[").append(req.getMethod()).append("] ");
+	}
+
 	protected String buildLogMsg(WebContext wc, HttpServletRequest req, long time) {
-		StringBuilder sb = new StringBuilder(64);
+		StringBuilder sb = newStringBuilder(req);
 		if (wc != null) {
-			sb.append(wc.rawAct()).append("   remote:").append(remoteAddr(req)).append("   time:").append(time)
+			sb.append(getRawAct(wc)).append("   remote:").append(remoteAddr(req)).append("   time:").append(time)
 					.append(LN).append("   param: ").append(getParam(wc, HttpSettings.maxReqLogSize())).append(LN)
 					.append("   resp: ").append(getResponse(wc, HttpSettings.maxRespLogSize()));
 			return sb.toString();
@@ -84,5 +89,10 @@ public class PlainHttpLogHandler implements HttpLogHandler {
 
 	protected String getResponse(WebContext wc, int maxLength) {
 		return HttpLogs.getResponse(wc, maxLength);
+	}
+
+	protected String getRawAct(WebContext wc) {
+		String act = wc.rawAct();
+		return act.endsWith(HttpActions.PREFIX_MATCH_ENDING) ? wc.httpRequest().getPathInfo() : act;
 	}
 }

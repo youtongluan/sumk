@@ -39,12 +39,12 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 
 	final Req req;
 	private Host url;
-	final Consumer<RpcResult> callback;
+	final Consumer<RpcCallInfo> callback;
 	private final LogContext originLogContext;
 
 	private final AtomicReference<Thread> awaitThread = new AtomicReference<>();
 
-	RpcLocker(Req req, Consumer<RpcResult> callback) {
+	RpcLocker(Req req, Consumer<RpcCallInfo> callback) {
 		this.req = Objects.requireNonNull(req);
 		this.callback = callback;
 		this.originLogContext = ActionContext.current().logContext();
@@ -91,18 +91,19 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 		if (thread != null) {
 			LockSupport.unpark(thread);
 		}
+		RpcLogs.clientLog(new RpcLog(this.url, this.req, this.originLogContext, result, receiveTime));
 		if (this.callback != null) {
 			ActionContext old = ActionContext.current().clone();
 			try {
 				ActionContext.store(ActionContext.newContext(this.originLogContext));
-				callback.accept(result);
+				RpcCallInfo info = new RpcCallInfo(this.req.getSn(), this.result.get(), this.url);
+				callback.accept(info);
 			} catch (Throwable e) {
 				Logs.rpc().error(e.getLocalizedMessage(), e);
 			} finally {
 				ActionContext.store(old);
 			}
 		}
-		RpcLogs.clientLog(new RpcLog(this.url, this.req, this.originLogContext, result, receiveTime));
 	}
 
 	@Override

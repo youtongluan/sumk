@@ -15,10 +15,6 @@
  */
 package org.yx.http.server;
 
-import java.util.List;
-
-import org.yx.util.CollectionUtil;
-
 /**
  * 只有这里定义的方法，才能在@Web中使用
  */
@@ -28,7 +24,4 @@ public final class HttpMethod {
 	public static final String PUT = "PUT";
 	public static final String DELETE = "DELETE";
 	public static final String PATCH = "PATCH";
-
-	public static final List<String> METHODS = CollectionUtil
-			.unmodifyList(new String[] { POST, GET, DELETE, PUT, PATCH });
 }

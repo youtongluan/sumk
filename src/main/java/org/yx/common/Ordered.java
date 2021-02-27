@@ -29,7 +29,7 @@ public interface Ordered extends Comparable<Ordered> {
 
 	@Override
 	default int compareTo(Ordered o) {
-		return this.order() - o.order();
+		return Integer.compare(this.order(), o.order());
 	}
 
 }

@@ -24,7 +24,6 @@ import org.yx.asm.ArgPojo;
 
 public abstract class NodeContext<T extends CalleeNode> {
 	protected final T node;
-	private transient Object attach;
 	private ArgPojo argPojo;
 
 	public NodeContext(T node) {
@@ -33,14 +32,6 @@ public abstract class NodeContext<T extends CalleeNode> {
 
 	public T node() {
 		return node;
-	}
-
-	public Object getAttach() {
-		return attach;
-	}
-
-	public void setAttach(Object attach) {
-		this.attach = attach;
 	}
 
 	public ArgPojo getArgPojo() {

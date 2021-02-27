@@ -27,10 +27,6 @@ public class Req implements Serializable {
 
 	private static final long serialVersionUID = 123L;
 
-	public Req() {
-
-	}
-
 	private String u;
 
 	private String n;

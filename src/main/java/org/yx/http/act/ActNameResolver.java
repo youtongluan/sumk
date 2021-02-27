@@ -15,8 +15,11 @@
  */
 package org.yx.http.act;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
+
+import org.yx.util.StringUtil;
 
 public class ActNameResolver implements Function<String, String> {
 
@@ -36,16 +39,8 @@ public class ActNameResolver implements Function<String, String> {
 	}
 
 	private String solve(String name) {
-		return convertFromPath(name.replace('\\', '/').replace('.', '/'));
-	}
+		List<String> list = StringUtil.splitAndTrim(name, "/", "\\");
 
-	private String convertFromPath(String path) {
-		while (path.endsWith("/") && path.length() > 1) {
-			path = path.substring(0, path.length() - 1);
-		}
-		while (path.startsWith("/") && path.length() > 1) {
-			path = path.substring(1);
-		}
-		return path;
+		return String.join("/", list);
 	}
 }

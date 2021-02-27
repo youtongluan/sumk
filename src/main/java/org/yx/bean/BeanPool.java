@@ -15,107 +15,34 @@
  */
 package org.yx.bean;
 
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.yx.asm.ProxyClassFactory;
-import org.yx.exception.SumkException;
-import org.yx.exception.SumkExceptionCode;
-import org.yx.log.Logs;
+import org.yx.conf.Const;
 import org.yx.util.StringUtil;
 
 public final class BeanPool {
 
-	private final ConcurrentMap<String, Object> map = new ConcurrentHashMap<>(128, 0.5f);
+	private final ConcurrentMap<String, NameSlot> slotMap = new ConcurrentHashMap<>(128);
 
-	public static String resloveBeanName(Class<?> clz) {
-		String name = StringUtil.uncapitalize(clz.getSimpleName());
-		if (name.endsWith("Impl")) {
-			name = name.substring(0, name.length() - 4);
-		}
-		return name;
-	}
-
-	public static Set<String> resloveBeanNames(Class<?> clazz) {
-		Objects.requireNonNull(clazz, "Class must not be null");
-		Set<Class<?>> interfaces = new HashSet<>();
-		resloveSuperClassAndInterface(clazz, interfaces);
-		Set<String> names = new HashSet<>();
-		for (Class<?> clz : interfaces) {
-			names.add(resloveBeanName(clz));
-		}
-		return names;
-	}
-
-	private static void resloveSuperClassAndInterface(Class<?> clazz, Set<Class<?>> interfaces) {
-		while (clazz != null && !clazz.getName().startsWith(Loader.JAVA_PRE)
-				&& (clazz.getModifiers() & Modifier.PUBLIC) != 0) {
-			interfaces.add(clazz);
-			Class<?>[] ifcs = clazz.getInterfaces();
-			if (ifcs != null) {
-				for (Class<?> ifc : ifcs) {
-					resloveSuperClassAndInterface(ifc, interfaces);
-				}
-			}
-			clazz = clazz.getSuperclass();
-		}
-	}
-
-	private final Object getBean(Object v) {
-		BeanWrapper w = (BeanWrapper) v;
-		return w.getBean();
-	}
-
-	private final Class<?> getBeanClass(Object v) {
-		BeanWrapper w = (BeanWrapper) v;
-		return w.getTargetClass();
-	}
-
-	public String[] beanNames() {
-		Set<String> names = map.keySet();
-		return names.toArray(new String[names.size()]);
-	}
-
-	Collection<BeanWrapper> allBeanWrapper() {
-		Map<BeanWrapper, Boolean> beans = new IdentityHashMap<>(map.size());
-		Collection<Object> vs = map.values();
-		for (Object v : vs) {
-			if (!v.getClass().isArray()) {
-				beans.putIfAbsent((BeanWrapper) v, Boolean.TRUE);
-				continue;
-			}
-			BeanWrapper[] objs = (BeanWrapper[]) v;
-			for (BeanWrapper o : objs) {
-				beans.putIfAbsent(o, Boolean.TRUE);
-			}
-		}
-		return beans.keySet();
+	public List<String> beanNames() {
+		Set<String> names = slotMap.keySet();
+		return new ArrayList<>(names);
 	}
 
 	public Collection<Object> beans() {
-		Map<Object, Boolean> beans = new IdentityHashMap<>(map.size());
-		Collection<Object> vs = map.values();
-		for (Object v : vs) {
-			if (!v.getClass().isArray()) {
-				Object bean = getBean(v);
-				beans.putIfAbsent(bean, Boolean.TRUE);
-				continue;
-			}
-			BeanWrapper[] objs = (BeanWrapper[]) v;
-			for (BeanWrapper o : objs) {
-				Object bean = o.getBean();
+		Map<Object, Boolean> beans = new IdentityHashMap<>(slotMap.size());
+		for (NameSlot v : slotMap.values()) {
+			for (Object bean : v.beans()) {
 				beans.putIfAbsent(bean, Boolean.TRUE);
 			}
 		}
@@ -124,184 +51,68 @@ public final class BeanPool {
 
 	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
 		Objects.requireNonNull(clz);
-		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
-				: Collections.singleton(beanName);
+		Collection<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty())
+				? BeanKit.resloveBeanNames(clz) : StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
 		if (names == null || names.isEmpty()) {
-			names = Collections.singleton(resloveBeanName(clz));
+			names = Collections.singleton(BeanKit.resloveBeanName(clz));
 		}
 		Class<?> proxyClz = ProxyClassFactory.proxyIfNeed(clz);
 		Object bean = Loader.newInstance(proxyClz);
-		BeanWrapper w = new BeanWrapper(bean);
 		for (String name : names) {
-			put(name, w);
+			put(name, bean);
 		}
 		return this.getBean(beanName, clz);
 	}
 
 	public <T> T putBean(String beanName, T bean) {
 		Class<?> clz = Objects.requireNonNull(bean).getClass();
-		Set<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty()) ? resloveBeanNames(clz)
-				: Collections.singleton(beanName);
+		Collection<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty())
+				? BeanKit.resloveBeanNames(clz) : StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
 		if (names == null || names.isEmpty()) {
-			names = Collections.singleton(resloveBeanName(clz));
+			names = Collections.singleton(BeanKit.resloveBeanName(clz));
 		}
-		BeanWrapper w = new BeanWrapper(bean);
 		for (String name : names) {
-			put(name, w);
+			put(name, bean);
 		}
 		return bean;
 	}
 
-	private synchronized void put(String name, BeanWrapper w) {
-		Class<?> clz = w.getTargetClass();
-		Object oldWrapper = map.putIfAbsent(name, w);
-		if (oldWrapper == null) {
-			return;
+	private synchronized boolean put(String name, Object bean) {
+		NameSlot oldSlot = slotMap.putIfAbsent(name, new NameSlot(name, new Object[] { bean }));
+		if (oldSlot == null) {
+			return true;
 		}
-		if (!oldWrapper.getClass().isArray()) {
-			if (clz == this.getBeanClass(oldWrapper)) {
-				Logs.ioc().debug("{}={} duplicate,will be ignored", name, clz.getName());
-				return;
-			}
-			map.put(name, new BeanWrapper[] { (BeanWrapper) oldWrapper, w });
-			return;
-		}
-		BeanWrapper[] objs = (BeanWrapper[]) oldWrapper;
-		for (BeanWrapper o : objs) {
-			if (clz == this.getBeanClass(o)) {
-				Logs.ioc().debug("{}={} duplicate,will be ignored.", name, clz.getName());
-				return;
-			}
-		}
-		BeanWrapper[] beans = new BeanWrapper[objs.length + 1];
-		System.arraycopy(objs, 0, beans, 0, objs.length);
-		beans[beans.length - 1] = w;
-		map.put(name, beans);
+		return oldSlot.appendBean(bean);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <T> T getBean(String name, Class<T> clz) {
 		if (name == null || name.length() == 0) {
-			name = resloveBeanName(clz);
+			name = BeanKit.resloveBeanName(clz);
 		}
-		if (clz == Object.class) {
-			clz = null;
-		}
-		Object bw = map.get(name);
-		if (bw == null) {
-			return null;
-		}
-		if (!bw.getClass().isArray()) {
-			Object obj = this.getBean(bw);
-			if (clz == null || clz.isInstance(obj)) {
-				return (T) obj;
-			}
-			throw new ClassCastException(name + " type error。real is " + obj.getClass().getName()
-					+ ",cannot  compatible with " + clz.getName());
-		}
-		if (clz == null) {
-			throw new SumkException(SumkExceptionCode.TOO_MANY_BEAN, name + " exist multi instance");
-		}
-		BeanWrapper[] objs = (BeanWrapper[]) bw;
+		NameSlot bw = slotMap.get(name);
+		return bw == null ? null : bw.getBean(clz);
+	}
 
-		for (BeanWrapper o : objs) {
-			if (clz == o.getBean().getClass()) {
-				return (T) o.getBean();
-			}
+	public <T> List<T> getBeans(String name, Class<T> clz) {
+		if (name == null || name.length() == 0) {
+			name = BeanKit.resloveBeanName(clz);
 		}
-
-		List<Object> beans = new ArrayList<>(2);
-		for (BeanWrapper w : objs) {
-			Class<?> targetClz = w.getTargetClass();
-			if (targetClz == clz) {
-				return (T) w.getBean();
-			}
-			if (clz.isAssignableFrom(targetClz)) {
-				beans.add(w.getBean());
-			}
-		}
-		if (beans.isEmpty()) {
-			return null;
-		}
-		if (beans.size() > 1) {
-			throw new SumkException(SumkExceptionCode.TOO_MANY_BEAN, name + "存在多个" + clz.getName() + "实例");
-		}
-		return (T) beans.get(0);
+		NameSlot slot = slotMap.get(name);
+		return slot == null ? Collections.emptyList() : slot.getBeans(clz);
 
 	}
 
-	@SuppressWarnings("unchecked")
-	public <T> List<T> getBeans(String name, Class<T> clz) {
-		if (name == null || name.length() == 0) {
-			name = resloveBeanName(clz);
-		}
-		Object bw = map.get(name);
-		if (bw == null) {
-			return Collections.emptyList();
-		}
-		if (!bw.getClass().isArray()) {
-			Object obj = this.getBean(bw);
-			if (clz.isInstance(obj)) {
-				return Collections.singletonList((T) obj);
-			}
-			return Collections.emptyList();
-		}
-		BeanWrapper[] objs = (BeanWrapper[]) bw;
-		List<T> list = new ArrayList<>(objs.length);
+	public NameSlot getSlot(String name) {
+		return slotMap.get(name);
+	}
 
-		for (BeanWrapper w : objs) {
-			Object o = w.getBean();
-			if (clz.isInstance(o)) {
-				list.add((T) o);
-			}
-		}
-		if (list.size() > 1 && Comparable.class.isAssignableFrom(clz)) {
-			list.sort(null);
-		}
-		return list;
-
+	public void clear() {
+		slotMap.clear();
 	}
 
 	@Override
 	public String toString() {
-		Iterator<Entry<String, Object>> i = map.entrySet().iterator();
-		if (!i.hasNext())
-			return "empty bean";
-
-		StringBuilder sb = new StringBuilder();
-		while (true) {
-			Entry<String, Object> e = i.next();
-			String key = e.getKey();
-			Object value = e.getValue();
-			sb.append(key);
-			sb.append(':');
-			if (value.getClass().isArray()) {
-				sb.append("[");
-				Object[] objs = (Object[]) value;
-
-				for (int k = 0; k < objs.length; k++) {
-					if (k > 0) {
-						sb.append(",");
-					}
-					Object o = objs[k];
-					sb.append(getBeanClass(o).getName());
-				}
-				sb.append("]");
-			} else {
-				sb.append(getBeanClass(value).getName());
-			}
-
-			if (!i.hasNext())
-				return sb.toString();
-			sb.append(',').append(' ');
-		}
+		return slotMap.toString();
 	}
 
-	public Object getBeanWrapper(String name) {
-		return map.get(name);
-	}
-
-	public synchronized void clear() {
-		map.clear();
-	}
 }

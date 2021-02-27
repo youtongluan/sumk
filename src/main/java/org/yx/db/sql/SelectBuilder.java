@@ -187,7 +187,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
-					throw new SumkException(234, filedName + "这个字段没有在java的pojo类中定义");
+					throw new SumkException(-54675234, filedName + "这个字段没有在java的pojo类中定义");
 				}
 				continue;
 			}
@@ -221,7 +221,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.failIfPropertyNotMapped) {
-					throw new SumkException(234, filedName + "这个字段没有在java的pojo类中定义");
+					throw new SumkException(-7331234, filedName + "这个字段没有在java的pojo类中定义");
 				}
 				continue;
 			}

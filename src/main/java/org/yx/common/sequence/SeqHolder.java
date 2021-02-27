@@ -23,8 +23,7 @@ import org.yx.log.ConsoleLog;
 public class SeqHolder {
 	private static Seq inst = new SeqImpl();
 	static {
-		String snowKey = "sumk.counter.snow";
-		int snow = AppInfo.getInt(snowKey, Integer.getInteger(snowKey, Integer.MIN_VALUE));
+		int snow = AppInfo.getInt("sumk.counter.snow", Integer.MIN_VALUE);
 		if (snow != Integer.MIN_VALUE) {
 			inst.setCounter(new SnowflakeCounter(snow));
 			ConsoleLog.get("sumk.seq").debug("use snow counter");

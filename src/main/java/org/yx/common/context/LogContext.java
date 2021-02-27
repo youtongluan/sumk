@@ -58,7 +58,7 @@ public final class LogContext {
 		this.spanId = spanId;
 		this.userId = userId;
 		this.test = test;
-		this.attachments = CollectionUtil.unmodifyMap(attachments);
+		this.attachments = attachments == null ? null : CollectionUtil.unmodifyMap(attachments);
 	}
 
 	public static LogContext empty() {

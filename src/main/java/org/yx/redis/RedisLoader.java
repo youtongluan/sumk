@@ -24,6 +24,7 @@ import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
 
 public class RedisLoader {
@@ -87,6 +88,12 @@ public class RedisLoader {
 		if (configMap != null && configMap.size() > 0) {
 			try {
 				SimpleBeanUtil.copyProperties(config, configMap);
+				if (AppInfo.getBoolean("sumk.redis.password.encry", false)
+						&& StringUtil.isNotEmpty(config.getPassword())) {
+					byte[] bs = S.base64().decode(config.getPassword().getBytes());
+					String p2 = new String(S.cipher().decrypt(bs, RedisSettings.getPasswordKey()));
+					config.setPassword(p2);
+				}
 			} catch (Exception e) {
 				Logs.redis().error(e.getLocalizedMessage(), e);
 			}

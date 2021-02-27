@@ -61,7 +61,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
 						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
 			}
-			HttpActionInfo info = HttpActions.getHttpInfo(rawAct);
+			HttpActionInfo info = HttpActions.getHttpInfo(rawAct, req.getMethod());
 			if (info == null) {
 				throw BizException.create(HttpErrorCode.ACT_NOT_FOUND,
 						M.get("sumk.http.error.act.notfound", "接口不存在", rawAct));
@@ -71,8 +71,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 				throw BizException.create(HttpErrorCode.THREAD_THRESHOLD_OVER, "系统限流降级");
 			}
 			InnerHttpUtil.startContext(req, resp, rawAct);
-			wc = new WebContext(rawAct, info.node(), req, resp, beginTime, charset);
-			wc.setAttach(info.getAttach());
+			wc = new WebContext(info, req, resp, beginTime, charset);
 			LocalWebContext.setCtx(wc);
 			handle(wc);
 		} catch (Throwable e) {
@@ -101,7 +100,10 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 	protected String getRawAct(HttpServletRequest req) {
 		String act = req.getPathInfo();
 		if (StringUtil.isEmpty(act) && AppInfo.getBoolean("sumk.http.act.query", false)) {
-			return req.getParameter("act");
+			act = req.getParameter("act");
+			if (act != null) {
+				act = act.replace('.', '/');
+			}
 		}
 		return act;
 	}

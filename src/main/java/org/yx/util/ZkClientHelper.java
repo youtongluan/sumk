@@ -24,6 +24,7 @@ import java.util.Set;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.exception.ZkNodeExistsException;
 import org.yx.common.SimpleZkSerializer;
+import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 
 public final class ZkClientHelper {
@@ -69,7 +70,8 @@ public final class ZkClientHelper {
 			if (zk != null) {
 				return zk;
 			}
-			zk = new ZkClient(url, 30000);
+			zk = new ZkClient(url, AppInfo.getInt("sumk.zk.session.timeout", 8000),
+					AppInfo.getInt("sumk.zk.connection.timeout", 20000));
 			zk.setZkSerializer(new SimpleZkSerializer());
 			map.put(url, zk);
 			CLIENTS = map;

@@ -15,18 +15,20 @@
  */
 package org.yx.http.act;
 
-public final class HttpActionInfo {
-	private final String rawAct;
-	private final HttpActionNode node;
+import java.util.Objects;
+
+public class HttpActionInfo implements Comparable<HttpActionInfo> {
+	protected final String rawAct;
+	protected final HttpActionNode node;
 	/**
 	 * 如果要支持url中的参数，可以考虑从这里入手
 	 */
-	private final Object attach;
+	protected final String formalName;
 
-	public HttpActionInfo(String rawAct, HttpActionNode node, Object attach) {
-		this.rawAct = rawAct;
-		this.node = node;
-		this.attach = attach;
+	public HttpActionInfo(String rawAct, HttpActionNode node, String formatedName) {
+		this.rawAct = Objects.requireNonNull(rawAct);
+		this.node = Objects.requireNonNull(node);
+		this.formalName = Objects.requireNonNull(formatedName);
 	}
 
 	public String rawAct() {
@@ -37,7 +39,15 @@ public final class HttpActionInfo {
 		return node;
 	}
 
-	public Object getAttach() {
-		return attach;
+	/**
+	 * @return 解析后正式的名字
+	 */
+	public String formalName() {
+		return formalName;
+	}
+
+	@Override
+	public int compareTo(HttpActionInfo o) {
+		return this.formalName.compareTo(o.formalName);
 	}
 }

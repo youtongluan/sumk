@@ -26,31 +26,43 @@ import org.yx.common.Host;
 import org.yx.common.route.Router;
 import org.yx.common.route.WeightedServer;
 import org.yx.log.Log;
+import org.yx.rpc.client.ReqSession;
+import org.yx.rpc.client.ReqSessionHolder;
 import org.yx.rpc.data.IntfInfo;
 import org.yx.rpc.data.RouteInfo;
 
 public final class RpcRoutes {
 
 	private final Map<String, Router<Host>> rpcRoutes;
-	private final Map<Host, RouteInfo> zkDatas;
+	private final Map<String, RouteInfo> zkDatas;
+	private final Map<Host, Integer> protocols;
 
-	private RpcRoutes(Map<Host, RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
+	private RpcRoutes(Map<String, RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
 		this.zkDatas = Objects.requireNonNull(zkDatas);
 		this.rpcRoutes = Objects.requireNonNull(routes);
+		Map<Host, Integer> p = new HashMap<>();
+		for (RouteInfo info : zkDatas.values()) {
+			p.put(info.host(), info.getFeature());
+		}
+		this.protocols = p;
 	}
 
 	private static volatile RpcRoutes ROUTE = new RpcRoutes(Collections.emptyMap(), Collections.emptyMap());
 
-	public static Map<Host, RouteInfo> currentDatas() {
+	public static Map<String, RouteInfo> currentDatas() {
 		return Collections.unmodifiableMap(ROUTE.zkDatas);
 	}
 
+	public static Set<Host> servers() {
+		return new HashSet<>(ROUTE.protocols.keySet());
+	}
+
 	public static int getServerProtocol(Host url) {
-		RouteInfo info = ROUTE.zkDatas.get(url);
-		if (info == null) {
+		Integer p = ROUTE.protocols.get(url);
+		if (p == null) {
 			return 0;
 		}
-		return info.getFeature();
+		return p.intValue();
 	}
 
 	public static Router<Host> getRoute(String api) {
@@ -61,8 +73,8 @@ public final class RpcRoutes {
 		return ROUTE.rpcRoutes.size();
 	}
 
-	private static void _refresh(Map<Host, RouteInfo> rawData, Map<String, Router<Host>> route) {
-		Map<Host, RouteInfo> data = new HashMap<>(rawData);
+	private static void _refresh(Map<String, RouteInfo> rawData, Map<String, Router<Host>> route) {
+		Map<String, RouteInfo> data = new HashMap<>(rawData);
 		RpcRoutes r = new RpcRoutes(data, route);
 		RpcRoutes.ROUTE = r;
 		if (Log.get("sumk.rpc.client").isTraceEnabled()) {
@@ -88,7 +100,7 @@ public final class RpcRoutes {
 		}
 	}
 
-	public static synchronized void refresh(Map<Host, RouteInfo> datas) {
+	public static synchronized void refresh(Map<String, RouteInfo> datas) {
 		Map<String, Set<WeightedServer<Host>>> map = new HashMap<>();
 		for (RouteInfo r : datas.values()) {
 			fillWeightedServer(createServerMachine(r), map);
@@ -100,12 +112,30 @@ public final class RpcRoutes {
 			if (servers == null || servers.isEmpty()) {
 				continue;
 			}
-			Router<Host> route = RouteHolder.createRouter(method, servers);
+			Router<Host> route = RouterHolder.createRouter(method, servers);
 			if (route != null) {
 				routes.put(method, route);
 			}
 		}
 		_refresh(datas, routes);
+		cleanReqSession();
+	}
+
+	private static void cleanReqSession() {
+		Set<Host> current = servers();
+		Map<Host, ReqSession> map = ReqSessionHolder.view();
+		for (Host h : map.keySet()) {
+			if (current.contains(h)) {
+				continue;
+			}
+			ReqSession session = map.get(h);
+			if (session == null || !session.isIdle()) {
+				continue;
+			}
+
+			ReqSessionHolder.remove(h, session);
+			session.closeOnFlush();
+		}
 	}
 
 	private static Map<String, WeightedServer<Host>> createServerMachine(RouteInfo data) {

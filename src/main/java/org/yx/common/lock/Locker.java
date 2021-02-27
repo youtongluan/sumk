@@ -15,6 +15,7 @@
  */
 package org.yx.common.lock;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -28,7 +29,7 @@ import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
-import org.yx.util.StringUtil;
+import org.yx.util.IOUtil;
 import org.yx.util.Task;
 
 public final class Locker {
@@ -192,7 +193,8 @@ public final class Locker {
 
 	private static final Runnable ensureScriptRunner = () -> {
 		try {
-			String script = StringUtil.load(SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del"));
+			InputStream in = SumkServer.class.getClassLoader().getResourceAsStream("META-INF/lua_del");
+			String script = new String(IOUtil.readAllBytes(in, true), AppInfo.UTF8);
 			Set<Redis> set = new HashSet<>();
 			for (String key : nodeKey) {
 				Redis redis = RedisPool.get(key);

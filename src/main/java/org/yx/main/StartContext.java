@@ -34,6 +34,10 @@ public final class StartContext {
 		return inst;
 	}
 
+	private StartContext() {
+
+	}
+
 	private ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
 	private static final String KEY_BEANS = "key_beans";
 
@@ -62,16 +66,10 @@ public final class StartContext {
 		return map.get(clz.getName());
 	}
 
-	public Object getOrCreate(String key, Object t) {
-		if (map.containsKey(key)) {
-			return map.get(key);
-		}
-		Object pre = map.putIfAbsent(key, t);
-		return pre == null ? t : pre;
-	}
-
-	public Object getOrCreate(Class<?> clz, Object t) {
-		return this.getOrCreate(clz.getName(), t);
+	public <T> T get(Class<T> clz, T defaultV) {
+		String key = clz.getName();
+		Object old = map.get(key);
+		return clz.isInstance(old) ? clz.cast(old) : defaultV;
 	}
 
 	public static void clear() {
@@ -93,27 +91,19 @@ public final class StartContext {
 	}
 
 	public static int soaPort() {
-		return getInt("sumk.rpc.port", -1);
+		return AppInfo.getInt("sumk.rpc.port", -1);
 	}
 
 	public static int soaPortInZk() {
-		return getInt("sumk.rpc.zk.port", -1);
+		return AppInfo.getInt("sumk.rpc.zk.port", -1);
 	}
 
 	public static String httpHost() {
-		return AppInfo.get("sumk.http.host", AppInfo.get("sumk.http.host"));
+		return AppInfo.get("sumk.http.host", null);
 	}
 
 	public static int httpPort() {
-		return getInt("sumk.http.port", -1);
-	}
-
-	private static int getInt(String name, int defaultValue) {
-		Integer p = Integer.getInteger(name);
-		if (p != null) {
-			return p.intValue();
-		}
-		return AppInfo.getInt(name, defaultValue);
+		return AppInfo.getInt("sumk.http.port", -1);
 	}
 
 	public ThreadPoolExecutor getHttpExecutor() {

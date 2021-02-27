@@ -30,7 +30,10 @@ import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanInjectWatcher;
 import org.yx.bean.watcher.PluginHandler;
 import org.yx.common.matcher.BooleanMatcher;
+import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
+import org.yx.conf.AppInfo;
+import org.yx.db.sql.PojoMetaListener;
 import org.yx.exception.SimpleSumkException;
 import org.yx.listener.ListenerGroup;
 import org.yx.listener.ListenerGroupImpl;
@@ -42,8 +45,39 @@ import org.yx.util.kit.PriorityKits;
 
 public final class BeanPublisher {
 
-	private ListenerGroup<BeanEventListener> group = new ListenerGroupImpl<>();
-	private Logger logger = Logs.ioc();
+	private final Logger logger = Logs.ioc();
+	private ListenerGroup<BeanEventListener> group;
+
+	private final Predicate<String> excludeMatcher;
+
+	public BeanPublisher() {
+		this.excludeMatcher = createExcludeMatcher();
+		logger.debug("bean exclude matcher:{}", excludeMatcher);
+		this.group = new ListenerGroupImpl<>();
+		this.group.setListener(this.getBeanEventListeners());
+	}
+
+	public Predicate<String> excludeMatcher() {
+		return this.excludeMatcher;
+	}
+
+	private Predicate<String> createExcludeMatcher() {
+		final String name = "sumk.ioc.exclude";
+
+		List<String> list = new ArrayList<>(AppInfo.subMap(name + ".").values());
+		String exclude = AppInfo.get(name, null);
+		if (exclude != null) {
+			list.add(exclude);
+		}
+		if (list.isEmpty()) {
+			return BooleanMatcher.FALSE;
+		}
+		StringBuilder sb = new StringBuilder();
+		for (String v : list) {
+			sb.append(v).append(Matchers.SPLIT);
+		}
+		return Matchers.createWildcardMatcher(sb.toString(), 2);
+	}
 
 	@SuppressWarnings("unchecked")
 	public synchronized void publishBeans(List<String> packageNames) throws Exception {
@@ -63,6 +97,10 @@ public final class BeanPublisher {
 		Collection<String> clzs = ClassScaner.listClasses(packageNames);
 		List<Class<?>> clazzList = new ArrayList<>(clzs.size());
 		for (String c : clzs) {
+			if (excludeMatcher.test(c)) {
+				logger.info("{} excluded", c);
+				continue;
+			}
 			try {
 				if (logger.isTraceEnabled()) {
 					logger.trace("{} begin loading");
@@ -113,14 +151,18 @@ public final class BeanPublisher {
 	private Object getBean(Field f) {
 		String name = f.getName();
 		Class<?> clz = f.getType();
-		Object target = IOC.get(name, clz);
-		if (target != null) {
-			return target;
-		}
 
-		target = IOC.get(name, f.getType());
-		if (target != null) {
-			return target;
+		List<?> list = InnerIOC.pool.getBeans(name, clz);
+		if (list.size() == 1) {
+			return list.get(0);
+		}
+		if (list.size() > 1) {
+			for (Object obj : list) {
+
+				if (clz == BeanKit.getTargetClass(obj)) {
+					return obj;
+				}
+			}
 		}
 		return IOC.get(clz);
 	}
@@ -134,7 +176,7 @@ public final class BeanPublisher {
 	}
 
 	private void autoWiredAll() throws Exception {
-		final List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans());
+		final List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans().toArray());
 		StartContext.inst().setBeans(beans);
 		logger.trace("after beans create...");
 		for (BeanCreateWatcher w : IOC.getBeans(BeanCreateWatcher.class)) {
@@ -149,7 +191,7 @@ public final class BeanPublisher {
 			watcher.afterInject(beans);
 		}
 		logger.trace("plugins starting...");
-		PluginHandler.instance.start();
+		new PluginHandler().start();
 	}
 
 	private void injectProperties(Object bean) throws Exception {
@@ -204,7 +246,7 @@ public final class BeanPublisher {
 			}
 			return Collections.emptyList();
 		}
-		return target;
+		return CollectionUtil.unmodifyList(target.toArray());
 	}
 
 	private Object[] getArrayField(Field f, Object bean, boolean allowEmpty) {
@@ -223,7 +265,9 @@ public final class BeanPublisher {
 		group.listen(event);
 	}
 
-	public synchronized void setListeners(BeanEventListener[] array) {
-		group.setListener(array);
+	private BeanEventListener[] getBeanEventListeners() {
+		BeanEventListener[] defaults = new BeanEventListener[] { new BeanFactory(), new PojoMetaListener() };
+		Object obj = StartContext.inst().get("sumk.bean.event.listener");
+		return obj instanceof BeanEventListener[] ? (BeanEventListener[]) obj : defaults;
 	}
 }

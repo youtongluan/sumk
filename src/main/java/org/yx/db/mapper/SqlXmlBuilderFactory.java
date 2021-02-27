@@ -74,7 +74,7 @@ public class SqlXmlBuilderFactory implements Supplier<DocumentBuilder> {
 			return this.create();
 		} catch (Exception e) {
 			Logs.db().error(e.toString(), e);
-			throw new SumkException(23435, "创建XmlDocumentBuilder失败");
+			throw new SumkException(-7623435, "创建XmlDocumentBuilder失败");
 		}
 	}
 

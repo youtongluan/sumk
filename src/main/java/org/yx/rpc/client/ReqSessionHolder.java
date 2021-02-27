@@ -15,43 +15,40 @@
  */
 package org.yx.rpc.client;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.yx.common.Host;
 
 public class ReqSessionHolder {
-	private static ConcurrentMap<Host, Object> map = new ConcurrentHashMap<>();
+	private static ConcurrentMap<Host, ReqSession> sessions = new ConcurrentHashMap<>();
 
-	public static void addClient(Host url, ReqSession s) {
-		map.putIfAbsent(url, s);
+	public static void addClientIfAbsent(Host url, ReqSession s) {
+		sessions.putIfAbsent(url, s);
+	}
+
+	public static boolean remove(Host url, ReqSession expect) {
+		return sessions.remove(url, expect);
 	}
 
 	public static ReqSession getSession(Host url) {
-		Object obj = map.get(url);
-		if (obj == null) {
-			ReqSession ses = createSession(url);
-			Object ses0 = map.putIfAbsent(url, ses);
-			if (ses0 != null) {
-				ses.close();
-				return _getSession(ses0);
-			}
+		ReqSession obj = sessions.get(url);
+		if (obj != null) {
+			return obj;
+		}
+		ReqSession ses = new ReqSession(url);
+		ReqSession ses0 = sessions.putIfAbsent(url, ses);
+		if (ses0 == null) {
 			return ses;
 		}
-		return _getSession(obj);
+		ses.closeOnFlush();
+		return ses0;
 	}
 
-	@SuppressWarnings("unchecked")
-	public static ReqSession _getSession(Object obj) {
-		if (obj instanceof ReqSession) {
-			return (ReqSession) obj;
-		}
-
-		return ((List<ReqSession>) obj).get(0);
+	public static Map<Host, ReqSession> view() {
+		return Collections.unmodifiableMap(sessions);
 	}
 
-	private static ReqSession createSession(Host url) {
-		return new ReqSession(url);
-	}
 }

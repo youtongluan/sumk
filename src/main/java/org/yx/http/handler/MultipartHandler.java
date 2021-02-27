@@ -24,8 +24,8 @@ import javax.servlet.http.Part;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.Upload;
+import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
-import org.yx.http.kit.HttpException;
 import org.yx.http.kit.InnerHttpUtil;
 
 @Bean
@@ -46,7 +46,7 @@ public class MultipartHandler implements HttpHandler {
 		Upload upload = ctx.node().upload();
 		Collection<Part> list = ctx.httpRequest().getParts();
 		if (list == null || list.isEmpty()) {
-			throw HttpException.create(HttpErrorCode.FILE_MISS, "没有文件");
+			throw BizException.create(HttpErrorCode.FILE_MISS, "没有文件");
 		}
 		List<MultipartItem> files = new ArrayList<>(list.size());
 		for (Part p : list) {

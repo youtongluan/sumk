@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.common.ItemJoiner;
-import org.yx.db.enums.ColumnType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
@@ -128,7 +127,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass(), this.sub);
 		if (this.pojoMeta == null) {
-			throw new SumkException(36541, pojo.getClass() + " does not config as a table");
+			throw new SumkException(-536541, pojo.getClass() + " does not config as a table");
 		}
 		try {
 			this.updateTo = this.pojoMeta.populate(pojo, false);
@@ -148,7 +147,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			this.updateTo = Collections.emptyMap();
 		}
 		if (this.updateTo.isEmpty() && CollectionUtil.isEmpty(this.incrMap)) {
-			throw new SumkException(-34601, "updateTo is null or empty");
+			throw new SumkException(-3464601, "updateTo is null or empty");
 		}
 		this.pojoMeta = this.parsePojoMeta(true);
 		this.checkMap(this.updateTo, this.pojoMeta);
@@ -182,7 +181,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			if (!fm.containsKey(this.updateTo) && !this.fullUpdate) {
 				continue;
 			}
-			if (fm.accept(ColumnType.ID_DB) && !this.updateDBID) {
+			if (fm.isDBID() && !this.updateDBID) {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
@@ -229,7 +228,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		}
 		CharSequence whereStr = orItem.toCharSequence(true);
 		if (whereStr == null || whereStr.length() == 0) {
-			throw new SumkException(345445, "where cannot be null");
+			throw new SumkException(-7345445, "where cannot be null");
 		}
 		sb.append(whereStr);
 		ms.sql = sb.toString();

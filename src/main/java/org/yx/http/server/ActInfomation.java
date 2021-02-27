@@ -80,6 +80,10 @@ public class ActInfomation extends AbstractCommonHttpServlet {
 			write(resp, beans());
 			return;
 		}
+		if (mode.equals("beans.full")) {
+			write(resp, Monitors.beansName());
+			return;
+		}
 	}
 
 	private List<Map<String, Object>> filter(List<Map<String, Object>> list, HttpServletRequest req) {

@@ -24,17 +24,17 @@ import org.yx.common.route.Router;
 import org.yx.common.route.Routes;
 import org.yx.common.route.WeightedServer;
 
-public final class RouteHolder {
+public final class RouterHolder {
 
 	private static BiFunction<String, Collection<WeightedServer<Host>>, Router<Host>> routerFactory = (api,
 			servers) -> Routes.createWeightedRouter(servers);
 
 	public static void set(BiFunction<String, Collection<WeightedServer<Host>>, Router<Host>> factory) {
-		RouteHolder.routerFactory = Objects.requireNonNull(factory);
+		RouterHolder.routerFactory = Objects.requireNonNull(factory);
 	}
 
 	public static BiFunction<String, Collection<WeightedServer<Host>>, Router<Host>> get() {
-		return RouteHolder.routerFactory;
+		return RouterHolder.routerFactory;
 	}
 
 	public static Router<Host> createRouter(String api, Collection<WeightedServer<Host>> servers) {

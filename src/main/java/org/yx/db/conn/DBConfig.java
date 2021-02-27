@@ -21,6 +21,7 @@ import java.util.Set;
 
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.DBType;
+import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
@@ -88,8 +89,7 @@ public class DBConfig {
 
 				if (AppInfo.getBoolean("sumk.db.password.encry", false)) {
 					byte[] bs = S.base64().decode(v.getBytes());
-					v = new String(S.cipher().decrypt(bs, new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97,
-							110, 64, 115, 117, 109, 107 }));
+					v = new String(S.cipher().decrypt(bs, DBSettings.getPasswordKey()));
 				}
 				properties.put(key, v);
 				break;

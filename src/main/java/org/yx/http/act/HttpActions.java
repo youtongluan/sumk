@@ -18,7 +18,6 @@ package org.yx.http.act;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +27,12 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 import org.yx.annotation.http.Web;
+import org.yx.common.KeyValuePair;
 import org.yx.common.action.ActInfoUtil;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.MessageType;
@@ -45,10 +46,13 @@ import org.yx.util.StringUtil;
 public final class HttpActions {
 
 	private static HttpActionSelector selector;
+
 	private static Function<String, String> nameResolver;
 	private static Predicate<String> fusing = BooleanMatcher.FALSE;
 
-	public static synchronized void init(List<HttpActionInfo> infos) {
+	public static final String PREFIX_MATCH_ENDING = "/*";
+
+	public static synchronized void init(List<KeyValuePair<HttpActionNode>> infos) {
 		if (nameResolver == null) {
 			nameResolver = new ActNameResolver(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
 		}
@@ -58,11 +62,7 @@ public final class HttpActions {
 		if (infos == null || infos.isEmpty()) {
 			return;
 		}
-		Map<String, HttpActionInfo> actMap = new HashMap<>(infos.size() * 2);
-		for (HttpActionInfo info : infos) {
-			actMap.put(solveAct(info.rawAct()), info);
-		}
-		selector.init(actMap);
+		selector.init(infos, nameResolver);
 
 		AppInfo.addObserver(info -> {
 			String fusings = AppInfo.getLatin("sumk.http.fusing", null);
@@ -70,9 +70,8 @@ public final class HttpActions {
 				HttpActions.fusing = BooleanMatcher.FALSE;
 			} else {
 				Set<String> set = new HashSet<>();
-				String[] fs = fusings.split(",");
-				for (String f : fs) {
-					String act = solveAct(f.trim());
+				for (String f : StringUtil.splitAndTrim(fusings, Const.COMMA, Const.SEMICOLON)) {
+					String act = formatActionName(f);
 					if (act.length() > 0) {
 						set.add(act);
 					}
@@ -82,46 +81,25 @@ public final class HttpActions {
 		});
 	}
 
-	public static HttpActionInfo getHttpInfo(String requestAct) {
-		String usedAct = solveAct(requestAct);
+	public static HttpActionInfo getHttpInfo(String requestAct, String method) {
+		String usedAct = formatActionName(requestAct);
 		if (usedAct == null || usedAct.isEmpty()) {
 			Logs.http().error("act is empty for {}", requestAct);
 			throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
 					M.get("sumk.http.error.actformat", "请求格式不正确", requestAct));
 		}
 		if (fusing.test(usedAct)) {
-			Logs.http().error("{} is in fusing", usedAct);
 			throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.error.fusing", "请求被熔断", usedAct));
 		}
-		return selector.getHttpInfo(usedAct);
+		return selector.getHttpInfo(usedAct, method);
 	}
 
-	public static String solveAct(String rawName) {
+	public static String formatActionName(String rawName) {
 		return nameResolver.apply(rawName);
 	}
 
-	public static List<String> acts() {
-		return selector.actNames();
-	}
-
 	public static Collection<HttpActionInfo> actions() {
-		List<String> acts = acts();
-		Collection<HttpActionInfo> infos = new ArrayList<>(acts.size());
-		HttpActionSelector s = selector;
-		for (String act : acts) {
-			infos.add(s.getHttpInfo(act));
-		}
-		return infos;
-	}
-
-	public static List<String> rawActs() {
-		Collection<HttpActionInfo> infos = actions();
-		List<String> raws = new ArrayList<>(infos.size());
-		for (HttpActionInfo info : infos) {
-			raws.add(info.rawAct());
-		}
-		raws.sort(null);
-		return raws;
+		return selector.actions();
 	}
 
 	public static List<Map<String, Object>> infos(boolean full) {
@@ -130,12 +108,12 @@ public final class HttpActions {
 		}
 		List<HttpActionInfo> infos = new ArrayList<>(actions());
 		List<Map<String, Object>> ret = new ArrayList<>(infos.size());
-		infos.sort((a, b) -> a.rawAct().compareTo(b.rawAct()));
 		for (HttpActionInfo info : infos) {
 			HttpActionNode http = info.node();
 			Map<String, Object> map = full ? ActInfoUtil.fullInfoMap(info.rawAct(), http)
 					: ActInfoUtil.simpleInfoMap(info.rawAct(), http);
 			ret.add(map);
+			map.put("formalName", info.formalName());
 			if (http.action() != null) {
 				Web web = http.action();
 				map.put("cnName", web.cnName());
@@ -158,7 +136,7 @@ public final class HttpActions {
 				if (web.tags().length > 0) {
 					map.put("tags", web.tags());
 				}
-				map.put("httpMethod", web.method());
+				map.put("httpMethod", http.methods());
 
 				if (StringUtil.isNotEmpty(http.comment())) {
 					map.put("comment", http.comment());
@@ -180,7 +158,7 @@ public final class HttpActions {
 	}
 
 	public static void setNameResolver(Function<String, String> nameResolver) {
-		HttpActions.nameResolver = nameResolver;
+		HttpActions.nameResolver = Objects.requireNonNull(nameResolver);
 	}
 
 }

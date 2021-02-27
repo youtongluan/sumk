@@ -34,8 +34,7 @@ public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<
 
 	@Override
 	public void setListener(T[] listeners) {
-		Objects.requireNonNull(listeners);
-		for (SumkListener lis : listeners) {
+		for (SumkListener lis : Objects.requireNonNull(listeners)) {
 			if (lis == null) {
 				throw new SumkException(2453451, "监听器不能为null");
 			}

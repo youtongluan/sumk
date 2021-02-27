@@ -17,4 +17,9 @@ public enum BooleanMatcher implements Predicate<String> {
 		return matched;
 	}
 
+	@Override
+	public Predicate<String> negate() {
+		return this.matched ? FALSE : TRUE;
+	}
+
 }

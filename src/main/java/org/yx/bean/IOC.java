@@ -42,19 +42,16 @@ public final class IOC {
 		return InnerIOC.pool.getBeans(null, clz);
 	}
 
+	public static <T> List<T> getBeans(String name, Class<T> clz) {
+		return InnerIOC.pool.getBeans(name, clz);
+	}
+
 	public static String info() {
 		return InnerIOC.pool.toString();
 	}
 
-	public static String[] beanNames() {
+	public static List<String> beanNames() {
 		return InnerIOC.beanNames();
-	}
-
-	public static Class<?> getTargetClassOfBean(Object bean) {
-		if (bean instanceof Boxed) {
-			return ((Boxed) bean).targetRawClass();
-		}
-		return bean.getClass();
 	}
 
 }

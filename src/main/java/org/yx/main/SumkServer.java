@@ -26,7 +26,6 @@ import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
-import org.yx.bean.Scaners;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
 import org.yx.conf.SystemConfigHolder;
@@ -102,25 +101,23 @@ public final class SumkServer {
 			args = Collections.emptyList();
 		}
 		try {
-			handleSystemArgs();
 			handleArgs(args);
+			StartContext sc = StartContext.inst();
 
-			if (StartContext.inst().get(StartConstants.THREAD_ON_DEAMON) != null) {
+			if (sc.get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
 			SumkServer.test = AppInfo.getBoolean("sumk.test", false);
-			BeanPublisher publisher = new BeanPublisher();
-			publisher.setListeners(Scaners.supplier().get());
 			List<String> ps = new ArrayList<>();
 			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
 			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
-			if (StartContext.inst().get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
+			if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
 				rpcEnable = true;
 			}
-			if (StartContext.inst().get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
+			if (sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
 				httpEnable = true;
 			}
-			publisher.publishBeans(allPackage(ps));
+			new BeanPublisher().publishBeans(allPackage(ps));
 			SumkThreadPool.scheduleThreadPoolMonitor();
 			StartContext.clear();
 		} catch (Throwable e) {
@@ -132,9 +129,6 @@ public final class SumkServer {
 			}
 			System.exit(1);
 		}
-	}
-
-	private static void handleSystemArgs() {
 	}
 
 	private static void handleArgs(Collection<String> args) {

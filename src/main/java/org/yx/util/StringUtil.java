@@ -15,11 +15,6 @@
  */
 package org.yx.util;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,25 +85,6 @@ public final class StringUtil {
 
 	public static boolean isNotEmpty(CharSequence str) {
 		return str != null && str.length() > 0;
-	}
-
-	public static String load(InputStream in) throws IOException {
-		try {
-			BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-			char[] buf = new char[1024];
-			int len = 0;
-			StringBuilder sb = new StringBuilder();
-			while ((len = reader.read(buf)) > -1) {
-				if (len == 0) {
-					continue;
-				}
-				sb.append(buf, 0, len);
-			}
-			return sb.toString();
-		} finally {
-			in.close();
-		}
-
 	}
 
 	public static String camelToUnderline(String param) {

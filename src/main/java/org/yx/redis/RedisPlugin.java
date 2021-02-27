@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import org.yx.annotation.Bean;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
-import org.yx.bean.Plugins;
 import org.yx.common.lock.Locker;
 import org.yx.common.sequence.SeqHolder;
 import org.yx.conf.AppInfo;
@@ -33,11 +32,11 @@ public class RedisPlugin implements Plugin {
 
 	@Override
 	public int order() {
-		return 1;
+		return 50;
 	}
 
 	@Override
-	public void startAsync() {
+	public void prepare() {
 		if (AppInfo.subMap("s.redis.").isEmpty()) {
 			return;
 		}
@@ -58,7 +57,10 @@ public class RedisPlugin implements Plugin {
 			throw new SumkException(-35345436, "redis启动失败");
 		}
 		Locker.init();
-		Plugins.setRedisStarted();
+	}
+
+	@Override
+	public void startAsync() {
 	}
 
 	private static void initSeqUtilCounter() {

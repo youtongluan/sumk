@@ -67,14 +67,14 @@ public class ParseParamsMethodVisitor extends MethodVisitor {
 		if (argPojos.size() < size) {
 			log.error("{}.{},real param size:{},but is {}", info.getMethod().getDeclaringClass().getName(), methodName,
 					size, argPojos.size());
-			throw new SumkException(123253, "failed to parse parameter because parameter size not satisfied");
+			throw new SumkException(-9123253, "failed to parse parameter because parameter size not satisfied");
 		}
 		for (int i = 0; i < size; i++) {
 			LocalArg pojo = argPojos.get(i);
 			if (!args[i].getDescriptor().equals(pojo.desc)) {
 				log.error("{}.{},i:{},index:{},except:{},indeed:{}", info.getMethod().getDeclaringClass().getName(),
 						methodName, i, pojo.index, args[i].getDescriptor(), pojo.desc);
-				throw new SumkException(123253, "failed to parse parameter");
+				throw new SumkException(-9123253, "failed to parse parameter");
 			}
 			argNames[i] = pojo.name;
 			signatures[i] = pojo.signature;

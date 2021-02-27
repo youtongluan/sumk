@@ -39,7 +39,7 @@ public class HostChecker {
 		return holder;
 	}
 
-	private ConcurrentHashMap<Host, Long> downUrls = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<Host, Long> downUrls = new ConcurrentHashMap<>();
 
 	public boolean isDowned(Host url) {
 		return downUrls.containsKey(url);
@@ -81,7 +81,19 @@ public class HostChecker {
 			}
 			Host[] urls = downUrls.keySet().toArray(new Host[0]);
 			int timeout = getTimeOut(urls.length);
+			long maxDownMilSecond = AppInfo.getLong("sumk.rpc.returnToAlive", 1000L * 60 * 10);
+			long now = System.currentTimeMillis();
 			for (Host url : urls) {
+				Long addTime = downUrls.get(url);
+				if (addTime != null) {
+					long passedTime = now - addTime;
+					if (passedTime > maxDownMilSecond) {
+						downUrls.remove(url);
+						Logs.rpc().debug("{} remove from checker because it has been retried for {}ms", url,
+								passedTime);
+						continue;
+					}
+				}
 				try (Socket socket = new Socket()) {
 
 					socket.connect(url.toInetSocketAddress(), timeout);

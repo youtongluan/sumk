@@ -17,11 +17,23 @@ package org.yx.redis;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import org.yx.common.Host;
 import org.yx.util.StringUtil;
 
-public final class ConfigKit {
+public final class RedisSettings {
+	private static byte[] PASSWORD_KEY = new byte[] { 121, 111, 117, 116, 111, 110, 103, 108, 117, 97, 110, 64, 115,
+			117, 109, 107 };
+
+	public static byte[] getPasswordKey() {
+		return PASSWORD_KEY;
+	}
+
+	public static void setPasswordKey(byte[] passwordKey) {
+		PASSWORD_KEY = Objects.requireNonNull(passwordKey);
+	}
+
 	public static List<Host> parseHosts(String host) {
 		String h = StringUtil.toLatin(host).replaceAll("\\s", "");
 		String[] hs = h.split(",");

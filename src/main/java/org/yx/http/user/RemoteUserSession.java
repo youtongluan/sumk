@@ -28,8 +28,8 @@ public class RemoteUserSession extends AbstractUserSession {
 	private static final byte[] NX = { 'N', 'X' };
 	private static final byte[] PX = { 'P', 'X' };
 
-	protected int maxSize = AppInfo.getInt("sumk.http.session.catch.maxsize", 5000);
-	protected int noFreshTime = AppInfo.getInt("sumk.http.session.catch.nofreshtime", 1000 * 2);
+	protected int maxSize = AppInfo.getInt("sumk.http.session.cache.maxsize", 5000);
+	protected int noFreshTime = AppInfo.getInt("sumk.http.session.cache.nofreshtime", 1000 * 2);
 
 	private final Redis redis;
 

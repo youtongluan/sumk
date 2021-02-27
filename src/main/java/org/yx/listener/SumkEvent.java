@@ -15,16 +15,14 @@
  */
 package org.yx.listener;
 
+import java.util.Objects;
+
 public class SumkEvent {
 
 	protected final Object source;
 
 	public SumkEvent(Object source) {
-		if (source == null) {
-			throw new IllegalArgumentException("null source");
-		}
-
-		this.source = source;
+		this.source = Objects.requireNonNull(source);
 	}
 
 	public Object getSource() {

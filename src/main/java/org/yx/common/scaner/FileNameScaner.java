@@ -73,7 +73,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 					}
 					file = new File(url.toURI());
 					if (!file.exists()) {
-						throw new SumkException(23423, file.getAbsolutePath() + " is not a file");
+						throw new SumkException(-9723423, file.getAbsolutePath() + " is not a file");
 					}
 					this.parseFile(classNameList, file, packagePath);
 				}

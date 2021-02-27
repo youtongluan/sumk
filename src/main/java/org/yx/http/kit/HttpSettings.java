@@ -15,8 +15,15 @@
  */
 package org.yx.http.kit;
 
+import static org.yx.http.server.HttpMethod.DELETE;
+import static org.yx.http.server.HttpMethod.GET;
+import static org.yx.http.server.HttpMethod.PATCH;
+import static org.yx.http.server.HttpMethod.POST;
+import static org.yx.http.server.HttpMethod.PUT;
+
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -48,6 +55,19 @@ public final class HttpSettings {
 	private static String testKey = DEFAULT_TEST_KEY;
 
 	private static Map<String, String> headers;
+
+	private static List<String> defaultHttpMethods = CollectionUtil.unmodifyList(new String[] { POST, GET });
+	private static final List<String> ALL_HTTP_METHODS = CollectionUtil
+			.unmodifyList(new String[] { POST, GET, DELETE, PUT, PATCH });
+	private static List<String> allHttpMethods = ALL_HTTP_METHODS;
+
+	public static List<String> allHttpMethods() {
+		return allHttpMethods;
+	}
+
+	public static List<String> defaultHttpMethods() {
+		return defaultHttpMethods;
+	}
 
 	public static String testKey() {
 		return testKey;
@@ -102,6 +122,11 @@ public final class HttpSettings {
 		return headers;
 	}
 
+	static List<String> splitAndTrim(String v) {
+		List<String> list = StringUtil.splitAndTrim(v, ",", ";");
+		return CollectionUtil.unmodifyList(list.toArray(new String[list.size()]));
+	}
+
 	public static void init() {
 		HttpSettings.errorHttpStatus = AppInfo.getInt("sumk.http.errorcode", 550);
 		String c = AppInfo.get("sumk.http.charset");
@@ -113,6 +138,11 @@ public final class HttpSettings {
 			}
 
 		}
+		String methods = AppInfo.getLatin("sumk.http.method.default", null);
+		if (methods != null) {
+			defaultHttpMethods = splitAndTrim(methods);
+		}
+		methods = null;
 		AppInfo.addObserver(info -> {
 			HttpSettings.maxReqLogSize = AppInfo.getInt("sumk.http.log.reqsize", 1000);
 			HttpSettings.maxRespLogSize = AppInfo.getInt("sumk.http.log.respsize", 5000);
@@ -130,6 +160,8 @@ public final class HttpSettings {
 			Map<String, String> map = CollectionUtil.unmodifyMap(AppInfo.subMap("s.http.response.header."));
 			HttpSettings.headers = map.isEmpty() ? null : map;
 			HttpSettings.testKey = AppInfo.get("sumk.http.testkey", DEFAULT_TEST_KEY);
+			String ms = AppInfo.getLatin("sumk.http.method.all", null);
+			HttpSettings.allHttpMethods = ms == null ? ALL_HTTP_METHODS : splitAndTrim(ms);
 		});
 	}
 

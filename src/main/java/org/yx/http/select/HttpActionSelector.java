@@ -15,10 +15,13 @@
  */
 package org.yx.http.select;
 
+import java.util.Collection;
 import java.util.List;
-import java.util.Map;
+import java.util.function.Function;
 
+import org.yx.common.KeyValuePair;
 import org.yx.http.act.HttpActionInfo;
+import org.yx.http.act.HttpActionNode;
 
 public interface HttpActionSelector {
 
@@ -28,19 +31,23 @@ public interface HttpActionSelector {
 	 * @param acts
 	 *            里面的key是解析后的act，跟@Web中定义的格式可能不同
 	 */
-	void init(Map<String, HttpActionInfo> acts);
+	void init(List<KeyValuePair<HttpActionNode>> infos, Function<String, String> nameResolver);
 
 	/**
-	 * 根据真正的act获取HttpActionInfo
+	 * 根据真正的act获取HttpActionInfo。对于url含参数等场景，可以返回HttpActionInfo子类
 	 * 
 	 * @param act
 	 *            解析后的act
+	 * @param method
+	 *            http请求的方法，比如GET、POST，参加HttpMethod接口
 	 * @return 如果没找到，可以返回默认servlet，也可以返回null
 	 */
-	HttpActionInfo getHttpInfo(String act);
+	HttpActionInfo getHttpInfo(String act, String method);
 
 	/**
-	 * @return 返回所有的接口列表（解析后的接口)
+	 * 里面的接口是不重复的，但可能存在name一样，method不一样的情况。 为了便于查看，建议对里面的顺序做排序
+	 * 
+	 * @return 返回所有的接口列表，逗号隔开的会被当成多个。
 	 */
-	List<String> actNames();
+	Collection<HttpActionInfo> actions();
 }

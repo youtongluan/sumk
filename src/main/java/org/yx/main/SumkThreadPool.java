@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.common.thread.ThreadPools;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.log.Log;
 import org.yx.log.RawLog;
 import org.yx.util.kit.Asserts;
@@ -93,7 +92,7 @@ public final class SumkThreadPool {
 				executor().execute(single);
 				single.working = 1;
 			} catch (Exception e) {
-				ConsoleLog.get("sumk.thread").error("添加定时任务失败", e);
+				RawLog.error("sumk.thread", "添加定时任务失败", e);
 			}
 		};
 		return scheduledExecutor.scheduleAtFixedRate(task, delayMS, periodMS, TimeUnit.MILLISECONDS);

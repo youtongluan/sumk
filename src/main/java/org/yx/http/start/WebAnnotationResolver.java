@@ -25,11 +25,11 @@ import org.yx.annotation.http.Web;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
-import org.yx.bean.IOC;
+import org.yx.bean.BeanKit;
+import org.yx.common.KeyValuePair;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
-import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -61,9 +61,9 @@ public final class WebAnnotationResolver {
 		}
 	}
 
-	public List<HttpActionInfo> resolve(Object bean) throws Exception {
+	public List<KeyValuePair<HttpActionNode>> resolve(Object bean) throws Exception {
 
-		Class<?> clz = IOC.getTargetClassOfBean(bean);
+		Class<?> clz = BeanKit.getTargetClass(bean);
 		if (exclude.test(clz.getName())) {
 			return null;
 		}
@@ -84,7 +84,7 @@ public final class WebAnnotationResolver {
 		}
 
 		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(httpMethods);
-		List<HttpActionInfo> infos = new ArrayList<>(mpInfos.size() * 2);
+		List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(mpInfos.size() * 2);
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			Web act = m.getAnnotation(Web.class);
@@ -95,7 +95,7 @@ public final class WebAnnotationResolver {
 				continue;
 			}
 			for (String name : names) {
-				infos.add(new HttpActionInfo(name, node, null));
+				infos.add(new KeyValuePair<>(name, node));
 			}
 		}
 		return infos;

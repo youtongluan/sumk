@@ -252,3 +252,10 @@ v2.9.8
 3、去掉sumk.db.default参数，增加s.alias.db.{name}参数
 4、BeanPropertiesWatcher接口改名为BeanInjectWatcher
 
+v2.9.9
+1、支持对配置中的redis密码进行加密
+2、ttp接口支持名称相同，但是http方法不同的情况，并且支持接口的前缀匹配。对于前缀匹配的情况，WebUtil.getUrlLeft()可以获取剩下的url内容
+3、SumkException的状态码全部改为负数，以跟BizException进行区分
+4、将redis和数据库的初始化移到Plugin的prepare阶段，同时去掉Plugins类。修改之后，startAsyn阶段的数据库和redis都已经准备好了，不需要再用Plugins来判断
+
+

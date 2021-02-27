@@ -13,24 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.http.act;
 
-import java.util.Objects;
-import java.util.function.Supplier;
+public class PrefixActionInfo extends HttpActionInfo {
+	protected final String urlStart;
 
-import org.yx.db.sql.PojoMetaListener;
-
-public final class Scaners {
-
-	private static Supplier<BeanEventListener[]> supplier = () -> new BeanEventListener[] { new BeanFactory(),
-			new PojoMetaListener() };
-
-	public static void setSupplier(Supplier<BeanEventListener[]> supplier) {
-		Scaners.supplier = Objects.requireNonNull(supplier);
+	public PrefixActionInfo(String rawAct, HttpActionNode node, String formatedName, String urlStart) {
+		super(rawAct, node, formatedName);
+		this.urlStart = urlStart;
 	}
 
-	public static Supplier<BeanEventListener[]> supplier() {
-		return supplier;
+	public String getUrlStart() {
+		return urlStart;
 	}
-
 }

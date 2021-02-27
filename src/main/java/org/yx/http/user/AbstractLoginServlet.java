@@ -40,6 +40,7 @@ import org.yx.util.UUIDSeed;
 public abstract class AbstractLoginServlet implements LoginServlet {
 
 	private static final String LOGIN_NAME = "*login*";
+	private static final String NEW_SESSION_ID = "sumk.http.session.id";
 	private UserSession session;
 
 	@Override
@@ -55,7 +56,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				return;
 			}
 			InnerHttpUtil.setRespHeader(resp, charset);
-			final String sid = createSessionId(req);
+			String sid = createSessionId(req);
 			user = getUserName(req);
 			LoginObject obj = login(sid, user, req);
 			if (obj == null) {
@@ -71,8 +72,15 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 						charset);
 				return;
 			}
+
+			Object newSid = req.getAttribute(NEW_SESSION_ID);
+			if (newSid instanceof String) {
+				Logs.http().debug("change sid {} to {}", sid, newSid);
+				sid = (String) newSid;
+			}
+
 			byte[] key = createEncryptKey(req);
-			if (!session.setSession(sid, obj.getSessionObject(), key, HttpSettings.isSingleLogin())) {
+			if (!this.setSession(req, sid, obj, key)) {
 				Logs.http().debug("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
 				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
 				return;
@@ -112,16 +120,22 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		} finally {
 			long time = System.currentTimeMillis() - beginTime;
 			HttpLogs.log(null, req, ex, time);
-			ActionContext.remove();
 			InnerHttpUtil.record(LOGIN_NAME, time, ex == null);
+			ActionContext.remove();
 		}
 
 	}
 
+	protected boolean setSession(HttpServletRequest req, String sessionId, LoginObject obj, byte[] key) {
+		if (req.getAttribute(NEW_SESSION_ID) instanceof String) {
+			return true;
+		}
+		return this.session.setSession(sessionId, obj.getSessionObject(), key, HttpSettings.isSingleLogin());
+	}
+
 	protected boolean acceptMethod(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-		String method = req.getMethod().toUpperCase();
-		if (!"GET".equals(method) && !"POST".equals(method)) {
-			resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, method + " not allowd");
+		if (!HttpSettings.defaultHttpMethods().contains(req.getMethod())) {
+			resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED, req.getMethod() + " not allowd");
 			return false;
 		}
 		return true;

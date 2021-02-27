@@ -39,7 +39,7 @@ public final class Jedis2Factorys {
 
 	public static Function<RedisConfig, JedisPool> getJedisPoolFactory() {
 		return jedisPoolFactory != null ? jedisPoolFactory : conf -> {
-			List<Host> hosts = ConfigKit.parseHosts(conf.hosts());
+			List<Host> hosts = RedisSettings.parseHosts(conf.hosts());
 			Host h = hosts.get(0);
 			try {
 
@@ -59,7 +59,7 @@ public final class Jedis2Factorys {
 
 	public static Function<RedisConfig, JedisSentinelPool> getSentinelPoolFactory() {
 		return sentinelPoolFactory != null ? sentinelPoolFactory : config -> {
-			List<Host> hosts = ConfigKit.parseHosts(config.hosts());
+			List<Host> hosts = RedisSettings.parseHosts(config.hosts());
 			Set<String> sentinels = new HashSet<>();
 			for (Host h : hosts) {
 				sentinels.add(h.toString());
@@ -77,7 +77,7 @@ public final class Jedis2Factorys {
 
 	public static Function<RedisConfig, Redis2Cluster> getJedisClusterFactory() {
 		return jedisClusterFactory != null ? jedisClusterFactory : config -> {
-			List<Host> hosts = ConfigKit.parseHosts(config.hosts());
+			List<Host> hosts = RedisSettings.parseHosts(config.hosts());
 			Set<HostAndPort> hps = new HashSet<>();
 			for (Host h : hosts) {
 				hps.add(new HostAndPort(h.ip(), h.port()));

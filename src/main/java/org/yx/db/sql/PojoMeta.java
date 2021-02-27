@@ -125,13 +125,20 @@ public final class PojoMeta implements Cloneable {
 		return ttlSec;
 	}
 
+	private List<ColumnMeta> unmodifyList(List<ColumnMeta> source) {
+		if (source.size() > 1) {
+			return CollectionUtil.unmodifyList(source.toArray(new ColumnMeta[source.size()]));
+		}
+		return CollectionUtil.unmodifyList(source);
+	}
+
 	public PojoMeta(Table table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
 		this.cacheType = table.cacheType();
 		this.fieldMetas = CollectionUtil.unmodifyList(fieldMetas);
 		this.pojoClz = pojoClz;
-		List<ColumnMeta> rids = new ArrayList<>(4);
-		List<ColumnMeta> pids = new ArrayList<>(4);
-		List<ColumnMeta> ctimes = new ArrayList<>(2);
+		List<ColumnMeta> rids = new ArrayList<>();
+		List<ColumnMeta> pids = new ArrayList<>();
+		List<ColumnMeta> ctimes = new ArrayList<>();
 		for (ColumnMeta m : this.fieldMetas) {
 			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
 			filedNameMap.put(m.getFieldName().toLowerCase(), m);
@@ -150,16 +157,16 @@ public final class PojoMeta implements Cloneable {
 				}
 			}
 		}
-		this.cacheIDs = CollectionUtil.unmodifyList(rids);
-		this.databaseIds = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids);
-		this.createColumns = CollectionUtil.unmodifyList(ctimes);
+		this.cacheIDs = unmodifyList(rids);
+		this.databaseIds = pids.equals(rids) ? this.cacheIDs : unmodifyList(pids);
+		this.createColumns = unmodifyList(ctimes);
 		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class), this.fieldMetas);
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}
 
 	private SoftDeleteParser softDeleteParser() {
-		return (SoftDeleteParser) StartContext.inst().getOrCreate(SoftDeleteParser.class, new SoftDeleteParserImpl());
+		return StartContext.inst().get(SoftDeleteParser.class, new SoftDeleteParserImpl());
 	}
 
 	private void parseTable(Table table) {

@@ -17,6 +17,9 @@ package org.yx.exception;
 
 import org.yx.conf.AppInfo;
 
+/**
+ * 它的code最好要大于0，并且避开3位数，因为内置的错误码都是3位数
+ */
 public class BizException extends CodeException {
 
 	private static final long serialVersionUID = 453453454L;

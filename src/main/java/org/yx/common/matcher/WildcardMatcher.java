@@ -83,15 +83,15 @@ public class WildcardMatcher implements Predicate<String> {
 	}
 
 	public List<String> matchStarts() {
-		return matchStarts == null ? null : CollectionUtil.unmodifyList(matchStarts);
+		return CollectionUtil.unmodifyList(matchStarts);
 	}
 
 	public List<String> matchEnds() {
-		return matchEnds == null ? null : CollectionUtil.unmodifyList(matchEnds);
+		return CollectionUtil.unmodifyList(matchEnds);
 	}
 
 	public List<String> contains() {
-		return contains == null ? null : CollectionUtil.unmodifyList(contains);
+		return CollectionUtil.unmodifyList(contains);
 	}
 
 	@Override

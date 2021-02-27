@@ -15,8 +15,6 @@
  */
 package org.yx.http.handler;
 
-import java.io.InputStream;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.annotation.Bean;
@@ -52,7 +50,6 @@ public class ReqDataHandler implements HttpHandler {
 			ctx.data(data);
 			return;
 		}
-		InputStream in = req.getInputStream();
-		ctx.data(InnerHttpUtil.extractData(in, req.getContentLength()));
+		ctx.data(InnerHttpUtil.extractData(req.getInputStream(), req.getContentLength()));
 	}
 }

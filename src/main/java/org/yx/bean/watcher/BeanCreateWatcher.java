@@ -17,7 +17,9 @@ package org.yx.bean.watcher;
 
 import java.util.List;
 
-public interface BeanCreateWatcher extends BeanWatcher {
+import org.yx.common.Ordered;
+
+public interface BeanCreateWatcher extends Ordered {
 
 	void afterCreate(List<Object> beans);
 }

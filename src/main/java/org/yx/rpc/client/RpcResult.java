@@ -24,21 +24,17 @@ import org.yx.util.S;
 public final class RpcResult {
 	static RpcResult timeout(Req req) {
 		if (req == null) {
-			return new RpcResult(null, new SoaException(RpcErrorCode.TIMEOUT, "服务处理超时", "req is null"), null);
+			return new RpcResult(null, new SoaException(RpcErrorCode.TIMEOUT, "服务处理超时", "req is null"));
 		}
 		long timeout = System.currentTimeMillis() - req.getStart();
 		String msg = "timeout in " + timeout + "ms,sn=" + req.getSn();
 		SoaException exception = new SoaException(RpcErrorCode.TIMEOUT, "服务处理超时", msg);
-		return new RpcResult(null, exception, req.getSn());
+		return new RpcResult(null, exception);
 	}
 
 	static RpcResult sendFailed(Req req, Throwable e) {
-		return new RpcResult(null, parseException(e), req == null ? null : req.getSn());
+		return new RpcResult(null, parseException(e));
 	}
-
-	private final String json;
-	private final CodeException exception;
-	private String sn;
 
 	static CodeException parseException(Throwable e) {
 		if (e == null) {
@@ -56,14 +52,12 @@ public final class RpcResult {
 		return (CodeException) e;
 	}
 
+	final String json;
+	final CodeException exception;
+
 	public RpcResult(String json, CodeException exception) {
 		this.json = exception != null ? null : json;
 		this.exception = parseException(exception);
-	}
-
-	public RpcResult(String json, CodeException exception, String sn) {
-		this(json, exception);
-		this.sn = sn;
 	}
 
 	public CodeException exception() {
@@ -76,10 +70,6 @@ public final class RpcResult {
 		}
 	}
 
-	public String sn() {
-		return this.sn;
-	}
-
 	public String json() {
 		return json;
 	}
@@ -90,36 +80,4 @@ public final class RpcResult {
 		}
 		return S.json().fromJson(json, clz);
 	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((exception == null) ? 0 : exception.hashCode());
-		result = prime * result + ((json == null) ? 0 : json.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RpcResult other = (RpcResult) obj;
-		if (exception == null) {
-			if (other.exception != null)
-				return false;
-		} else if (!exception.equals(other.exception))
-			return false;
-		if (json == null) {
-			if (other.json != null)
-				return false;
-		} else if (!json.equals(other.json))
-			return false;
-		return true;
-	}
-
 }

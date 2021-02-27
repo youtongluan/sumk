@@ -37,6 +37,7 @@ import javax.servlet.annotation.MultipartConfig;
 
 import org.yx.annotation.http.SumkFilter;
 import org.yx.annotation.http.SumkServlet;
+import org.yx.bean.BeanKit;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
@@ -94,7 +95,7 @@ public class SumkLoaderListener implements ServletContextListener {
 	private void addServlets(ServletContext context) {
 		List<Servlet> servlets = IOC.getBeans(Servlet.class);
 		for (Servlet bean : servlets) {
-			Class<?> targetClz = IOC.getTargetClassOfBean(bean);
+			Class<?> targetClz = BeanKit.getTargetClass(bean);
 			SumkServlet sumk = targetClz.getAnnotation(SumkServlet.class);
 			if (sumk == null) {
 				continue;
@@ -161,7 +162,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			return;
 		}
 		for (Filter bean : filters) {
-			Class<?> targetClz = IOC.getTargetClassOfBean(bean);
+			Class<?> targetClz = BeanKit.getTargetClass(bean);
 			SumkFilter sumk = targetClz.getAnnotation(SumkFilter.class);
 			if (sumk == null) {
 				continue;

@@ -89,7 +89,7 @@ public final class RpcActionNode extends CalleeNode {
 
 	public static void checkNode(String api, CalleeNode node) {
 		if (node == null) {
-			throw new SumkException(123546, "[" + api + "] is not a valid interface");
+			throw new SumkException(123546, "[" + api + "] is not found in this server");
 		}
 		if (node.overflowThreshold()) {
 			throw BizException.create(RpcErrorCode.THREAD_THRESHOLD_OVER, "微服务限流降级");

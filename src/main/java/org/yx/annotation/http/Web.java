@@ -22,7 +22,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.yx.http.MessageType;
-import org.yx.http.server.HttpMethod;
 
 @Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
@@ -66,5 +65,5 @@ public @interface Web {
 
 	int toplimit() default 0;
 
-	String[] method() default { HttpMethod.POST, HttpMethod.GET };
+	String[] method() default {};
 }

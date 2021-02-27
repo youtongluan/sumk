@@ -37,6 +37,7 @@ import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
+import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.UserSession;
@@ -104,7 +105,9 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		if (!"1".equals(req.getParameter("acts"))) {
 			return;
 		}
-		writer.append(String.valueOf(HttpActions.acts()));
+		for (HttpActionInfo act : HttpActions.actions()) {
+			writer.append(act.rawAct()).append("  ");
+		}
 		writer.append(TYPE_SPLIT);
 	}
 

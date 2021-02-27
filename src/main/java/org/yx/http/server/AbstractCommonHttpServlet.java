@@ -27,9 +27,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.yx.conf.AppInfo;
+import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
-import org.yx.log.Logs;
 
 public abstract class AbstractCommonHttpServlet extends GenericServlet {
 
@@ -51,22 +51,13 @@ public abstract class AbstractCommonHttpServlet extends GenericServlet {
 			}
 		}
 		String method = req.getMethod().toUpperCase();
-		if (!HttpMethod.METHODS.contains(method)) {
+		if (!HttpSettings.allHttpMethods().contains(method)) {
 			if (METHOD_OPTIONS.equals(method)) {
 				this.doOptions(req, resp);
 				return;
 			}
-			if (AppInfo.getBoolean("sumk.http.specialmethod.".concat(method.toLowerCase()), true)) {
-				Logs.http().info("本系统不支持{}类型的http请求", method);
-				resp.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED,
-						AppInfo.get("sumk.http.method.notsupport", "NOT SUPPORTED"));
-				return;
-			}
-		}
-		if (!AppInfo.getBoolean("sumk.http.method.".concat(method.toLowerCase()), true)) {
-			Logs.http().info("{}的{}方法被禁用了", req.getPathInfo(), method);
-			resp.sendError(HttpServletResponse.SC_METHOD_NOT_ALLOWED,
-					AppInfo.get("sumk.http.method.notallow", "NOT ALLOWED"));
+			InnerHttpUtil.sendError(resp, HttpErrorCode.METHOD_UNSUPPORT,
+					AppInfo.get("sumk.http.method.notsupport", "NOT SUPPORTED"), AppInfo.UTF8);
 			return;
 		}
 		this.handle(req, resp);
@@ -79,7 +70,7 @@ public abstract class AbstractCommonHttpServlet extends GenericServlet {
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
-		for (String m : HttpMethod.METHODS) {
+		for (String m : HttpSettings.allHttpMethods()) {
 			sb.append(m).append(", ");
 		}
 		sb.append(METHOD_OPTIONS);

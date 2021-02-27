@@ -29,6 +29,7 @@ import org.yx.common.action.ActStatis;
 import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
+import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.MessageType;
 import org.yx.log.Logs;
@@ -70,7 +71,7 @@ public final class InnerHttpUtil {
 			output.write(temp, 0, n);
 			count += n;
 			if (count > HttpSettings.maxHttpBody()) {
-				throw HttpException.create(HttpErrorCode.BODY_TOO_BIG, "请求数据太长");
+				throw BizException.create(HttpErrorCode.BODY_TOO_BIG, "请求数据太长");
 			}
 		}
 		byte[] bs = output.extractHttpBodyData();
@@ -123,6 +124,10 @@ public final class InnerHttpUtil {
 
 	public static void startContext(HttpServletRequest req, HttpServletResponse resp, String act) {
 		String traceId = UUIDSeed.seq18();
+		String pre = req.getHeader("trace-action");
+		if (pre != null && pre.length() > 0 && AppInfo.getBoolean("sumk.http.traceid.pre.allow", true)) {
+			traceId = String.join(".", pre, traceId);
+		}
 		ActionContext.newContext(act, traceId,
 				SumkServer.isTest() && "1".equals(req.getParameter(HttpSettings.testKey())));
 		resp.setHeader(HttpSettings.traceHeaderName(), traceId);

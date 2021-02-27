@@ -23,6 +23,7 @@ import org.yx.exception.CodeException;
 import org.yx.util.S;
 
 public abstract class AbstractRpcFuture implements RpcFuture {
+
 	protected final RpcLocker locker;
 
 	public AbstractRpcFuture(RpcLocker locker) {
@@ -60,11 +61,17 @@ public abstract class AbstractRpcFuture implements RpcFuture {
 		return resp.json();
 	}
 
+	@Override
 	public Host getServer() {
 		return this.locker.url();
 	}
 
 	public LogContext getOriginLogContext() {
 		return this.locker.originLogContext();
+	}
+
+	@Override
+	public String getRequestId() {
+		return this.locker.req.getSn();
 	}
 }

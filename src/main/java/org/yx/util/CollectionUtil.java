@@ -180,11 +180,15 @@ public final class CollectionUtil {
 		return ret;
 	}
 
+	/**
+	 * 返回一个不可变的list，这个list是原来的副本，它不会保存原来col的引用
+	 * 
+	 * @param col
+	 *            原始集合
+	 * @return 返回值不可修改，且不为null
+	 */
 	public static <T> List<T> unmodifyList(Collection<T> col) {
-		if (col == null) {
-			return null;
-		}
-		if (col.isEmpty()) {
+		if (col == null || col.isEmpty()) {
 			return Collections.emptyList();
 		}
 		if (col.size() == 1) {
@@ -193,11 +197,15 @@ public final class CollectionUtil {
 		return new UnmodifiableArrayList<>(col);
 	}
 
+	/**
+	 * 支持参数为null
+	 * 
+	 * @param arr
+	 *            原始数组，对原始数组的修改有可能会修改本集合
+	 * @return 返回值不可修改，且不为null
+	 */
 	public static <T> List<T> unmodifyList(T[] arr) {
-		if (arr == null) {
-			return null;
-		}
-		if (arr.length == 0) {
+		if (arr == null || arr.length == 0) {
 			return Collections.emptyList();
 		}
 		if (arr.length == 1) {
@@ -206,11 +214,15 @@ public final class CollectionUtil {
 		return new UnmodifiableArrayList<>(arr);
 	}
 
+	/**
+	 * 本方法的目标是尽量减少内存消耗，适用于需要在内存中保持比较长的对象。
+	 * 
+	 * @param m
+	 *            原始map
+	 * @return 返回值不可修改，且不为null
+	 */
 	public static <K, V> Map<K, V> unmodifyMap(Map<? extends K, ? extends V> m) {
-		if (m == null) {
-			return null;
-		}
-		if (m.isEmpty()) {
+		if (m == null || m.isEmpty()) {
 			return Collections.emptyMap();
 		}
 		if (m.size() == 1) {

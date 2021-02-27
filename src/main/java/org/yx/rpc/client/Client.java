@@ -54,7 +54,7 @@ public final class Client {
 
 	private boolean backup;
 	private int tryCount;
-	private Consumer<RpcResult> callback;
+	private Consumer<RpcCallInfo> callback;
 
 	public Client(String api) {
 		this.api = Objects.requireNonNull(api).trim();
@@ -96,7 +96,7 @@ public final class Client {
 		return this;
 	}
 
-	public Client callback(Consumer<RpcResult> callback) {
+	public Client callback(Consumer<RpcCallInfo> callback) {
 		this.callback = callback;
 		return this;
 	}
@@ -255,7 +255,7 @@ public final class Client {
 			locker.url(LOCAL);
 			Response resp = LocalRequestHandler.inst.handler(request, node);
 			ActionContext.store(context);
-			locker.wakeupAndLog(new RpcResult(resp.json(), resp.exception(), request.getSn()));
+			locker.wakeupAndLog(new RpcResult(resp.json(), resp.exception()));
 		} finally {
 			ActionContext.store(context);
 		}

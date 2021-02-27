@@ -15,6 +15,7 @@
  */
 package org.yx.rpc.client;
 
+import org.yx.common.Host;
 import org.yx.exception.CodeException;
 
 public interface RpcFuture {
@@ -29,7 +30,9 @@ public interface RpcFuture {
 	<T> T getOrException(Class<T> clz) throws CodeException;
 
 	/**
-	 * @return 等待返回，直到超时
+	 * 等待返回，直到超时
+	 * 
+	 * @return 如果发生异常就返回null
 	 * 
 	 */
 	String opt();
@@ -38,5 +41,14 @@ public interface RpcFuture {
 
 	RpcResult awaitForRpcResult();
 
+	/**
+	 * 这个方法不会等待
+	 * 
+	 * @return 如果已经收到返回值，就返回。否则返回null
+	 */
 	RpcResult rpcResult();
+
+	String getRequestId();
+
+	Host getServer();
 }

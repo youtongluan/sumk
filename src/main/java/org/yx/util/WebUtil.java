@@ -22,6 +22,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.yx.http.HttpHeaderName;
+import org.yx.http.act.HttpActions;
 import org.yx.http.handler.MultipartHolder;
 import org.yx.http.handler.MultipartItem;
 import org.yx.http.handler.WebContext;
@@ -179,5 +180,25 @@ public final class WebUtil {
 			return null;
 		}
 		return WebSessions.loadUserSession().getEncryptKey(sessionId);
+	}
+
+	/**
+	 * @return 前缀匹配的方式里，获取剩余的url
+	 */
+	public static String getUrlLeft() {
+		WebContext ctx = context();
+		String action = ctx.actionInfo().formalName();
+		if (!action.endsWith(HttpActions.PREFIX_MATCH_ENDING)) {
+			return null;
+		}
+		String p = ctx.httpRequest().getPathInfo();
+		if (p == null) {
+			return null;
+		}
+		p = HttpActions.formatActionName(p);
+		if (p.length() < action.length()) {
+			return "";
+		}
+		return p.substring(action.length() - 1);
 	}
 }

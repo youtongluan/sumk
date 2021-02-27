@@ -59,14 +59,15 @@ public class JettyHttpsServer extends JettyServer {
 		sslContextFactory.setTrustAll(AppInfo.getBoolean("sumk.jetty.ssl.trustAll", false));
 
 		Logs.http().info("using https");
-		return new ConnectionFactory[] { new SslConnectionFactory(sslContextFactory, "http/1.1"),
+		return new ConnectionFactory[] {
+				new SslConnectionFactory(sslContextFactory, AppInfo.get("sumk.jetty.ssl.protocol", "http/1.1")),
 				new HttpConnectionFactory() };
 	}
 
 	private String get(String name) {
 		String v = AppInfo.get(name, null);
 		if (v == null) {
-			throw new SumkException(-123, name + " is null!!! please set it");
+			throw new SumkException(-12391763, name + " is null!!! please set it");
 		}
 		return v;
 	}

@@ -22,13 +22,15 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-/**
- * bean解析时的优先级，值越小越靠前
- */
 @Target({ TYPE })
 @Retention(RUNTIME)
 @Documented
 public @interface Priority {
 
+	/**
+	 * bean解析时的优先级，值越小越靠前
+	 * 
+	 * @return 如果没有用这个注解，默认为Const.DEFAULT_ORDER
+	 */
 	int value();
 }

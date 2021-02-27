@@ -22,7 +22,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
-import org.yx.bean.Plugins;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
@@ -30,8 +29,6 @@ import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
 
 public class PluginHandler {
-
-	public static final PluginHandler instance = new PluginHandler();
 
 	public void start() {
 		startBeans();
@@ -55,13 +52,13 @@ public class PluginHandler {
 					latch.countDown();
 					Logs.ioc().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
-					Logs.ioc().warn(plugin.getClass().getSimpleName() + " start failed", e);
+					Logs.ioc().error(plugin.getClass().getSimpleName() + " start failed", e);
 					System.exit(1);
 				}
 			});
 		}
 		preHotCoreThreads(executor);
-		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 300);
+		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 600);
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
 				Logs.ioc().error("plugins failed to start in {}ms", timeout);
@@ -72,7 +69,6 @@ public class PluginHandler {
 			Thread.currentThread().interrupt();
 			System.exit(1);
 		}
-		Plugins.setAllStarted();
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();
 		}

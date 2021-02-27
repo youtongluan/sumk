@@ -15,15 +15,15 @@
  */
 package org.yx.rpc.client.route;
 
-import org.yx.common.Host;
 import org.yx.rpc.data.RouteInfo;
 
 public class RouteEvent {
 	private final RouteEventType type;
+	private final String nodeName;
 	private final RouteInfo route;
 
-	public Host getUrl() {
-		return route.host();
+	public String getNodeName() {
+		return nodeName;
 	}
 
 	public RouteInfo getRoute() {
@@ -34,23 +34,23 @@ public class RouteEvent {
 		return type;
 	}
 
-	private RouteEvent(RouteEventType type, RouteInfo route) {
+	private RouteEvent(RouteEventType type, String nodeName, RouteInfo route) {
 		this.type = type;
+		this.nodeName = nodeName;
 		this.route = route;
 	}
 
-	public static RouteEvent createEvent(RouteInfo info) {
-		return new RouteEvent(RouteEventType.CREATE, info);
+	public static RouteEvent createEvent(String nodeName, RouteInfo info) {
+		return new RouteEvent(RouteEventType.CREATE, nodeName, info);
 	}
 
-	public static RouteEvent deleteEvent(Host url) {
-		return new RouteEvent(RouteEventType.DELETE, new RouteInfo(url));
+	public static RouteEvent deleteEvent(String nodeName) {
+		return new RouteEvent(RouteEventType.DELETE, nodeName, null);
 	}
 
-	public static RouteEvent modifyEvent(RouteInfo info) {
-		return new RouteEvent(RouteEventType.MODIFY, info);
+	public static RouteEvent modifyEvent(String nodeName, RouteInfo info) {
+		return new RouteEvent(RouteEventType.MODIFY, nodeName, info);
 	}
-
 }
 
 enum RouteEventType {

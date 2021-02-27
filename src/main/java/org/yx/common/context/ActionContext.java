@@ -160,7 +160,7 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 		try {
 			return (ActionContext) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new SumkException(234235, "clone not supported");
+			throw new SumkException(-8234235, "clone not supported");
 		}
 	}
 }
