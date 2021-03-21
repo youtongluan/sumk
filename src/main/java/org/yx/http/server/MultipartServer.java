@@ -31,7 +31,7 @@ import org.yx.util.M;
  * @author Administrator
  */
 @Bean
-@SumkServlet(value = { "/upload/*" }, loadOnStartup = -1, appKey = "upload")
+@SumkServlet(path = { "/upload/*" }, loadOnStartup = -1, appKey = "upload")
 @MultipartConfig(location = "", maxFileSize = -1L, maxRequestSize = -1L, fileSizeThreshold = -1)
 public class MultipartServer extends AbstractActionServer {
 
@@ -49,11 +49,6 @@ public class MultipartServer extends AbstractActionServer {
 			log.error("the MIME of act is " + MULTIPART_FORMDATA + ",not " + contextType);
 			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE,
 					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTIPART_FORMDATA, wc.rawAct()));
-		}
-		if (wc.node().upload() == null) {
-			log.error("{}缺少 @upload", wc.rawAct());
-			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS,
-					M.get("sumk.http.upload.error.annocation", "不是上传接口", wc.rawAct()));
 		}
 		try {
 			HttpHandlerChain.multipart.handle(wc);

@@ -15,22 +15,13 @@
  */
 package org.yx.db.sql;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.yx.annotation.Exclude;
-import org.yx.annotation.db.Column;
-import org.yx.annotation.db.Table;
+import org.yx.annotation.spec.TableSpec;
 import org.yx.exception.SumkException;
-import org.yx.log.Logs;
-import org.yx.util.S;
 
 public class PojoMetaHolder {
 
@@ -87,33 +78,8 @@ public class PojoMetaHolder {
 		return null;
 	}
 
-	public static void resolve(Class<?> pojoClz) {
-		Table table = pojoClz.getAnnotation(Table.class);
-		if (table == null) {
-			return;
-		}
-
-		Field[] fs = S.bean().getFields(pojoClz);
-		Map<String, Field> map = new LinkedHashMap<>();
-		for (Field f : fs) {
-			if (f.isAnnotationPresent(Exclude.class)) {
-				continue;
-			}
-			map.putIfAbsent(f.getName(), f);
-		}
-		Collection<Field> set = map.values();
-		List<ColumnMeta> list = new ArrayList<>(set.size());
-		for (Field f : set) {
-			Column c = f.getAnnotation(Column.class);
-			f.setAccessible(true);
-			list.add(new ColumnMeta(f, c));
-		}
-		if (list.isEmpty()) {
-			Logs.db().debug("{}'s column is empty", pojoClz.getName());
-			return;
-		}
-		Collections.sort(list);
-		PojoMeta tm = new PojoMeta(table, list.toArray(new ColumnMeta[list.size()]), pojoClz);
+	public static void register(Class<?> pojoClz, TableSpec table, List<ColumnMeta> columns) {
+		PojoMeta tm = new PojoMeta(table, columns.toArray(new ColumnMeta[columns.size()]), pojoClz);
 		if (tm.databaseIds.isEmpty()) {
 			throw new SumkException(56456456, pojoClz.getName() + " has no database primary key");
 		}

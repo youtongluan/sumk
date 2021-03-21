@@ -49,7 +49,8 @@ public class SoftDeleteParserImpl implements SoftDeleteParser {
 	}
 
 	@Override
-	public SoftDeleteMeta parse(SoftDelete sd, List<ColumnMeta> fieldMetas) {
+	public SoftDeleteMeta parse(Class<?> pojoClz, List<ColumnMeta> fieldMetas) {
+		SoftDelete sd = pojoClz.getAnnotation(SoftDelete.class);
 		if (sd == null) {
 			return null;
 		}

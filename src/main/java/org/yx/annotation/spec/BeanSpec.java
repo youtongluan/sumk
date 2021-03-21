@@ -13,9 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.annotation.spec;
 
-import org.yx.listener.SumkListener;
+public class BeanSpec {
+	private final String value;
 
-public interface BeanEventListener extends SumkListener {
+	public BeanSpec(String value) {
+		this.value = value;
+	}
+
+	public String value() {
+		return this.value;
+	}
 }

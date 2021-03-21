@@ -13,32 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.http;
+package org.yx.annotation.spec;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class SoaClientConfigSpec {
 
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface SumkServlet {
-	/**
-	 * @return servlet的名字
-	 */
-	String name() default "";
+	private final int timeout;
+	private final int tryCount;
 
-	/**
-	 * @return 访问路径
-	 */
-	String[] path();
+	public SoaClientConfigSpec(int timeout, int tryCount) {
+		this.timeout = timeout;
+		this.tryCount = tryCount;
+	}
 
-	int loadOnStartup() default -1;
+	public int timeout() {
+		return this.timeout;
+	}
 
-	boolean asyncSupported() default false;
-
-	String appKey() default "";
-
+	public int tryCount() {
+		return this.tryCount;
+	}
 }

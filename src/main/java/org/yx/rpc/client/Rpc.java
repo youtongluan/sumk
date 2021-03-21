@@ -26,7 +26,6 @@ import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
 import org.yx.util.S;
-import org.yx.validate.Validators;
 
 public final class Rpc {
 	private Rpc() {
@@ -57,7 +56,6 @@ public final class Rpc {
 		try {
 			appId = AppInfo.appId("sumk");
 			RpcSettings.init();
-			Validators.init();
 			Rpc.clientExecutor = StartContext.inst().getExecutorService("sumk.rpc.client.executor");
 			String zkUrl = AppInfo.getClinetZKUrl();
 			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);

@@ -22,7 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.yx.annotation.rpc.Soa;
+import org.yx.annotation.spec.SoaSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.common.action.ActInfoUtil;
 import org.yx.conf.AppInfo;
 import org.yx.main.SumkServer;
@@ -85,7 +86,7 @@ public final class RpcActions {
 			}
 			Map<String, Object> map = full ? ActInfoUtil.fullInfoMap(name, rpc) : ActInfoUtil.simpleInfoMap(name, rpc);
 			ret.add(map);
-			Soa soa = rpc.getAnnotation(Soa.class);
+			SoaSpec soa = Specs.extractSoa(rpc.rawMethod());
 			if (soa != null) {
 				map.put("cnName", soa.cnName());
 				if (StringUtil.isNotEmpty(rpc.comment())) {

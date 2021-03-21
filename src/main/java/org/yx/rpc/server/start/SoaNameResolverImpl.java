@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.yx.annotation.rpc.Soa;
+import org.yx.annotation.spec.SoaSpec;
 import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
 
@@ -32,7 +32,7 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 	}
 
 	@Override
-	public List<String> solve(Class<?> clz, Method m, Soa soa) {
+	public List<String> solve(Class<?> clz, Method m, SoaSpec soa) {
 		String soaName = soa.value();
 		if (soaName == null || soaName.isEmpty()) {
 			soaName = m.getName();
@@ -56,7 +56,7 @@ public class SoaNameResolverImpl implements SoaNameResolver {
 		return ret;
 	}
 
-	public String solve(String soaName, Soa soa) {
+	public String solve(String soaName, SoaSpec soa) {
 		StringBuilder sb = new StringBuilder();
 		if (soa.appIdPrefix() && this.appId != null) {
 			sb.append(this.appId).append('.');

@@ -13,19 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.rpc;
+package org.yx.http.act;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+public class PrefixMappingActionInfo extends AbstractActionInfo {
+	protected final String urlStart;
 
-@Target({ ElementType.METHOD })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface SoaClient {
+	public PrefixMappingActionInfo(String rawAct, HttpActionNode node, String formatedName, String urlStart) {
+		super(rawAct, node, formatedName);
+		this.urlStart = urlStart;
+	}
 
-	int timeout() default -1;
+	public String getUrlStart() {
+		return urlStart;
+	}
 
+	@Override
+	public boolean match(String act, String method) {
+		return act.startsWith(this.urlStart) && node.acceptMethod(method);
+	}
 }

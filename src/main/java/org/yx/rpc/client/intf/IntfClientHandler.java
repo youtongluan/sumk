@@ -22,7 +22,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.yx.annotation.rpc.SoaClient;
+import org.yx.annotation.spec.SoaClientConfigSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.common.json.JsonTypes;
 import org.yx.rpc.client.Client;
 import org.yx.rpc.client.Rpc;
@@ -32,18 +33,18 @@ import org.yx.util.S;
 public class IntfClientHandler implements InvocationHandler {
 
 	protected final String prefix;
-	protected final Map<String, SoaClient> map;
+	protected final Map<String, SoaClientConfigSpec> map;
 
 	public IntfClientHandler(String prefix, Class<?> intf) {
 		this.prefix = prefix;
 		this.map = buildClientMap(intf);
 	}
 
-	protected Map<String, SoaClient> buildClientMap(Class<?> intf) {
-		Map<String, SoaClient> tmp = new HashMap<>();
+	protected Map<String, SoaClientConfigSpec> buildClientMap(Class<?> intf) {
+		Map<String, SoaClientConfigSpec> tmp = new HashMap<>();
 		Method[] ms = intf.getMethods();
 		for (Method m : ms) {
-			SoaClient sc = m.getAnnotation(SoaClient.class);
+			SoaClientConfigSpec sc = Specs.extractSoaClientConfig(m);
 			if (sc != null) {
 				tmp.put(m.getName(), sc);
 			}
@@ -69,12 +70,16 @@ public class IntfClientHandler implements InvocationHandler {
 	}
 
 	protected Object onInvoke(Object proxy, Method method, Object[] args) throws Exception {
-		SoaClient sc = map.get(method.getName());
-		int timeout = sc != null ? sc.timeout() : -1;
+		SoaClientConfigSpec sc = map.get(method.getName());
 		Client client = Rpc.create(getApi(method));
 		client.paramInArray(args);
-		if (timeout > 0) {
-			client.timeout(timeout);
+		if (sc != null) {
+			if (sc.timeout() > 0) {
+				client.timeout(sc.timeout());
+			}
+			if (sc.tryCount() > 0) {
+				client.tryCount(sc.tryCount());
+			}
 		}
 		String json = client.execute().getOrException();
 		if (json == null || method.getReturnType() == Void.TYPE) {

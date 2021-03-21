@@ -35,7 +35,7 @@ import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.TypePath;
-import org.yx.annotation.Box;
+import org.yx.annotation.spec.Specs;
 
 public class ProxyClassVistor extends ClassVisitor {
 
@@ -86,8 +86,7 @@ public class ProxyClassVistor extends ClassVisitor {
 		}
 		Method method = queryMethod(name, desc);
 		if (method != null) {
-			Box dbBiz = method.getAnnotation(Box.class);
-			if (dbBiz == null) {
+			if (Specs.extractBox(method) == null) {
 				return null;
 			}
 

@@ -16,36 +16,31 @@
 package org.yx.bean;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
-import org.yx.annotation.Bean;
-import org.yx.conf.AppInfo;
+import org.yx.annotation.spec.BeanSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.exception.SumkException;
-import org.yx.main.StartConstants;
 
-public class BeanFactory extends AbstractBeanListener {
-
-	public BeanFactory() {
-		super(AppInfo.get(StartConstants.IOC_PACKAGES));
-		this.valid = true;
-	}
+public class BeanFactory implements Consumer<Class<?>> {
 
 	@Override
-	public void onListen(BeanEvent event) {
+	public void accept(Class<?> clz) {
 		try {
-			Class<?> clz = event.clz();
-			Bean b = clz.getAnnotation(Bean.class);
-			if (b != null) {
-				if (FactoryBean.class.isAssignableFrom(clz)) {
-					FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
-					putFactoryBean(factory.beans());
-				} else {
-					InnerIOC.putClass(b.value(), clz);
-				}
+			BeanSpec b = Specs.extractBean(clz);
+			if (b == null) {
+				return;
+			}
+			if (FactoryBean.class.isAssignableFrom(clz)) {
+				FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
+				putFactoryBean(factory.beans());
+			} else {
+				InnerIOC.putClass(b.value(), clz);
 			}
 		} catch (RuntimeException e) {
 			throw e;
 		} catch (Exception e) {
-			throw new SumkException(-345365, "IOC error on " + event.getSource(), e);
+			throw new SumkException(-345365, "IOC error on " + clz, e);
 		}
 
 	}

@@ -28,9 +28,8 @@ import java.util.Set;
 import java.util.function.IntFunction;
 
 import org.yx.annotation.db.AutoCreateTime;
-import org.yx.annotation.db.SoftDelete;
-import org.yx.annotation.db.Table;
 import org.yx.annotation.doc.Comment;
+import org.yx.annotation.spec.TableSpec;
 import org.yx.bean.Loader;
 import org.yx.common.date.TimeUtil;
 import org.yx.conf.AppInfo;
@@ -132,7 +131,7 @@ public final class PojoMeta implements Cloneable {
 		return CollectionUtil.unmodifyList(source);
 	}
 
-	public PojoMeta(Table table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
+	public PojoMeta(TableSpec table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
 		this.cacheType = table.cacheType();
 		this.fieldMetas = CollectionUtil.unmodifyList(fieldMetas);
 		this.pojoClz = pojoClz;
@@ -160,7 +159,7 @@ public final class PojoMeta implements Cloneable {
 		this.cacheIDs = unmodifyList(rids);
 		this.databaseIds = pids.equals(rids) ? this.cacheIDs : unmodifyList(pids);
 		this.createColumns = unmodifyList(ctimes);
-		this.softDelete = softDeleteParser().parse(this.pojoClz.getAnnotation(SoftDelete.class), this.fieldMetas);
+		this.softDelete = softDeleteParser().parse(this.pojoClz, this.fieldMetas);
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}
@@ -169,7 +168,7 @@ public final class PojoMeta implements Cloneable {
 		return StartContext.inst().get(SoftDeleteParser.class, new SoftDeleteParserImpl());
 	}
 
-	private void parseTable(Table table) {
+	private void parseTable(TableSpec table) {
 		int ttl = table.duration();
 		if (ttl > 0) {
 			this.ttlSec = ttl;

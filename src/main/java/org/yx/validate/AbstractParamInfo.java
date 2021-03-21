@@ -17,20 +17,16 @@ package org.yx.validate;
 
 import java.util.Objects;
 
-import org.yx.annotation.Param;
+import org.yx.annotation.spec.ParamSpec;
 import org.yx.conf.AppInfo;
 
 public abstract class AbstractParamInfo implements ParameterInfo {
-	private final Param param;
+	private final ParamSpec param;
 	private final boolean required;
-	private final int max;
-	private final int min;
 
-	public AbstractParamInfo(Param param) {
+	public AbstractParamInfo(ParamSpec param) {
 		this.param = Objects.requireNonNull(param);
 		this.required = param.required() && AppInfo.getBoolean("sumk.param.required.enable", true);
-		this.max = param.max();
-		this.min = param.min();
 	}
 
 	@Override
@@ -48,7 +44,7 @@ public abstract class AbstractParamInfo implements ParameterInfo {
 		return this.param.comment();
 	}
 
-	public Param getParam() {
+	public ParamSpec getParam() {
 		return param;
 	}
 
@@ -57,11 +53,11 @@ public abstract class AbstractParamInfo implements ParameterInfo {
 	}
 
 	public int getMax() {
-		return max;
+		return param.max();
 	}
 
 	public int getMin() {
-		return min;
+		return param.min();
 	}
 
 	@Override

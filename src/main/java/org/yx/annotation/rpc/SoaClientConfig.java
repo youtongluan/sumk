@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.http;
+package org.yx.annotation.rpc;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -21,24 +21,15 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-@Target({ ElementType.TYPE })
+/**
+ * 仅对使用接口调用的rpc客户端有作用,注解作用在接口上面。 它用于定义额外的soa参数
+ */
+@Target({ ElementType.METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface SumkServlet {
-	/**
-	 * @return servlet的名字
-	 */
-	String name() default "";
+public @interface SoaClientConfig {
 
-	/**
-	 * @return 访问路径
-	 */
-	String[] path();
+	int timeout() default -1;
 
-	int loadOnStartup() default -1;
-
-	boolean asyncSupported() default false;
-
-	String appKey() default "";
-
+	int tryCount() default -1;
 }

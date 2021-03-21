@@ -48,5 +48,5 @@ public interface Plugin extends Ordered {
 
 	default void stop() {
 
-	};
+	}
 }

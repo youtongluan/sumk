@@ -22,9 +22,11 @@ public final class IOC {
 	/**
 	 * 获取对应的bean
 	 * 
+	 * @param <T>
+	 *            返回值类型
 	 * @param name
 	 *            bean的名称
-	 * @return 如果不存在，就返回null。如果bean不止一个，会抛出TooManyBeanException异常
+	 * @return 如果不存在，就返回null。如果bean不止一个，会抛出SumkException异常
 	 */
 	public static <T> T get(String name) {
 		return get(name, null);

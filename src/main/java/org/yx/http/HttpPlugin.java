@@ -44,7 +44,6 @@ import org.yx.main.StartContext;
 import org.yx.main.SumkServer;
 import org.yx.util.ExceptionUtil;
 import org.yx.util.StringUtil;
-import org.yx.validate.Validators;
 
 @Bean
 public class HttpPlugin implements Plugin {
@@ -89,7 +88,6 @@ public class HttpPlugin implements Plugin {
 		try {
 			HttpHeaderName.init();
 			HttpSettings.init();
-			Validators.init();
 			List<Object> beans = StartContext.inst().getBeans();
 			resolveWebAnnotation(beans);
 			WebHandler.init();

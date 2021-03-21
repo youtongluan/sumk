@@ -28,7 +28,7 @@ import org.yx.conf.AppInfo;
  */
 public final class StartContext {
 
-	private static final StartContext inst = new StartContext();
+	private static StartContext inst = new StartContext();
 
 	public static StartContext inst() {
 		return inst;
@@ -38,7 +38,7 @@ public final class StartContext {
 
 	}
 
-	private ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
 	private static final String KEY_BEANS = "key_beans";
 
 	public void setBeans(List<Object> beans) {
@@ -73,7 +73,7 @@ public final class StartContext {
 	}
 
 	public static void clear() {
-		inst.map = new ConcurrentHashMap<>();
+		inst = new StartContext();
 	}
 
 	public static void startFail() {

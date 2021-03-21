@@ -175,6 +175,10 @@ public final class Locker {
 	/**
 	 * 重置锁超时时间，对重进入的锁也适用
 	 * 
+	 * @param lock
+	 *            锁
+	 * @param mils
+	 *            重置锁的过期时间为当前值
 	 * @return 如果锁已经被释放，或其它未知原因，就返回false
 	 */
 	public boolean resetExpiredTime(Lock lock, int mils) {

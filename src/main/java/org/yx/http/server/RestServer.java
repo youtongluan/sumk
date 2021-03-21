@@ -21,7 +21,7 @@ import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.WebContext;
 
 @Bean
-@SumkServlet(value = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
+@SumkServlet(path = { "/rest/*" }, loadOnStartup = 1, appKey = "rest")
 public class RestServer extends AbstractActionServer {
 
 	private static final long serialVersionUID = 7437235491L;

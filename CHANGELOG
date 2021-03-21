@@ -258,4 +258,5 @@ v2.9.9
 3、SumkException的状态码全部改为负数，以跟BizException进行区分
 4、将redis和数据库的初始化移到Plugin的prepare阶段，同时去掉Plugins类。修改之后，startAsyn阶段的数据库和redis都已经准备好了，不需要再用Plugins来判断
 
-
+v2.9.10
+1、对于常见的注解，使用相应Spec将它包装起来，以支持自定义注解。同时移除HttpActionNode的web()方法，upload()也改为返回UploadSpec

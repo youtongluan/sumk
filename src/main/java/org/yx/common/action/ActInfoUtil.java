@@ -26,7 +26,8 @@ import java.util.Map;
 
 import org.yx.annotation.ExcludeFromParams;
 import org.yx.annotation.ExcludeFromResponse;
-import org.yx.annotation.Param;
+import org.yx.annotation.spec.ParamSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
@@ -126,6 +127,11 @@ public final class ActInfoUtil {
 		return map;
 	}
 
+	private static boolean isAtomic(Class<?> clazz) {
+		return clazz.isPrimitive() || clazz.getName().startsWith("java.") || clazz == SumkDate.class
+				|| Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz);
+	}
+
 	public static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex,
 			Class<? extends Annotation> exclude) {
 		if (clazz.isArray()) {
@@ -135,8 +141,7 @@ public final class ActInfoUtil {
 			return pd;
 		}
 		ParamDescript pd = new ParamDescript().copyFrom(info, supportComplex).setType(clazz.getName());
-		if (clazz.isPrimitive() || clazz.getName().startsWith("java.") || clazz == SumkDate.class
-				|| Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz)) {
+		if (isAtomic(clazz)) {
 			return pd.setType(clazz.getName());
 		}
 		if (clazz.isAnnotationPresent(exclude)) {
@@ -153,7 +158,7 @@ public final class ActInfoUtil {
 			}
 			ParameterInfo fp = infoMap.get(f);
 			if (fp == null) {
-				Param param = f.getAnnotation(Param.class);
+				ParamSpec param = Specs.extractParamField(f);
 				if (param != null) {
 					fp = new FieldParameterInfo(param, f);
 				} else {
@@ -164,6 +169,11 @@ public final class ActInfoUtil {
 				}
 			}
 
+			if (isAtomic(f.getType())) {
+				ParamDescript leaf = new ParamDescript().copyFrom(fp, supportComplex).setType(f.getType().getName());
+				list.add(leaf);
+				continue;
+			}
 			list.add(fullDescribe(f.getType(), fp, supportComplex && fp.isComplex(), exclude));
 		}
 		pd.setComplexFields(list);

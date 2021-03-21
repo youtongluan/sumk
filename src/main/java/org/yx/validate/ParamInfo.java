@@ -17,7 +17,7 @@ package org.yx.validate;
 
 import java.util.Objects;
 
-import org.yx.annotation.Param;
+import org.yx.annotation.spec.ParamSpec;
 
 public class ParamInfo extends AbstractParamInfo {
 
@@ -27,7 +27,7 @@ public class ParamInfo extends AbstractParamInfo {
 
 	private final boolean complex;
 
-	public ParamInfo(Param param, String paramName, Class<?> type) {
+	public ParamInfo(ParamSpec param, String paramName, Class<?> type) {
 		super(param);
 		this.paramName = Objects.requireNonNull(paramName);
 		this.paramType = Objects.requireNonNull(type);

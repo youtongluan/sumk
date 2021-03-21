@@ -21,7 +21,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-import org.yx.annotation.http.Web;
+import org.yx.annotation.spec.Specs;
+import org.yx.annotation.spec.WebSpec;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
@@ -34,11 +35,11 @@ import org.yx.http.act.HttpActionNode;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
-public final class WebAnnotationResolver {
+public class WebAnnotationResolver {
 
 	private Predicate<String> exclude = BooleanMatcher.FALSE;
 
-	private List<String> rawNames(Method m, Web web) {
+	private List<String> rawNames(Method m, WebSpec web) {
 		String name = web.value();
 		if (name == null || name.isEmpty()) {
 			return Collections.singletonList(m.getName());
@@ -70,7 +71,7 @@ public final class WebAnnotationResolver {
 		Method[] methods = clz.getMethods();
 		List<Method> httpMethods = new ArrayList<>();
 		for (final Method m : methods) {
-			if (!m.isAnnotationPresent(Web.class)) {
+			if (Specs.extractWeb(bean, m) == null) {
 				continue;
 			}
 			if (AsmUtils.notPublicOnly(m.getModifiers())) {
@@ -87,7 +88,7 @@ public final class WebAnnotationResolver {
 		List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(mpInfos.size() * 2);
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
-			Web act = m.getAnnotation(Web.class);
+			WebSpec act = Specs.extractWeb(bean, m);
 			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), act);
 
 			List<String> names = rawNames(m, act);

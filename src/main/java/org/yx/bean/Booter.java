@@ -22,39 +22,48 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
-import org.yx.annotation.Inject;
+import org.yx.annotation.spec.InjectSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanInjectWatcher;
-import org.yx.bean.watcher.PluginHandler;
+import org.yx.bean.watcher.PluginBooter;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
+import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
-import org.yx.db.sql.PojoMetaListener;
+import org.yx.db.sql.TableFactory;
 import org.yx.exception.SimpleSumkException;
-import org.yx.listener.ListenerGroup;
-import org.yx.listener.ListenerGroupImpl;
 import org.yx.log.Logs;
 import org.yx.main.StartConstants;
 import org.yx.main.StartContext;
+import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.kit.PriorityKits;
 
-public final class BeanPublisher {
+public final class Booter {
 
 	private final Logger logger = Logs.ioc();
-	private ListenerGroup<BeanEventListener> group;
-
+	private final List<Consumer<Class<?>>> parallelListeners;
 	private final Predicate<String> excludeMatcher;
 
-	public BeanPublisher() {
+	public Booter() {
 		this.excludeMatcher = createExcludeMatcher();
+		this.parallelListeners = CollectionUtil.unmodifyList(getParallelListeners());
 		logger.debug("bean exclude matcher:{}", excludeMatcher);
-		this.group = new ListenerGroupImpl<>();
-		this.group.setListener(this.getBeanEventListeners());
+	}
+
+	@SuppressWarnings("unchecked")
+	private Consumer<Class<?>>[] getParallelListeners() {
+		Consumer<Class<?>>[] defaults = new Consumer[] { new BeanFactory(), new TableFactory() };
+		Object obj = StartContext.inst().get("sumk.bean.event.listener");
+		return obj instanceof Consumer[] ? (Consumer<Class<?>>[]) obj : defaults;
 	}
 
 	public Predicate<String> excludeMatcher() {
@@ -79,15 +88,22 @@ public final class BeanPublisher {
 		return Matchers.createWildcardMatcher(sb.toString(), 2);
 	}
 
-	@SuppressWarnings("unchecked")
-	public synchronized void publishBeans(List<String> packageNames) throws Exception {
+	public synchronized void start(List<String> packageNames) throws Exception {
 		if (packageNames.isEmpty()) {
 			logger.warn("property [sumk.ioc] is empty");
 		}
+		packageNames = new ArrayList<>(packageNames);
 
 		packageNames.remove(StartConstants.INNER_PACKAGE);
 		packageNames.add(0, StartConstants.INNER_PACKAGE);
 
+		initBeans(packageNames);
+		autoWiredAll();
+		new PluginBooter().start();
+	}
+
+	@SuppressWarnings("unchecked")
+	private void initBeans(List<String> packageNames) {
 		Predicate<String> optional = BooleanMatcher.FALSE;
 		Object obj = StartContext.inst().get("sumk.bean.scan.option");
 		if (obj instanceof Predicate) {
@@ -126,26 +142,59 @@ public final class BeanPublisher {
 		}
 
 		clazzList = PriorityKits.sort(clazzList);
-		for (Class<?> clz : clazzList) {
-			try {
-				publish(new BeanEvent(clz));
-			} catch (LinkageError e) {
-				String c = clz.getName();
-				if (c.startsWith("org.yx.") || optional.test(c)) {
-					logger.debug("{} ignored in publish because: {}", c, e.getMessage());
-					continue;
-				}
-				logger.error("{} publish失败，原因是:{}", c, e.getLocalizedMessage());
-				throw e;
-			}
-		}
 		if (clazzList.size() > 5 && logger.isDebugEnabled()) {
 			logger.debug("scan class size:{}, {} {}..{} {}", clazzList.size(), clazzList.get(0).getSimpleName(),
 					clazzList.get(1).getSimpleName(), clazzList.get(clazzList.size() - 2).getSimpleName(),
 					clazzList.get(clazzList.size() - 1).getSimpleName());
 			logger.trace("ordered class:\n{}", clazzList);
 		}
-		autoWiredAll();
+		parallelPublish(clazzList, optional);
+	}
+
+	private void parallelPublish(List<Class<?>> clazzList, Predicate<String> optional) {
+		int size = this.parallelListeners.size();
+		CountDownLatch latch = new CountDownLatch(size);
+		SumkExecutorService executor = SumkThreadPool.executor();
+		for (Consumer<Class<?>> c : parallelListeners) {
+			executor.execute(() -> {
+				try {
+					publish(c, clazzList, optional);
+					latch.countDown();
+					Logs.ioc().debug("{} finished", c.getClass().getSimpleName());
+				} catch (Throwable e) {
+					System.exit(1);
+				}
+			});
+		}
+		long timeout = AppInfo.getLong("sumk.ioc.publish.timeout", 1000L * 60);
+		try {
+			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
+				Logs.ioc().error("plugins failed to start in {}ms", timeout);
+				System.exit(1);
+			}
+		} catch (InterruptedException e) {
+			Logs.ioc().error("receive InterruptedException in ioc publishing");
+			Thread.currentThread().interrupt();
+			System.exit(1);
+		}
+	}
+
+	private void publish(Consumer<Class<?>> consumer, List<Class<?>> clazzList, Predicate<String> optional) {
+		for (Class<?> clz : clazzList) {
+			try {
+				consumer.accept(clz);
+			} catch (LinkageError e) {
+				String c = clz.getName();
+				if (c.startsWith("org.yx.") || optional.test(c)) {
+					logger.debug("{} ignored in {} publish because: {}", c, consumer.getClass().getName(),
+							e.getMessage());
+					continue;
+				}
+				logger.error("{} publish失败，原因是:{}", consumer.getClass().getName(), e.getLocalizedMessage());
+				Logs.ioc().error(e.getMessage(), e);
+				throw e;
+			}
+		}
 	}
 
 	private Object getBean(Field f) {
@@ -191,7 +240,6 @@ public final class BeanPublisher {
 			watcher.afterInject(beans);
 		}
 		logger.trace("plugins starting...");
-		new PluginHandler().start();
 	}
 
 	private void injectProperties(Object bean) throws Exception {
@@ -201,7 +249,7 @@ public final class BeanPublisher {
 
 			Field[] fs = tempClz.getDeclaredFields();
 			for (Field f : fs) {
-				Inject inject = f.getAnnotation(Inject.class);
+				InjectSpec inject = Specs.extractInject(bean, f);
 				if (inject == null) {
 					continue;
 				}
@@ -261,13 +309,4 @@ public final class BeanPublisher {
 		return target.toArray((Object[]) Array.newInstance(clz, target.size()));
 	}
 
-	private void publish(BeanEvent event) {
-		group.listen(event);
-	}
-
-	private BeanEventListener[] getBeanEventListeners() {
-		BeanEventListener[] defaults = new BeanEventListener[] { new BeanFactory(), new PojoMetaListener() };
-		Object obj = StartContext.inst().get("sumk.bean.event.listener");
-		return obj instanceof BeanEventListener[] ? (BeanEventListener[]) obj : defaults;
-	}
 }

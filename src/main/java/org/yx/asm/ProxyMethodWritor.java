@@ -45,7 +45,8 @@ import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.annotation.Box;
+import org.yx.annotation.spec.BoxSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.bean.AopExcutorFactory;
 
 public final class ProxyMethodWritor {
@@ -161,7 +162,7 @@ public final class ProxyMethodWritor {
 		}
 
 		public void write() {
-			Box box = asmMethod.method.getAnnotation(Box.class);
+			BoxSpec box = Specs.extractBox(asmMethod.method);
 			int key = AopExcutorFactory.add(box);
 			mv.visitCode();
 

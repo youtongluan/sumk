@@ -46,7 +46,7 @@ import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcActions;
 
 @Bean
-@SumkServlet(value = { "/_sumk_monitor" }, loadOnStartup = -1, appKey = "sumkMonitor")
+@SumkServlet(path = { "/_sumk_monitor/*" }, loadOnStartup = -1, appKey = "sumkMonitor")
 public class SumkMonitor extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 2364534491L;
@@ -61,9 +61,10 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		UnsafeStringWriter writer = new UnsafeStringWriter(512);
 
 		this.outputServerInfo(req, writer);
+		this.outputStatis(req, writer);
+		this.visitInfo(req, writer);
 		this.outputActs(req, writer);
 		this.outputRpcActs(req, writer);
-		this.outputStatis(req, writer);
 		this.outputSystem(req, writer);
 		this.outputJvmInfo(req, writer);
 		this.outputAllTrack(req, writer);
@@ -204,6 +205,14 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 			sb.append(k).append(" = ").append(v.replace(LN, Const.CONFIG_NEW_LINE)).append(LN);
 		});
 		writer.append(sb.toString());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void visitInfo(HttpServletRequest req, Writer writer) throws IOException {
+		if (!"1".equals(req.getParameter("db.cache"))) {
+			return;
+		}
+		writer.append(Monitors.dbCacheVisitInfo());
 		writer.append(TYPE_SPLIT);
 	}
 }

@@ -13,29 +13,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.sql;
+package org.yx.annotation.spec;
 
-import org.yx.bean.AbstractBeanListener;
-import org.yx.bean.BeanEvent;
-import org.yx.conf.AppInfo;
-import org.yx.log.Log;
-import org.yx.main.StartConstants;
+public class InjectSpec {
+	private final boolean allowEmpty;
 
-public class PojoMetaListener extends AbstractBeanListener {
-
-	public PojoMetaListener() {
-		super(AppInfo.get(StartConstants.IOC_PACKAGES));
+	public InjectSpec(boolean allowEmpty) {
+		this.allowEmpty = allowEmpty;
 	}
 
-	@Override
-	public void onListen(BeanEvent event) {
-		try {
-			Class<?> clz = event.clz();
-			PojoMetaHolder.resolve(clz);
-		} catch (Throwable e) {
-			Log.printStack("sumk.sql.error", e);
-		}
-
+	/**
+	 * 数组、集合类型不可能为null，但是可以为空
+	 * 
+	 * @return 如果为true，表示可以为null或空集合
+	 */
+	public boolean allowEmpty() {
+		return this.allowEmpty;
 	}
-
 }

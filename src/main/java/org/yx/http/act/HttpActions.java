@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.yx.annotation.http.Web;
 import org.yx.common.KeyValuePair;
 import org.yx.common.action.ActInfoUtil;
 import org.yx.common.matcher.BooleanMatcher;
@@ -114,33 +113,27 @@ public final class HttpActions {
 					: ActInfoUtil.simpleInfoMap(info.rawAct(), http);
 			ret.add(map);
 			map.put("formalName", info.formalName());
-			if (http.action() != null) {
-				Web web = http.action();
-				map.put("cnName", web.cnName());
-				map.put("requireLogin", http.requireLogin());
-				if (http.requestType() != MessageType.PLAIN) {
-					map.put("requestEncrypt", http.requestType());
-				}
-				if (http.responseType() != MessageType.PLAIN) {
-					map.put("responseEncrypt", http.responseType());
-				}
-				if (http.sign()) {
-					map.put("sign", http.sign());
-				}
-				if (http.toplimit() != AppInfo.getInt("sumk.http.thread.priority.default", 100000)) {
-					map.put("toplimit", http.toplimit());
-				}
-				if (web.custom().length() > 0) {
-					map.put("custom", web.custom());
-				}
-				if (web.tags().length > 0) {
-					map.put("tags", web.tags());
-				}
-				map.put("httpMethod", http.methods());
+			map.put("cnName", http.cnName());
+			map.put("requireLogin", http.requireLogin());
+			if (http.requestType() != MessageType.PLAIN) {
+				map.put("requestEncrypt", http.requestType());
+			}
+			if (http.responseType() != MessageType.PLAIN) {
+				map.put("responseEncrypt", http.responseType());
+			}
+			if (http.sign()) {
+				map.put("sign", http.sign());
+			}
+			if (http.toplimit() != AppInfo.getInt("sumk.http.thread.priority.default", 100000)) {
+				map.put("toplimit", http.toplimit());
+			}
+			if (http.tags().size() > 0) {
+				map.put("tags", http.tags());
+			}
+			map.put("httpMethod", http.methods());
 
-				if (StringUtil.isNotEmpty(http.comment())) {
-					map.put("comment", http.comment());
-				}
+			if (StringUtil.isNotEmpty(http.comment())) {
+				map.put("comment", http.comment());
 			}
 			if (http.upload() != null) {
 				map.put("upload", true);

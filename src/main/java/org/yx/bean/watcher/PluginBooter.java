@@ -27,10 +27,12 @@ import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
+import org.yx.validate.Validators;
 
-public class PluginHandler {
+public class PluginBooter {
 
 	public void start() {
+		Validators.init();
 		startBeans();
 		Runtime.getRuntime().addShutdownHook(new Thread(SumkServer::stop));
 	}

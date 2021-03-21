@@ -28,8 +28,10 @@ public interface HttpActionSelector {
 	/**
 	 * 用于初始化，在sumk启动的时候调用一次。
 	 * 
-	 * @param acts
+	 * @param infos
 	 *            里面的key是解析后的act，跟@Web中定义的格式可能不同
+	 * @param nameResolver
+	 *            名称解析器
 	 */
 	void init(List<KeyValuePair<HttpActionNode>> infos, Function<String, String> nameResolver);
 

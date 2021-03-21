@@ -35,8 +35,9 @@ import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
 import javax.servlet.annotation.MultipartConfig;
 
-import org.yx.annotation.http.SumkFilter;
-import org.yx.annotation.http.SumkServlet;
+import org.yx.annotation.spec.Specs;
+import org.yx.annotation.spec.SumkFilterSpec;
+import org.yx.annotation.spec.SumkServletSpec;
 import org.yx.bean.BeanKit;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
@@ -74,7 +75,7 @@ public class SumkLoaderListener implements ServletContextListener {
 			addFilters(context);
 			addServlets(context);
 
-			String path = AppInfo.get("sumk.http.login.path", "/login");
+			String path = AppInfo.get("sumk.http.login.path", "/login/*");
 			if (IOC.getBeans(LoginServlet.class).size() > 0) {
 				String loginPath = path;
 				if (!loginPath.startsWith("/")) {
@@ -96,18 +97,18 @@ public class SumkLoaderListener implements ServletContextListener {
 		List<Servlet> servlets = IOC.getBeans(Servlet.class);
 		for (Servlet bean : servlets) {
 			Class<?> targetClz = BeanKit.getTargetClass(bean);
-			SumkServlet sumk = targetClz.getAnnotation(SumkServlet.class);
+			SumkServletSpec sumk = Specs.extractSumkServlet(targetClz);
 			if (sumk == null) {
 				continue;
 			}
 			String name = sumk.name();
-			if (name.isEmpty()) {
+			if (name == null || name.isEmpty()) {
 				name = bean.getClass().getSimpleName();
 			}
 			ServletRegistration.Dynamic dynamic = context.addServlet(name, bean);
 			dynamic.setAsyncSupported(sumk.asyncSupported());
 			dynamic.setLoadOnStartup(sumk.loadOnStartup());
-			String[] values = sumk.value();
+			String[] values = sumk.path();
 			String value = null;
 			if (StringUtil.isNotEmpty(sumk.appKey())
 					&& (value = AppInfo.get("sumk.http.servlet." + sumk.appKey())) != null) {
@@ -163,7 +164,7 @@ public class SumkLoaderListener implements ServletContextListener {
 		}
 		for (Filter bean : filters) {
 			Class<?> targetClz = BeanKit.getTargetClass(bean);
-			SumkFilter sumk = targetClz.getAnnotation(SumkFilter.class);
+			SumkFilterSpec sumk = Specs.extractSumkFilter(targetClz);
 			if (sumk == null) {
 				continue;
 			}
@@ -180,7 +181,7 @@ public class SumkLoaderListener implements ServletContextListener {
 				types = EnumSet.copyOf(Arrays.asList(type));
 			}
 
-			r.addMappingForUrlPatterns(types, sumk.isMatchAfter(), sumk.value());
+			r.addMappingForUrlPatterns(types, sumk.isMatchAfter(), sumk.path());
 		}
 	}
 

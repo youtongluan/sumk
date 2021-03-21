@@ -1,6 +1,6 @@
 package org.yx.rpc.server.start;
 
-import org.yx.annotation.rpc.SoaClass;
+import org.yx.annotation.spec.SoaClassSpec;
 
 public interface SoaClassResolver {
 
@@ -8,6 +8,6 @@ public interface SoaClassResolver {
 
 	String solvePrefix(Class<?> targetClass, Class<?> refer);
 
-	Class<?> getRefer(Class<?> targetClass, SoaClass sc);
+	Class<?> getRefer(Class<?> targetClass, SoaClassSpec sc);
 
 }

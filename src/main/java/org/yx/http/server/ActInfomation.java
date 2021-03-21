@@ -44,7 +44,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 @Bean
-@SumkServlet(value = { "/_sumk_acts" }, loadOnStartup = -1, appKey = "sumkActs")
+@SumkServlet(path = { "/_sumk_acts/*" }, loadOnStartup = -1, appKey = "sumkActs")
 public class ActInfomation extends AbstractCommonHttpServlet {
 
 	private static final long serialVersionUID = 1L;

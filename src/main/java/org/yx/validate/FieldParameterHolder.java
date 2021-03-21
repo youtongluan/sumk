@@ -28,7 +28,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.yx.annotation.Param;
+import org.yx.annotation.spec.ParamSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -85,7 +86,7 @@ public final class FieldParameterHolder {
 				if (Modifier.isStatic(f.getModifiers())) {
 					continue;
 				}
-				Param p = f.getAnnotation(Param.class);
+				ParamSpec p = Specs.extractParamField(f);
 				if (p == null) {
 					continue;
 				}

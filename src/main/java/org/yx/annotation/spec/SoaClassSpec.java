@@ -13,17 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.act;
+package org.yx.annotation.spec;
 
-public class PrefixActionInfo extends HttpActionInfo {
-	protected final String urlStart;
+import java.util.Objects;
 
-	public PrefixActionInfo(String rawAct, HttpActionNode node, String formatedName, String urlStart) {
-		super(rawAct, node, formatedName);
-		this.urlStart = urlStart;
+public class SoaClassSpec {
+
+	private final Class<?> refer;
+
+	public SoaClassSpec(Class<?> refer) {
+		this.refer = Objects.requireNonNull(refer);
 	}
 
-	public String getUrlStart() {
-		return urlStart;
+	public Class<?> refer() {
+		return this.refer;
 	}
 }

@@ -33,39 +33,39 @@ import org.yx.exception.SumkException;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.act.HttpActions;
-import org.yx.http.act.PrefixActionInfo;
+import org.yx.http.act.IngoreNameActionInfo;
+import org.yx.http.act.PrefixMappingActionInfo;
 import org.yx.log.Logs;
 
 public class DefaultHttpActionSelector implements HttpActionSelector {
 
 	private Map<String, HttpActionInfo[]> actMap = Collections.emptyMap();
-	private PrefixActionInfo[] starts;
+	private HttpActionInfo[] starts;
+	private HttpActionInfo[] lastMappings;
 
 	@Override
 	public HttpActionInfo getHttpInfo(String act, String method) {
 		method = method.toUpperCase();
-		HttpActionInfo[] infos = actMap.get(act);
-		if (infos != null) {
-			for (HttpActionInfo info : infos) {
-				if (info.node().acceptMethod(method)) {
-					return info;
-				}
-			}
-		}
-		if (starts != null) {
-			for (PrefixActionInfo p : starts) {
-				if (act.startsWith(p.getUrlStart()) && p.node().acceptMethod(method)) {
-					return p;
-				}
-			}
+		HttpActionInfo info = this.getAcceptedAction(actMap.get(act), act, method);
+		if (info != null) {
+			return info;
 		}
 
-		infos = actMap.get(WILDCARD);
-		if (infos != null) {
-			for (HttpActionInfo info : infos) {
-				if (info.node().acceptMethod(method)) {
-					return info;
-				}
+		info = this.getAcceptedAction(this.starts, act, method);
+		if (info != null) {
+			return info;
+		}
+
+		return this.getAcceptedAction(this.lastMappings, act, method);
+	}
+
+	protected HttpActionInfo getAcceptedAction(HttpActionInfo[] infos, String act, String method) {
+		if (infos == null) {
+			return null;
+		}
+		for (HttpActionInfo info : infos) {
+			if (info.match(act, method)) {
+				return info;
 			}
 		}
 		return null;
@@ -82,12 +82,10 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 		list.sort(null);
 
 		if (this.starts != null) {
-			List<HttpActionInfo> list2 = new ArrayList<>();
-			for (HttpActionInfo info : starts) {
-				list2.add(info);
-			}
-			list2.sort(null);
-			list.addAll(list2);
+			list.addAll(Arrays.asList(this.starts));
+		}
+		if (this.lastMappings != null) {
+			list.addAll(Arrays.asList(this.lastMappings));
 		}
 		return list;
 	}
@@ -103,8 +101,8 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 		return false;
 	}
 
-	protected void appendStart(PrefixActionInfo info, List<PrefixActionInfo> startList) {
-		for (PrefixActionInfo old : startList) {
+	protected void appendStart(PrefixMappingActionInfo info, List<PrefixMappingActionInfo> startList) {
+		for (PrefixMappingActionInfo old : startList) {
 			if (!Objects.equals(info.getUrlStart(), old.getUrlStart())) {
 				continue;
 			}
@@ -128,15 +126,15 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 	@Override
 	public void init(List<KeyValuePair<HttpActionNode>> infos, Function<String, String> nameResolver) {
 		Map<String, HttpActionInfo[]> actMap = new HashMap<>(infos.size() * 2);
-		List<PrefixActionInfo> startList = new ArrayList<>();
+		List<PrefixMappingActionInfo> startList = new ArrayList<>();
 		for (KeyValuePair<HttpActionNode> kv : infos) {
 			String parsedName = nameResolver.apply(kv.key());
 			if (parsedName.endsWith(HttpActions.PREFIX_MATCH_ENDING)) {
-				this.appendStart(new PrefixActionInfo(kv.key(), kv.value(), parsedName,
+				this.appendStart(new PrefixMappingActionInfo(kv.key(), kv.value(), parsedName,
 						parsedName.substring(0, parsedName.length() - 1)), startList);
 				continue;
 			}
-			HttpActionInfo info = new HttpActionInfo(kv.key(), kv.value(), parsedName);
+			HttpActionInfo info = new IngoreNameActionInfo(kv.key(), kv.value(), parsedName);
 			HttpActionInfo[] old = actMap.get(parsedName);
 			if (old == null) {
 				actMap.put(parsedName, new HttpActionInfo[] { info });
@@ -152,7 +150,6 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 			actMap.put(parsedName, newInfos);
 		}
 
-		startList.sort(null);
 		if (startList.size() > 0) {
 			String key = "sumk.http.url.match.prefix";
 			if (!AppInfo.getBoolean(key, false)) {
@@ -160,8 +157,11 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 				throw new SumkException(-345647431, "需要设置" + key + "=1才能开启前缀匹配的功能");
 			}
 		}
+		startList.sort(null);
+		Collections.reverse(startList);
+		this.lastMappings = actMap.remove(WILDCARD);
 		this.actMap = new HashMap<>(actMap);
-		this.starts = startList.isEmpty() ? null : startList.toArray(new PrefixActionInfo[startList.size()]);
+		this.starts = startList.isEmpty() ? null : startList.toArray(new PrefixMappingActionInfo[startList.size()]);
 	}
 
 }

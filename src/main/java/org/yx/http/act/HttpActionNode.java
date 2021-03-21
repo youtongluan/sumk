@@ -19,8 +19,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
-import org.yx.annotation.http.Upload;
-import org.yx.annotation.http.Web;
+import org.yx.annotation.spec.Specs;
+import org.yx.annotation.spec.UploadSpec;
+import org.yx.annotation.spec.WebSpec;
 import org.yx.asm.ArgPojo;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
@@ -40,15 +41,13 @@ public final class HttpActionNode extends CalleeNode {
 	private final MessageType requestType;
 	private final boolean sign;
 	private final MessageType responseType;
-	private final List<String> method;
+	private final List<String> httpMethod;
 	private final List<String> tags;
+	private final String cnName;
+	private final UploadSpec upload;
 
-	public Web action() {
-		return this.getAnnotation(Web.class);
-	}
-
-	public Upload upload() {
-		return this.getAnnotation(Upload.class);
+	public UploadSpec upload() {
+		return this.upload;
 	}
 
 	public ArgPojo buildArgPojo(Object reqData) throws Exception {
@@ -77,7 +76,7 @@ public final class HttpActionNode extends CalleeNode {
 		return InnerHttpUtil.parseMessageType(AppInfo.get(key));
 	}
 
-	private List<String> httpMethod(Web web) {
+	private List<String> httpMethod(WebSpec web) {
 		String[] m = web.method();
 		if (m.length > 0) {
 			return CollectionUtil.unmodifyList(m);
@@ -85,16 +84,19 @@ public final class HttpActionNode extends CalleeNode {
 		return HttpSettings.defaultHttpMethods();
 	}
 
-	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, Web action) {
+	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
+			WebSpec action) {
 		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
-		this.method = httpMethod(action);
+		this.cnName = action.cnName();
+		this.httpMethod = httpMethod(action);
 		this.requestType = getMessageType(action.requestType(), "sumk.http.request.type");
 		this.responseType = getMessageType(action.responseType(), "sumk.http.response.type");
 		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
-				|| action().requestType().isEncrypt() || action().responseType().isEncrypt();
+				|| action.requestType().isEncrypt() || action.responseType().isEncrypt();
 		this.sign = action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);
 		this.tags = CollectionUtil.unmodifyList(action.tags());
+		this.upload = Specs.extractUpload(obj, method);
 	}
 
 	/**
@@ -120,7 +122,7 @@ public final class HttpActionNode extends CalleeNode {
 	}
 
 	public boolean acceptMethod(String httpMethod) {
-		return this.method.contains(httpMethod);
+		return this.httpMethod.contains(httpMethod);
 	}
 
 	public List<String> tags() {
@@ -128,6 +130,10 @@ public final class HttpActionNode extends CalleeNode {
 	}
 
 	public List<String> methods() {
-		return this.method;
+		return this.httpMethod;
+	}
+
+	public String cnName() {
+		return cnName;
 	}
 }

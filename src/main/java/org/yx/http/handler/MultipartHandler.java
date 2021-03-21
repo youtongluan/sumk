@@ -23,10 +23,12 @@ import java.util.List;
 import javax.servlet.http.Part;
 
 import org.yx.annotation.Bean;
-import org.yx.annotation.http.Upload;
+import org.yx.annotation.spec.UploadSpec;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.log.Logs;
+import org.yx.util.M;
 
 @Bean
 public class MultipartHandler implements HttpHandler {
@@ -43,7 +45,12 @@ public class MultipartHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Throwable {
-		Upload upload = ctx.node().upload();
+		UploadSpec upload = ctx.node().upload();
+		if (upload == null) {
+			Logs.http().error("{}缺少 @Upload", ctx.rawAct());
+			throw BizException.create(HttpErrorCode.UPLOAD_ANNOTATION_MISS,
+					M.get("sumk.http.upload.error.annocation", "不是上传接口", ctx.rawAct()));
+		}
 		Collection<Part> list = ctx.httpRequest().getParts();
 		if (list == null || list.isEmpty()) {
 			throw BizException.create(HttpErrorCode.FILE_MISS, "没有文件");

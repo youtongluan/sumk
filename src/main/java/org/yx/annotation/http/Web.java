@@ -54,8 +54,6 @@ public @interface Web {
 
 	MessageType responseType() default MessageType.DEFAULT;
 
-	String custom() default "";
-
 	/**
 	 * 留给开发者做权限分组等，框架本身没有实际应用
 	 * 

@@ -22,7 +22,7 @@ import java.util.List;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
-import org.yx.annotation.Box;
+import org.yx.annotation.spec.Specs;
 import org.yx.log.Logs;
 
 public final class ProxyClassFactory {
@@ -33,7 +33,7 @@ public final class ProxyClassFactory {
 		List<Method> aopMethods = new ArrayList<>(methods.length);
 		for (Method m : methods) {
 
-			if (m.getAnnotation(Box.class) == null) {
+			if (Specs.extractBox(m) == null) {
 				continue;
 			}
 			int modifier = m.getModifiers();

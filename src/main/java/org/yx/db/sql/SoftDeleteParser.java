@@ -17,9 +17,7 @@ package org.yx.db.sql;
 
 import java.util.List;
 
-import org.yx.annotation.db.SoftDelete;
-
 public interface SoftDeleteParser {
 
-	SoftDeleteMeta parse(SoftDelete sd, List<ColumnMeta> fieldMetas);
+	SoftDeleteMeta parse(Class<?> pojoClz, List<ColumnMeta> fieldMetas);
 }

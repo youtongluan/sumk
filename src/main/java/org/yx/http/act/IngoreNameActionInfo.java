@@ -13,32 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.http;
+package org.yx.http.act;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+/**
+ * 为了性能考虑，不对请求名做校验
+ */
+public class IngoreNameActionInfo extends AbstractActionInfo {
 
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface SumkServlet {
-	/**
-	 * @return servlet的名字
-	 */
-	String name() default "";
+	public IngoreNameActionInfo(String rawAct, HttpActionNode node, String formatedName) {
+		super(rawAct, node, formatedName);
+	}
 
-	/**
-	 * @return 访问路径
-	 */
-	String[] path();
-
-	int loadOnStartup() default -1;
-
-	boolean asyncSupported() default false;
-
-	String appKey() default "";
-
+	@Override
+	public boolean match(String act, String method) {
+		return node.acceptMethod(method);
+	}
 }

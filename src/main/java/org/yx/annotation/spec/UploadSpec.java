@@ -13,18 +13,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean;
+package org.yx.annotation.spec;
 
-import org.yx.listener.SumkEvent;
+import java.util.Objects;
 
-public class BeanEvent extends SumkEvent {
-	public BeanEvent(Class<?> clz) {
-		super(clz);
+public class UploadSpec {
+	private final String paramName;
+
+	public UploadSpec(String paramName) {
+		this.paramName = Objects.requireNonNull(paramName);
 	}
 
-	public Class<?> clz() {
-		Object src = this.source;
-		return (Class<?>) src;
+	public String paramName() {
+		return this.paramName;
 	}
-
 }

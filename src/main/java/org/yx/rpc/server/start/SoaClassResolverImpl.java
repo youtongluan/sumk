@@ -17,7 +17,7 @@ package org.yx.rpc.server.start;
 
 import java.util.function.Predicate;
 
-import org.yx.annotation.rpc.SoaClass;
+import org.yx.annotation.spec.SoaClassSpec;
 import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
@@ -50,7 +50,7 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 	}
 
 	@Override
-	public Class<?> getRefer(Class<?> targetClass, SoaClass sc) {
+	public Class<?> getRefer(Class<?> targetClass, SoaClassSpec sc) {
 		Class<?> refer = parseRefer(targetClass, sc);
 		if (refer != SoaClassResolver.AUTO) {
 			return refer;
@@ -63,7 +63,7 @@ public class SoaClassResolverImpl implements SoaClassResolver {
 		}
 	}
 
-	protected Class<?> parseRefer(Class<?> targetClass, SoaClass sc) {
+	protected Class<?> parseRefer(Class<?> targetClass, SoaClassSpec sc) {
 		if (sc != null) {
 			return sc.refer();
 		}

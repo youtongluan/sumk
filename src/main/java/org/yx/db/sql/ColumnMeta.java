@@ -18,8 +18,8 @@ package org.yx.db.sql;
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import org.yx.annotation.db.Column;
 import org.yx.annotation.doc.Comment;
+import org.yx.annotation.spec.ColumnSpec;
 import org.yx.conf.Const;
 import org.yx.db.enums.ColumnType;
 import org.yx.util.StringUtil;
@@ -34,7 +34,7 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 
 	final String dbColumn;
 
-	public ColumnMeta(Field field, Column c) {
+	public ColumnMeta(Field field, ColumnSpec c) {
 		this.field = field;
 		this.meta = c == null ? ColumnType.NORMAL : c.type();
 		if (c == null) {

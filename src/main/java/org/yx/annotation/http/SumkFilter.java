@@ -32,7 +32,7 @@ public @interface SumkFilter {
 	/**
 	 * @return 要拦截的路径
 	 */
-	String[] value();
+	String[] path();
 
 	DispatcherType[] dispatcherType() default {};
 

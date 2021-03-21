@@ -15,39 +15,35 @@
  */
 package org.yx.http.act;
 
-import java.util.Objects;
+public interface HttpActionInfo extends Comparable<HttpActionInfo> {
 
-public class HttpActionInfo implements Comparable<HttpActionInfo> {
-	protected final String rawAct;
-	protected final HttpActionNode node;
 	/**
-	 * 如果要支持url中的参数，可以考虑从这里入手
+	 * 原始路径
+	 * 
+	 * @return <code>@Web</code>里定义的原始路径
 	 */
-	protected final String formalName;
+	String rawAct();
 
-	public HttpActionInfo(String rawAct, HttpActionNode node, String formatedName) {
-		this.rawAct = Objects.requireNonNull(rawAct);
-		this.node = Objects.requireNonNull(node);
-		this.formalName = Objects.requireNonNull(formatedName);
-	}
-
-	public String rawAct() {
-		return rawAct;
-	}
-
-	public HttpActionNode node() {
-		return node;
-	}
+	HttpActionNode node();
 
 	/**
 	 * @return 解析后正式的名字
 	 */
-	public String formalName() {
-		return formalName;
+	String formalName();
+
+	/**
+	 * 是否接受当前请求。有些实现类为了性能考虑，不对act做校验。
+	 * 
+	 * @param act
+	 *            格式化后的接口名,不为null
+	 * @param method
+	 *            请求的http方法，不为null
+	 * @return true表示接受当前请求
+	 */
+	boolean match(String act, String method);
+
+	default int compareTo(HttpActionInfo o) {
+		return this.formalName().compareTo(o.formalName());
 	}
 
-	@Override
-	public int compareTo(HttpActionInfo o) {
-		return this.formalName.compareTo(o.formalName);
-	}
 }

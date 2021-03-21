@@ -13,32 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.annotation.http;
+package org.yx.annotation.spec;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.Objects;
 
-@Target({ ElementType.TYPE })
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface SumkServlet {
+import org.yx.db.enums.ColumnType;
+
+public class ColumnSpec {
+	private final String value;
+	private final ColumnType type;
+	private final byte order;
+
+	public ColumnSpec(String value, ColumnType type, byte order) {
+		this.value = value;
+		this.type = Objects.requireNonNull(type);
+		this.order = order;
+	}
+
 	/**
-	 * @return servlet的名字
+	 * @return 数据库字段的名字，不填的话，就是属性名(小写)
 	 */
-	String name() default "";
+	public String value() {
+		return this.value;
+	}
 
-	/**
-	 * @return 访问路径
-	 */
-	String[] path();
+	public ColumnType type() {
+		return this.type;
+	}
 
-	int loadOnStartup() default -1;
-
-	boolean asyncSupported() default false;
-
-	String appKey() default "";
-
+	public byte order() {
+		return this.order;
+	}
 }

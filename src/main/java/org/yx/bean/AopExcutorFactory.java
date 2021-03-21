@@ -17,16 +17,16 @@ package org.yx.bean;
 
 import java.util.Objects;
 
-import org.yx.annotation.Box;
+import org.yx.annotation.spec.BoxSpec;
 import org.yx.common.AopExcutor;
-import org.yx.db.exec.DBTransaction;
 import org.yx.db.exec.DBSource;
+import org.yx.db.exec.DBTransaction;
 import org.yx.db.exec.DefaultDBSource;
 
 public class AopExcutorFactory {
 	private static DBSource[] boxs = new DBSource[0];
 
-	public static synchronized int add(Box box) {
+	public static synchronized int add(BoxSpec box) {
 		Objects.requireNonNull(box);
 		final DBSource[] boxs = AopExcutorFactory.boxs;
 		DBSource db = null;

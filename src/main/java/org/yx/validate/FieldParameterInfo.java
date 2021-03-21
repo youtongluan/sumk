@@ -18,7 +18,7 @@ package org.yx.validate;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
-import org.yx.annotation.Param;
+import org.yx.annotation.spec.ParamSpec;
 
 public class FieldParameterInfo extends AbstractParamInfo {
 
@@ -26,7 +26,7 @@ public class FieldParameterInfo extends AbstractParamInfo {
 
 	private final boolean complex;
 
-	public FieldParameterInfo(Param param, Field field) {
+	public FieldParameterInfo(ParamSpec param, Field field) {
 		super(param);
 		this.field = Objects.requireNonNull(field);
 		this.complex = param.complex() && !field.getType().isPrimitive();

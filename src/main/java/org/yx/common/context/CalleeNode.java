@@ -22,8 +22,9 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Objects;
 
-import org.yx.annotation.Param;
 import org.yx.annotation.doc.Comment;
+import org.yx.annotation.spec.ParamSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.asm.ArgPojo;
 import org.yx.bean.Loader;
 import org.yx.log.Log;
@@ -52,13 +53,13 @@ public abstract class CalleeNode {
 		this.argClz = Objects.requireNonNull(argClz);
 		this.argNames = Objects.requireNonNull(argNames);
 		this.method = Objects.requireNonNull(method);
-		Param[] params = this.resolveParamAnnotation(method);
+		ParamSpec[] params = Specs.extractParamParamter(method);
 		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
 		this.toplimit = toplimit;
 		if (this.paramInfos != null) {
 			Class<?>[] argTypes = this.getParameterTypes();
 			for (int i = 0; i < this.paramInfos.length; i++) {
-				Param p = params[i];
+				ParamSpec p = params[i];
 				if (p == null) {
 					continue;
 				}
@@ -188,18 +189,4 @@ public abstract class CalleeNode {
 		return c == null ? "" : c.value();
 	}
 
-	private Param[] resolveParamAnnotation(Method m) {
-		Annotation[][] paramAnno = m.getParameterAnnotations();
-		Param[] params = new Param[paramAnno.length];
-		for (int i = 0; i < paramAnno.length; i++) {
-			Annotation[] a = paramAnno[i];
-			for (Annotation a2 : a) {
-				if (Param.class == a2.annotationType()) {
-					params[i] = (Param) a2;
-					break;
-				}
-			}
-		}
-		return params;
-	}
 }

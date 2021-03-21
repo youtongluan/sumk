@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import org.yx.annotation.rpc.Soa;
-import org.yx.annotation.rpc.SoaClass;
+import org.yx.annotation.spec.SoaSpec;
+import org.yx.annotation.spec.Specs;
 import org.yx.asm.ArgPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
@@ -86,7 +86,7 @@ public class SoaAnnotationResolver {
 	private void parseSoa(Map<Method, String> map, Class<?> clz) {
 		Method[] methods = clz.getMethods();
 		for (final Method m : methods) {
-			if (m.getAnnotation(Soa.class) == null || map.containsKey(m)) {
+			if (Specs.extractSoa(m) == null || map.containsKey(m)) {
 				continue;
 			}
 			map.putIfAbsent(m, "");
@@ -101,7 +101,7 @@ public class SoaAnnotationResolver {
 		}
 		Map<Method, String> map = new HashMap<>();
 
-		Class<?> refer = this.soaClassResolver.getRefer(clz, clz.getAnnotation(SoaClass.class));
+		Class<?> refer = this.soaClassResolver.getRefer(clz, Specs.extractSoaClass(clz));
 		if (refer != null) {
 			this.parseSoaClass(map, clz, refer);
 		}
@@ -124,7 +124,7 @@ public class SoaAnnotationResolver {
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			String prefix = map.get(m);
-			Soa act = m.getAnnotation(Soa.class);
+			SoaSpec act = Specs.extractSoa(m);
 			List<String> soaNames = StringUtil.isEmpty(prefix) ? nameResolver.solve(clz, m, act)
 					: Collections.singletonList(prefix + m.getName());
 			if (soaNames == null || soaNames.isEmpty()) {

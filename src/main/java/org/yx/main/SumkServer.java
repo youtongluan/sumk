@@ -15,18 +15,18 @@
  */
 package org.yx.main;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.yx.bean.BeanPublisher;
+import org.yx.bean.Booter;
 import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.conf.SystemConfig;
 import org.yx.conf.SystemConfigHolder;
 import org.yx.log.Log;
@@ -103,21 +103,24 @@ public final class SumkServer {
 		try {
 			handleArgs(args);
 			StartContext sc = StartContext.inst();
+			if (Logs.system().isDebugEnabled()) {
+				Logs.system().debug("start contexts:{}", sc);
+			}
 
 			if (sc.get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
 			SumkServer.test = AppInfo.getBoolean("sumk.test", false);
-			List<String> ps = new ArrayList<>();
-			ps.add(AppInfo.get(StartConstants.IOC_PACKAGES));
-			ps.add(AppInfo.get(StartConstants.INNER_PACKAGE));
 			if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
 				rpcEnable = true;
 			}
 			if (sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
 				httpEnable = true;
 			}
-			new BeanPublisher().publishBeans(allPackage(ps));
+			String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
+			List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
+					: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);
+			new Booter().start(pcks);
 			SumkThreadPool.scheduleThreadPoolMonitor();
 			StartContext.clear();
 		} catch (Throwable e) {
@@ -144,25 +147,6 @@ public final class SumkServer {
 			StartContext.inst().put(arg, Boolean.TRUE);
 		}
 
-	}
-
-	private static List<String> allPackage(List<String> ps) {
-		List<String> list = new ArrayList<>();
-		for (String p : ps) {
-			if (StringUtil.isEmpty(p)) {
-				continue;
-			}
-			p = p.replace('，', ',');
-			String[] ss = p.split(",");
-			for (String s : ss) {
-				s = s.trim();
-				if (s.isEmpty()) {
-					continue;
-				}
-				list.add(s);
-			}
-		}
-		return list;
 	}
 
 	public static boolean isTest() {
