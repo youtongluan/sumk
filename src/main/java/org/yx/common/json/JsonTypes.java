@@ -16,8 +16,12 @@
 package org.yx.common.json;
 
 import java.lang.reflect.Type;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import com.google.gson.reflect.TypeToken;
 
 public final class JsonTypes {
 	private static final ConcurrentMap<String, Type> types = new ConcurrentHashMap<>();
@@ -38,7 +42,11 @@ public final class JsonTypes {
 		return types.get(name);
 	}
 
+	public static Set<String> keys() {
+		return new HashSet<>(types.keySet());
+	}
+
 	public static Type registe(Type type) {
-		return types.put(type.getTypeName(), type);
+		return types.put(type.getTypeName(), TypeToken.get(type).getType());
 	}
 }

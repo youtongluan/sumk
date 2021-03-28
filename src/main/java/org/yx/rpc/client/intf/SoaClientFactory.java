@@ -18,7 +18,9 @@ package org.yx.rpc.client.intf;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -36,6 +38,7 @@ import org.yx.bean.FactoryBean;
 import org.yx.bean.IOC;
 import org.yx.bean.InterfaceBean;
 import org.yx.bean.Loader;
+import org.yx.common.json.JsonTypes;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
@@ -113,6 +116,7 @@ public class SoaClientFactory implements FactoryBean {
 				}
 				log.debug("add soa client interface {}", c);
 				ret.add(new InterfaceBean(intf, proxyInterface(intf)));
+				registeGenericReturnType(ms);
 			} catch (NoClassDefFoundError e) {
 				log.warn("soa client interface {} ignored.{}", c, e.getMessage());
 			} catch (Exception e) {
@@ -120,6 +124,15 @@ public class SoaClientFactory implements FactoryBean {
 			}
 		}
 		return ret;
+	}
+
+	private void registeGenericReturnType(Method[] ms) {
+		for (Method m : ms) {
+			Type genericReturnType = m.getGenericReturnType();
+			if (genericReturnType instanceof ParameterizedType) {
+				JsonTypes.registe(genericReturnType);
+			}
+		}
 	}
 
 	protected Object proxyInterface(Class<?> intf) {

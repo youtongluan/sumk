@@ -28,23 +28,21 @@ public class RemoteUserSession extends AbstractUserSession {
 	private static final byte[] NX = { 'N', 'X' };
 	private static final byte[] PX = { 'P', 'X' };
 
-	protected int maxSize = AppInfo.getInt("sumk.http.session.cache.maxsize", 5000);
-	protected int noFreshTime = AppInfo.getInt("sumk.http.session.cache.nofreshtime", 1000 * 2);
+	protected long noFreshTime = AppInfo.getLong("sumk.http.session.cache.nofreshtime", 1000L * 2);
+
+	protected final int maxSize;
 
 	private final Redis redis;
 
 	public RemoteUserSession(Redis redis) {
-		this.redis = redis;
-		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
+		this.redis = redis.isMuted() ? redis : redis.mute();
+		this.maxSize = Math.max(AppInfo.getInt("sumk.http.session.cache.maxsize", 5000), 10);
+		long seconds = AppInfo.getLong("sumk.http.session.period", 30L);
 		Task.scheduleAtFixedRate(() -> {
 
-			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60 * 5);
+			long duration = AppInfo.getLong("sumk.http.session.remote.duration", 1000L * 60);
 			if (duration > HttpSettings.httpSessionTimeoutInMs()) {
 				duration = HttpSettings.httpSessionTimeoutInMs();
-			}
-			duration -= cache.size() * 10;
-			if (duration < this.noFreshTime) {
-				duration = this.noFreshTime + 100L;
 			}
 			CacheHelper.expire(cache, duration);
 		}, seconds, seconds, TimeUnit.SECONDS);
@@ -59,6 +57,16 @@ public class RemoteUserSession extends AbstractUserSession {
 			return null;
 		}
 		return ("_SES_#" + sessionId).getBytes(AppInfo.UTF8);
+	}
+
+	private void removeOne() {
+		try {
+			String key = cache.keySet().iterator().next();
+			log.debug("remove session {} from local cache", key);
+			cache.remove(key);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
 	}
 
 	@Override
@@ -78,9 +86,12 @@ public class RemoteUserSession extends AbstractUserSession {
 				}
 				return null;
 			}
-			if (cache.size() < this.maxSize && needRefresh) {
+			if (needRefresh) {
 				if (log.isTraceEnabled()) {
 					log.trace("{} add to local cache", sid);
+				}
+				if (cache.size() >= this.maxSize) {
+					removeOne();
 				}
 				cache.put(sid, to);
 			}
@@ -89,7 +100,7 @@ public class RemoteUserSession extends AbstractUserSession {
 		if (needRefresh && to.refreshTime + this.noFreshTime < now) {
 			long durationInMS = HttpSettings.httpSessionTimeoutInMs();
 			Long v = redis.pexpire(bigKey, durationInMS);
-			if (v == null || v.intValue() == 0) {
+			if (v != null && v.longValue() == 0) {
 				cache.remove(sid);
 				log.trace("{} was pexpire by redis,and remove from local cache", sid);
 				return null;

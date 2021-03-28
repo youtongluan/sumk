@@ -33,7 +33,7 @@ public class ParamDescript {
 	private String type;
 	private String example;
 	private String comment;
-	private String custom;
+	private Object custom;
 	private Boolean complex;
 
 	private List<ParamDescript> fields;
@@ -112,7 +112,7 @@ public class ParamDescript {
 		this.comment = comment;
 	}
 
-	public String getCustom() {
+	public Object getCustom() {
 		return custom;
 	}
 
@@ -143,7 +143,7 @@ public class ParamDescript {
 		this.cnName = getValue(info.getCnName());
 		this.name = getValue(info.getParamName());
 		this.comment = getValue(info.comment());
-		this.custom = getValue(info.custom());
+		this.custom = info.custom();
 		this.example = getValue(info.example());
 		this.required = supportComplex && info.isRequired() ? true : null;
 		this.complex = supportComplex && info.isComplex() ? true : null;

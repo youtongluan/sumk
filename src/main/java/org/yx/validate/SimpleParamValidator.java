@@ -53,7 +53,7 @@ public class SimpleParamValidator implements Validator {
 			}
 		}
 		if (Number.class.isAssignableFrom(clz)) {
-			int n = ((Number) arg).intValue();
+			long n = ((Number) arg).longValue();
 			if (n > expect) {
 				return M.get("sumk.valid.msg.max", "#的值不能大于{0},实际却是{1}", expect, arg);
 			}

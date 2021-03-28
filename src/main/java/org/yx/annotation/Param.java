@@ -52,11 +52,6 @@ public @interface Param {
 	int min() default -1;
 
 	/**
-	 * @return 自定义属性。作用留给开发者自己扩展
-	 */
-	String custom() default "";
-
-	/**
 	 * @return 文档中的字段示例，也可用于扩展
 	 */
 	String example() default "";

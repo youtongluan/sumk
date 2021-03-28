@@ -15,26 +15,39 @@
  */
 package org.yx.http.user;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.yx.log.Log;
 
 public final class CacheHelper {
-	public static void expire(ConcurrentMap<String, TimedCachedObject> map, long duration) {
+	public static void expire(Map<String, TimedCachedObject> map, long duration) {
 		Logger log = Log.get("sumk.http.session");
+		try {
+			expire0(map, duration, log);
+		} catch (Exception e) {
+			log.error(e.getMessage(), e);
+		}
+	}
+
+	private static void expire0(Map<String, TimedCachedObject> map, long duration, Logger log) {
 		int beginSize = map.size();
-		Set<String> set = map.keySet();
 		long begin = System.currentTimeMillis() - duration;
-		for (String key : set) {
-			TimedCachedObject t = map.get(key);
+		Iterator<Map.Entry<String, TimedCachedObject>> it = map.entrySet().iterator();
+		while (it.hasNext()) {
+
+			Map.Entry<String, TimedCachedObject> en = it.next();
+			if (en == null) {
+				continue;
+			}
+			TimedCachedObject t = en.getValue();
 			if (t == null) {
 				continue;
 			}
 			if (t.refreshTime < begin) {
-				log.trace("{} remove from cache", key);
-				map.remove(key);
+				log.trace("{} remove from cache", en.getKey());
+				it.remove();
 			}
 		}
 		if (log.isTraceEnabled()) {

@@ -48,7 +48,7 @@ public class ReqUserHandler implements HttpHandler {
 			throw BizException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
 		UserSession session = WebSessions.loadUserSession();
-		SessionObject obj = session.getUserObject(sessionId, SessionObject.class);
+		SessionObject obj = session.loadUserObject(sessionId, SessionObject.class);
 
 		if (obj == null) {
 

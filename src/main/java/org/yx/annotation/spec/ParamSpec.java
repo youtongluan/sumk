@@ -26,10 +26,10 @@ public class ParamSpec {
 	private final String example;
 	private final String comment;
 	private final boolean complex;
-	private final String custom;
+	private final Object custom;
 
 	public ParamSpec(String value, boolean required, int max, int min, String example, String comment, boolean complex,
-			String custom) {
+			Object custom) {
 		this.value = Objects.requireNonNull(value);
 		this.required = required;
 		this.max = max;
@@ -72,7 +72,12 @@ public class ParamSpec {
 		return this.complex;
 	}
 
-	public String custom() {
+	/**
+	 * 这个属性是留给开发者自己扩展用
+	 * 
+	 * @return 这个属性尽量不要返回空字符串，应用null代替空字符串
+	 */
+	public Object custom() {
 		return this.custom;
 	}
 }

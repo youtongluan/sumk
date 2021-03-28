@@ -37,7 +37,6 @@ import org.yx.util.StringUtil;
 
 public final class FileNameScaner implements Function<Collection<String>, Collection<String>> {
 	private final String subfix;
-	private Logger log = Logs.system();
 
 	public FileNameScaner(String subfix) {
 		this.subfix = Objects.requireNonNull(subfix);
@@ -45,6 +44,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 
 	@Override
 	public Collection<String> apply(Collection<String> packageNames) {
+		Logger log = Logs.system();
 		Set<String> classNameList = new HashSet<>(240);
 		if (packageNames == null || packageNames.isEmpty()) {
 			return classNameList;
@@ -97,7 +97,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 				String absolutePath = file.getAbsolutePath().replace('\\', '/');
 				int index = absolutePath.indexOf('/' + packagePath) + 1;
 				if (index < 1) {
-					log.error(absolutePath + " donot contain " + packagePath);
+					Logs.system().error(absolutePath + " donot contain " + packagePath);
 					continue;
 				}
 				addClz(classNameList, absolutePath.substring(index));
@@ -106,6 +106,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 	}
 
 	private void addClz(Collection<String> classNameList, String classPath) {
+		Logger log = Logs.system();
 		if (!classPath.endsWith(subfix) || classPath.contains("$")) {
 			if (log.isTraceEnabled()) {
 				log.trace("文件{}不满足条件", classPath);
@@ -119,6 +120,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 	}
 
 	private void findClassInJar(Collection<String> classNameList, URL url, String packagePath) throws IOException {
+		Logger log = Logs.system();
 		JarFile jarFile = null;
 		try {
 

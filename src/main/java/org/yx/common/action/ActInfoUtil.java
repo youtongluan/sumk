@@ -140,10 +140,11 @@ public final class ActInfoUtil {
 			pd.setArray(true);
 			return pd;
 		}
-		ParamDescript pd = new ParamDescript().copyFrom(info, supportComplex).setType(clazz.getName());
+		ParamDescript pd = new ParamDescript();
 		if (isAtomic(clazz)) {
-			return pd.setType(clazz.getName());
+			return pd.copyFrom(info, true).setType(clazz.getName());
 		}
+		pd.copyFrom(info, supportComplex).setType(clazz.getName());
 		if (clazz.isAnnotationPresent(exclude)) {
 
 			Logs.http().warn("{}被{}注解了，可能引起一些奇怪的业务反应", clazz.getName(), exclude.getSimpleName());

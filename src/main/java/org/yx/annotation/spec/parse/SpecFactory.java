@@ -37,8 +37,7 @@ public final class SpecFactory {
 	}
 
 	public static ParamSpec create(Param p) {
-		return new ParamSpec(p.value(), p.required(), p.max(), p.min(), p.example(), p.comment(), p.complex(),
-				p.custom());
+		return new ParamSpec(p.value(), p.required(), p.max(), p.min(), p.example(), p.comment(), p.complex(), null);
 	}
 
 	public static SoaSpec create(Soa soa) {

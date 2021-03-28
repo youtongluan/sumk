@@ -31,7 +31,7 @@ public interface ParameterInfo {
 
 	boolean isComplex();
 
-	String custom();
+	Object custom();
 
 	String example();
 

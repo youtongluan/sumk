@@ -29,19 +29,20 @@ import org.yx.util.Task;
 
 public class LocalUserSession extends AbstractUserSession {
 
-	protected Map<String, String> userSessionMap = Collections.synchronizedMap(new LinkedHashMap<String, String>() {
-		private static final long serialVersionUID = 1L;
+	protected Map<String, String> userSessionMap = Collections
+			.synchronizedMap(new LinkedHashMap<String, String>(128, 0.75f, true) {
+				private static final long serialVersionUID = 1L;
 
-		@Override
-		protected boolean removeEldestEntry(Entry<String, String> eldest) {
-			return this.size() > AppInfo.getInt("sumk.http.localsession.maxSize", 1000);
-		}
+				@Override
+				protected boolean removeEldestEntry(Entry<String, String> eldest) {
+					return this.size() > AppInfo.getInt("sumk.http.localsession.maxSize", 1000);
+				}
 
-	});
+			});
 
 	public LocalUserSession() {
 		log.info("$$$use local user session");
-		long seconds = AppInfo.getInt("sumk.http.session.period", 30);
+		long seconds = AppInfo.getLong("sumk.http.session.period", 30L);
 		Task.scheduleAtFixedRate(() -> CacheHelper.expire(cache, HttpSettings.httpSessionTimeoutInMs()), seconds,
 				seconds, TimeUnit.SECONDS);
 	}

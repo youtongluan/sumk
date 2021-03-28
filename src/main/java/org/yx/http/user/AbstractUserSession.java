@@ -44,7 +44,16 @@ public abstract class AbstractUserSession implements UserSession {
 
 	@Override
 	public <T extends SessionObject> T getUserObject(String sessionId, Class<T> clz) {
-		TimedCachedObject obj = this.loadTimedCachedObject(sessionId, true);
+		return this._getUserObject(sessionId, clz, false);
+	}
+
+	@Override
+	public <T extends SessionObject> T loadUserObject(String sessionId, Class<T> clz) {
+		return this._getUserObject(sessionId, clz, true);
+	}
+
+	private <T extends SessionObject> T _getUserObject(String sessionId, Class<T> clz, boolean refreshTTL) {
+		TimedCachedObject obj = this.loadTimedCachedObject(sessionId, refreshTTL);
 		if (obj == null) {
 			return null;
 		}

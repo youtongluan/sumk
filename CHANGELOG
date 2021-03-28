@@ -260,3 +260,7 @@ v2.9.9
 
 v2.9.10
 1、对于常见的注解，使用相应Spec将它包装起来，以支持自定义注解。同时移除HttpActionNode的web()方法，upload()也改为返回UploadSpec
+
+v2.9.11
+1、接口方式的rpc调用，如果返回值是泛型，不再需要手工调用JsonTypes进行注册
+2、去掉@Param的custom属性，但是保留ParamSpec的custom属性，开发者可以通过这里的custom进行扩展

@@ -20,6 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.yx.main.SumkThreadPool;
 
+/**
+ * 这个定时任务与jvm自带的不同点在于： 它不会因为异常而停止，并且它不额外占用线程
+ */
 public final class Task {
 	public static ScheduledFuture<?> scheduleAtFixedRate(Runnable job, long delayMS, long periodMS) {
 		return SumkThreadPool.scheduleAtFixedRate(job, delayMS, periodMS);

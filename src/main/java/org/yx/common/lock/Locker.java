@@ -59,7 +59,7 @@ public final class Locker {
 		if (redis == null) {
 			throw new SumkException(8295462, "SLock must use in redis environment");
 		}
-		return redis;
+		return redis.mute();
 	}
 
 	private static final ThreadLocal<List<SLock>> locks = new ThreadLocal<List<SLock>>() {
@@ -188,7 +188,8 @@ public final class Locker {
 		}
 
 		long endTime = System.currentTimeMillis() + mils;
-		if (Locker.redis(slock.getId()).pexpireAt(slock.getId(), endTime) > 0) {
+		Long resp = Locker.redis(slock.getId()).pexpireAt(slock.getId(), endTime);
+		if (resp != null && resp.longValue() > 0) {
 			slock.resetEndTime(endTime);
 			return true;
 		}

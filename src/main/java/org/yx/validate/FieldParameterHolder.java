@@ -32,7 +32,6 @@ import org.yx.annotation.spec.ParamSpec;
 import org.yx.annotation.spec.Specs;
 import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
-import org.yx.util.StringUtil;
 
 public final class FieldParameterHolder {
 	private static final ConcurrentMap<Class<?>, List<FieldParameterInfo>> map = new ConcurrentHashMap<>();
@@ -90,7 +89,8 @@ public final class FieldParameterHolder {
 				if (p == null) {
 					continue;
 				}
-				if (!p.required() && p.max() < 0 && p.min() < 0 && !p.complex() && StringUtil.isEmpty(p.custom())) {
+
+				if (!p.required() && p.max() < 0 && p.min() < 0 && !p.complex() && (p.custom() == null)) {
 					continue;
 				}
 				FieldParameterInfo info = new FieldParameterInfo(p, f);
@@ -103,7 +103,8 @@ public final class FieldParameterHolder {
 		}
 
 		if (list.size() > 0) {
-			FieldParameterHolder.put(clazz, CollectionUtil.unmodifyList(list));
+			FieldParameterHolder.put(clazz,
+					CollectionUtil.unmodifyList(list.toArray(new FieldParameterInfo[list.size()])));
 		}
 	}
 }

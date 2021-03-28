@@ -30,7 +30,7 @@ public abstract class AbstractParamInfo implements ParameterInfo {
 	}
 
 	@Override
-	public String custom() {
+	public Object custom() {
 		return this.param.custom();
 	}
 
