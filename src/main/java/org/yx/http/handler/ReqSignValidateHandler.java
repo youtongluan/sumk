@@ -50,7 +50,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		if (bs == null) {
 			return;
 		}
-		String sign = ctx.sign();
+		String sign = ctx.httpRequest().getParameter("sign");
 		if (StringUtil.isEmpty(sign)) {
 			throw BizException.create(HttpErrorCode.SIGN_EMPTY, "签名不能为空");
 		}

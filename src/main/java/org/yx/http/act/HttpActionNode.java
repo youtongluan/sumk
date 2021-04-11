@@ -90,11 +90,12 @@ public final class HttpActionNode extends CalleeNode {
 				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
 		this.cnName = action.cnName();
 		this.httpMethod = httpMethod(action);
-		this.requestType = getMessageType(action.requestType(), "sumk.http.request.type");
+		this.requestType = this.isEmptyArgument() ? MessageType.PLAIN
+				: getMessageType(action.requestType(), "sumk.http.request.type");
 		this.responseType = getMessageType(action.responseType(), "sumk.http.response.type");
 		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
 				|| action.requestType().isEncrypt() || action.responseType().isEncrypt();
-		this.sign = action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);
+		this.sign = !this.isEmptyArgument() && action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);
 		this.tags = CollectionUtil.unmodifyList(action.tags());
 		this.upload = Specs.extractUpload(obj, method);
 	}
@@ -109,10 +110,20 @@ public final class HttpActionNode extends CalleeNode {
 		return requireLogin;
 	}
 
+	/**
+	 * 如果没有入参，那么它一定是PLAIN类型
+	 * 
+	 * @return 请求体类型
+	 */
 	public MessageType requestType() {
 		return requestType;
 	}
 
+	/**
+	 * 如果没有入参，那么它就一定是false
+	 * 
+	 * @return 参数签名
+	 */
 	public boolean sign() {
 		return sign;
 	}

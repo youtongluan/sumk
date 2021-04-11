@@ -32,7 +32,6 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	private final HttpServletRequest httpRequest;
 	private final HttpServletResponse httpResponse;
 	private final Charset charset;
-	private String sign;
 	private Object data;
 
 	private int lowestOrder;
@@ -100,19 +99,11 @@ public class WebContext extends NodeContext<HttpActionNode> {
 		return httpResponse;
 	}
 
-	public String sign() {
-		return sign;
-	}
-
 	void data(Object data) {
 		this.data = data;
 		if (data != null && String.class == data.getClass()) {
 			this.str_data = (String) data;
 		}
-	}
-
-	void sign(String sign) {
-		this.sign = sign;
 	}
 
 	/**

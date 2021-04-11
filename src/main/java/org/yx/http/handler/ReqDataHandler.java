@@ -44,7 +44,6 @@ public class ReqDataHandler implements HttpHandler {
 			return;
 		}
 		HttpServletRequest req = ctx.httpRequest();
-		ctx.sign(req.getParameter("sign"));
 		String data = req.getParameter("data");
 		if (data != null) {
 			ctx.data(data);

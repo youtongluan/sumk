@@ -29,8 +29,7 @@ public class DecryptHandler implements HttpHandler {
 
 	@Override
 	public void handle(WebContext ctx) throws Exception {
-		if (!ctx.node().requestType().isEncrypt() || ctx.node().isEmptyArgument()
-				|| HttpSettings.allowPlain(ctx.httpRequest())) {
+		if (!ctx.node().requestType().isEncrypt() || HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();

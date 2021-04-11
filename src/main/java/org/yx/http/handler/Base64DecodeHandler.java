@@ -30,8 +30,7 @@ public class Base64DecodeHandler implements HttpHandler {
 	@Override
 	public void handle(WebContext ctx) throws Exception {
 
-		if (!ctx.node().requestType().isBase64() || ctx.node().isEmptyArgument()
-				|| HttpSettings.allowPlain(ctx.httpRequest())) {
+		if (!ctx.node().requestType().isBase64() || HttpSettings.allowPlain(ctx.httpRequest())) {
 			return;
 		}
 		byte[] bs = ctx.getDataInByteArray();
