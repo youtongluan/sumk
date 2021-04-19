@@ -23,10 +23,16 @@ import org.yx.conf.AppInfo;
 public abstract class AbstractParamInfo implements ParameterInfo {
 	private final ParamSpec param;
 	private final boolean required;
+	private final boolean complex;
+	private final boolean maybeCheck;
 
-	public AbstractParamInfo(ParamSpec param) {
+	public AbstractParamInfo(ParamSpec param, Class<?> type) {
 		this.param = Objects.requireNonNull(param);
 		this.required = param.required() && AppInfo.getBoolean("sumk.param.required.enable", true);
+		this.complex = Validators.supportComplex(Objects.requireNonNull(type)) && param.complex();
+
+		this.maybeCheck = this.required || this.complex || param.max() >= 0 || param.min() >= 0
+				|| param.custom() != null;
 	}
 
 	@Override
@@ -65,4 +71,11 @@ public abstract class AbstractParamInfo implements ParameterInfo {
 		return this.param.value();
 	}
 
+	public boolean isComplex() {
+		return complex;
+	}
+
+	public boolean maybeCheck() {
+		return maybeCheck;
+	}
 }

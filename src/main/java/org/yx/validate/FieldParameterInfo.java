@@ -24,12 +24,9 @@ public class FieldParameterInfo extends AbstractParamInfo {
 
 	protected final Field field;
 
-	private final boolean complex;
-
 	public FieldParameterInfo(ParamSpec param, Field field) {
-		super(param);
-		this.field = Objects.requireNonNull(field);
-		this.complex = param.complex() && !field.getType().isPrimitive();
+		super(param, Objects.requireNonNull(field).getType());
+		this.field = field;
 		this.field.setAccessible(true);
 	}
 
@@ -39,10 +36,6 @@ public class FieldParameterInfo extends AbstractParamInfo {
 
 	public Class<?> getParamType() {
 		return field.getType();
-	}
-
-	public boolean isComplex() {
-		return complex;
 	}
 
 	public Field getField() {

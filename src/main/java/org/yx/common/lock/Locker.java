@@ -26,6 +26,7 @@ import java.util.Set;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.main.StartContext;
 import org.yx.main.SumkServer;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisPool;
@@ -214,7 +215,7 @@ public final class Locker {
 			Log.get("sumk.lock").error("Lock init failed. Maybe you need restart!!!");
 			Log.printStack("sumk.lock", e);
 			if (AppInfo.getBoolean("sumk.shutdown.if.lock.failed", false)) {
-				System.exit(1);
+				StartContext.startFailed();
 			}
 		}
 	};

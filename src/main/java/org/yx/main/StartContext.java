@@ -76,8 +76,8 @@ public final class StartContext {
 		inst = new StartContext();
 	}
 
-	public static void startFail() {
-		if (AppInfo.getBoolean("sumk.exitIfFail", true)) {
+	public static void startFailed() {
+		if (AppInfo.getBoolean("sumk.exitIfStartFail", true)) {
 			System.exit(1);
 		}
 	}

@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.yx.log.RawLog;
+import org.yx.main.StartContext;
 import org.yx.util.StringUtil;
 
 public final class AppInfo {
@@ -58,14 +59,14 @@ public final class AppInfo {
 			}
 		} catch (Exception e) {
 			RawLog.error("sumk.conf", e);
-			System.exit(1);
+			StartContext.startFailed();
 		}
 		if (info == null) {
 			try {
 				setConfig(ComposedConfig.createSystemConfig(new AppConfig()));
 			} catch (Exception e) {
 				RawLog.error("sumk.conf", e);
-				System.exit(1);
+				StartContext.startFailed();
 			}
 		}
 	}

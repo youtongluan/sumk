@@ -34,7 +34,6 @@ import org.yx.conf.Const;
 /**
  * 本类的许多方法都会对key、value做trim()处理
  */
-
 public final class CollectionUtil {
 
 	private static final String INGORE_PREFIX = "#";

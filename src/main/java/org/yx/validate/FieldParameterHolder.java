@@ -18,7 +18,6 @@ package org.yx.validate;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +29,6 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.yx.annotation.spec.ParamSpec;
 import org.yx.annotation.spec.Specs;
-import org.yx.log.Logs;
 import org.yx.util.CollectionUtil;
 
 public final class FieldParameterHolder {
@@ -68,9 +66,7 @@ public final class FieldParameterHolder {
 			registerFieldInfo(clazz.getComponentType());
 			return;
 		}
-		if (clazz.isAssignableFrom(Collection.class)) {
-
-			Logs.system().warn("@Param不支持泛型，包括集合Collection");
+		if (!Validators.supportComplex(clazz)) {
 			return;
 		}
 		if (get(clazz) != null) {
@@ -89,11 +85,11 @@ public final class FieldParameterHolder {
 				if (p == null) {
 					continue;
 				}
+				FieldParameterInfo info = new FieldParameterInfo(p, f);
 
-				if (!p.required() && p.max() < 0 && p.min() < 0 && !p.complex() && (p.custom() == null)) {
+				if (!info.maybeCheck()) {
 					continue;
 				}
-				FieldParameterInfo info = new FieldParameterInfo(p, f);
 				list.add(info);
 				if (info.isComplex()) {
 					registerFieldInfo(info.getParamType());
@@ -103,8 +99,7 @@ public final class FieldParameterHolder {
 		}
 
 		if (list.size() > 0) {
-			FieldParameterHolder.put(clazz,
-					CollectionUtil.unmodifyList(list.toArray(new FieldParameterInfo[list.size()])));
+			put(clazz, CollectionUtil.unmodifyList(list.toArray(new FieldParameterInfo[list.size()])));
 		}
 	}
 }

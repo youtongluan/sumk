@@ -24,11 +24,11 @@ import org.yx.exception.SimpleSumkException;
 import org.yx.log.Logs;
 
 @Bean
-public class ComplexValidator implements Validator {
+public class ComplexParamValidator implements Validator {
 
 	@Override
 	public void valid(final ParameterInfo info, Object arg) throws InvalidParamException {
-		if (!info.isComplex() || arg == null) {
+		if (info == null || arg == null) {
 			return;
 		}
 		Class<?> clz = arg.getClass();
@@ -37,17 +37,12 @@ public class ComplexValidator implements Validator {
 			if (length == 0) {
 				return;
 			}
-			clz = clz.getComponentType();
-			if (FieldParameterHolder.get(clz) == null || clz == String.class || Number.class.isAssignableFrom(clz)
-					|| clz.isPrimitive()) {
-				for (int i = 0; i < length; i++) {
-					Validators.check(info, Array.get(arg, i));
-				}
-				return;
-			}
 			for (int i = 0; i < length; i++) {
-				this.valid(info, Array.get(arg, i));
+				Validators.check(info, Array.get(arg, i));
 			}
+			return;
+		}
+		if (!info.isComplex()) {
 			return;
 		}
 		this.checkFields(FieldParameterHolder.get(clz), arg);

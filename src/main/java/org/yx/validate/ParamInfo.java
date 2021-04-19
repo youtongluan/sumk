@@ -25,13 +25,10 @@ public class ParamInfo extends AbstractParamInfo {
 
 	private final Class<?> paramType;
 
-	private final boolean complex;
-
 	public ParamInfo(ParamSpec param, String paramName, Class<?> type) {
-		super(param);
+		super(param, type);
 		this.paramName = Objects.requireNonNull(paramName);
-		this.paramType = Objects.requireNonNull(type);
-		this.complex = param.complex();
+		this.paramType = type;
 	}
 
 	public String getParamName() {
@@ -41,9 +38,4 @@ public class ParamInfo extends AbstractParamInfo {
 	public Class<?> getParamType() {
 		return paramType;
 	}
-
-	public boolean isComplex() {
-		return complex;
-	}
-
 }

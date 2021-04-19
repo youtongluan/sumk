@@ -25,6 +25,7 @@ import org.yx.bean.Plugin;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.main.SumkServer;
 import org.yx.main.SumkThreadPool;
 import org.yx.validate.Validators;
@@ -55,7 +56,7 @@ public class PluginBooter {
 					Logs.ioc().debug("{} startAsync finished", plugin.getClass().getSimpleName());
 				} catch (Throwable e) {
 					Logs.ioc().error(plugin.getClass().getSimpleName() + " start failed", e);
-					System.exit(1);
+					StartContext.startFailed();
 				}
 			});
 		}
@@ -64,12 +65,12 @@ public class PluginBooter {
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
 				Logs.ioc().error("plugins failed to start in {}ms", timeout);
-				System.exit(1);
+				StartContext.startFailed();
 			}
 		} catch (InterruptedException e) {
 			Logs.ioc().error("receive InterruptedException in plugin starting");
 			Thread.currentThread().interrupt();
-			System.exit(1);
+			StartContext.startFailed();
 		}
 		for (Plugin plugin : plugins) {
 			plugin.afterStarted();

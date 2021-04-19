@@ -96,6 +96,16 @@ public class ParamDescript {
 		return this;
 	}
 
+	public ParamDescript setType(Class<?> type) {
+		String subfix = "";
+		while (type.isArray()) {
+			subfix += "[]";
+			type = type.getComponentType();
+		}
+		this.type = type.getName() + subfix;
+		return this;
+	}
+
 	public String getExample() {
 		return example;
 	}

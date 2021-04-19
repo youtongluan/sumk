@@ -36,6 +36,7 @@ import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 
 public final class AsmUtils {
 
@@ -49,7 +50,7 @@ public final class AsmUtils {
 			defineClass.setAccessible(true);
 		} catch (Exception e) {
 			Log.printStack("sumk.error", e);
-			System.exit(1);
+			StartContext.startFailed();
 		}
 	}
 

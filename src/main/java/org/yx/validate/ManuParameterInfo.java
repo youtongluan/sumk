@@ -107,4 +107,9 @@ public class ManuParameterInfo implements ParameterInfo {
 	public void setComment(String comment) {
 		this.comment = comment;
 	}
+
+	@Override
+	public boolean maybeCheck() {
+		return this.required || this.complex || max >= 0 || min >= 0 || custom != null;
+	}
 }

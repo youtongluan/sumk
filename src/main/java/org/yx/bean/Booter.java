@@ -119,7 +119,7 @@ public final class Booter {
 			}
 			try {
 				if (logger.isTraceEnabled()) {
-					logger.trace("{} begin loading");
+					logger.trace("{} begin loading", c);
 				}
 
 				Class<?> clz = Loader.loadClassExactly(c);
@@ -162,7 +162,7 @@ public final class Booter {
 					latch.countDown();
 					Logs.ioc().debug("{} finished", c.getClass().getSimpleName());
 				} catch (Throwable e) {
-					System.exit(1);
+					StartContext.startFailed();
 				}
 			});
 		}
@@ -170,12 +170,12 @@ public final class Booter {
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
 				Logs.ioc().error("plugins failed to start in {}ms", timeout);
-				System.exit(1);
+				StartContext.startFailed();
 			}
 		} catch (InterruptedException e) {
 			Logs.ioc().error("receive InterruptedException in ioc publishing");
 			Thread.currentThread().interrupt();
-			System.exit(1);
+			StartContext.startFailed();
 		}
 	}
 
@@ -183,14 +183,14 @@ public final class Booter {
 		for (Class<?> clz : clazzList) {
 			try {
 				consumer.accept(clz);
-			} catch (LinkageError e) {
+			} catch (Throwable e) {
 				String c = clz.getName();
-				if (c.startsWith("org.yx.") || optional.test(c)) {
+				if (LinkageError.class.isInstance(e) && (c.startsWith("org.yx.") || optional.test(c))) {
 					logger.debug("{} ignored in {} publish because: {}", c, consumer.getClass().getName(),
 							e.getMessage());
 					continue;
 				}
-				logger.error("{} publish失败，原因是:{}", consumer.getClass().getName(), e.getLocalizedMessage());
+				logger.error("{} 在 {} 发布失败，原因是:{}", c, consumer.getClass().getName(), e.getLocalizedMessage());
 				Logs.ioc().error(e.getMessage(), e);
 				throw e;
 			}

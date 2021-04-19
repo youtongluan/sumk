@@ -130,7 +130,7 @@ public final class SumkServer {
 			} catch (InterruptedException e1) {
 				Thread.currentThread().interrupt();
 			}
-			System.exit(1);
+			StartContext.startFailed();
 		}
 	}
 

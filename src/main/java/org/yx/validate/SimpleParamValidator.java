@@ -30,6 +30,10 @@ public class SimpleParamValidator implements Validator {
 				throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), info);
 			}
 		}
+		if (arg == null) {
+			return;
+		}
+
 		String msg = buildMaxMessage(info.getMax(), arg);
 		if (msg != null) {
 			throw new InvalidParamException(msg, info);
@@ -42,7 +46,7 @@ public class SimpleParamValidator implements Validator {
 	}
 
 	public static String buildMaxMessage(int expect, Object arg) {
-		if (expect < 0 || arg == null) {
+		if (expect < 0) {
 			return null;
 		}
 		Class<?> clz = arg.getClass();
@@ -62,7 +66,7 @@ public class SimpleParamValidator implements Validator {
 	}
 
 	public static String buildMinMessage(int expect, Object arg) {
-		if (expect < 0 || arg == null) {
+		if (expect < 0) {
 			return null;
 		}
 		Class<?> clz = arg.getClass();

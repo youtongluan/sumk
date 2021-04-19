@@ -140,7 +140,7 @@ public class JettyServer implements Lifecycle {
 			server.setHandler(context);
 		} catch (Throwable e) {
 			Logs.http().error(e.getLocalizedMessage(), e);
-			StartContext.startFail();
+			StartContext.startFailed();
 		}
 
 	}

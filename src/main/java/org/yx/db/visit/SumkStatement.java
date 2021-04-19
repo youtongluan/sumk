@@ -23,6 +23,7 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -38,11 +39,13 @@ import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.SumkDate;
 
-public class SumkStatement {
+public class SumkStatement implements AutoCloseable {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
 	private static SqlLog sqlLog = (a, b, c) -> {
 	};
 	private static CodeLineMarker marker = new CodeLineMarker("org.yx.db.");
+	private static final AtomicLong EXECUTE_COUNT = new AtomicLong();
+	private static final AtomicLong CLOSED_COUNT = new AtomicLong();
 	private static BiConsumer<PreparedStatement, List<Object>> statementParamAttacher = (ps, params) -> {
 		int size = params.size();
 		if (size == 0) {
@@ -84,6 +87,7 @@ public class SumkStatement {
 	private final long beginTime;
 	private int sqlTime;
 	private int modifyCount = -1;
+	private Throwable exception;
 
 	/**
 	 * 非空
@@ -117,17 +121,23 @@ public class SumkStatement {
 		attachParams();
 	}
 
-	public int executeUpdate() throws SQLException {
+	private PreparedStatement checkStatement() throws SQLException {
 		PreparedStatement statement = this.statement.get();
 		if (statement == null) {
 			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
 		}
+		EXECUTE_COUNT.incrementAndGet();
+		return statement;
+	}
+
+	public int executeUpdate() throws SQLException {
+		PreparedStatement statement = checkStatement();
 		modifyCount = 0;
 		try {
 			modifyCount = statement.executeUpdate();
 		} catch (Exception e) {
+			this.exception = e;
 			sqlTime = (int) (System.currentTimeMillis() - beginTime);
-			close(e);
 			throw e;
 		}
 		sqlTime = (int) (System.currentTimeMillis() - beginTime);
@@ -135,47 +145,33 @@ public class SumkStatement {
 	}
 
 	public ResultSet executeQuery() throws Exception {
-		PreparedStatement statement = this.statement.get();
-		if (statement == null) {
-			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
-		}
+		PreparedStatement statement = checkStatement();
 		ResultSet ret = null;
 		try {
 			ret = statement.executeQuery();
 		} catch (Exception e) {
+			this.exception = e;
 			sqlTime = (int) (System.currentTimeMillis() - beginTime);
-			close(e);
 			throw e;
 		}
 		sqlTime = (int) (System.currentTimeMillis() - beginTime);
 		return ret;
 	}
 
-	private void close(Exception e) {
+	public void close() throws SQLException {
 		PreparedStatement statement = this.statement.getAndSet(null);
 		if (statement == null) {
 			return;
 		}
 		try {
-			statement.close();
-			if (DBSettings.isUnionLogEnable()) {
-				sqlLog.log(this, -1, e);
+			if (this.exception != null) {
+				LOG.error(marker, DBKits.getSqlOfStatement(statement) + ", 发生异常", this.exception);
 			}
-		} catch (SQLException e1) {
-			Logs.db().error(e1.getMessage(), e1);
-		}
-	}
-
-	public synchronized void close() throws SQLException {
-		PreparedStatement statement = this.statement.getAndSet(null);
-		if (statement == null) {
-			return;
-		}
-		try {
 			statement.close();
+			CLOSED_COUNT.incrementAndGet();
 			int totalTime = (int) (System.currentTimeMillis() - beginTime);
-			if (DBSettings.isUnionLogEnable() && totalTime >= DBSettings.unionLogTime()) {
-				sqlLog.log(this, totalTime, null);
+			if (DBSettings.isUnionLogEnable() && (this.exception != null || totalTime >= DBSettings.unionLogTime())) {
+				sqlLog.log(this, totalTime, this.exception);
 			}
 			this.logSpendTime();
 		} catch (SQLException e1) {
@@ -232,5 +228,13 @@ public class SumkStatement {
 
 	public MapedSql getMaped() {
 		return maped;
+	}
+
+	public static long getExecuteCount() {
+		return EXECUTE_COUNT.get();
+	}
+
+	public static long getClosedCount() {
+		return CLOSED_COUNT.get();
 	}
 }

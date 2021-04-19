@@ -74,7 +74,7 @@ public abstract class CalleeNode {
 			return;
 		}
 		for (ParamInfo pf : this.paramInfos) {
-			if (pf == null) {
+			if (pf == null || !pf.isComplex()) {
 				continue;
 			}
 			FieldParameterHolder.registerFieldInfo(pf.getParamType());

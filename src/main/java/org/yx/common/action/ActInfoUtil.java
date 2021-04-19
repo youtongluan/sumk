@@ -37,6 +37,7 @@ import org.yx.validate.FieldParameterHolder;
 import org.yx.validate.FieldParameterInfo;
 import org.yx.validate.ManuParameterInfo;
 import org.yx.validate.ParameterInfo;
+import org.yx.validate.Validators;
 
 public final class ActInfoUtil {
 
@@ -127,11 +128,6 @@ public final class ActInfoUtil {
 		return map;
 	}
 
-	private static boolean isAtomic(Class<?> clazz) {
-		return clazz.isPrimitive() || clazz.getName().startsWith("java.") || clazz == SumkDate.class
-				|| Map.class.isAssignableFrom(clazz) || Collection.class.isAssignableFrom(clazz);
-	}
-
 	public static ParamDescript fullDescribe(Class<?> clazz, ParameterInfo info, boolean supportComplex,
 			Class<? extends Annotation> exclude) {
 		if (clazz.isArray()) {
@@ -141,10 +137,10 @@ public final class ActInfoUtil {
 			return pd;
 		}
 		ParamDescript pd = new ParamDescript();
-		if (isAtomic(clazz)) {
-			return pd.copyFrom(info, true).setType(clazz.getName());
+		if (!Validators.supportComplex(clazz)) {
+			return pd.copyFrom(info, true).setType(clazz);
 		}
-		pd.copyFrom(info, supportComplex).setType(clazz.getName());
+		pd.copyFrom(info, supportComplex).setType(clazz);
 		if (clazz.isAnnotationPresent(exclude)) {
 
 			Logs.http().warn("{}被{}注解了，可能引起一些奇怪的业务反应", clazz.getName(), exclude.getSimpleName());
@@ -170,8 +166,8 @@ public final class ActInfoUtil {
 				}
 			}
 
-			if (isAtomic(f.getType())) {
-				ParamDescript leaf = new ParamDescript().copyFrom(fp, supportComplex).setType(f.getType().getName());
+			if (!Validators.supportComplex(f.getType())) {
+				ParamDescript leaf = new ParamDescript().copyFrom(fp, supportComplex).setType(f.getType());
 				list.add(leaf);
 				continue;
 			}

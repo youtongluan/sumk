@@ -36,4 +36,6 @@ public interface ParameterInfo {
 	String example();
 
 	String comment();
+
+	boolean maybeCheck();
 }
