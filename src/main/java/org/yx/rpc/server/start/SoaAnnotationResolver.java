@@ -33,9 +33,11 @@ import org.yx.bean.Loader;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.log.RawLog;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.RpcActions;
 import org.yx.util.StringUtil;
@@ -46,12 +48,12 @@ public class SoaAnnotationResolver {
 	private Predicate<String> exclude = BooleanMatcher.FALSE;
 
 	public SoaAnnotationResolver() {
-		nameResolver = Loader.newInstanceFromAppKey("sumk.rpc.name.resolver");
+		nameResolver = newInstanceFromAppKey("sumk.rpc.name.resolver");
 		if (nameResolver == null) {
 			nameResolver = new SoaNameResolverImpl();
 		}
 
-		soaClassResolver = Loader.newInstanceFromAppKey("sumk.rpc.name.soaclass.resolver");
+		soaClassResolver = newInstanceFromAppKey("sumk.rpc.name.soaclass.resolver");
 		if (soaClassResolver == null) {
 			soaClassResolver = new SoaClassResolverImpl();
 		}
@@ -132,7 +134,7 @@ public class SoaAnnotationResolver {
 			}
 
 			int toplimit = act != null && act.toplimit() > 0 ? act.toplimit()
-					: AppInfo.getInt("sumk.rpc.thread.priority.default", 100000);
+					: AppInfo.getInt("sumk.rpc.toplimit.default", Const.DEFAULT_TOPLIMIT);
 			boolean publish = act != null ? act.publish() : true;
 			RpcActionNode node = new RpcActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), toplimit,
 					publish);
@@ -152,4 +154,17 @@ public class SoaAnnotationResolver {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T newInstanceFromAppKey(String key) {
+		String daoClz = AppInfo.get(key);
+		if (daoClz != null && daoClz.length() > 2) {
+			try {
+				return (T) Loader.newInstance(daoClz);
+			} catch (Throwable e) {
+				RawLog.error("sumk.bean", e.getMessage(), e);
+				return null;
+			}
+		}
+		return null;
+	}
 }

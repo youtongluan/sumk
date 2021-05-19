@@ -37,15 +37,13 @@ public class BeanFactory implements Consumer<Class<?>> {
 			} else {
 				InnerIOC.putClass(b.value(), clz);
 			}
-		} catch (RuntimeException e) {
-			throw e;
 		} catch (Exception e) {
 			throw new SumkException(-345365, "IOC error on " + clz, e);
 		}
 
 	}
 
-	private void putFactoryBean(Collection<?> beans) throws Exception {
+	public static void putFactoryBean(Collection<?> beans) throws Exception {
 		if (beans != null && beans.size() > 0) {
 			for (Object obj : beans) {
 				putBean(null, obj);
@@ -53,7 +51,7 @@ public class BeanFactory implements Consumer<Class<?>> {
 		}
 	}
 
-	private void putBean(String name, Object obj) throws Exception {
+	public static void putBean(String name, Object obj) throws Exception {
 		if (obj == null) {
 			return;
 		}
@@ -65,13 +63,13 @@ public class BeanFactory implements Consumer<Class<?>> {
 
 		if (clz == NamedBean.class) {
 			NamedBean named = (NamedBean) obj;
-			this.putBean(named.getBeanName(), named.getBean());
+			putBean(named.getBeanName(), named.getBean());
 			return;
 		}
 
 		if (clz == InterfaceBean.class) {
 			InterfaceBean complex = (InterfaceBean) obj;
-			this.putBean(BeanKit.resloveBeanName(complex.getIntf()), complex.getBean());
+			putBean(BeanKit.resloveBeanName(complex.getIntf()), complex.getBean());
 			return;
 		}
 

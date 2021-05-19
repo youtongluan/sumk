@@ -264,3 +264,6 @@ v2.9.10
 v2.9.11
 1、接口方式的rpc调用，如果返回值是泛型，不再需要手工调用JsonTypes进行注册
 2、去掉@Param的custom属性，但是保留ParamSpec的custom属性，开发者可以通过这里的custom进行扩展
+
+v2.9.12
+1、支持配置sumk.start.before.class.XX来设置一个Runnable类，它会在启动IOC容器前被调用

@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
 import org.yx.common.Monitors;
-import org.yx.common.action.ActStatis;
+import org.yx.common.action.ActionStatis;
 import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
@@ -124,7 +124,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		if (!"1".equals(req.getParameter("statis"))) {
 			return;
 		}
-		ActStatis actStatic = InnerHttpUtil.getActStatis();
+		ActionStatis actStatic = InnerHttpUtil.getActionStatis();
 		boolean needReset = "1".equals(req.getParameter("statis.reset"))
 				&& AppInfo.getBoolean("sumk.http.statis.reset.allow", true);
 		Map<String, StatisItem> map = needReset ? actStatic.getAndReset() : actStatic.getAll();

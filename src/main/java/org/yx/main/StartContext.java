@@ -66,10 +66,10 @@ public final class StartContext {
 		return map.get(clz.getName());
 	}
 
-	public <T> T get(Class<T> clz, T defaultV) {
+	public <T> T get(Class<T> clz, T defaultObject) {
 		String key = clz.getName();
 		Object old = map.get(key);
-		return clz.isInstance(old) ? clz.cast(old) : defaultV;
+		return clz.isInstance(old) ? clz.cast(old) : defaultObject;
 	}
 
 	public static void clear() {

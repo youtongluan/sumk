@@ -27,6 +27,16 @@ public final class RpcSettings {
 	private static boolean disableLocalRoute;
 	private static int clientTryCount;
 	private static boolean showServerExceptionLog;
+	private static int maxReqLogSize;
+	private static int maxRespLogSize;
+
+	public static int maxReqLogSize() {
+		return maxReqLogSize;
+	}
+
+	public static int maxRespLogSize() {
+		return maxRespLogSize;
+	}
 
 	public static boolean showServerExceptionLog() {
 		return showServerExceptionLog;
@@ -74,6 +84,8 @@ public final class RpcSettings {
 			RpcSettings.clientTryCount = AppInfo.getInt("sumk.rpc.client.trycount", 3);
 			RpcSettings.disableLocalRoute = AppInfo.getBoolean("sumk.rpc.localroute.disable", false);
 			RpcSettings.showServerExceptionLog = AppInfo.getBoolean("sumk.rpc.server.exceptionlog", false);
+			RpcSettings.maxReqLogSize = AppInfo.getInt("sumk.rpc.log.reqsize", 1000);
+			RpcSettings.maxRespLogSize = AppInfo.getInt("sumk.rpc.log.respsize", 5000);
 		});
 	}
 }

@@ -16,8 +16,8 @@
 package org.yx.db.exec;
 
 import java.sql.SQLException;
-import java.util.Objects;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -25,10 +25,12 @@ import org.yx.log.Log;
 public final class DBTransaction implements AutoCloseable {
 
 	private ConnectionPool dbCtx = null;
+
+	@NotNull
 	private final DBSource box;
 
-	public DBTransaction(DBSource box) {
-		this.box = Objects.requireNonNull(box);
+	public DBTransaction(@NotNull DBSource box) {
+		this.box = box;
 	}
 
 	public void begin() {

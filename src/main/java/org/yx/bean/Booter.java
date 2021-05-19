@@ -15,12 +15,10 @@
  */
 package org.yx.bean;
 
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -52,11 +50,13 @@ public final class Booter {
 	private final Logger logger = Logs.ioc();
 	private final List<Consumer<Class<?>>> parallelListeners;
 	private final Predicate<String> excludeMatcher;
+	private final BeanFieldFinder fieldFinder;
 
 	public Booter() {
 		this.excludeMatcher = createExcludeMatcher();
 		this.parallelListeners = CollectionUtil.unmodifyList(getParallelListeners());
 		logger.debug("bean exclude matcher:{}", excludeMatcher);
+		this.fieldFinder = StartContext.inst().get(BeanFieldFinder.class, new DefaultBeanFieldFinder());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -197,25 +197,6 @@ public final class Booter {
 		}
 	}
 
-	private Object getBean(Field f) {
-		String name = f.getName();
-		Class<?> clz = f.getType();
-
-		List<?> list = InnerIOC.pool.getBeans(name, clz);
-		if (list.size() == 1) {
-			return list.get(0);
-		}
-		if (list.size() > 1) {
-			for (Object obj : list) {
-
-				if (clz == BeanKit.getTargetClass(obj)) {
-					return obj;
-				}
-			}
-		}
-		return IOC.get(clz);
-	}
-
 	private void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
 		boolean access = f.isAccessible();
 		if (!access) {
@@ -225,13 +206,14 @@ public final class Booter {
 	}
 
 	private void autoWiredAll() throws Exception {
-		final List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans().toArray());
+		List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans().toArray());
 		StartContext.inst().setBeans(beans);
 		logger.trace("after beans create...");
 		for (BeanCreateWatcher w : IOC.getBeans(BeanCreateWatcher.class)) {
 			w.afterCreate(beans);
 		}
 		logger.trace("inject beans properties...");
+		beans = CollectionUtil.unmodifyList(InnerIOC.beans().toArray());
 		for (Object bean : beans) {
 			injectProperties(bean);
 		}
@@ -244,7 +226,6 @@ public final class Booter {
 
 	private void injectProperties(Object bean) throws Exception {
 		Class<?> tempClz = bean.getClass();
-		Class<?> fieldType;
 		while (tempClz != null && (!tempClz.getName().startsWith(Loader.JAVA_PRE))) {
 
 			Field[] fs = tempClz.getDeclaredFields();
@@ -253,15 +234,7 @@ public final class Booter {
 				if (inject == null) {
 					continue;
 				}
-				fieldType = f.getType();
-				Object target = null;
-				if (fieldType.isArray()) {
-					target = getArrayField(f, bean, inject.allowEmpty());
-				} else if (List.class == fieldType || Collection.class == fieldType) {
-					target = getListField(f, bean, inject.allowEmpty());
-				} else {
-					target = getBean(f);
-				}
+				Object target = this.fieldFinder.findTarget(f, bean, inject);
 				if (target == null) {
 					if (inject.allowEmpty()) {
 						continue;
@@ -273,40 +246,6 @@ public final class Booter {
 			}
 			tempClz = tempClz.getSuperclass();
 		}
-	}
-
-	private List<?> getListField(Field f, Object bean, boolean allowEmpty) throws ClassNotFoundException {
-		String genericName = f.getGenericType().getTypeName();
-		if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
-			throw new SimpleSumkException(-239845611,
-					bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
-		}
-		genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
-		Class<?> clz = Loader.loadClassExactly(genericName);
-		if (clz == Object.class) {
-			throw new SimpleSumkException(-23984568,
-					bean.getClass().getName() + "." + f.getName() + ": beanClz of @Inject in list type cannot be null");
-		}
-		List<?> target = IOC.getBeans(clz);
-		if (target == null || target.isEmpty()) {
-			if (!allowEmpty) {
-				throw new SimpleSumkException(-235435652, bean.getClass().getName() + "." + f.getName() + " is empty.");
-			}
-			return Collections.emptyList();
-		}
-		return CollectionUtil.unmodifyList(target.toArray());
-	}
-
-	private Object[] getArrayField(Field f, Object bean, boolean allowEmpty) {
-		Class<?> clz = f.getType().getComponentType();
-		List<?> target = IOC.getBeans(clz);
-		if (target == null || target.isEmpty()) {
-			if (!allowEmpty) {
-				throw new SimpleSumkException(-235435651, bean.getClass().getName() + "." + f.getName() + " is empty.");
-			}
-			return (Object[]) Array.newInstance(clz, 0);
-		}
-		return target.toArray((Object[]) Array.newInstance(clz, target.size()));
 	}
 
 }

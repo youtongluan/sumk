@@ -57,6 +57,10 @@ public class HostChecker {
 	}
 
 	public void addDownUrl(Host url) {
+		if (url == null) {
+			Logs.rpc().warn("url is null");
+			return;
+		}
 		downUrls.putIfAbsent(url, System.currentTimeMillis());
 		Logs.rpc().info("{} is down", url);
 	}

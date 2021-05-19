@@ -19,15 +19,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ActStatisImpl implements ActStatis {
+public class ActionStatisImpl implements ActionStatis {
 
 	private Map<String, StatisItem> actStatis;
 
-	public ActStatisImpl(Map<String, StatisItem> actStatis) {
+	public ActionStatisImpl(Map<String, StatisItem> actStatis) {
 		this.actStatis = actStatis;
 	}
 
-	public ActStatisImpl() {
+	public ActionStatisImpl() {
 		this.actStatis = new ConcurrentHashMap<>();
 	}
 

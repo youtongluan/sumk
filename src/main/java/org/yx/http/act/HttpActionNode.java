@@ -25,6 +25,7 @@ import org.yx.annotation.spec.WebSpec;
 import org.yx.asm.ArgPojo;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.http.HttpErrorCode;
@@ -87,7 +88,7 @@ public final class HttpActionNode extends CalleeNode {
 	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
 			WebSpec action) {
 		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
-				: AppInfo.getInt("sumk.http.thread.priority.default", 100000));
+				: AppInfo.getInt("sumk.http.toplimit.default", Const.DEFAULT_TOPLIMIT));
 		this.cnName = action.cnName();
 		this.httpMethod = httpMethod(action);
 		this.requestType = this.isEmptyArgument() ? MessageType.PLAIN

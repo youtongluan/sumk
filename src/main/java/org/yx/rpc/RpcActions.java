@@ -26,6 +26,7 @@ import org.yx.annotation.spec.SoaSpec;
 import org.yx.annotation.spec.Specs;
 import org.yx.common.action.ActInfoUtil;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.main.SumkServer;
 import org.yx.util.StringUtil;
 
@@ -96,7 +97,7 @@ public final class RpcActions {
 			if (!needPublish(name, rpc)) {
 				map.put("publish", Boolean.FALSE);
 			}
-			if (rpc.toplimit() != AppInfo.getInt("sumk.rpc.thread.priority.default", 100000)) {
+			if (rpc.toplimit() != Const.DEFAULT_TOPLIMIT) {
 				map.put("toplimit", rpc.toplimit());
 			}
 		}

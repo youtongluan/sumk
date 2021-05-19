@@ -25,7 +25,8 @@ import java.util.function.BiConsumer;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.action.ActStatis;
+import org.yx.common.action.ActionStatis;
+import org.yx.common.action.ActionStatisImpl;
 import org.yx.common.context.ActionContext;
 import org.yx.common.sumk.UnsafeByteArrayOutputStream;
 import org.yx.conf.AppInfo;
@@ -39,6 +40,7 @@ import org.yx.util.UUIDSeed;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
+	private static ActionStatis actStatis = new ActionStatisImpl();
 	private static BiConsumer<HttpServletRequest, HttpServletResponse> optionMethodHandler;
 
 	public static BiConsumer<HttpServletRequest, HttpServletResponse> getOptionMethodHandler() {
@@ -47,6 +49,10 @@ public final class InnerHttpUtil {
 
 	public static void setOptionMethodHandler(BiConsumer<HttpServletRequest, HttpServletResponse> optionMethodHandler) {
 		InnerHttpUtil.optionMethodHandler = optionMethodHandler;
+	}
+
+	public static void setActionStatis(ActionStatis actStatis) {
+		InnerHttpUtil.actStatis = Objects.requireNonNull(actStatis);
 	}
 
 	public static HttpKit getKit() {
@@ -84,11 +90,11 @@ public final class InnerHttpUtil {
 	}
 
 	public static void record(String act, long time, boolean isSuccess) {
-		kit.record(act, time, isSuccess);
+		actStatis.visit(act, time, isSuccess);
 	}
 
-	public static ActStatis getActStatis() {
-		return kit.actStatis();
+	public static ActionStatis getActionStatis() {
+		return actStatis;
 	}
 
 	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {

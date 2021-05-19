@@ -20,13 +20,10 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.yx.common.action.ActStatis;
-import org.yx.common.action.ActStatisImpl;
 import org.yx.http.HttpJson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -35,16 +32,6 @@ public class DefaultHttpKit implements HttpKit {
 
 	private static final int MAX_EXPECT_SIZE = 1024 * 1024;
 	private static final int MIN_EXPECT_SIZE = 64;
-
-	protected final ActStatis actStatis;
-
-	public DefaultHttpKit() {
-		this.actStatis = new ActStatisImpl();
-	}
-
-	public DefaultHttpKit(ActStatis actStatis) {
-		this.actStatis = Objects.requireNonNull(actStatis);
-	}
 
 	public Charset charset(HttpServletRequest req) {
 		String charsetName = req.getCharacterEncoding();
@@ -69,16 +56,6 @@ public class DefaultHttpKit implements HttpKit {
 		map.put("code", code);
 		map.put("message", errorMsg);
 		resp.getOutputStream().write(HttpJson.operator().toJson(map).getBytes(charset));
-	}
-
-	@Override
-	public void record(String act, long time, boolean isSuccess) {
-		actStatis.visit(act, time, isSuccess);
-	}
-
-	@Override
-	public ActStatis actStatis() {
-		return this.actStatis;
 	}
 
 	@Override

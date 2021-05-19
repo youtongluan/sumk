@@ -20,6 +20,7 @@ import static org.yx.conf.AppInfo.LN;
 import org.slf4j.Logger;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
+import org.yx.log.LogKits;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.Req;
 import org.yx.rpc.client.RpcResult;
@@ -46,14 +47,18 @@ public class PlainRpcLogHandler implements RpcLogHandler {
 
 	protected void appendParam(StringBuilder sb, Req req) {
 		if (req.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
-			sb.append("   param(json): ").append(req.getJsonedParam());
+			sb.append("   param(json): ").append(shortParam(req.getJsonedParam()));
 		} else {
-			sb.append("   param(array): ").append(S.json().toJson(req.getParamArray()));
+			sb.append("   param(array): ").append(shortParam(S.json().toJson(req.getParamArray())));
 		}
 	}
 
+	protected String shortParam(String data) {
+		return LogKits.shorterSubfix(data, RpcSettings.maxReqLogSize());
+	}
+
 	protected String getResult(String json) {
-		return json;
+		return LogKits.shorterSubfix(json, RpcSettings.maxRespLogSize());
 	}
 
 	@Override

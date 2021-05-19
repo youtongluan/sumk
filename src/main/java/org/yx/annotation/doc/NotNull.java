@@ -13,21 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.http.kit;
+package org.yx.annotation.doc;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+/**
+ * 本注解是一种规范，约定该字段或者参数不为null。<BR>
+ * 比如某个参数不能为null，而内部的方法，可能为了性能考虑，并没有做非空判断
+ *
+ */
+@Target({ ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD, ElementType.LOCAL_VARIABLE })
+@Retention(RetentionPolicy.SOURCE)
+@Documented
+public @interface NotNull {
 
-public interface HttpKit {
-
-	Charset charset(HttpServletRequest req);
-
-	void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException;
-
-	void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException;
-
-	int expectReqDataSize(int expect);
 }

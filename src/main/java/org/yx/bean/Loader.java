@@ -21,11 +21,9 @@ import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.util.Enumeration;
 
-import org.yx.conf.AppInfo;
-import org.yx.log.RawLog;
-
 public final class Loader {
 
+	public static final String JAVA_PRE = "java.";
 	private static ClassLoader classLoader;
 
 	public static void setClassLoader(ClassLoader classLoader) {
@@ -55,20 +53,6 @@ public final class Loader {
 		return c.newInstance(params);
 	}
 
-	@SuppressWarnings("unchecked")
-	public static <T> T newInstanceFromAppKey(String key) {
-		String daoClz = AppInfo.get(key);
-		if (daoClz != null && daoClz.length() > 2) {
-			try {
-				return (T) newInstance(daoClz);
-			} catch (Throwable e) {
-				RawLog.error("sumk.bean", e.getMessage(), e);
-				return null;
-			}
-		}
-		return null;
-	}
-
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
 		if (!clz.startsWith("org.") && !clz.startsWith("com.") && !clz.startsWith("net.") && !clz.startsWith("io.")) {
 			try {
@@ -95,5 +79,4 @@ public final class Loader {
 		return loader().getResource(name);
 	}
 
-	public static final String JAVA_PRE = "java.";
 }

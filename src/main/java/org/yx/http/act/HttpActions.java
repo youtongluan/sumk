@@ -67,16 +67,16 @@ public final class HttpActions {
 			String fusings = AppInfo.getLatin("sumk.http.fusing", null);
 			if (fusings == null) {
 				HttpActions.fusing = BooleanMatcher.FALSE;
-			} else {
-				Set<String> set = new HashSet<>();
-				for (String f : StringUtil.splitAndTrim(fusings, Const.COMMA, Const.SEMICOLON)) {
-					String act = formatActionName(f);
-					if (act.length() > 0) {
-						set.add(act);
-					}
-				}
-				HttpActions.fusing = Matchers.createWildcardMatcher(set, 1);
+				return;
 			}
+			Set<String> set = new HashSet<>();
+			for (String f : StringUtil.splitAndTrim(fusings, Const.COMMA, Const.SEMICOLON)) {
+				String act = formatActionName(f);
+				if (act != null && act.length() > 0) {
+					set.add(act);
+				}
+			}
+			HttpActions.fusing = Matchers.createWildcardMatcher(set, 1);
 		});
 	}
 
@@ -124,7 +124,7 @@ public final class HttpActions {
 			if (http.sign()) {
 				map.put("sign", http.sign());
 			}
-			if (http.toplimit() != AppInfo.getInt("sumk.http.thread.priority.default", 100000)) {
+			if (http.toplimit() != Const.DEFAULT_TOPLIMIT) {
 				map.put("toplimit", http.toplimit());
 			}
 			if (http.tags().size() > 0) {

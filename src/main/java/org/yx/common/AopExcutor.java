@@ -15,17 +15,17 @@
  */
 package org.yx.common;
 
-import java.util.Objects;
-
+import org.yx.annotation.doc.NotNull;
 import org.yx.db.exec.DBTransaction;
 import org.yx.util.ExceptionUtil;
 
 public class AopExcutor {
 
+	@NotNull
 	private final DBTransaction transaction;
 
-	public AopExcutor(DBTransaction transaction) {
-		this.transaction = Objects.requireNonNull(transaction);
+	public AopExcutor(@NotNull DBTransaction transaction) {
+		this.transaction = transaction;
 	}
 
 	public void before(Object[] params) {

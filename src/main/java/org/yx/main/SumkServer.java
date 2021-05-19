@@ -19,6 +19,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.yx.bean.Booter;
 import org.yx.bean.IOC;
@@ -102,6 +104,7 @@ public final class SumkServer {
 		}
 		try {
 			handleArgs(args);
+			beforeStart();
 			StartContext sc = StartContext.inst();
 			if (Logs.system().isDebugEnabled()) {
 				Logs.system().debug("start contexts:{}", sc);
@@ -131,6 +134,37 @@ public final class SumkServer {
 				Thread.currentThread().interrupt();
 			}
 			StartContext.startFailed();
+		}
+	}
+
+	/**
+	 * 有时候希望在start之前做一些装配工作，这个方法就是用于完成这个目的。<BR>
+	 * 通过sumk.start.before.class.xx=类名（必须实现Runnable接口）来配置
+	 */
+	private static void beforeStart() {
+		String prefix = "sumk.start.before.class.";
+		Map<String, String> map = AppInfo.subMap(prefix);
+		if (map == null || map.isEmpty()) {
+			return;
+		}
+		map = new TreeMap<>(map);
+		for (String key : map.keySet()) {
+			String clzName = map.get(key);
+			if (StringUtil.isEmpty(clzName)) {
+				continue;
+			}
+			try {
+				clzName = StringUtil.toLatin(clzName).trim();
+				Object obj = Loader.newInstance(clzName);
+				if (!(obj instanceof Runnable)) {
+					Logs.ioc().warn("{}的处理类{}不是Runnable类型，被自动过滤掉", prefix + key, clzName);
+					continue;
+				}
+				((Runnable) obj).run();
+			} catch (Exception e) {
+				Logs.ioc().error(e.getLocalizedMessage(), e);
+				StartContext.startFailed();
+			}
 		}
 	}
 

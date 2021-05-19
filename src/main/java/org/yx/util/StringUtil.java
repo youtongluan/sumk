@@ -18,12 +18,13 @@ package org.yx.util;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 
 public final class StringUtil {
 
-	public static String formatNewLineFlag(String text) {
+	public static String formatNewLineFlag(@NotNull String text) {
 		return text.replace("\r\n", Const.LN).replace("\r", Const.LN);
 	}
 
@@ -47,7 +48,7 @@ public final class StringUtil {
 	 *            其它的分隔符，这些分隔符不支持正则表达式。结果集会根据所有的分隔符进行分割
 	 * @return 结果不包含null和空字符串。返回值不为null
 	 */
-	public static List<String> splitAndTrim(String source, String splitRegex, String... otherSplits) {
+	public static List<String> splitAndTrim(@NotNull String source, @NotNull String splitRegex, String... otherSplits) {
 		if (otherSplits != null && otherSplits.length > 0) {
 			for (String r : otherSplits) {
 				source = source.replace(r, splitRegex);

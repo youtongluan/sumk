@@ -40,4 +40,6 @@ public final class Const {
 	public static final String CONFIG_NEW_LINE = "\t\\\n\t";
 
 	public static final String LN = "\n";
+
+	public static final int DEFAULT_TOPLIMIT = 50000;
 }

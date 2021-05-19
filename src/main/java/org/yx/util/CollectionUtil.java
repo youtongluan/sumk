@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.common.sumk.UnmodifiableArrayList;
 import org.yx.conf.Const;
 
@@ -123,7 +124,7 @@ public final class CollectionUtil {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static Map<String, Object> flatMapToTree(Map<String, String> map) {
+	public static Map<String, Object> flatMapToTree(@NotNull Map<String, String> map) {
 		Map<String, Object> ret = new HashMap<>();
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 			String k = entry.getKey();
@@ -153,7 +154,7 @@ public final class CollectionUtil {
 		return ret;
 	}
 
-	public static <T> Map<String, T> subMap(Map<String, T> source, String prefix) {
+	public static <T> Map<String, T> subMap(@NotNull Map<String, T> source, @NotNull String prefix) {
 		int len = prefix.length();
 		Map<String, T> map = new HashMap<>();
 		for (Map.Entry<String, T> entry : source.entrySet()) {
@@ -166,7 +167,7 @@ public final class CollectionUtil {
 		return map;
 	}
 
-	public static <K, V> Map<K, V> removeNull(Map<K, V> map) {
+	public static <K, V> Map<K, V> removeNull(@NotNull Map<K, V> map) {
 		Map<K, V> ret = new HashMap<>();
 		for (Map.Entry<K, V> entry : map.entrySet()) {
 			K k = entry.getKey();
