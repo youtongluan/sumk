@@ -22,5 +22,5 @@ import javax.sql.DataSource;
 public interface DataSourceFactory {
 	DataSource create(Map<String, String> properties, boolean readonly);
 
-	Map<String, Integer> status(DataSource datasource);
+	Map<String, Number> status(DataSource datasource);
 }

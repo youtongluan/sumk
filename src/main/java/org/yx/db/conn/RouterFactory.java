@@ -15,7 +15,11 @@
  */
 package org.yx.db.conn;
 
+import java.util.List;
+
+import org.yx.common.route.Router;
+
 public interface RouterFactory {
 
-	RWDataSource create(String dbName) throws Exception;
+	List<Router<SumkDataSource>> create(String dbName) throws Exception;
 }

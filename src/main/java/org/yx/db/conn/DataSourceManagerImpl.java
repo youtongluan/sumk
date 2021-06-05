@@ -15,14 +15,16 @@
  */
 package org.yx.db.conn;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.TreeMap;
 
 import org.yx.bean.IOC;
 import org.yx.common.route.Router;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.S;
@@ -53,12 +55,15 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 
 	@Override
 	public String status() {
-		Set<SumkDataSource> set = this.allDataSources();
-		Map<String, Map<String, Integer>> statusMap = new HashMap<>();
-		for (SumkDataSource datasource : set) {
-			statusMap.put(datasource.toString(), DSFactory.factory().status(datasource));
+		Map<String, SumkDataSource> map = new TreeMap<>();
+		for (SumkDataSource datasource : this.allDataSources()) {
+			map.put(datasource.toString(), datasource);
 		}
-		return S.json().toJson(statusMap);
+		StringBuilder sb = new StringBuilder(100);
+		for (SumkDataSource datasource : map.values()) {
+			sb.append(datasource).append(" = ").append(S.json().toJson(datasource.status())).append(Const.LN);
+		}
+		return sb.toString();
 	}
 
 	@Override
@@ -77,9 +82,9 @@ public final class DataSourceManagerImpl implements DataSourceManager {
 		if (factory == null) {
 			factory = new WeightedRouterFactory();
 		}
-		RWDataSource container = factory.create(this.db);
-		this.write = container.getWrite();
-		this.read = container.getRead();
+		List<Router<SumkDataSource>> container = factory.create(this.db);
+		this.write = container.get(0);
+		this.read = container.get(1);
 	}
 
 	@Override

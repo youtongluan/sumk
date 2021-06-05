@@ -24,6 +24,7 @@ import java.util.Map;
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.enums.DBType;
 import org.yx.db.event.EventLane;
+import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.InsertResult;
 import org.yx.db.sql.MapedSql;
 import org.yx.db.sql.PojoMeta;
@@ -32,11 +33,11 @@ import org.yx.db.sql.SqlBuilder;
 
 public final class Visitors {
 
-	private static interface Transform<T> {
+	public static interface Transform<T> {
 		T transFrom(ResultSet ret) throws Exception;
 	}
 
-	private static class QueryVisitor<T> implements SumkDbVisitor<T> {
+	public static class QueryVisitor<T> implements SumkDbVisitor<T> {
 		private final Transform<T> transform;
 
 		private QueryVisitor(Transform<T> transform) {
@@ -46,7 +47,7 @@ public final class Visitors {
 		@Override
 		public T visit(SqlBuilder builder) throws Exception {
 			MapedSql maped = builder.toMapedSql();
-			Connection conn = ConnectionPool.get().connection(DBType.ANY);
+			Connection conn = ConnectionPool.get().connection(DBSettings.readType());
 			try (SumkStatement statement = SumkStatement.create(conn, maped)) {
 				ResultSet ret = statement.executeQuery();
 				T list = this.transform.transFrom(ret);
@@ -90,7 +91,7 @@ public final class Visitors {
 
 	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitorForORM = builder -> {
 		MapedSql maped = builder.toMapedSql();
-		Connection conn = ConnectionPool.get().connection(DBType.ANY);
+		Connection conn = ConnectionPool.get().connection(DBSettings.readType());
 		try (SumkStatement statement = SumkStatement.create(conn, maped)) {
 			ResultSet ret = statement.executeQuery();
 			PojoMeta pm = ((SelectBuilder) builder).parsePojoMeta(true);

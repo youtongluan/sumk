@@ -13,27 +13,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.db.conn;
+package org.yx.db.enums;
 
-import java.util.Objects;
-
-import org.yx.common.route.Router;
-
-public class RWDataSource {
-	private final Router<SumkDataSource> write;
-	private final Router<SumkDataSource> read;
-
-	public RWDataSource(Router<SumkDataSource> write, Router<SumkDataSource> read) {
-		this.write = Objects.requireNonNull(write);
-		this.read = Objects.requireNonNull(read);
-	}
-
-	public Router<SumkDataSource> getWrite() {
-		return write;
-	}
-
-	public Router<SumkDataSource> getRead() {
-		return read;
-	}
-
+public enum SessionHook {
+	COMMIT, ROLLBACK
 }

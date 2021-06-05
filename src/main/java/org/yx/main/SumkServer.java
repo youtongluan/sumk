@@ -62,9 +62,8 @@ public final class SumkServer {
 	}
 
 	public static void main(String[] args) {
-		long begin = System.currentTimeMillis();
 		start(args == null ? Collections.emptyList() : Arrays.asList(args));
-		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - begin);
+		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - startTime);
 	}
 
 	public static void main(Class<?> startClass, String[] args) {
@@ -95,9 +94,9 @@ public final class SumkServer {
 			if (started) {
 				return;
 			}
+			startTime = System.currentTimeMillis();
 			started = true;
 			destoryed = false;
-			startTime = System.currentTimeMillis();
 		}
 		if (args == null) {
 			args = Collections.emptyList();

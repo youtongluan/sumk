@@ -19,7 +19,10 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
 import javax.sql.DataSource;
@@ -32,12 +35,32 @@ public class SumkDataSource implements DataSource {
 	private final String name;
 	private final DBType type;
 	private final DataSource proxy;
+	private final String index;
 	private boolean enable = true;
+	private final AtomicLong openCounter = new AtomicLong();
+	private final AtomicLong closeCounter = new AtomicLong();
 
-	public SumkDataSource(String name, DBType type, DataSource ds) {
+	public SumkDataSource(String name, String index, DBType type, DataSource ds) {
 		this.name = Objects.requireNonNull(name);
 		this.type = Objects.requireNonNull(type);
 		this.proxy = Objects.requireNonNull(ds);
+		this.index = index;
+	}
+
+	public long getOpenCounter() {
+		return openCounter.get();
+	}
+
+	public long getCloseCounter() {
+		return closeCounter.get();
+	}
+
+	void incrCloseCount() {
+		this.closeCounter.incrementAndGet();
+	}
+
+	public String getIndex() {
+		return index;
 	}
 
 	public String getName() {
@@ -50,6 +73,7 @@ public class SumkDataSource implements DataSource {
 
 	@Override
 	public SumkConnection getConnection() throws SQLException {
+		this.openCounter.incrementAndGet();
 		return new SumkConnection(proxy.getConnection(), this);
 	}
 
@@ -96,12 +120,12 @@ public class SumkDataSource implements DataSource {
 
 	@Override
 	public String toString() {
-		return new StringBuilder("ds[").append(name).append("-")
-				.append(type.name().startsWith("READ") ? "READ" : type.name()).append("]").toString();
+		return new StringBuilder().append(name).append(".").append(index).toString();
 	}
 
 	@Override
 	public Connection getConnection(String username, String password) throws SQLException {
+		this.openCounter.incrementAndGet();
 		return new SumkConnection(proxy.getConnection(username, password), this);
 	}
 
@@ -128,6 +152,18 @@ public class SumkDataSource implements DataSource {
 			Logs.db().error(e.getMessage(), e);
 			return false;
 		}
+	}
+
+	public Map<String, Number> status() {
+		Map<String, Number> map = new LinkedHashMap<>();
+		Map<String, Number> inner = DSFactory.factory().status(proxy);
+		if (inner != null) {
+			map.putAll(inner);
+		}
+		map.put("openCount", openCounter.get());
+		map.put("closeCount", closeCounter.get());
+		return map;
+
 	}
 
 }

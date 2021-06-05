@@ -16,13 +16,14 @@
 package org.yx.common;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 public final class Host implements Comparable<Host> {
 	private final String ip;
 	private final int port;
 
 	private Host(String ip, int port) {
-		this.ip = ip;
+		this.ip = Objects.requireNonNull(ip);
 		this.port = port;
 	}
 

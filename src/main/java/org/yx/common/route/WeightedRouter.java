@@ -33,14 +33,11 @@ public class WeightedRouter<T> implements Router<T> {
 
 	protected final WeightedServer<T>[] SERVERS;
 
-	protected final int SERVER_COUNT;
-
 	public WeightedRouter(Collection<WeightedServer<T>> servers) {
 		@SuppressWarnings("unchecked")
 		WeightedServer<T>[] ws = servers.toArray(new WeightedServer[servers.size()]);
-		Arrays.sort(ws, (a, b) -> b.getWeight() - a.getWeight());
+		Arrays.sort(ws);
 		SERVERS = ws;
-		SERVER_COUNT = SERVERS.length;
 		MAX_WEIGHT = getMaxWeightForServers();
 		GCD_WEIGHT = getGCDForServers();
 		this.currentWeight = this.MAX_WEIGHT;
@@ -83,7 +80,7 @@ public class WeightedRouter<T> implements Router<T> {
 
 	@Override
 	public List<T> allSources() {
-		List<T> list = new ArrayList<>(this.SERVER_COUNT);
+		List<T> list = new ArrayList<>(SERVERS.length);
 		for (WeightedServer<T> s : this.SERVERS) {
 			list.add(s.getSource());
 		}
@@ -92,7 +89,7 @@ public class WeightedRouter<T> implements Router<T> {
 
 	@Override
 	public List<T> aliveSources() {
-		List<T> list = new ArrayList<>(this.SERVER_COUNT);
+		List<T> list = new ArrayList<>(SERVERS.length);
 		for (WeightedServer<T> s : this.SERVERS) {
 			if (!s.isEnable()) {
 				continue;
@@ -105,6 +102,7 @@ public class WeightedRouter<T> implements Router<T> {
 	@Override
 	public T select() {
 		int index = 0;
+		final int SERVER_COUNT = SERVERS.length;
 
 		for (int i = 0; i < SERVER_COUNT; i++) {
 			index = (currentIndex + 1) % SERVER_COUNT;
@@ -136,7 +134,7 @@ public class WeightedRouter<T> implements Router<T> {
 
 	@Override
 	public String toString() {
-		return "[MAX_WEIGHT=" + MAX_WEIGHT + ", GCD_WEIGHT=" + GCD_WEIGHT + ", SERVER_COUNT=" + SERVER_COUNT + "]";
+		return "[MAX_WEIGHT=" + MAX_WEIGHT + ", GCD_WEIGHT=" + GCD_WEIGHT + ", SERVER_COUNT=" + SERVERS.length + "]";
 	}
 
 }

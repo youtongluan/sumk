@@ -16,42 +16,35 @@
 package org.yx.bean;
 
 import java.util.Collection;
-import java.util.function.Consumer;
 
 import org.yx.annotation.spec.BeanSpec;
 import org.yx.annotation.spec.Specs;
-import org.yx.exception.SumkException;
 
-public class BeanFactory implements Consumer<Class<?>> {
+public class BeanFactory extends AbstractBootWatcher {
 
 	@Override
-	public void accept(Class<?> clz) {
-		try {
-			BeanSpec b = Specs.extractBean(clz);
-			if (b == null) {
-				return;
-			}
-			if (FactoryBean.class.isAssignableFrom(clz)) {
-				FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
-				putFactoryBean(factory.beans());
-			} else {
-				InnerIOC.putClass(b.value(), clz);
-			}
-		} catch (Exception e) {
-			throw new SumkException(-345365, "IOC error on " + clz, e);
+	public void accept(Class<?> clz) throws Exception {
+		BeanSpec b = Specs.extractBean(clz);
+		if (b == null) {
+			return;
 		}
-
+		if (FactoryBean.class.isAssignableFrom(clz)) {
+			FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
+			registerFactoryBean(factory.beans());
+		} else {
+			InnerIOC.putClass(b.value(), clz);
+		}
 	}
 
-	public static void putFactoryBean(Collection<?> beans) throws Exception {
+	public static void registerFactoryBean(Collection<?> beans) throws Exception {
 		if (beans != null && beans.size() > 0) {
 			for (Object obj : beans) {
-				putBean(null, obj);
+				registerBean(null, obj);
 			}
 		}
 	}
 
-	public static void putBean(String name, Object obj) throws Exception {
+	public static void registerBean(String name, Object obj) throws Exception {
 		if (obj == null) {
 			return;
 		}
@@ -63,17 +56,22 @@ public class BeanFactory implements Consumer<Class<?>> {
 
 		if (clz == NamedBean.class) {
 			NamedBean named = (NamedBean) obj;
-			putBean(named.getBeanName(), named.getBean());
+			registerBean(named.getBeanName(), named.getBean());
 			return;
 		}
 
 		if (clz == InterfaceBean.class) {
 			InterfaceBean complex = (InterfaceBean) obj;
-			putBean(BeanKit.resloveBeanName(complex.getIntf()), complex.getBean());
+			registerBean(BeanKit.resloveBeanName(complex.getIntf()), complex.getBean());
 			return;
 		}
 
 		InnerIOC.putBean(name, obj);
+	}
+
+	@Override
+	public int order() {
+		return 1000;
 	}
 
 }

@@ -15,7 +15,7 @@
  */
 package org.yx.common.route;
 
-public interface WeightedServer<T> {
+public interface WeightedServer<T> extends Comparable<WeightedServer<T>> {
 
 	int getWeight();
 

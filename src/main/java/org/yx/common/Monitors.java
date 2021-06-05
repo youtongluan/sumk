@@ -35,12 +35,16 @@ import org.yx.bean.InnerIOC;
 import org.yx.bean.NameSlot;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
+import org.yx.db.conn.DataSourceManager;
+import org.yx.db.conn.DataSources;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
 import org.yx.db.sql.VisitCounter;
+import org.yx.db.visit.SumkStatement;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.main.SumkServer;
+import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
 public class Monitors {
@@ -173,6 +177,25 @@ public class Monitors {
 			sb.append(p.getTableName()).append(BLANK).append(c.getModifyCount()).append(BLANK).append(c.getVisitCount())
 					.append(BLANK).append(c.getCachedMeet()).append(AppInfo.LN);
 		}
+		return sb.toString();
+	}
+
+	public static String dataSourceStatus(String ds) {
+		if (StringUtil.isEmpty(ds)) {
+			return null;
+		}
+		StringBuilder sb = new StringBuilder(200);
+		sb.append("#statement执行次数").append(BLANK).append(SumkStatement.getExecuteCount()).append(BLANK)
+				.append("statement关闭次数").append(BLANK).append(SumkStatement.getClosedCount()).append(LN);
+		if (!DataSources.getManagerSelector().dbNames().contains(ds)) {
+			sb.append(DataSources.getManagerSelector().dbNames());
+			return sb.toString();
+		}
+		DataSourceManager manager = DataSources.getManager(ds);
+		if (manager == null) {
+			return sb.toString();
+		}
+		sb.append(manager.status());
 		return sb.toString();
 	}
 

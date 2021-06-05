@@ -13,15 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.bean.watcher;
+package org.yx.bean;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.yx.bean.IOC;
-import org.yx.bean.Plugin;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
@@ -35,7 +33,6 @@ public class PluginBooter {
 	public void start() {
 		Validators.init();
 		startBeans();
-		Runtime.getRuntime().addShutdownHook(new Thread(SumkServer::stop));
 	}
 
 	private void startBeans() {
@@ -60,11 +57,12 @@ public class PluginBooter {
 				}
 			});
 		}
+
 		preHotCoreThreads(executor);
-		long timeout = AppInfo.getLong("sumk.start.timeout", 1000L * 600);
+		long timeout = StartContext.startTimeout();
 		try {
 			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
-				Logs.ioc().error("plugins failed to start in {}ms", timeout);
+				Logs.ioc().error("plugin无法在{}ms内全部启动，导致整个项目启动超时", timeout);
 				StartContext.startFailed();
 			}
 		} catch (InterruptedException e) {

@@ -139,7 +139,7 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 		Long autoId = (Long) idColumn.value(pojoMap);
 		if (autoId == null) {
 
-			autoId = SeqUtil.next("seq_" + pojoMeta.getTableName());
+			autoId = SeqUtil.next("seq_".concat(pojoMeta.getTableName()));
 			idColumn.setValue(srcObject, autoId);
 			idColumn.setValue(pojoMap, autoId);
 		}

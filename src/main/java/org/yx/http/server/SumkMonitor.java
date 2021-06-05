@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletException;
@@ -44,6 +45,7 @@ import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcActions;
+import org.yx.util.StringUtil;
 
 @Bean
 @SumkServlet(path = { "/_sumk_monitor/*" }, loadOnStartup = -1, appKey = "sumkMonitor")
@@ -72,6 +74,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		this.outputLogLevels(req, writer);
 		this.outputLocalSessions(req, writer);
 		this.outputAppInfo(req, writer);
+		this.outputDataSource(req, writer);
 
 		writer.flush();
 		String ret = writer.toString();
@@ -201,7 +204,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		StringBuilder sb = new StringBuilder();
-		AppInfo.subMap("").forEach((k, v) -> {
+		new TreeMap<>(AppInfo.subMap("")).forEach((k, v) -> {
 			sb.append(k).append(" = ").append(v.replace(LN, Const.CONFIG_NEW_LINE)).append(LN);
 		});
 		writer.append(sb.toString());
@@ -213,6 +216,15 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		writer.append(Monitors.dbCacheVisitInfo());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputDataSource(HttpServletRequest req, Writer writer) throws IOException {
+		String ds = req.getParameter("datasource");
+		if (StringUtil.isEmpty(ds)) {
+			return;
+		}
+		writer.append(Monitors.dataSourceStatus(ds));
 		writer.append(TYPE_SPLIT);
 	}
 }

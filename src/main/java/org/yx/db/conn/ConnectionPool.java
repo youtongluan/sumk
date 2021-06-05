@@ -23,6 +23,7 @@ import java.util.Objects;
 import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
 import org.yx.db.enums.DBType;
+import org.yx.db.enums.SessionHook;
 import org.yx.db.event.EventLane;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
@@ -49,6 +50,18 @@ public final class ConnectionPool implements AutoCloseable {
 
 	private SumkConnection readConn;
 	private SumkConnection writeConn;
+	private List<SqlSessionHook> hocks;
+
+	public void addHook(SessionHook type, Runnable r) {
+		SqlSessionHook act = new SqlSessionHook(type, r);
+		if (hocks == null) {
+			hocks = new ArrayList<>();
+		}
+		if (hocks.contains(act)) {
+			return;
+		}
+		hocks.add(act);
+	}
 
 	public static ConnectionPool create(String dbName, DBType dbType, boolean autoCommit) {
 		if (ActionContext.current().isTest() && !autoCommit) {
@@ -129,12 +142,12 @@ public final class ConnectionPool implements AutoCloseable {
 			}
 			return this.getReadConnection();
 		default:
-			return this.connectionByUserType(userType);
+			return this.connectionByCommand(userType);
 		}
 	}
 
-	private SumkConnection connectionByUserType(DBType type) throws SQLException {
-		if (ActionContext.current().isTest()) {
+	private SumkConnection connectionByCommand(DBType type) throws SQLException {
+		if (type == DBType.WRITE) {
 			return this.getWriteConnection();
 		}
 		if (type == DBType.ANY) {
@@ -144,9 +157,6 @@ public final class ConnectionPool implements AutoCloseable {
 			if (this.writeConn != null) {
 				return this.writeConn;
 			}
-		}
-		if (type == DBType.WRITE) {
-			return this.getWriteConnection();
 		}
 		return this.getReadConnection();
 	}
@@ -196,12 +206,23 @@ public final class ConnectionPool implements AutoCloseable {
 		return writeConn;
 	}
 
+	private void runHook(SessionHook type) {
+		for (SqlSessionHook act : this.hocks) {
+			if (act.getType() == type) {
+				act.getAction().run();
+			}
+		}
+	}
+
 	public void commit() throws SQLException {
 		if (this.writeConn != null) {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("commit {}", this.dbName);
 			}
 			this.writeConn.commit();
+		}
+		if (this.hocks != null) {
+			runHook(SessionHook.COMMIT);
 		}
 	}
 
@@ -211,6 +232,9 @@ public final class ConnectionPool implements AutoCloseable {
 				LOGGER.trace("rollback {}", this.dbName);
 			}
 			this.writeConn.rollback();
+		}
+		if (this.hocks != null) {
+			runHook(SessionHook.ROLLBACK);
 		}
 	}
 
@@ -223,7 +247,7 @@ public final class ConnectionPool implements AutoCloseable {
 				Log.printStack("sumk.sql.error", e);
 			}
 		}
-		if (this.readConn != null && !this.readConn.isSameInnerConnection(this.writeConn)) {
+		if (this.readConn != null) {
 			try {
 				this.readConn.close();
 			} catch (Exception e) {

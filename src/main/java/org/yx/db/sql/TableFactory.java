@@ -22,29 +22,24 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.yx.annotation.Exclude;
 import org.yx.annotation.spec.Specs;
 import org.yx.annotation.spec.TableSpec;
-import org.yx.log.Log;
+import org.yx.bean.AbstractBootWatcher;
 import org.yx.log.Logs;
 import org.yx.util.S;
 
-public class TableFactory implements Consumer<Class<?>> {
+public class TableFactory extends AbstractBootWatcher {
 
 	@Override
 	public void accept(Class<?> clz) {
-		try {
-			TableSpec spec = Specs.extractTable(clz);
-			if (spec == null) {
-				return;
-			}
-			List<ColumnMeta> columns = this.extractColumns(clz);
-			PojoMetaHolder.register(clz, spec, columns);
-		} catch (Throwable e) {
-			Log.printStack("sumk.sql.error", e);
+		TableSpec spec = Specs.extractTable(clz);
+		if (spec == null) {
+			return;
 		}
+		List<ColumnMeta> columns = this.extractColumns(clz);
+		PojoMetaHolder.register(clz, spec, columns);
 	}
 
 	public List<ColumnMeta> extractColumns(Class<?> pojoClz) {
@@ -70,4 +65,8 @@ public class TableFactory implements Consumer<Class<?>> {
 		return list;
 	}
 
+	@Override
+	public int order() {
+		return 2000;
+	}
 }

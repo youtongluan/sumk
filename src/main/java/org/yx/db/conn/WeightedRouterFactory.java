@@ -16,6 +16,7 @@
 package org.yx.db.conn;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.yx.bean.IOC;
@@ -30,13 +31,13 @@ import org.yx.log.Logs;
 public class WeightedRouterFactory implements RouterFactory {
 
 	@Override
-	public RWDataSource create(String dbName) throws Exception {
+	public List<Router<SumkDataSource>> create(String dbName) throws Exception {
 		List<DBConfig> configs = parseDBConfig(dbName);
 		List<WeightedServer<SumkDataSource>> readDSList = new ArrayList<>(1);
 		List<WeightedServer<SumkDataSource>> writeDSList = new ArrayList<>(1);
 
 		for (DBConfig dc : configs) {
-			SumkDataSource ds = DSFactory.create(dbName, dc.type, dc.properties);
+			SumkDataSource ds = DSFactory.create(dbName, dc.index, dc.type, dc.properties);
 			if (ds.getType().isWritable()) {
 				WeightedServer<SumkDataSource> w = new WeightedDataSource(ds);
 				w.setWeight(dc.getWeight() > 0 ? dc.getWeight() : 1);
@@ -56,7 +57,7 @@ public class WeightedRouterFactory implements RouterFactory {
 
 		Router<SumkDataSource> read = createWeightedRouter(dbName, DBType.READ_PREFER, readDSList);
 		Router<SumkDataSource> write = createWeightedRouter(dbName, DBType.WRITE, writeDSList);
-		return new RWDataSource(write, read);
+		return Arrays.asList(write, read);
 	}
 
 	protected Router<SumkDataSource> createWeightedRouter(String name, DBType type,

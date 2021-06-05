@@ -16,17 +16,16 @@
 package org.yx.db.conn;
 
 import java.util.Objects;
-import java.util.function.Function;
 
 public final class DataSources {
 
-	private static Function<String, DataSourceManager> managerSelector = new DefaultManagerSelector();
+	private static DataSourceManagerSelector managerSelector = new DefaultManagerSelector();
 
-	public static void setManagerSelector(Function<String, DataSourceManager> selector) {
+	public static void setManagerSelector(DataSourceManagerSelector selector) {
 		DataSources.managerSelector = Objects.requireNonNull(selector);
 	}
 
-	public static Function<String, DataSourceManager> getManagerSelector() {
+	public static DataSourceManagerSelector getManagerSelector() {
 		return managerSelector;
 	}
 
@@ -39,7 +38,7 @@ public final class DataSources {
 	}
 
 	public static DataSourceManager getManager(String dbName) {
-		return managerSelector.apply(dbName);
+		return managerSelector.select(dbName);
 	}
 
 }

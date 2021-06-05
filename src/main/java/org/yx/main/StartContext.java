@@ -15,7 +15,6 @@
  */
 package org.yx.main;
 
-import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
@@ -39,16 +38,6 @@ public final class StartContext {
 	}
 
 	private final ConcurrentMap<String, Object> map = new ConcurrentHashMap<>();
-	private static final String KEY_BEANS = "key_beans";
-
-	public void setBeans(List<Object> beans) {
-		map.put(KEY_BEANS, beans);
-	}
-
-	@SuppressWarnings("unchecked")
-	public List<Object> getBeans() {
-		return (List<Object>) map.get(KEY_BEANS);
-	}
 
 	public void put(String key, Object obj) {
 		map.put(key, obj);
@@ -80,6 +69,15 @@ public final class StartContext {
 		if (AppInfo.getBoolean("sumk.exitIfStartFail", true)) {
 			System.exit(1);
 		}
+	}
+
+	/**
+	 * 
+	 * @return 剩余的启动超时时间，以ms为单位
+	 */
+	public static long startTimeout() {
+		return SumkServer.startTime() + AppInfo.getLong("sumk.start.timeout", 1000L * 60 * 10)
+				- System.currentTimeMillis();
 	}
 
 	public static String soaHostInzk() {

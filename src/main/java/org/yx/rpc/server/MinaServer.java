@@ -76,7 +76,9 @@ public class MinaServer implements Runnable {
 
 	protected InetSocketAddress listenAddr(boolean randomPort) {
 		if (randomPort) {// 1万到6万之间
-			port = 10000 + ThreadLocalRandom.current().nextInt(50000);
+			int start = AppInfo.getInt("sumk.rpc.port.start", 10000);
+			int end = AppInfo.getInt("sumk.rpc.port.end", 60000);
+			port = start + ThreadLocalRandom.current().nextInt(end - start);
 		}
 		if (host == null || host.trim().length() == 0) {
 			return new InetSocketAddress(port);

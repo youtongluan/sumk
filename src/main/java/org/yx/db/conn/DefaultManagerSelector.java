@@ -30,7 +30,7 @@ import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
 
-public class DefaultManagerSelector implements Function<String, DataSourceManager> {
+public class DefaultManagerSelector implements DataSourceManagerSelector {
 
 	/**
 	 * factoryMap只能重新赋值，不能修改
@@ -94,7 +94,7 @@ public class DefaultManagerSelector implements Function<String, DataSourceManage
 	}
 
 	@Override
-	public DataSourceManager apply(String dbName) {
+	public DataSourceManager select(String dbName) {
 		dbName = getDbName(dbName);
 		DataSourceManager factory = factoryMap.get(dbName);
 		if (factory != null) {

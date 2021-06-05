@@ -13,40 +13,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.route;
+package org.yx.db.conn;
 
 import java.util.Objects;
 
-public abstract class AbstractWeightedServer<T> implements WeightedServer<T> {
+import org.yx.db.enums.SessionHook;
 
-	protected final T source;
+class SqlSessionHook {
+	private final SessionHook type;
+	private final Runnable action;
 
-	private int weight = 1;
-
-	public AbstractWeightedServer(T source) {
-		this.source = Objects.requireNonNull(source);
+	public SqlSessionHook(SessionHook type, Runnable action) {
+		this.type = Objects.requireNonNull(type);
+		this.action = Objects.requireNonNull(action);
 	}
 
-	@Override
-	public int getWeight() {
-		return weight;
+	public SessionHook getType() {
+		return type;
 	}
 
-	public void setWeight(int weight) {
-		this.weight = weight > 0 ? weight : 0;
-	}
-
-	@Override
-	public T getSource() {
-		return this.source;
+	public Runnable getAction() {
+		return action;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((source == null) ? 0 : source.hashCode());
-		result = prime * result + weight;
+		result = prime * result + ((action == null) ? 0 : action.hashCode());
+		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
 
@@ -58,25 +53,15 @@ public abstract class AbstractWeightedServer<T> implements WeightedServer<T> {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		AbstractWeightedServer<?> other = (AbstractWeightedServer<?>) obj;
-		if (source == null) {
-			if (other.source != null)
+		SqlSessionHook other = (SqlSessionHook) obj;
+		if (action == null) {
+			if (other.action != null)
 				return false;
-		} else if (!source.equals(other.source))
+		} else if (!action.equals(other.action))
 			return false;
-		if (weight != other.weight)
+		if (type != other.type)
 			return false;
 		return true;
-	}
-
-	@Override
-	public int compareTo(WeightedServer<T> o) {
-		return Integer.compare(o.getWeight(), this.getWeight());
-	}
-
-	@Override
-	public String toString() {
-		return "WeightedSource [source=" + source + ", weight=" + weight + "]";
 	}
 
 }

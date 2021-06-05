@@ -48,10 +48,10 @@ public final class DSFactory {
 		DSFactory.factory = Objects.requireNonNull(factory);
 	}
 
-	public static SumkDataSource create(String name, DBType type, Map<String, String> properties) {
+	public static SumkDataSource create(String name, String index, DBType type, Map<String, String> properties) {
 		DataSource basic = factory.create(properties, !type.isWritable());
 		Logs.db().debug("create ds: {}", basic);
-		return new SumkDataSource(name, type, basic);
+		return new SumkDataSource(name, index, type, basic);
 	}
 
 }

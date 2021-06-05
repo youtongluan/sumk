@@ -16,9 +16,10 @@
 package org.yx.rpc.server;
 
 import java.lang.reflect.Constructor;
-import java.util.List;
+import java.util.Collection;
 
 import org.yx.annotation.Bean;
+import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.Lifecycle;
@@ -45,7 +46,7 @@ public class SoaPlugin implements Plugin {
 		}
 		try {
 			RpcSettings.init();
-			resolveSoaAnnotation(StartContext.inst().getBeans());
+			resolveSoaAnnotation(InnerIOC.beans());
 			RpcHandler.init();
 
 			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
@@ -58,7 +59,7 @@ public class SoaPlugin implements Plugin {
 		}
 	}
 
-	protected void resolveSoaAnnotation(List<Object> beans) {
+	protected void resolveSoaAnnotation(Collection<Object> beans) {
 		SoaAnnotationResolver factory = new SoaAnnotationResolver();
 		try {
 			for (Object bean : beans) {

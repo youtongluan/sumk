@@ -31,9 +31,11 @@ public class DBConfig {
 	final DBType type;
 	final int weight;
 	final int readWeight;
+	final String index;
 	final Map<String, String> properties;
 
-	public DBConfig(DBType type, int weight, int readWeight, Map<String, String> properties) {
+	public DBConfig(String index, DBType type, int weight, int readWeight, Map<String, String> properties) {
+		this.index = index;
 		this.type = type;
 		this.weight = weight;
 		this.readWeight = readWeight;
@@ -46,6 +48,10 @@ public class DBConfig {
 
 	public Map<String, String> getProperties() {
 		return properties;
+	}
+
+	public String getIndex() {
+		return index;
 	}
 
 	public DBType getType() {
@@ -62,11 +68,11 @@ public class DBConfig {
 
 	@Override
 	public String toString() {
-		return "DBConfig [type=" + type + ", weight=" + weight + ", read_weight=" + readWeight + ", properties="
-				+ properties + "]";
+		return "DBConfig [type=" + type + ", weight=" + weight + ", readWeight=" + readWeight + ", index=" + index
+				+ ", properties=" + properties + "]";
 	}
 
-	public static DBConfig create(Map<String, String> p) throws Exception {
+	public static DBConfig create(String index, Map<String, String> p) throws Exception {
 		DBType type = DBType.ANY;
 		int weight = 0, readWeight = 0;
 		Map<String, String> properties = new HashMap<>();
@@ -102,7 +108,7 @@ public class DBConfig {
 				break;
 			}
 		}
-		return new DBConfig(type, weight, readWeight, properties);
+		return new DBConfig(index, type, weight, readWeight, properties);
 	}
 
 	private static DBType parseFromConfigFile(String type) {

@@ -17,11 +17,13 @@ package org.yx.http;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
+import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
 import org.yx.common.KeyValuePair;
@@ -63,7 +65,7 @@ public class HttpPlugin implements Plugin {
 		return 10100;
 	}
 
-	protected void resolveWebAnnotation(List<Object> beans) {
+	protected void resolveWebAnnotation(Collection<Object> beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
 			List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(100);
@@ -88,8 +90,7 @@ public class HttpPlugin implements Plugin {
 		try {
 			HttpHeaderName.init();
 			HttpSettings.init();
-			List<Object> beans = StartContext.inst().getBeans();
-			resolveWebAnnotation(beans);
+			resolveWebAnnotation(InnerIOC.beans());
 			WebHandler.init();
 			this.buildHttpHandlers();
 			this.initServer(port);

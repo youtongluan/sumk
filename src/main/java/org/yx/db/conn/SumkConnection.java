@@ -141,17 +141,20 @@ public final class SumkConnection implements Connection {
 
 	@Override
 	public void close() throws SQLException {
-		if (this.inner == null) {
+		if (this.inner == null || this.inner.isClosed()) {
 			return;
 		}
-		if (Log.get("sumk.conn.close").isTraceEnabled()) {
-			Log.get("sumk.conn.close").trace("{} - 关闭连接", this);
+		if (Log.get("sumk.conn").isTraceEnabled()) {
+			Log.get("sumk.conn").trace("close connection: " + this);
 		}
 		EventLane.remove(this);
 		try {
 			this.recoverAutoCommit();
 		} catch (Exception e) {
 			Log.get("sumk.conn").error(e.getMessage(), e);
+		}
+		if (dataSource != null) {
+			dataSource.incrCloseCount();
 		}
 		inner.close();
 		this.inner = null;

@@ -26,7 +26,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
@@ -40,7 +39,6 @@ import org.yx.main.StartContext;
 
 public final class AsmUtils {
 
-	private static final ConcurrentHashMap<String, Class<?>> clzMap = new ConcurrentHashMap<>();
 	private static Method defineClass;
 
 	static {
@@ -148,20 +146,18 @@ public final class AsmUtils {
 			}
 		}
 
-		Class<?> clz = clzMap.get(fullName);
-		if (clz != null) {
-			return clz;
-		}
 		synchronized (AsmUtils.class) {
-			clz = clzMap.get(fullName);
-			if (clz != null) {
-				return clz;
+			try {
+				return Loader.loadClassExactly(fullName);
+			} catch (Throwable e) {
+				if (!(e instanceof ClassNotFoundException)) {
+					Logs.asm().warn(fullName + " 加载失败", e);
+				}
 			}
-			clz = (Class<?>) defineClass.invoke(Loader.loader(), fullName, b, 0, b.length);
+			Class<?> clz = (Class<?>) defineClass.invoke(Loader.loader(), fullName, b, 0, b.length);
 			if (clz == null) {
 				throw new SumkException(-235345436, "cannot load class " + fullName);
 			}
-			clzMap.put(fullName, clz);
 			return clz;
 		}
 	}

@@ -20,9 +20,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -30,40 +27,30 @@ import org.yx.annotation.spec.InjectSpec;
 import org.yx.annotation.spec.Specs;
 import org.yx.bean.watcher.BeanCreateWatcher;
 import org.yx.bean.watcher.BeanInjectWatcher;
-import org.yx.bean.watcher.PluginBooter;
+import org.yx.bean.watcher.BootWatcher;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.common.scaner.ClassScaner;
-import org.yx.common.thread.SumkExecutorService;
 import org.yx.conf.AppInfo;
-import org.yx.db.sql.TableFactory;
 import org.yx.exception.SimpleSumkException;
 import org.yx.log.Logs;
 import org.yx.main.StartConstants;
 import org.yx.main.StartContext;
-import org.yx.main.SumkThreadPool;
+import org.yx.main.SumkServer;
 import org.yx.util.CollectionUtil;
 import org.yx.util.kit.PriorityKits;
 
 public final class Booter {
 
 	private final Logger logger = Logs.ioc();
-	private final List<Consumer<Class<?>>> parallelListeners;
 	private final Predicate<String> excludeMatcher;
 	private final BeanFieldFinder fieldFinder;
+	private final List<BootWatcher> watchers = new ArrayList<>();
 
 	public Booter() {
 		this.excludeMatcher = createExcludeMatcher();
-		this.parallelListeners = CollectionUtil.unmodifyList(getParallelListeners());
 		logger.debug("bean exclude matcher:{}", excludeMatcher);
 		this.fieldFinder = StartContext.inst().get(BeanFieldFinder.class, new DefaultBeanFieldFinder());
-	}
-
-	@SuppressWarnings("unchecked")
-	private Consumer<Class<?>>[] getParallelListeners() {
-		Consumer<Class<?>>[] defaults = new Consumer[] { new BeanFactory(), new TableFactory() };
-		Object obj = StartContext.inst().get("sumk.bean.event.listener");
-		return obj instanceof Consumer[] ? (Consumer<Class<?>>[]) obj : defaults;
 	}
 
 	public Predicate<String> excludeMatcher() {
@@ -88,30 +75,50 @@ public final class Booter {
 		return Matchers.createWildcardMatcher(sb.toString(), 2);
 	}
 
-	public synchronized void start(List<String> packageNames) throws Exception {
+	public void start(List<String> packageNames) throws Exception {
+		packageNames = rehandle(packageNames);
+		Predicate<String> optional = this.createOptional();
+		List<Class<?>> orignClazzList = this.loadClasses(packageNames, optional);
+		this.publish(orignClazzList, optional);
+		this.autoWiredAll();
+		new PluginBooter().start();
+		Runtime.getRuntime().addShutdownHook(new Thread(SumkServer::stop));
+	}
+
+	private void publish(List<Class<?>> clazzList, Predicate<String> optional) throws Exception {
+		watchers.sort(null);
+		for (BootWatcher b : this.watchers) {
+			List<Class<?>> temp = b.publish(clazzList, optional);
+			if (temp != null) {
+				clazzList = temp;
+			}
+		}
+	}
+
+	private List<String> rehandle(List<String> packageNames) {
 		if (packageNames.isEmpty()) {
 			logger.warn("property [sumk.ioc] is empty");
 		}
 		packageNames = new ArrayList<>(packageNames);
-
-		packageNames.remove(StartConstants.INNER_PACKAGE);
-		packageNames.add(0, StartConstants.INNER_PACKAGE);
-
-		initBeans(packageNames);
-		autoWiredAll();
-		new PluginBooter().start();
+		if (!packageNames.contains(StartConstants.INNER_PACKAGE)) {
+			packageNames.add(StartConstants.INNER_PACKAGE);
+		}
+		return packageNames;
 	}
 
 	@SuppressWarnings("unchecked")
-	private void initBeans(List<String> packageNames) {
-		Predicate<String> optional = BooleanMatcher.FALSE;
+	private Predicate<String> createOptional() {
 		Object obj = StartContext.inst().get("sumk.bean.scan.option");
 		if (obj instanceof Predicate) {
-			optional = (Predicate<String>) obj;
+			return (Predicate<String>) obj;
 		}
+		return BooleanMatcher.FALSE;
+	}
 
+	private List<Class<?>> loadClasses(List<String> packageNames, Predicate<String> optional) throws Exception {
 		Collection<String> clzs = ClassScaner.listClasses(packageNames);
 		List<Class<?>> clazzList = new ArrayList<>(clzs.size());
+		Predicate<String> excludeBooter = Matchers.createWildcardMatcher("sumk.ioc.booter.exclude", 1);
 		for (String c : clzs) {
 			if (excludeMatcher.test(c)) {
 				logger.info("{} excluded", c);
@@ -129,6 +136,11 @@ public final class Booter {
 					continue;
 				}
 				clazzList.add(clz);
+
+				if (BootWatcher.class.isAssignableFrom(clz) && !excludeBooter.test(clz.getName())) {
+					BootWatcher b = (BootWatcher) Loader.newInstance(clz);
+					watchers.add(b);
+				}
 			} catch (LinkageError e) {
 				if (c.startsWith("org.yx.") || optional.test(c)) {
 					logger.debug("{} ignored because: {}", c, e.getMessage());
@@ -136,8 +148,6 @@ public final class Booter {
 				}
 				logger.error("{}加载失败，原因是:{}", c, e.getLocalizedMessage());
 				throw e;
-			} catch (Exception e) {
-				logger.error(c + "加载失败", e);
 			}
 		}
 
@@ -148,53 +158,7 @@ public final class Booter {
 					clazzList.get(clazzList.size() - 1).getSimpleName());
 			logger.trace("ordered class:\n{}", clazzList);
 		}
-		parallelPublish(clazzList, optional);
-	}
-
-	private void parallelPublish(List<Class<?>> clazzList, Predicate<String> optional) {
-		int size = this.parallelListeners.size();
-		CountDownLatch latch = new CountDownLatch(size);
-		SumkExecutorService executor = SumkThreadPool.executor();
-		for (Consumer<Class<?>> c : parallelListeners) {
-			executor.execute(() -> {
-				try {
-					publish(c, clazzList, optional);
-					latch.countDown();
-					Logs.ioc().debug("{} finished", c.getClass().getSimpleName());
-				} catch (Throwable e) {
-					StartContext.startFailed();
-				}
-			});
-		}
-		long timeout = AppInfo.getLong("sumk.ioc.publish.timeout", 1000L * 60);
-		try {
-			if (!latch.await(timeout, TimeUnit.MILLISECONDS)) {
-				Logs.ioc().error("plugins failed to start in {}ms", timeout);
-				StartContext.startFailed();
-			}
-		} catch (InterruptedException e) {
-			Logs.ioc().error("receive InterruptedException in ioc publishing");
-			Thread.currentThread().interrupt();
-			StartContext.startFailed();
-		}
-	}
-
-	private void publish(Consumer<Class<?>> consumer, List<Class<?>> clazzList, Predicate<String> optional) {
-		for (Class<?> clz : clazzList) {
-			try {
-				consumer.accept(clz);
-			} catch (Throwable e) {
-				String c = clz.getName();
-				if (LinkageError.class.isInstance(e) && (c.startsWith("org.yx.") || optional.test(c))) {
-					logger.debug("{} ignored in {} publish because: {}", c, consumer.getClass().getName(),
-							e.getMessage());
-					continue;
-				}
-				logger.error("{} 在 {} 发布失败，原因是:{}", c, consumer.getClass().getName(), e.getLocalizedMessage());
-				Logs.ioc().error(e.getMessage(), e);
-				throw e;
-			}
-		}
+		return clazzList;
 	}
 
 	private void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
@@ -207,7 +171,6 @@ public final class Booter {
 
 	private void autoWiredAll() throws Exception {
 		List<Object> beans = CollectionUtil.unmodifyList(InnerIOC.beans().toArray());
-		StartContext.inst().setBeans(beans);
 		logger.trace("after beans create...");
 		for (BeanCreateWatcher w : IOC.getBeans(BeanCreateWatcher.class)) {
 			w.afterCreate(beans);

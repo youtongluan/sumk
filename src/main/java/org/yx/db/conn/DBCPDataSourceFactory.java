@@ -17,6 +17,7 @@ package org.yx.db.conn;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
@@ -77,24 +78,33 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 	}
 
 	@Override
-	public Map<String, Integer> status(DataSource datasource) {
+	public Map<String, Number> status(final DataSource datasource) {
 		BasicDataSource ds = null;
-		try {
-			ds = datasource.unwrap(BasicDataSource.class);
-		} catch (Exception e) {
-			Logs.db().error(e.getLocalizedMessage(), e);
+		if (datasource instanceof BasicDataSource) {
+			ds = (BasicDataSource) datasource;
+		} else {
+			try {
+				ds = datasource.unwrap(BasicDataSource.class);
+			} catch (Exception e) {
+				Logs.db().error(e.getLocalizedMessage(), e);
+			}
 		}
 		if (ds == null) {
 			Logs.db().info("ds.class({}) is not instance form BasicDataSource", datasource.getClass().getName());
 			return Collections.emptyMap();
 		}
 
-		Map<String, Integer> map = new HashMap<>();
+		Map<String, Number> map = new LinkedHashMap<>();
 		map.put("active", ds.getNumActive());
 		map.put("idle", ds.getNumIdle());
 		map.put("minIdle", ds.getMinIdle());
 		map.put("maxIdle", ds.getMaxIdle());
 		map.put("maxTotal", ds.getMaxTotal());
+		if (datasource instanceof SumkDataSource) {
+			SumkDataSource sd = (SumkDataSource) datasource;
+			map.put("openCount", sd.getOpenCounter());
+			map.put("closeCount", sd.getCloseCounter());
+		}
 		return map;
 	}
 

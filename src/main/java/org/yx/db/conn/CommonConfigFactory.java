@@ -45,8 +45,8 @@ public class CommonConfigFactory implements DBConfigFactory {
 		if (maps == null || maps.isEmpty()) {
 			return list;
 		}
-		for (Map<String, String> map : maps.values()) {
-			list.add(DBConfig.create(map));
+		for (String index : maps.keySet()) {
+			list.add(DBConfig.create(index, maps.get(index)));
 		}
 		return list;
 	}

@@ -19,24 +19,30 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.TreeMap;
 
 import org.yx.annotation.Priority;
 import org.yx.conf.Const;
 
 public class PriorityKits {
 
-	private static final Comparator<Class<?>> priorityComparator = (a, b) -> a.getAnnotation(Priority.class).value()
-			- b.getAnnotation(Priority.class).value();
+	private static final Comparator<Class<?>> priorityComparator = (a, b) -> {
+		int v = a.getAnnotation(Priority.class).value() - b.getAnnotation(Priority.class).value();
+		if (v != 0) {
+			return v;
+		}
+		return a.getName().compareTo(b.getName());
+	};
 
 	public static List<Class<?>> sort(Collection<Class<?>> source) {
 		List<Class<?>> low = new ArrayList<>();
-		List<Class<?>> high = new ArrayList<>(20);
-		List<Class<?>> middle = new ArrayList<>(Objects.requireNonNull(source).size());
+		List<Class<?>> high = new ArrayList<>();
+		Map<String, Class<?>> middle = new TreeMap<>();
 		for (Class<?> c : source) {
 			Priority p = c.getAnnotation(Priority.class);
 			if (p == null || p.value() == Const.DEFAULT_ORDER) {
-				middle.add(c);
+				middle.put(c.getName(), c);
 			} else if (p.value() < Const.DEFAULT_ORDER) {
 				low.add(c);
 			} else {
@@ -47,7 +53,7 @@ public class PriorityKits {
 		high.sort(priorityComparator);
 		List<Class<?>> ret = new ArrayList<>(source.size());
 		ret.addAll(low);
-		ret.addAll(middle);
+		ret.addAll(middle.values());
 		ret.addAll(high);
 		return ret;
 	}
