@@ -266,4 +266,6 @@ v2.9.11
 2、去掉@Param的custom属性，但是保留ParamSpec的custom属性，开发者可以通过这里的custom进行扩展
 
 v2.9.12
-1、支持配置sumk.start.before.class.XX来设置一个Runnable类，它会在启动IOC容器前被调用
+1、添加BootWatcher接口，该接口允许在IOC启动前做一些操作
+2、DB添加commit和rollback两个hook
+3、增加对数据源的操作统计
