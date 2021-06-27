@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 
 import org.yx.annotation.spec.SoaSpec;
 import org.yx.annotation.spec.Specs;
-import org.yx.asm.ArgPojos;
+import org.yx.asm.ParamPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
 import org.yx.bean.BeanKit;
@@ -136,8 +136,7 @@ public class SoaAnnotationResolver {
 			int toplimit = act != null && act.toplimit() > 0 ? act.toplimit()
 					: AppInfo.getInt("sumk.rpc.toplimit.default", Const.DEFAULT_TOPLIMIT);
 			boolean publish = act != null ? act.publish() : true;
-			RpcActionNode node = new RpcActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), toplimit,
-					publish);
+			RpcActionNode node = new RpcActionNode(bean, m, ParamPojos.create(info), toplimit, publish);
 
 			for (String soaName : soaNames) {
 				if (soaName == null || soaName.isEmpty()) {

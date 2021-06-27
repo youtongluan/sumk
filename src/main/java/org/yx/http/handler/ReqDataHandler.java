@@ -30,8 +30,8 @@ public class ReqDataHandler implements HttpHandler {
 	}
 
 	@Override
-	public boolean supportRestType(RestType type) {
-		return type == RestType.PLAIN;
+	public boolean supportRestType(String type) {
+		return RestType.TEXT.equals(type);
 	}
 
 	@Override
@@ -40,7 +40,7 @@ public class ReqDataHandler implements HttpHandler {
 			Logs.http().debug("data is not null");
 			return;
 		}
-		if (ctx.node().isEmptyArgument()) {
+		if (ctx.node().paramLength() == 0) {
 			return;
 		}
 		HttpServletRequest req = ctx.httpRequest();

@@ -28,7 +28,7 @@ public final class RpcHandler {
 	private static final RpcFilter LAST = new RpcFilter() {
 		@Override
 		public Object doFilter(RpcContext ctx) throws Throwable {
-			return ctx.node().execute(ctx.getArgPojo());
+			return ctx.node().execute(ctx.getParamPojo());
 		}
 	};
 

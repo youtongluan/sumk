@@ -103,7 +103,7 @@ public final class AppInfo {
 		if (url != null && url.length() > 0) {
 			return url;
 		}
-		return info.get("sumk.zkurl");
+		return info.get(Const.ZK_URL);
 	}
 
 	public static String getClinetZKUrl() {
@@ -111,7 +111,7 @@ public final class AppInfo {
 		if (url != null && url.length() > 0) {
 			return url;
 		}
-		return info.get("sumk.zkurl");
+		return info.get(Const.ZK_URL);
 	}
 
 	public static String getLocalIp() {

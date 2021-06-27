@@ -13,11 +13,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.asm;
+package org.yx.common;
 
-public interface ArgPojo {
+import java.util.Objects;
 
-	Object[] params();
+public class StringEntity<T> {
+	private final String key;
+	private final T value;
 
-	Object invoke(Object owner) throws Throwable;
+	public StringEntity(String key, T value) {
+		this.key = Objects.requireNonNull(key);
+		this.value = value;
+	}
+
+	public String key() {
+		return key;
+	}
+
+	public T value() {
+		return value;
+	}
 }

@@ -17,7 +17,7 @@ package org.yx.http.handler;
 
 import java.util.List;
 
-public class MultipartHolder {
+public final class MultipartHolder {
 	private static final ThreadLocal<List<MultipartItem>> items = new ThreadLocal<>();
 
 	public static List<MultipartItem> get() {

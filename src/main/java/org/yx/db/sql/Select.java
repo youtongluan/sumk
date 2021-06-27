@@ -15,6 +15,14 @@
  */
 package org.yx.db.sql;
 
+import static org.yx.db.sql.Operation.BIG;
+import static org.yx.db.sql.Operation.BIG_EQUAL;
+import static org.yx.db.sql.Operation.IN;
+import static org.yx.db.sql.Operation.LESS;
+import static org.yx.db.sql.Operation.LESS_EQUAL;
+import static org.yx.db.sql.Operation.LIKE;
+import static org.yx.db.sql.Operation.NOT;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -100,34 +108,25 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Select addCompares(int index, Object pojo) {
+	protected Select addCompares(Operation op, Object pojo) {
 		Map<String, Object> map = this.populate(pojo, false);
 		if (CollectionUtil.isEmpty(map)) {
 			return this;
 		}
-		if (_compare == null) {
-			_compare = new HashMap[COMPARES.length];
+		for (Map.Entry<String, Object> en : map.entrySet()) {
+			this.setCompare(op, en.getKey(), en.getValue());
 		}
-		if (this._compare[index] == null) {
-			this._compare[index] = new HashMap<>();
-		}
-		this._compare[index].putAll(map);
 		return this;
 	}
 
-	@SuppressWarnings("unchecked")
-	protected Select setCompare(int index, String key, Object value) {
+	protected Select setCompare(Operation op, String key, Object value) {
 		if (key == null || key.isEmpty()) {
 			return this;
 		}
 		if (_compare == null) {
-			_compare = new HashMap[COMPARES.length];
+			_compare = new ArrayList<>(6);
 		}
-		if (this._compare[index] == null) {
-			this._compare[index] = new HashMap<>();
-		}
-		this._compare[index].put(key, value);
+		this._compare.add(new ColumnOperation(key, op, value));
 		return this;
 	}
 
@@ -180,6 +179,19 @@ public class Select extends SelectBuilder {
 	 */
 	public Select not(String key, Object value) {
 		return setCompare(NOT, key, value);
+	}
+
+	/**
+	 * 对某个字段做in操作，缓存键尽量不用这个操作，因为它不使用缓存
+	 * 
+	 * @param key
+	 *            字段名
+	 * @param values
+	 *            值列表，不能为空
+	 * @return 当前对象
+	 */
+	public Select in(String key, Collection<?> values) {
+		return setCompare(IN, key, values.toArray(new Object[values.size()]));
 	}
 
 	public Select bigThan(Object pojo) {

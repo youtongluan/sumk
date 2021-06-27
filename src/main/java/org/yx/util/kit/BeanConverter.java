@@ -62,7 +62,9 @@ public class BeanConverter {
 				if ((f.getModifiers() & Const.NOT_PARSE_BEAN_FIELD) != 0) {
 					continue;
 				}
-				f.setAccessible(true);
+				if (!f.isAccessible()) {
+					f.setAccessible(true);
+				}
 				list.add(f);
 			}
 			tempClz = tempClz.getSuperclass();

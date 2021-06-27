@@ -27,7 +27,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
-import org.yx.common.KeyValuePair;
+import org.yx.common.StringEntity;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
 import org.yx.http.act.HttpActionInfo;
@@ -124,10 +124,10 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 	}
 
 	@Override
-	public void init(List<KeyValuePair<HttpActionNode>> infos, Function<String, String> nameResolver) {
+	public void init(List<StringEntity<HttpActionNode>> infos, Function<String, String> nameResolver) {
 		Map<String, HttpActionInfo[]> actMap = new HashMap<>(infos.size() * 2);
 		List<PrefixMappingActionInfo> startList = new ArrayList<>();
-		for (KeyValuePair<HttpActionNode> kv : infos) {
+		for (StringEntity<HttpActionNode> kv : infos) {
 			String parsedName = nameResolver.apply(kv.key());
 			if (parsedName.endsWith(HttpActions.PREFIX_MATCH_ENDING)) {
 				this.appendStart(new PrefixMappingActionInfo(kv.key(), kv.value(), parsedName,

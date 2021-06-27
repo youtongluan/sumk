@@ -79,12 +79,16 @@ public final class Host implements Comparable<Host> {
 		return true;
 	}
 
+	public String toAddressString() {
+		return new StringBuilder().append(ip).append(':').append(port).toString();
+	}
+
 	/**
 	 * 返回 ip + ":" + port格式， 这个方法也比较重要，所以它的格式不会发生变更
 	 */
 	@Override
 	public String toString() {
-		return new StringBuilder().append(ip).append(':').append(port).toString();
+		return toAddressString();
 	}
 
 	@Override

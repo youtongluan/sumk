@@ -55,7 +55,7 @@ public final class DBTransaction implements AutoCloseable {
 			return;
 		}
 		try {
-			dbCtx.rollback();
+			dbCtx.rollback(e);
 		} catch (SQLException e1) {
 			Log.printStack("sumk.sql.error", e1);
 		}

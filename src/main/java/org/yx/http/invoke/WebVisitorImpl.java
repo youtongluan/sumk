@@ -23,7 +23,7 @@ public class WebVisitorImpl implements WebVisitor {
 	@Override
 	public Object visit(WebContext ctx) throws Throwable {
 		HttpActionNode http = ctx.node();
-		return http.execute(ctx.getArgPojo());
+		return http.execute(ctx.getParamPojo());
 	}
 
 }

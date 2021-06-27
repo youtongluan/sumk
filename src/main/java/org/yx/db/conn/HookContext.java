@@ -13,35 +13,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.validate;
+package org.yx.db.conn;
 
-import java.lang.reflect.Field;
-import java.util.Objects;
+/**
+ * 所有字段都有可能为null
+ */
+public class HookContext {
+	private final SumkDataSource write;
+	private final SumkDataSource read;
+	private final Throwable exception;
 
-import org.yx.annotation.spec.ParamSpec;
-
-public class FieldParameterInfo extends AbstractParamInfo {
-
-	protected final Field field;
-
-	public FieldParameterInfo(ParamSpec param, Field field) {
-		super(param, Objects.requireNonNull(field).getType());
-		this.field = field;
-		if (!this.field.isAccessible()) {
-			this.field.setAccessible(true);
-		}
+	public HookContext(SumkDataSource write, SumkDataSource read, Throwable exception) {
+		this.write = write;
+		this.read = read;
+		this.exception = exception;
 	}
 
-	public String getParamName() {
-		return field.getName();
+	public SumkDataSource getWrite() {
+		return write;
 	}
 
-	public Class<?> getParamType() {
-		return field.getType();
+	public SumkDataSource getRead() {
+		return read;
 	}
 
-	public Field getField() {
-		return field;
+	public Throwable getException() {
+		return exception;
 	}
 
 }

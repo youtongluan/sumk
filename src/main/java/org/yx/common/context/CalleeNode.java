@@ -25,8 +25,8 @@ import java.util.Objects;
 import org.yx.annotation.doc.Comment;
 import org.yx.annotation.spec.ParamSpec;
 import org.yx.annotation.spec.Specs;
-import org.yx.asm.ArgPojo;
-import org.yx.bean.Loader;
+import org.yx.asm.ParamPojo;
+import org.yx.asm.Parameters;
 import org.yx.log.Log;
 import org.yx.main.SumkThreadPool;
 import org.yx.util.CollectionUtil;
@@ -36,34 +36,31 @@ import org.yx.validate.Validators;
 
 public abstract class CalleeNode {
 
-	protected final String[] argNames;
-
 	protected final ParamInfo[] paramInfos;
 
 	protected final Object owner;
 
-	protected final Class<? extends ArgPojo> argClz;
+	protected final Parameters params;
 
 	private final int toplimit;
 
 	protected final Method method;
 
-	public CalleeNode(Object owner, Method method, Class<? extends ArgPojo> argClz, String[] argNames, int toplimit) {
+	public CalleeNode(Object owner, Method method, Parameters params, int toplimit) {
 		this.owner = Objects.requireNonNull(owner);
-		this.argClz = Objects.requireNonNull(argClz);
-		this.argNames = Objects.requireNonNull(argNames);
+		this.params = Objects.requireNonNull(params);
 		this.method = Objects.requireNonNull(method);
-		ParamSpec[] params = Specs.extractParamParamter(method);
-		this.paramInfos = params == null || params.length == 0 ? null : new ParamInfo[params.length];
+		ParamSpec[] paramSpecs = Specs.extractParamParamter(method);
+		this.paramInfos = paramSpecs == null || paramSpecs.length == 0 ? null : new ParamInfo[paramSpecs.length];
 		this.toplimit = toplimit;
 		if (this.paramInfos != null) {
 			Class<?>[] argTypes = this.getParameterTypes();
 			for (int i = 0; i < this.paramInfos.length; i++) {
-				ParamSpec p = params[i];
+				ParamSpec p = paramSpecs[i];
 				if (p == null) {
 					continue;
 				}
-				paramInfos[i] = new ParamInfo(p, argNames[i], argTypes[i]);
+				paramInfos[i] = new ParamInfo(p, params.getParamName(i), argTypes[i]);
 			}
 		}
 		registerFieldInfos();
@@ -96,8 +93,8 @@ public abstract class CalleeNode {
 		return false;
 	}
 
-	public ArgPojo getEmptyArgObj() throws Exception {
-		return Loader.newInstance(this.argClz);
+	public ParamPojo createEmptyParamObj() {
+		return this.params.createEmptyParamObj();
 	}
 
 	public Class<?> getDeclaringClass() {
@@ -140,15 +137,15 @@ public abstract class CalleeNode {
 		return this.toplimit;
 	}
 
-	public boolean isEmptyArgument() {
-		return this.argNames.length == 0;
+	public int paramLength() {
+		return this.params.paramLength();
 	}
 
 	public Object owner() {
 		return this.owner;
 	}
 
-	public Object execute(ArgPojo argObj) throws Throwable {
+	public Object execute(ParamPojo argObj) throws Throwable {
 		if (this.paramInfos != null) {
 			Object[] params = argObj.params();
 			for (int i = 0; i < paramInfos.length; i++) {
@@ -172,16 +169,16 @@ public abstract class CalleeNode {
 		}
 	}
 
-	public List<String> argNames() {
-		return CollectionUtil.unmodifyList(argNames);
+	public List<String> paramNames() {
+		return this.params.paramNames();
 	}
 
 	public List<ParamInfo> paramInfos() {
 		return CollectionUtil.unmodifyList(paramInfos);
 	}
 
-	public Class<? extends ArgPojo> argClz() {
-		return this.argClz;
+	public Parameters params() {
+		return this.params;
 	}
 
 	public String comment() {

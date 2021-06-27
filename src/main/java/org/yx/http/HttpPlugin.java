@@ -26,7 +26,7 @@ import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Loader;
 import org.yx.bean.Plugin;
-import org.yx.common.KeyValuePair;
+import org.yx.common.StringEntity;
 import org.yx.common.Lifecycle;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
@@ -68,9 +68,9 @@ public class HttpPlugin implements Plugin {
 	protected void resolveWebAnnotation(Collection<Object> beans) {
 		WebAnnotationResolver factory = new WebAnnotationResolver();
 		try {
-			List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(100);
+			List<StringEntity<HttpActionNode>> infos = new ArrayList<>(100);
 			for (Object bean : beans) {
-				List<KeyValuePair<HttpActionNode>> acts = factory.resolve(bean);
+				List<StringEntity<HttpActionNode>> acts = factory.resolve(bean);
 				if (acts != null && acts.size() > 0) {
 					infos.addAll(acts);
 				}
@@ -118,7 +118,7 @@ public class HttpPlugin implements Plugin {
 		List<HttpHandler> restHandlers = new ArrayList<>(handlers.size());
 		List<HttpHandler> uploadHandlers = new ArrayList<>(handlers.size());
 		for (HttpHandler h : handlers) {
-			if (h.supportRestType(RestType.PLAIN)) {
+			if (h.supportRestType(RestType.TEXT)) {
 				restHandlers.add(h);
 			}
 			if (h.supportRestType(RestType.MULTI_PART)) {

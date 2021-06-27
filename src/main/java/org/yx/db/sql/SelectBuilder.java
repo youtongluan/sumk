@@ -35,17 +35,9 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		this.toCache = DBSettings.toCache();
 	}
 
-	protected static final String[] COMPARES = { ">", ">=", "<", "<=", " like ", " != " };// like前后要有空格
-	protected static final int BIG = 0;
-	protected static final int BIG_EQUAL = 1;
-	protected static final int LESS = 2;
-	protected static final int LESS_EQUAL = 3;
-	protected static final int LIKE = 4;
-	protected static final int NOT = 5;
-
 	protected List<String> selectColumns;
 
-	protected Map<String, Object>[] _compare;
+	protected List<ColumnOperation> _compare;
 
 	protected List<Order> orderby;
 
@@ -116,6 +108,9 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (this.selectColumns != null && this.selectColumns.size() > 0) {
 			for (String filedName : this.selectColumns) {
 				ColumnMeta cm = pojoMeta.getByFieldName(filedName);
+				if (cm == null) {
+					throw new SumkException(-5345340, filedName + "不是有效的java字段");
+				}
 				sj.add(cm.dbColumn);
 			}
 			return sj.toString();
@@ -128,7 +123,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected CharSequence buildWhere(List<Object> paramters) {
 		ItemJoiner joiner = new ItemJoiner(" AND ", null, null);
-		joiner.appendNotEmptyItem(buildValid(paramters)).appendNotEmptyItem(buildIn(paramters))
+		joiner.appendNotEmptyItem(buildValid(paramters)).appendNotEmptyItem(buildEquals(paramters))
 				.appendNotEmptyItem(buildCompare(paramters));
 		return joiner.toCharSequence();
 	}
@@ -154,13 +149,13 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		for (int i = 0; i < COMPARES.length; i++) {
-			this.parseMap(joiner, this._compare[i], i, paramters);
+		for (ColumnOperation op : this._compare) {
+			this.parseOperation(joiner, op, paramters);
 		}
 		return joiner.toCharSequence();
 	}
 
-	private CharSequence buildIn(List<Object> paramters) {
+	private CharSequence buildEquals(List<Object> paramters) {
 		if (this.in == null || this.in.isEmpty()) {
 			return null;
 		}
@@ -176,36 +171,46 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return joiner.toCharSequence();
 	}
 
-	private void parseMap(ItemJoiner joiner, Map<String, Object> src, int compareIndex, List<Object> paramters) {
-		if (CollectionUtil.isEmpty(src)) {
+	private void parseOperation(ItemJoiner joiner, ColumnOperation cop, List<Object> paramters) {
+		String filedName = cop.name;
+		Object v = cop.value;
+		Operation type = cop.type;
+		ColumnMeta cm = pojoMeta.getByFieldName(filedName);
+		if (cm == null) {
+			if (this.failIfPropertyNotMapped) {
+				throw new SumkException(-54675234, filedName + "这个字段没有在java的pojo类中定义");
+			}
 			return;
 		}
-
-		for (Map.Entry<String, Object> en : src.entrySet()) {
-			String filedName = en.getKey();
-			Object v = en.getValue();
-			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
-			if (cm == null) {
-				if (this.failIfPropertyNotMapped) {
-					throw new SumkException(-54675234, filedName + "这个字段没有在java的pojo类中定义");
-				}
-				continue;
+		if (v == null) {
+			if (type == Operation.NOT) {
+				joiner.item().append(cm.dbColumn).append(" IS NOT NULL ");
+				return;
 			}
-			if (v == null) {
-				if (compareIndex == NOT) {
-					joiner.item().append(cm.dbColumn).append(" IS NOT NULL ");
-					continue;
-				}
-				if (this.compareNullPolicy == null || this.compareNullPolicy == CompareNullPolicy.CONTINUE) {
-					continue;
-				}
-				if (this.compareNullPolicy == CompareNullPolicy.FAIL) {
-					throw new SumkException(2342423, filedName + "的值为null");
-				}
+			if (this.compareNullPolicy == null || this.compareNullPolicy == CompareNullPolicy.CONTINUE) {
+				return;
 			}
-			joiner.item().append(cm.dbColumn).append(COMPARES[compareIndex]).append(" ? ");
-			paramters.add(v);
+			if (this.compareNullPolicy == CompareNullPolicy.FAIL) {
+				throw new SumkException(2342423, filedName + "的值为null");
+			}
 		}
+		if (type == Operation.IN) {
+			joiner.item().append(cm.dbColumn).append(" IN ( ");
+			boolean first = true;
+			for (Object obj : (Object[]) v) {
+				if (first) {
+					joiner.append("?");
+					first = false;
+				} else {
+					joiner.append(",?");
+				}
+				paramters.add(obj);
+			}
+			joiner.append(" ) ");
+			return;
+		}
+		joiner.item().append(cm.dbColumn).append(type.op).append(" ? ");
+		paramters.add(v);
 
 	}
 

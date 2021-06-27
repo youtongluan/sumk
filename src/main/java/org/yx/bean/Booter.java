@@ -85,12 +85,17 @@ public final class Booter {
 		Runtime.getRuntime().addShutdownHook(new Thread(SumkServer::stop));
 	}
 
+	private List<Class<?>> unmodifyClassList(List<Class<?>> list) {
+		return CollectionUtil.unmodifyList(list.toArray(new Class<?>[list.size()]));
+	}
+
 	private void publish(List<Class<?>> clazzList, Predicate<String> optional) throws Exception {
 		watchers.sort(null);
+		clazzList = unmodifyClassList(clazzList);
 		for (BootWatcher b : this.watchers) {
 			List<Class<?>> temp = b.publish(clazzList, optional);
 			if (temp != null) {
-				clazzList = temp;
+				clazzList = unmodifyClassList(temp);
 			}
 		}
 	}
@@ -162,8 +167,7 @@ public final class Booter {
 	}
 
 	private void injectField(Field f, Object bean, Object target) throws IllegalAccessException {
-		boolean access = f.isAccessible();
-		if (!access) {
+		if (!f.isAccessible()) {
 			f.setAccessible(true);
 		}
 		f.set(bean, target);

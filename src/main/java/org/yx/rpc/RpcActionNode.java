@@ -15,11 +15,10 @@
  */
 package org.yx.rpc;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import org.yx.asm.ArgPojo;
-import org.yx.bean.Loader;
+import org.yx.asm.ParamPojo;
+import org.yx.asm.Parameters;
 import org.yx.common.context.CalleeNode;
 import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
@@ -29,61 +28,46 @@ import org.yx.rpc.codec.Request;
 public final class RpcActionNode extends CalleeNode {
 	private final boolean publish;
 
-	private final Field[] fields;
-
-	public RpcActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames, int toplimit,
-			boolean publish) {
-		super(obj, method, argClz, argNames, toplimit);
+	public RpcActionNode(Object obj, Method method, Parameters argClzInfo, int toplimit, boolean publish) {
+		super(obj, method, argClzInfo, toplimit);
 		this.publish = publish;
-		if (argNames.length > 0) {
-			this.fields = new Field[argNames.length];
-			try {
-				for (int i = 0; i < this.fields.length; i++) {
-					Field f = this.argClz.getDeclaredField(argNames[i]);
-					f.setAccessible(true);
-					this.fields[i] = f;
-				}
-			} catch (Exception e) {
-				throw new SumkException(235345, e.getMessage());
-			}
-		} else {
-			this.fields = null;
-		}
 	}
 
 	public boolean publish() {
 		return this.publish;
 	}
 
-	public ArgPojo createJsonArgPojo(Request req) throws Throwable {
-		if (this.isEmptyArgument()) {
-			return this.getEmptyArgObj();
+	public ParamPojo createJsonParamPojo(Request req) throws Throwable {
+		if (this.params.paramLength() == 0) {
+			return this.createEmptyParamObj();
 		}
 		String args = req.getJsonedParam();
-		ArgPojo argObj = RpcJson.server().fromJson(args, argClz);
-		return argObj == null ? this.getEmptyArgObj() : argObj;
+		ParamPojo argObj = RpcJson.server().fromJson(args, this.params.paramClz());
+		return argObj == null ? this.createEmptyParamObj() : argObj;
 	}
 
-	public ArgPojo createOrderArgPojo(Request req) throws Throwable {
-		if (this.isEmptyArgument()) {
-			return this.getEmptyArgObj();
+	public ParamPojo createOrderParamPojo(Request req) throws Throwable {
+		int paramLength = params.paramLength();
+		ParamPojo pojo = this.createEmptyParamObj();
+		if (paramLength == 0) {
+			return pojo;
 		}
 		String[] args = req.getParamArray();
 		if (args == null) {
 			throw new SumkException(12012, method.getName() + "的参数不能为空");
 		}
-		if (args.length != argNames.length) {
-			Logs.rpc().debug("{}需要传递{}个参数，实际传递{}个", method.getName(), argNames.length, args.length);
+		if (args.length != paramLength) {
+			Logs.rpc().debug("{}需要传递{}个参数，实际传递{}个", method.getName(), paramLength, args.length);
 		}
 
-		ArgPojo pojo = Loader.newInstance(this.argClz);
-		for (int i = 0; i < fields.length; i++) {
+		Object[] objs = new Object[paramLength];
+		for (int i = 0; i < paramLength; i++) {
 			if (i >= args.length || args[i] == null) {
 				continue;
 			}
-			Field f = fields[i];
-			f.set(pojo, RpcJson.server().fromJson(args[i], f.getGenericType()));
+			objs[i] = RpcJson.server().fromJson(args[i], this.params.getParamType(i));
 		}
+		pojo.setParams(objs);
 		return pojo;
 	}
 

@@ -22,6 +22,8 @@ public final class Const {
 
 	public static final String DEFAULT_DB_NAME = "sumk";
 
+	public static final String ZK_URL = "sumk.zkurl";
+
 	public static final String SOA_SESSION_IDLE = "sumk.rpc.session.idle";
 
 	public static final String KEY_STORE_PATH = "sumk.jetty.ssl.keyStore";

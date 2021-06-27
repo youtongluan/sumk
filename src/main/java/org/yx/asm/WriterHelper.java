@@ -26,7 +26,6 @@ import static org.objectweb.asm.Opcodes.DUP;
 import static org.objectweb.asm.Opcodes.FLOAD;
 import static org.objectweb.asm.Opcodes.FSTORE;
 import static org.objectweb.asm.Opcodes.ICONST_0;
-import static org.objectweb.asm.Opcodes.ICONST_M1;
 import static org.objectweb.asm.Opcodes.ILOAD;
 import static org.objectweb.asm.Opcodes.INVOKESTATIC;
 import static org.objectweb.asm.Opcodes.ISTORE;
@@ -42,11 +41,7 @@ public final class WriterHelper {
 	public static final int WIDTH = AppInfo.getInt("sumk.asm.width", 2);
 
 	public static void visitInt(MethodVisitor mv, int num) {
-		if (num == -1) {
-			mv.visitInsn(ICONST_M1);
-			return;
-		}
-		if (num >= 0 && num <= 5) {
+		if (num >= -1 && num <= 5) {
 			mv.visitInsn(ICONST_0 + num);
 			return;
 		}

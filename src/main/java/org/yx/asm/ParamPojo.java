@@ -13,24 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common;
+package org.yx.asm;
 
-import java.util.Objects;
+public interface ParamPojo {
 
-public class KeyValuePair<T> {
-	private final String key;
-	private final T value;
+	Object[] params();
 
-	public KeyValuePair(String key, T value) {
-		this.key = Objects.requireNonNull(key);
-		this.value = value;
-	}
+	Object invoke(Object owner) throws Throwable;
 
-	public String key() {
-		return key;
-	}
+	void setParams(Object[] objs);
 
-	public T value() {
-		return value;
-	}
+	ParamPojo createEmpty();
 }

@@ -22,7 +22,8 @@ import java.util.Objects;
 import org.yx.annotation.spec.Specs;
 import org.yx.annotation.spec.UploadSpec;
 import org.yx.annotation.spec.WebSpec;
-import org.yx.asm.ArgPojo;
+import org.yx.asm.ParamPojo;
+import org.yx.asm.Parameters;
 import org.yx.common.context.CalleeNode;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
@@ -51,16 +52,20 @@ public final class HttpActionNode extends CalleeNode {
 		return this.upload;
 	}
 
-	public ArgPojo buildArgPojo(Object reqData) throws Exception {
-		if (this.isEmptyArgument() || reqData == null) {
-			return getEmptyArgObj();
+	public ParamPojo buildParamPojo(Object reqData) throws Exception {
+		if (this.params.paramLength() == 0 || reqData == null) {
+			return createEmptyParamObj();
 		}
+		Class<? extends ParamPojo> argClz = this.params.paramClz();
 		if (reqData.getClass() != String.class) {
+			if (argClz.isInstance(reqData)) {
+				return argClz.cast(reqData);
+			}
 			throw new SumkException(1245464, "http argument " + reqData.getClass().getName() + " is not String");
 		}
 		String data = (String) reqData;
 		if (data.isEmpty()) {
-			return getEmptyArgObj();
+			return createEmptyParamObj();
 		}
 		try {
 			return HttpJson.operator().fromJson(data, argClz);
@@ -85,18 +90,18 @@ public final class HttpActionNode extends CalleeNode {
 		return HttpSettings.defaultHttpMethods();
 	}
 
-	public HttpActionNode(Object obj, Method method, Class<? extends ArgPojo> argClz, String[] argNames,
-			WebSpec action) {
-		super(obj, method, argClz, argNames, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
+	public HttpActionNode(Object obj, Method method, Parameters argClzInfo, WebSpec action) {
+		super(obj, method, argClzInfo, Objects.requireNonNull(action).toplimit() > 0 ? action.toplimit()
 				: AppInfo.getInt("sumk.http.toplimit.default", Const.DEFAULT_TOPLIMIT));
 		this.cnName = action.cnName();
 		this.httpMethod = httpMethod(action);
-		this.requestType = this.isEmptyArgument() ? MessageType.PLAIN
+		this.requestType = this.params.paramLength() == 0 ? MessageType.PLAIN
 				: getMessageType(action.requestType(), "sumk.http.request.type");
 		this.responseType = getMessageType(action.responseType(), "sumk.http.response.type");
 		this.requireLogin = (action.requireLogin() && AppInfo.getBoolean("sumk.http.login.enable", false))
 				|| action.requestType().isEncrypt() || action.responseType().isEncrypt();
-		this.sign = !this.isEmptyArgument() && action.sign() && AppInfo.getBoolean("sumk.http.sign.enable", true);
+		this.sign = this.params.paramLength() != 0 && action.sign()
+				&& AppInfo.getBoolean("sumk.http.sign.enable", true);
 		this.tags = CollectionUtil.unmodifyList(action.tags());
 		this.upload = Specs.extractUpload(obj, method);
 	}

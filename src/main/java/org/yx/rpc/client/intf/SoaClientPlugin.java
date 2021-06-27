@@ -29,7 +29,7 @@ public class SoaClientPlugin implements Plugin {
 	@Override
 	public void startAsync() {
 		if (StartContext.inst().get(StartConstants.NOSOA_ClIENT) != null
-				|| !AppInfo.getBoolean("sumk.rpc.client.start", false) || AppInfo.getClinetZKUrl() == null) {
+				|| !AppInfo.getBoolean("sumk.rpc.client.start", false)) {
 			return;
 		}
 		try {

@@ -15,14 +15,14 @@
  */
 package org.yx.http.handler;
 
-public enum RestType {
+public final class RestType {
 	/**
 	 * 普通的http请求
 	 */
-	PLAIN,
+	public static final String TEXT = "text";
 
 	/**
 	 * 文件上传
 	 */
-	MULTI_PART
+	public static final String MULTI_PART = "multipart";
 }

@@ -23,6 +23,7 @@ import java.util.List;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.yx.annotation.spec.Specs;
+import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
 
 public final class ProxyClassFactory {
@@ -61,7 +62,7 @@ public final class ProxyClassFactory {
 
 		ClassReader cr = new ClassReader(AsmUtils.openStreamForClass(clz.getName()));
 
-		ClassWriter cw = new ClassWriter(cr, ClassWriter.COMPUTE_MAXS);
+		ClassWriter cw = new ClassWriter(cr, AppInfo.getInt("sumk.asm.writer.box.compute", ClassWriter.COMPUTE_MAXS));
 
 		String newClzName = AsmUtils.proxyCalssName(clz);
 		ProxyClassVistor cv = new ProxyClassVistor(cw, newClzName, clz, aopMethods);

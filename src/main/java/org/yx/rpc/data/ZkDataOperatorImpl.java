@@ -89,7 +89,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 	@Override
 	public byte[] serialize(Host host, Map<String, String> data) throws Exception {
 		data = new HashMap<>(data);
-		data.put(SERVER, host.toString());
+		data.put(SERVER, host.toAddressString());
 		String s = CollectionUtil.saveMapToText(data, AppInfo.LN, SMALL_SPLIT);
 		if (logger.isTraceEnabled()) {
 			logger.trace("原始数据: {}\n序列化后: {}", data, s);
@@ -99,6 +99,6 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 
 	@Override
 	public String getName(Host host) {
-		return String.join("@", AppInfo.appId(""), host.toString());
+		return String.join("@", AppInfo.appId(""), host.toAddressString());
 	}
 }

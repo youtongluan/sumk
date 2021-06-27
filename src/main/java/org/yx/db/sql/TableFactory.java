@@ -54,7 +54,9 @@ public class TableFactory extends AbstractBootWatcher {
 		Collection<Field> set = map.values();
 		List<ColumnMeta> list = new ArrayList<>(set.size());
 		for (Field f : set) {
-			f.setAccessible(true);
+			if (!f.isAccessible()) {
+				f.setAccessible(true);
+			}
 			list.add(new ColumnMeta(f, Specs.extractColumn(pojoClz, f)));
 		}
 		if (list.isEmpty()) {

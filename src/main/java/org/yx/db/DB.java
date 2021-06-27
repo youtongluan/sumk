@@ -17,9 +17,11 @@ package org.yx.db;
 
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 import org.yx.db.conn.ConnectionPool;
-import org.yx.db.enums.SessionHook;
+import org.yx.db.conn.HookContext;
+import org.yx.db.enums.TxHook;
 import org.yx.db.exec.DBExecutor;
 import org.yx.db.exec.DBSource;
 import org.yx.db.exec.DBTransaction;
@@ -124,12 +126,12 @@ public final class DB {
 		ConnectionPool.get().commit();
 	}
 
-	public static void rollback() throws SQLException {
-		ConnectionPool.get().rollback();
+	public static void rollback(Exception e) throws SQLException {
+		ConnectionPool.get().rollback(e);
 	}
 
-	public static void addHook(SessionHook type, Runnable r) {
-		ConnectionPool.get().addHook(type, r);
+	public static void addHook(TxHook type, Consumer<HookContext> consumer) {
+		ConnectionPool.get().addHook(type, consumer);
 	}
 
 	public static <T> T execute(DBSource ds, DBExecutor<T> executor) throws RuntimeException {

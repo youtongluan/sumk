@@ -90,7 +90,7 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 			}
 		}
 		if (ds == null) {
-			Logs.db().info("ds.class({}) is not instance form BasicDataSource", datasource.getClass().getName());
+			Logs.db().info("ds.class({}) is not instance from BasicDataSource", datasource.getClass().getName());
 			return Collections.emptyMap();
 		}
 
@@ -100,11 +100,6 @@ public class DBCPDataSourceFactory implements DataSourceFactory {
 		map.put("minIdle", ds.getMinIdle());
 		map.put("maxIdle", ds.getMaxIdle());
 		map.put("maxTotal", ds.getMaxTotal());
-		if (datasource instanceof SumkDataSource) {
-			SumkDataSource sd = (SumkDataSource) datasource;
-			map.put("openCount", sd.getOpenCounter());
-			map.put("closeCount", sd.getCloseCounter());
-		}
 		return map;
 	}
 

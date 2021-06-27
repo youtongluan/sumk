@@ -15,7 +15,7 @@
  */
 package org.yx.rpc.server;
 
-public class LocalRpcContext {
+public final class LocalRpcContext {
 
 	private static final ThreadLocal<RpcContext> CTX = new ThreadLocal<>();
 

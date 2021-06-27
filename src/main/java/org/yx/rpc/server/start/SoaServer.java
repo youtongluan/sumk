@@ -28,6 +28,7 @@ import org.yx.bean.IOC;
 import org.yx.common.Host;
 import org.yx.common.Lifecycle;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.StartContext;
@@ -154,6 +155,11 @@ public class SoaServer implements Lifecycle {
 		if (started || host == null) {
 			return;
 		}
+		if (this.zkUrl == null) {
+			logger.warn("##因为没有配置{},所以就没有将微服务注册到注册中心##", Const.ZK_URL);
+			return;
+		}
+		logger.debug("register zk by addr : {}", host);
 		try {
 			if (this.enable) {
 				this.zkRegister.run();
@@ -204,12 +210,13 @@ public class SoaServer implements Lifecycle {
 			if (port_zk < 1) {
 				port_zk = port;
 			}
-			logger.debug("register zk by ip:{},port:{}", ip_zk, port_zk);
 
 			this.host = Host.create(ip_zk, port_zk);
 			zkUrl = AppInfo.getServerZKUrl();
-			ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-			ZkClientHelper.makeSure(client, SOA_ROOT);
+			if (zkUrl != null) {
+				ZkClient client = ZkClientHelper.getZkClient(zkUrl);
+				ZkClientHelper.makeSure(client, SOA_ROOT);
+			}
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
 			throw new SumkException(-353451436, "soa服务初始化失败");

@@ -3,13 +3,21 @@ package org.yx.db.sql;
 import java.util.Objects;
 import java.util.function.UnaryOperator;
 
+import org.yx.conf.AppInfo;
 import org.yx.util.StringUtil;
 
 public class DBNameResolvers {
 
-	private static UnaryOperator<String> columnNameResolver = StringUtil::camelToUnderline;
+	private static final UnaryOperator<String> DEFAULT_RESOLVER = s -> {
+		if (AppInfo.getBoolean("sumk.db.name.lowercase", false)) {
+			return StringUtil.camelToUnderline(s).toLowerCase();
+		}
+		return StringUtil.camelToUnderline(s);
+	};
 
-	private static UnaryOperator<String> tableNameResolver = columnNameResolver;
+	private static UnaryOperator<String> columnNameResolver = DEFAULT_RESOLVER;
+
+	private static UnaryOperator<String> tableNameResolver = DEFAULT_RESOLVER;
 	private static UnaryOperator<String> cachePrefixResolver = tableName -> "{" + tableName + "}";
 
 	public static UnaryOperator<String> getColumnNameResolver() {

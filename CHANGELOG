@@ -269,3 +269,11 @@ v2.9.12
 1、添加BootWatcher接口，该接口允许在IOC启动前做一些操作
 2、DB添加commit和rollback两个hook
 3、增加对数据源的操作统计
+
+v2.10.0
+1、使用字节码等方式替换原有的http、rpc入参解析方式，减少反射引起动态生成class类
+2、CalleeNode中的部分以arg开头的方法，改名为param开头，去掉isEmptyArgument方法，增加paramLength方法
+3、微服务支持sumk.zkurl不配置（服务端和客户端都支持），这时候的rpc只能调用本进程里的微服务接口
+4、DB钩子（hook）增加ON_COMMIT和CLOSED两种，并且入参从Runable改为Consumer
+5、增加sumk.db.name.lowercase参数，用于将默认的表名和字段名改为小写，自定义名称不受本参数影响。这个原先需要通过注入自定义的实现类来实现
+6、数据库selec类增加in方法，并且允许同一种比较出现两次，比如： name != '张三' and name != '李四'

@@ -15,6 +15,20 @@
  */
 package org.yx.db.enums;
 
-public enum SessionHook {
-	COMMIT, ROLLBACK
+/**
+ * 触发钩子的情形有以下两种：
+ * <OL>
+ * <LI>最外层的@Box方法执行结束，无论是否有实际操作数据库都会触发</LI>
+ * <LI>直接调用DB.commit()、DB.rollback()也会触发钩子</LI>
+ * </OL>
+ */
+public enum TxHook {
+	/**
+	 * 只有这个钩子可以操作数据库，但不要做太复杂的操作
+	 */
+	ON_COMMIT, COMMITED,
+	/**
+	 * 回滚之后执行
+	 */
+	ROLLBACK, CLOSED
 }

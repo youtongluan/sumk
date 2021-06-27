@@ -31,7 +31,7 @@ public final class Logs {
 	}
 
 	public static Logger system() {
-		return Log.get("sumk.sys");
+		return Log.get("sumk.system");
 	}
 
 	public static Logger db() {

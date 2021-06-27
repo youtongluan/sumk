@@ -26,6 +26,9 @@ import org.yx.bean.IOC;
 import org.yx.common.date.TimeUtil;
 import org.yx.orm.LocalSqlDao;
 
+/*
+ * useOldAliasMetadataBehavior=true表示启用别名，额不是数据库定义时的名字，注意连接里这个参数对测试用例的影响
+ */
 public class SqlTest extends BaseOrmTest{
 
 	@Test
@@ -41,7 +44,7 @@ public class SqlTest extends BaseOrmTest{
 		System.out.println(map);
 		Assert.assertEquals(name, map.get("name"));
 		Assert.assertEquals(id, map.get("id"));
-		Assert.assertEquals(age, map.get("AGE"));
+		Assert.assertEquals(age, map.get("age"));
 		
 		Map<String, Object> map2=dao.select(id);
 		Assert.assertEquals(map, map2);
@@ -54,9 +57,9 @@ public class SqlTest extends BaseOrmTest{
 		System.out.println(map);
 		Assert.assertEquals(name+"_1", map.get("name"));
 		Assert.assertEquals(id, map.get("id"));
-		Assert.assertEquals(age+1, map.get("AGE"));
-		System.out.println(map.get("last_update").getClass());
-		Assert.assertEquals(lastUpdate, TimeUtil.toType(map.get("last_update"), Timestamp.class, true));
+		Assert.assertEquals(age+1, map.get("age"));
+		System.out.println(map.get("lastUpdate").getClass());
+		Assert.assertEquals(lastUpdate, TimeUtil.toType(map.get("lastUpdate"), Timestamp.class, true));
 	}
 
 }

@@ -37,7 +37,9 @@ public final class Loader {
 
 	public static <T> T newInstance(Class<T> clz) throws Exception {
 		Constructor<T> c = clz.getDeclaredConstructor();
-		c.setAccessible(true);
+		if (!c.isAccessible()) {
+			c.setAccessible(true);
+		}
 		return c.newInstance();
 	}
 
@@ -49,7 +51,9 @@ public final class Loader {
 	public static Object newInstance(String clzName, Object[] params, Class<?>[] paramsType) throws Exception {
 		Class<?> clz = Class.forName(clzName, true, loader());
 		Constructor<?> c = paramsType == null ? clz.getDeclaredConstructor() : clz.getDeclaredConstructor(paramsType);
-		c.setAccessible(true);
+		if (!c.isAccessible()) {
+			c.setAccessible(true);
+		}
 		return c.newInstance(params);
 	}
 

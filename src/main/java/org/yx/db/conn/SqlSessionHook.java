@@ -16,23 +16,24 @@
 package org.yx.db.conn;
 
 import java.util.Objects;
+import java.util.function.Consumer;
 
-import org.yx.db.enums.SessionHook;
+import org.yx.db.enums.TxHook;
 
 class SqlSessionHook {
-	private final SessionHook type;
-	private final Runnable action;
+	private final TxHook type;
+	private final Consumer<HookContext> action;
 
-	public SqlSessionHook(SessionHook type, Runnable action) {
+	public SqlSessionHook(TxHook type, Consumer<HookContext> action) {
 		this.type = Objects.requireNonNull(type);
 		this.action = Objects.requireNonNull(action);
 	}
 
-	public SessionHook getType() {
+	public TxHook getType() {
 		return type;
 	}
 
-	public Runnable getAction() {
+	public Consumer<HookContext> getAction() {
 		return action;
 	}
 

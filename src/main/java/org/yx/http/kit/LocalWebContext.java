@@ -17,7 +17,7 @@ package org.yx.http.kit;
 
 import org.yx.http.handler.WebContext;
 
-public class LocalWebContext {
+public final class LocalWebContext {
 	private static final ThreadLocal<WebContext> CTX = new ThreadLocal<>();
 
 	public static WebContext getCtx() {

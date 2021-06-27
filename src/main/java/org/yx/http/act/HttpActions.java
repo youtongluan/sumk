@@ -26,7 +26,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import org.yx.common.KeyValuePair;
+import org.yx.common.StringEntity;
 import org.yx.common.action.ActInfoUtil;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
@@ -51,7 +51,7 @@ public final class HttpActions {
 
 	public static final String PREFIX_MATCH_ENDING = "/*";
 
-	public static synchronized void init(List<KeyValuePair<HttpActionNode>> infos) {
+	public static synchronized void init(List<StringEntity<HttpActionNode>> infos) {
 		if (nameResolver == null) {
 			nameResolver = new ActNameResolver(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
 		}

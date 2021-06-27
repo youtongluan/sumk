@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.yx.common.KeyValuePair;
+import org.yx.common.StringEntity;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 
@@ -33,7 +33,7 @@ public interface HttpActionSelector {
 	 * @param nameResolver
 	 *            名称解析器
 	 */
-	void init(List<KeyValuePair<HttpActionNode>> infos, Function<String, String> nameResolver);
+	void init(List<StringEntity<HttpActionNode>> infos, Function<String, String> nameResolver);
 
 	/**
 	 * 根据真正的act获取HttpActionInfo。对于url含参数等场景，可以返回HttpActionInfo子类

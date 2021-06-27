@@ -21,7 +21,7 @@ public interface HttpHandler extends Ordered {
 
 	void handle(WebContext ctx) throws Throwable;
 
-	default boolean supportRestType(RestType type) {
+	default boolean supportRestType(String type) {
 		return true;
 	}
 }

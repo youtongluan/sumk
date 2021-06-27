@@ -23,11 +23,11 @@ import java.util.function.Predicate;
 
 import org.yx.annotation.spec.Specs;
 import org.yx.annotation.spec.WebSpec;
-import org.yx.asm.ArgPojos;
+import org.yx.asm.ParamPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
 import org.yx.bean.BeanKit;
-import org.yx.common.KeyValuePair;
+import org.yx.common.StringEntity;
 import org.yx.common.matcher.BooleanMatcher;
 import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
@@ -62,7 +62,7 @@ public class WebAnnotationResolver {
 		}
 	}
 
-	public List<KeyValuePair<HttpActionNode>> resolve(Object bean) throws Exception {
+	public List<StringEntity<HttpActionNode>> resolve(Object bean) throws Exception {
 
 		Class<?> clz = BeanKit.getTargetClass(bean);
 		if (exclude.test(clz.getName())) {
@@ -85,18 +85,18 @@ public class WebAnnotationResolver {
 		}
 
 		List<MethodParamInfo> mpInfos = AsmUtils.buildMethodInfos(httpMethods);
-		List<KeyValuePair<HttpActionNode>> infos = new ArrayList<>(mpInfos.size() * 2);
+		List<StringEntity<HttpActionNode>> infos = new ArrayList<>(mpInfos.size() * 2);
 		for (MethodParamInfo info : mpInfos) {
 			Method m = info.getMethod();
 			WebSpec act = Specs.extractWeb(bean, m);
-			HttpActionNode node = new HttpActionNode(bean, m, ArgPojos.create(info), info.getArgNames(), act);
+			HttpActionNode node = new HttpActionNode(bean, m, ParamPojos.create(info), act);
 
 			List<String> names = rawNames(m, act);
 			if (names == null || names.isEmpty()) {
 				continue;
 			}
 			for (String name : names) {
-				infos.add(new KeyValuePair<>(name, node));
+				infos.add(new StringEntity<>(name, node));
 			}
 		}
 		return infos;

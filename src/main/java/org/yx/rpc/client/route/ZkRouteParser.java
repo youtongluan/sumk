@@ -136,7 +136,6 @@ public final class ZkRouteParser {
 					zk.unsubscribeDataChanges(parentPath + "/" + delete, nodeListener);
 				}
 			}
-
 		});
 		if (paths == null) {
 			paths = Collections.emptyList();

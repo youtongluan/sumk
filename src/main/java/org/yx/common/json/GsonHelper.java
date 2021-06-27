@@ -29,43 +29,43 @@ import com.google.gson.LongSerializationPolicy;
 public final class GsonHelper {
 
 	public static GsonBuilder builder(String module) {
-		if (module == null || module.isEmpty()) {
-			module = "sumk";
-		}
 
 		DateTimeTypeAdapter da = new DateTimeTypeAdapter();
-		String format = AppInfo.get(module + ".gson.date.format");
+		String format = AppInfo.get("sumk.gson.date.format");
 		if (StringUtil.isNotEmpty(format)) {
 			da.setDateFormat(format);
 		}
 
 		GsonBuilder gb = new GsonBuilder().registerTypeAdapter(Date.class, da);
 
-		if (AppInfo.getBoolean(module + ".gson.disableHtmlEscaping", true)) {
+		if (AppInfo.getBoolean("sumk.gson.disableHtmlEscaping", true)) {
 			gb.disableHtmlEscaping();
 		}
-		if (AppInfo.getBoolean(module + ".gson.shownull", false)) {
+		if (AppInfo.getBoolean("sumk.gson.shownull", false)) {
 			gb.serializeNulls();
 		}
-		if (AppInfo.getBoolean(module + ".gson.disableInnerClassSerialization", false)) {
+		if (AppInfo.getBoolean("sumk.gson.disableInnerClassSerialization", false)) {
 			gb.disableInnerClassSerialization();
 		}
-		if (AppInfo.getBoolean(module + ".gson.generateNonExecutableJson", false)) {
+		if (AppInfo.getBoolean("sumk.gson.generateNonExecutableJson", false)) {
 			gb.generateNonExecutableJson();
 		}
-		if (AppInfo.getBoolean(module + ".gson.serializeSpecialFloatingPointValues", false)) {
+		if (AppInfo.getBoolean("sumk.gson.serializeSpecialFloatingPointValues", false)) {
 			gb.serializeSpecialFloatingPointValues();
 		}
 
-		if (AppInfo.getBoolean(module + ".gson.longSerialize2String", false)) {
+		if (AppInfo.getBoolean("sumk.gson.longSerialize2String", false)) {
 			gb.setLongSerializationPolicy(LongSerializationPolicy.STRING);
 		}
 
-		if (AppInfo.getBoolean(module + ".gson.prettyPrinting", false)) {
+		if (AppInfo.getBoolean("sumk.gson.prettyPrinting", false)) {
 			gb.setPrettyPrinting();
 		}
-		if (AppInfo.getBoolean(module + ".gson.date.adaper", true)) {
+		if (AppInfo.getBoolean("sumk.gson.date.adaper", true)) {
 			DateAdapters.registerAll(gb);
+		}
+		if (AppInfo.getBoolean("sumk.gson.pojo.optional", true)) {
+			gb.registerTypeAdapterFactory(new ParamPojoTypeAdapterFactory());
 		}
 		return gb;
 	}

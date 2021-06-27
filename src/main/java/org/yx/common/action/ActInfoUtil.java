@@ -85,11 +85,11 @@ public final class ActInfoUtil {
 	public static Map<String, Object> simpleInfoMap(String name, CalleeNode node) {
 		Map<String, Object> map = createMap(name, node);
 		Map<String, Object> param = new LinkedHashMap<>();
-		int paramSize = node.argNames() == null ? 0 : node.argNames().size();
+		int paramSize = node.paramLength();
 		Class<?>[] paramTypes = node.getParameterTypes();
 		for (int i = 0; i < paramSize; i++) {
 			Class<?> paramType = paramTypes[i];
-			param.put(node.argNames().get(i), describe(paramType, ExcludeFromParams.class));
+			param.put(node.params().getParamName(i), describe(paramType, ExcludeFromParams.class));
 		}
 		map.put("params", param);
 		map.put("result", describe(node.getReturnType(), ExcludeFromResponse.class));
@@ -100,7 +100,7 @@ public final class ActInfoUtil {
 		Map<String, Object> map = createMap(name, node);
 		List<Object> list = new ArrayList<>();
 		if (node.paramInfos() != null) {
-			int paramSize = node.argNames() == null ? 0 : node.argNames().size();
+			int paramSize = node.paramLength();
 			Class<?>[] paramTypes = node.getParameterTypes();
 			for (int i = 0; i < paramSize; i++) {
 				Class<?> paramType = paramTypes[i];
@@ -109,7 +109,7 @@ public final class ActInfoUtil {
 					ManuParameterInfo mp = new ManuParameterInfo();
 					mp.setParamType(paramType);
 					mp.setComplex(false);
-					mp.setParamName(node.argNames().get(i));
+					mp.setParamName(node.params().getParamName(i));
 					pi = mp;
 				}
 				boolean supportComplex = pi == null ? false : pi.isComplex();

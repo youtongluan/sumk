@@ -19,6 +19,7 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 import org.yx.main.StartContext;
@@ -58,8 +59,12 @@ public final class Rpc {
 			RpcSettings.init();
 			Rpc.clientExecutor = StartContext.inst().getExecutorService("sumk.rpc.client.executor");
 			String zkUrl = AppInfo.getClinetZKUrl();
-			Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
-			ZkRouteParser.get(zkUrl).readRouteAndListen();
+			if (zkUrl != null) {
+				Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
+				ZkRouteParser.get(zkUrl).readRouteAndListen();
+			} else {
+				Logs.rpc().warn("##因为没有配置{},所以只能调用本机的微服务接口##", Const.ZK_URL);
+			}
 			ReqSession.init();
 			strated = true;
 		} catch (Exception e) {

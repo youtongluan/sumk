@@ -34,8 +34,8 @@ import org.yx.util.M;
 public class MultipartHandler implements HttpHandler {
 
 	@Override
-	public boolean supportRestType(RestType type) {
-		return type == RestType.MULTI_PART;
+	public boolean supportRestType(String type) {
+		return RestType.MULTI_PART.equals(type);
 	}
 
 	@Override
