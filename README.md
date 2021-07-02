@@ -5,6 +5,7 @@
 * [这是日志工程](https://github.com/youtongluan/sumk-log)，一般通过sumk-log来引入sumk
 * [功能简介](https://www.oschina.net/p/sumk)
 * [代码自动生成工具](https://github.com/youtongluan/sumk-codetool)
+* [dubbo整合](https://github.com/wjiajun/sumk-dubbo-project) （可将sumk rpc切换至dubbo）
 
 
 test目录下有简单的压测工具类（HttpPressTest和RpcPressTest）和简单程序（[sumk-server-demo](https://www.oschina.net/p/sumk)这个工程里的示例更详细）
