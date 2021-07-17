@@ -57,7 +57,7 @@ public final class SumkServer {
 	/**
 	 * 如果使用BootWatcher来加载远程配置，需要在BootWatcher里调用本方法
 	 */
-	public static void resetConfig() {
+	public static void reloadConfig() {
 		StartContext sc = StartContext.inst();
 		SumkServer.test = AppInfo.getBoolean("sumk.test", false);
 		if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
@@ -127,7 +127,7 @@ public final class SumkServer {
 			if (sc.get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
-			resetConfig();
+			reloadConfig();
 			String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
 			List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
 					: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);
