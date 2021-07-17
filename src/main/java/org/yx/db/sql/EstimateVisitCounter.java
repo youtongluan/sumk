@@ -17,7 +17,7 @@ package org.yx.db.sql;
 
 import org.yx.conf.AppInfo;
 
-public class DefaultVisitCounter implements VisitCounter {
+public class EstimateVisitCounter implements VisitCounter {
 
 	private int visitCount;
 
@@ -27,35 +27,56 @@ public class DefaultVisitCounter implements VisitCounter {
 
 	private final int interval;
 
-	public DefaultVisitCounter(int interval) {
+	private int queryCount;
+
+	public EstimateVisitCounter(int interval) {
 		this.interval = interval > 0 ? interval : AppInfo.getInt("sumk.cache.count", 500);
 	}
 
-	public int getVisitCount() {
-		return visitCount;
-	}
-
-	public int getCachedMeet() {
-		return cacheMeet;
-	}
-
-	public boolean visit() {
-		++visitCount;
-		return visitCount % interval != 0;
-	}
-
-	public void incrCacheMeet() {
-		cacheMeet++;
+	@Override
+	public long getCacheKeyVisits() {
+		return visitCount & 0xFFFFFFFFL;
 	}
 
 	@Override
-	public int getModifyCount() {
-		return this.modifyCount;
+	public long getCacheKeyHits() {
+		return cacheMeet & 0xFFFFFFFFL;
+	}
+
+	@Override
+	public boolean willVisitCache(int c) {
+		visitCount += c;
+		return visitCount % interval >= c || c > 100;
+	}
+
+	@Override
+	public void incrCacheHit(int c) {
+		cacheMeet += c;
+	}
+
+	@Override
+	public long getModifyCount() {
+		return this.modifyCount & 0xFFFFFFFFL;
 	}
 
 	@Override
 	public void incrModifyCount() {
 		this.modifyCount++;
+	}
+
+	@Override
+	public long getQueryCount() {
+		return this.queryCount & 0xFFFFFFFFL;
+	}
+
+	@Override
+	public void incrQueryCount() {
+		this.queryCount++;
+	}
+
+	@Override
+	public int getInterval() {
+		return this.interval;
 	}
 
 }

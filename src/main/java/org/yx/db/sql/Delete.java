@@ -17,15 +17,10 @@ package org.yx.db.sql;
 
 import org.yx.db.visit.SumkDbVisitor;
 
-public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
+public class Delete extends ModifySqlBuilder {
 
 	public Delete(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
-	}
-
-	@Override
-	public int execute() {
-		return this.accept(visitor);
 	}
 
 	public Delete failIfPropertyNotMapped(boolean fail) {
@@ -66,7 +61,6 @@ public class Delete extends AbstractSqlBuilder<Integer> implements Executable {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		this.checkIn();
-		this.pojoMeta = this.parsePojoMeta(true);
 		if (this.pojoMeta.softDelete == null) {
 			return new HardDelete(this).toMapedSql();
 		}

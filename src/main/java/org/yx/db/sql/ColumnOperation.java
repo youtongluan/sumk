@@ -25,6 +25,11 @@ public class ColumnOperation {
 		return value;
 	}
 
+	@Override
+	public String toString() {
+		return name + type.op + "?";
+	}
+
 	public boolean isSameOperation(ColumnOperation b) {
 		return this.name.equals(b.name) && this.type == b.type;
 	}

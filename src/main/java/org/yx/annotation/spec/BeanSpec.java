@@ -17,12 +17,28 @@ package org.yx.annotation.spec;
 
 public class BeanSpec {
 	private final String value;
+	private final String conditionOnProperty;
+	/**
+	 * conditionOnProperty不为空的时候，本属性才有意义
+	 */
+	private final boolean onProperty;
 
-	public BeanSpec(String value) {
+	public BeanSpec(String value, String conditionOnProperty, boolean onProperty) {
 		this.value = value;
+		this.conditionOnProperty = conditionOnProperty;
+		this.onProperty = onProperty;
 	}
 
 	public String value() {
 		return this.value;
 	}
+
+	public String conditionOnProperty() {
+		return this.conditionOnProperty;
+	}
+
+	public boolean onProperty() {
+		return onProperty;
+	}
+
 }

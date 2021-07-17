@@ -94,7 +94,7 @@ public final class Visitors {
 		Connection conn = ConnectionPool.get().connection(DBSettings.readType());
 		try (SumkStatement statement = SumkStatement.create(conn, maped)) {
 			ResultSet ret = statement.executeQuery();
-			PojoMeta pm = ((SelectBuilder) builder).parsePojoMeta(true);
+			PojoMeta pm = ((SelectBuilder) builder).makeSurePojoMeta();
 			List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
 			return list;
 		}

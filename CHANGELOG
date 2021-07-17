@@ -277,3 +277,12 @@ v2.10.0
 4、DB钩子（hook）增加ON_COMMIT和CLOSED两种，并且入参从Runable改为Consumer
 5、增加sumk.db.name.lowercase参数，用于将默认的表名和字段名改为小写，自定义名称不受本参数影响。这个原先需要通过注入自定义的实现类来实现
 6、数据库selec类增加in方法，并且允许同一种比较出现两次，比如： name != '张三' and name != '李四'
+
+v2.10.1
+1、Select增加notIn方法，用于sql中的not in()
+2、简单的in查询、selectColumns指定查询列也都能使用缓存了
+3、RecordRepository的包名改为org.yx.db.visit
+4、除了默认的redis缓存外，还允许自定义缓存实现类
+5、修改AbstractCachable的cacheEnable方法，这个只在自动生成的代码(sumk-codetool)里使用
+6、@Bean增加辅助注解@ConditionOnPropert，支持组合关系：并且（用,或&&分隔)以及或者(用||分隔)。其中onMatch属性用来做取反操作
+7、改进SumkDate转String的性能

@@ -15,20 +15,25 @@
  */
 package org.yx.db.event;
 
-import org.yx.db.listener.DBEventListener;
-import org.yx.listener.ListenerGroup;
-import org.yx.listener.ListenerGroupImpl;
+import java.util.List;
+
+import org.yx.listener.ComposeListener;
+import org.yx.listener.SumkListener;
 
 public final class DBEventPublisher {
 
-	private static final ListenerGroup<DBEventListener> group = new ListenerGroupImpl<>();
+	private static final ComposeListener group = new ComposeListener();
 
 	public static void publish(DBEvent event) {
 		group.listen(event);
 	}
 
-	public static ListenerGroup<DBEventListener> group() {
-		return group;
+	public static void setListener(SumkListener[] listeners) {
+		group.setListener(listeners);
+	}
+
+	public List<SumkListener> getListeners() {
+		return group.getListeners();
 	}
 
 }

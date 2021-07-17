@@ -22,6 +22,8 @@ import static org.yx.db.sql.Operation.LESS;
 import static org.yx.db.sql.Operation.LESS_EQUAL;
 import static org.yx.db.sql.Operation.LIKE;
 import static org.yx.db.sql.Operation.NOT;
+import static org.yx.db.sql.Operation.NOT_IN;
+import static org.yx.db.sql.Operation.NOT_LIKE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -29,11 +31,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import org.yx.db.enums.CacheType;
 import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.event.QueryEvent;
@@ -124,7 +128,7 @@ public class Select extends SelectBuilder {
 			return this;
 		}
 		if (_compare == null) {
-			_compare = new ArrayList<>(6);
+			_compare = new ArrayList<>(8);
 		}
 		this._compare.add(new ColumnOperation(key, op, value));
 		return this;
@@ -168,6 +172,10 @@ public class Select extends SelectBuilder {
 		return setCompare(LIKE, key, value);
 	}
 
+	public Select notLike(String key, Object value) {
+		return setCompare(NOT_LIKE, key, value);
+	}
+
 	/**
 	 * 不等于操作
 	 * 
@@ -182,7 +190,7 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 对某个字段做in操作，缓存键尽量不用这个操作，因为它不使用缓存
+	 * sql中的in查询
 	 * 
 	 * @param key
 	 *            字段名
@@ -192,6 +200,10 @@ public class Select extends SelectBuilder {
 	 */
 	public Select in(String key, Collection<?> values) {
 		return setCompare(IN, key, values.toArray(new Object[values.size()]));
+	}
+
+	public Select notIn(String key, Collection<?> values) {
+		return setCompare(NOT_IN, key, values.toArray(new Object[values.size()]));
 	}
 
 	public Select bigThan(Object pojo) {
@@ -230,6 +242,36 @@ public class Select extends SelectBuilder {
 
 	public Select not(Object pojo) {
 		return addCompares(NOT, pojo);
+	}
+
+	/**
+	 * 根据字段名和判断条件移除所有符合条件的比较
+	 * 
+	 * @param name
+	 *            java字段名，可以为null。null表示所有的字段都要移除
+	 * @param op
+	 *            比较条件，可以为null。null表示所有的条件都要移除
+	 * @return 当前对象
+	 */
+	public Select removeCompares(String key, Operation op) {
+		if (_compare == null) {
+			return this;
+		}
+		Iterator<ColumnOperation> it = this._compare.iterator();
+		while (it.hasNext()) {
+			ColumnOperation cp = it.next();
+			if (key != null && !key.equals(cp.name)) {
+				continue;
+			}
+			if (op != null && cp.type != op) {
+				continue;
+			}
+			it.remove();
+		}
+		if (this._compare.isEmpty()) {
+			this._compare = null;
+		}
+		return this;
 	}
 
 	/**
@@ -380,6 +422,7 @@ public class Select extends SelectBuilder {
 
 	/**
 	 * 通过redis主键列表查询主键，单主键ids就只有一个，多主键就传入多个<BR>
+	 * 所有id属于同一条记录，如果要使用单主键的in查询，请用本类的in方法<BR>
 	 * <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids
@@ -395,7 +438,7 @@ public class Select extends SelectBuilder {
 		if (ids == null || ids.length == 0) {
 			return this;
 		}
-		this.pojoMeta = this.parsePojoMeta(true);
+		makeSurePojoMeta();
 		List<ColumnMeta> cms = databaseId ? this.pojoMeta.getDatabaseIds() : this.pojoMeta.getCacheIDs();
 		Asserts.requireTrue(cms != null && cms.size() == ids.length, pojoMeta.getTableName() + "没有设置主键，或者主键个数跟参数个数不一致");
 		Map<String, Object> map = new HashMap<>();
@@ -415,42 +458,92 @@ public class Select extends SelectBuilder {
 		return this.resultHandler == null ? PojoResultHandler.handler : this.resultHandler;
 	}
 
-	public <T> List<T> queryList() {
-		try {
-			ResultHandler handler = this.resultHandler();
-			this.pojoMeta = this.parsePojoMeta(true);
-			List<T> list = new ArrayList<>();
-			List<Map<String, Object>> origin = this.in;
-			Exchange exchange = new Exchange(origin);
+	protected boolean canUseInCache() {
+		return this.pojoMeta.cacheIDs.size() == 1 && CollectionUtil.isEmpty(this.in)
+				&& this.pojoMeta.cacheType() == CacheType.SINGLE && _compare != null && _compare.size() == 1
+				&& _compare.get(0).type == IN
+				&& _compare.get(0).name.equals(this.pojoMeta.cacheIDs.get(0).field.getName());
+	}
 
-			if (fromCache && this.selectColumns == null && _compare == null && this.orderby == null
-					&& this.offset == 0) {
-				exchange.findFromCache(pojoMeta);
-				if (exchange.getData() != null && exchange.getData().size() > 0) {
-					List<T> tmp = handler.parseFromJson(pojoMeta, exchange.getData());
-					if (tmp != null && tmp.size() > 0) {
-						list.addAll(tmp);
-					}
-				}
+	protected <T> List<T> queryFromCache(Exchange exchange) throws Exception {
+		if (CollectionUtil.isEmpty(this.in) && CollectionUtil.isEmpty(this._compare)) {
+			return null;
+		}
+		if (!(fromCache && this.orderby == null && this.offset == 0 && !pojoMeta.isNoCache())) {
+			return null;
+		}
+
+		List<T> list = new ArrayList<>();
+
+		String singleKeyName = this.canUseInCache() ? this.pojoMeta.cacheIDs.get(0).field.getName() : null;
+		if (singleKeyName != null) {
+			Object[] vs = (Object[]) _compare.get(0).value;
+			List<Map<String, Object>> newIN = new ArrayList<>(vs.length);
+			for (Object v : vs) {
+				newIN.add(Collections.singletonMap(singleKeyName, v));
 			}
+			exchange.setLeftIn(newIN);
+		} else if (CollectionUtil.isEmpty(_compare)) {
+			exchange.setLeftIn(this.in);
+		} else {
+			return null;
+		}
 
-			if (CollectionUtil.isNotEmpty(this.in) && CollectionUtil.isEmpty(exchange.getLeftIn())) {
+		exchange.findFromCache(pojoMeta);
+		if (exchange.getData() != null && exchange.getData().size() > 0) {
+			List<T> tmp = this.resultHandler().parseFromJson(pojoMeta, exchange.getData(),
+					CollectionUtil.unmodifyList(this.selectColumns));
+			if (tmp != null && tmp.size() > 0) {
+				list.addAll(tmp);
+			}
+		}
+		List<Map<String, Object>> left = exchange.getLeftIn();
+
+		if (left == null) {
+			return list;
+		}
+
+		if (singleKeyName != null) {
+			List<Object> vs = new ArrayList<>(left.size());
+			for (Map<String, Object> m : left) {
+				vs.add(m.get(singleKeyName));
+			}
+			this._compare = Collections.singletonList(new ColumnOperation(singleKeyName, IN, vs.toArray()));
+		} else {
+			this.in = left;
+		}
+		return list;
+	}
+
+	public <T> List<T> queryList() {
+
+		final List<Map<String, Object>> origin = this.in = CollectionUtil.unmodifyList(this.in);
+		final List<ColumnOperation> orginCompare = this._compare = CollectionUtil.unmodifyList(this._compare);
+		try {
+			makeSurePojoMeta().getCounter().incrQueryCount();
+			Exchange exchange = new Exchange();
+			List<T> list = this.queryFromCache(exchange);
+			if (list != null && CollectionUtil.isEmpty(exchange.getLeftIn())) {
 				return list;
 			}
-
-			this.in = exchange.getLeftIn();
-			List<T> dbData = handler.parse(pojoMeta, this.accept(visitor));
-			this.in = origin;
+			boolean canUseCache = true;
+			if (list == null) {
+				list = Collections.emptyList();
+				canUseCache = false;
+			}
+			List<T> dbData = this.resultHandler().parse(pojoMeta, this.accept(visitor));
 			if (dbData == null || dbData.isEmpty()) {
 				return list;
 			}
 			list = merge(list, dbData);
-			List<Map<String, Object>> eventIn = fromCache ? exchange.getLeftIn() : this.in;
+			List<Map<String, Object>> eventIn = canUseCache ? exchange.getLeftIn() : this.in;
 
-			if (this.toCache && selectColumns == null && _compare == null && this.offset == 0
-					&& (limit <= 0 || limit >= DBSettings.asNoLimit()) && CollectionUtil.isNotEmpty(eventIn)) {
+			if (this.toCache && selectColumns == null && this.offset == 0
+					&& (canUseCache || CollectionUtil.isEmpty(this._compare))
+					&& (limit <= 0 || limit >= DBSettings.asNoLimit()) && CollectionUtil.isNotEmpty(eventIn)
+					&& eventIn.size() == 1 && dbData.size() < DBSettings.maxQueryCacheSize()) {
 
-				QueryEvent event = new QueryEvent(this.parsePojoMeta(true).getTableName());
+				QueryEvent event = new QueryEvent(this.pojoMeta.getTableName());
 				event.setIn(eventIn);
 				event.setResult(dbData);
 				DBEventPublisher.publish(event);
@@ -461,6 +554,9 @@ public class Select extends SelectBuilder {
 			return list;
 		} catch (Exception e) {
 			throw SumkException.wrap(e);
+		} finally {
+			this.in = origin;
+			this._compare = orginCompare;
 		}
 	}
 

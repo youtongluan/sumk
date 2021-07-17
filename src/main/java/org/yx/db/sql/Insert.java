@@ -26,16 +26,12 @@ import org.yx.db.event.InsertEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.util.SeqUtil;
 
-public class Insert extends AbstractSqlBuilder<Integer> {
+public class Insert extends ModifySqlBuilder {
 
 	protected List<Object> src = new ArrayList<>();
 
 	public Insert(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
-	}
-
-	public int execute() {
-		return this.accept(visitor);
 	}
 
 	/**
@@ -69,11 +65,11 @@ public class Insert extends AbstractSqlBuilder<Integer> {
 
 	public MapedSql toMapedSql() throws Exception {
 		this.checkIn();
-		this.pojoMeta = this.parsePojoMeta(true);
 		return batchInsert();
 	}
 
 	protected MapedSql batchInsert() throws Exception {
+		PojoMeta pojoMeta = this.pojoMeta;
 		MapedSql ms = new MapedSql();
 		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");

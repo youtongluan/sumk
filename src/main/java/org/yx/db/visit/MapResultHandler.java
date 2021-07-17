@@ -16,6 +16,7 @@
 package org.yx.db.visit;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -29,13 +30,23 @@ public class MapResultHandler implements ResultHandler {
 
 	public static final MapResultHandler handler = new MapResultHandler();
 
-	private MapResultHandler() {
-
+	public static Map<String, Object> filterSelectColumns(Map<String, Object> map, List<String> selectColumns) {
+		if (selectColumns.isEmpty()) {
+			return map;
+		}
+		Iterator<String> it = map.keySet().iterator();
+		while (it.hasNext()) {
+			String key = it.next();
+			if (!selectColumns.contains(key)) {
+				it.remove();
+			}
+		}
+		return map;
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons)
+	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns)
 			throws InstantiationException, IllegalAccessException {
 		if (CollectionUtil.isEmpty(jsons)) {
 			return null;
@@ -53,6 +64,7 @@ public class MapResultHandler implements ResultHandler {
 				}
 				for (Object obj : ts) {
 					Map<String, Object> map = pm.populate(obj, false);
+					map = filterSelectColumns(map, selectColumns);
 					if (map.size() > 0) {
 						list.add(map);
 					}
@@ -64,6 +76,7 @@ public class MapResultHandler implements ResultHandler {
 				continue;
 			}
 			Map<String, Object> map = pm.populate(obj, false);
+			map = filterSelectColumns(map, selectColumns);
 			if (map.size() > 0) {
 				list.add(map);
 			}

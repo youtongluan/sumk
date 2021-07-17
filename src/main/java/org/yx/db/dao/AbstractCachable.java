@@ -15,12 +15,14 @@
  */
 package org.yx.db.dao;
 
-public class AbstractCachable {
+import org.yx.db.sql.DBSettings;
+
+public abstract class AbstractCachable {
 
 	private boolean cacheEnable = true;
 
 	public boolean isCacheEnable() {
-		return cacheEnable;
+		return cacheEnable && DBSettings.fromCache();
 	}
 
 	protected void setCacheEnable(boolean cache) {

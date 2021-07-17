@@ -22,7 +22,7 @@ import org.yx.db.sql.PojoMeta;
 
 public interface ResultHandler {
 
-	<T> List<T> parseFromJson(PojoMeta pm, List<String> jsons) throws Exception;
+	<T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns) throws Exception;
 
 	<T> List<T> parse(PojoMeta pm, List<Map<String, Object>> list) throws Exception;
 }

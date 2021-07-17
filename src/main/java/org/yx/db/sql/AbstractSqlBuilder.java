@@ -41,12 +41,6 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	protected String sub;
 
 	protected void sub(String sub) {
-		if (this.sub != null) {
-			throw new SumkException(14323543, "sub已经设置了，这个属性只允许调用一次");
-		}
-		if (sub == null || sub.isEmpty()) {
-			return;
-		}
 		this.sub = sub;
 		if (this.pojoMeta != null) {
 			this.pojoMeta = PojoMetaHolder.getPojoMeta(this.pojoMeta, sub);
@@ -86,15 +80,11 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		if (src instanceof Map) {
 			return new HashMap<>((Map<String, Object>) src);
 		}
-
-		if (this.pojoMeta == null) {
-			this.pojoMeta = PojoMetaHolder.getPojoMeta(src.getClass(), sub);
-			if (this.pojoMeta == null) {
-				throw new SumkException(-1893654, src.getClass() + " does not config as a table");
-			}
+		if (this.tableClass == null) {
+			this.tableClass = src.getClass();
 		}
 		try {
-			return this.pojoMeta.populate(src, keepNull);
+			return this.makeSurePojoMeta().populate(src, keepNull);
 		} catch (Exception e) {
 			throw new SumkException(-42534254, e.getMessage(), e);
 		}
@@ -110,20 +100,17 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		this.in.add(map);
 	}
 
-	private PojoMeta parsePojoMeta() {
-		if (this.tableClass != null) {
-			return PojoMetaHolder.getPojoMeta(tableClass, sub);
+	public PojoMeta makeSurePojoMeta() {
+		if (this.pojoMeta != null) {
+			return this.pojoMeta;
 		}
-
-		return pojoMeta;
-	}
-
-	public PojoMeta parsePojoMeta(boolean failIfNull) {
-		PojoMeta pm = this.parsePojoMeta();
-		if (pm == null && failIfNull) {
+		if (this.tableClass != null) {
+			this.pojoMeta = PojoMetaHolder.getPojoMeta(tableClass, sub);
+		}
+		if (this.pojoMeta == null) {
 			throw new SumkException(7325435, "please call tableClass(XX.class) first");
 		}
-		return pm;
+		return this.pojoMeta;
 	}
 
 	public AbstractSqlBuilder(SumkDbVisitor<T> visitor) {

@@ -365,7 +365,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 * @return HH:mm:ss 格式
 	 */
 	public String to_HH_mm_ss() {
-		return new SumkDateStringBuilder(this).to_HH_mm_ss().toString();
+		return new UnsafeFormater(this).to_HH_mm_ss().toString();
 	}
 
 	/**
@@ -374,7 +374,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 * @return HH:mm:ss.SSS 格式
 	 */
 	public String to_HH_mm_ss_SSS() {
-		return new SumkDateStringBuilder(this).to_HH_mm_ss_SSS().toString();
+		return new UnsafeFormater(this).to_HH_mm_ss_SSS().toString();
 	}
 
 	/**
@@ -383,7 +383,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 * @return yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String to_yyyy_MM() {
-		return new SumkDateStringBuilder(this).to_yyyy_MM().toString();
+		return new UnsafeFormater(this).to_yyyy_MM().toString();
 	}
 
 	/**
@@ -392,7 +392,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 * @return yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String to_yyyy_MM_dd() {
-		return new SumkDateStringBuilder(this).to_yyyy_MM_dd().toString();
+		return new UnsafeFormater(this).to_yyyy_MM_dd().toString();
 	}
 
 	/**
@@ -402,7 +402,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String to_yyyy_MM_dd_HH_mm_ss() {
-		return new SumkDateStringBuilder(this).to_yyyy_MM_dd_HH_mm_ss().toString();
+		return new UnsafeFormater(this).to_yyyy_MM_dd_HH_mm_ss().toString();
 	}
 
 	/**
@@ -412,7 +412,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 	 */
 	public String to_yyyy_MM_dd_HH_mm_ss_SSS() {
-		return new SumkDateStringBuilder(this).to_yyyy_MM_dd_HH_mm_ss_SSS().toString();
+		return new UnsafeFormater(this).to_yyyy_MM_dd_HH_mm_ss_SSS().toString();
 	}
 
 	public Calendar toCalendar() {
@@ -691,67 +691,67 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		}
 	}
 
-	private static class SumkDateStringBuilder {
+	private static class UnsafeFormater {
 		private static final char DATE_SPLIT = '-';
 		private static final char TIME_SPLIT = ':';
 
 		private final SumkDate sumkDate;
+		private final StringBuilder sb = new StringBuilder(26);
 
-		SumkDateStringBuilder(SumkDate sumkDate) {
+		UnsafeFormater(SumkDate sumkDate) {
 			this.sumkDate = sumkDate;
+		}
+
+		void appendDoubleChar(byte v) {
+			if (v < 10) {
+				sb.append('0');
+			}
+			sb.append(v);
 		}
 
 		/**
 		 * 返回的格式如13:12:59
-		 * 
-		 * @return HH:mm:ss 格式
 		 */
-		StringBuilder to_HH_mm_ss() {
-			StringBuilder sb = new StringBuilder();
-			if (sumkDate.hour < 10) {
-				sb.append('0');
-			}
-			sb.append(sumkDate.hour).append(TIME_SPLIT);
+		UnsafeFormater to_HH_mm_ss() {
+			appendDoubleChar(sumkDate.hour);
+			sb.append(TIME_SPLIT);
 
-			if (sumkDate.minute < 10) {
-				sb.append('0');
-			}
-			sb.append(sumkDate.minute).append(TIME_SPLIT);
+			appendDoubleChar(sumkDate.minute);
+			sb.append(TIME_SPLIT);
 
-			if (sumkDate.second < 10) {
-				sb.append('0');
-			}
-			return sb.append(sumkDate.second);
+			appendDoubleChar(sumkDate.second);
+			return this;
 		}
 
 		/**
 		 * 返回的格式如13:12:59.123
-		 * 
-		 * @return HH:mm:ss.SSS 格式
 		 */
-		StringBuilder to_HH_mm_ss_SSS() {
-			StringBuilder sb = this.to_HH_mm_ss().append('.');
-			String milStr = String.valueOf(sumkDate.milSecond);
-			for (int i = 0; i < 3 - milStr.length(); i++) {
+		UnsafeFormater to_HH_mm_ss_SSS() {
+			this.to_HH_mm_ss();
+			sb.append('.');
+			int mil = sumkDate.milSecond;
+			if (mil < 10) {
+				sb.append("00");
+			} else if (mil < 100) {
 				sb.append('0');
 			}
-			return sb.append(milStr);
+			sb.append(mil);
+			return this;
 		}
 
 		/**
-		 * 返回的格式如2018-10
-		 * 
-		 * @return yyyy-MM格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
+		 * 返回的格式如2018-10<BR>
+		 * 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 		 */
-		StringBuilder to_yyyy_MM() {
-			StringBuilder sb = new StringBuilder();
-			if (sumkDate.year == Integer.MIN_VALUE) {
-				sb.append(sumkDate.year);
+		UnsafeFormater to_yyyy_MM() {
+			int y = sumkDate.year;
+			if (y == Integer.MIN_VALUE) {
+				sb.append(y);
 			} else {
-				if (sumkDate.year < 0) {
+				if (y < 0) {
 					sb.append('-');
+					y = -y;
 				}
-				int y = sumkDate.year >= 0 ? sumkDate.year : -sumkDate.year;
 				if (y < 1000) {
 					if (y >= 100) {
 						sb.append('0');
@@ -765,10 +765,8 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 			}
 
 			sb.append(DATE_SPLIT);
-			if (sumkDate.month < 10) {
-				sb.append('0');
-			}
-			return sb.append(sumkDate.month);
+			appendDoubleChar(sumkDate.month);
+			return this;
 		}
 
 		/**
@@ -776,14 +774,11 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		 * 
 		 * @return yyyy-MM-dd格式 如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 		 */
-		StringBuilder to_yyyy_MM_dd() {
-			StringBuilder sb = this.to_yyyy_MM();
+		UnsafeFormater to_yyyy_MM_dd() {
+			this.to_yyyy_MM();
 			sb.append(DATE_SPLIT);
-
-			if (sumkDate.day < 10) {
-				sb.append('0');
-			}
-			return sb.append(sumkDate.day);
+			appendDoubleChar(sumkDate.day);
+			return this;
 		}
 
 		/**
@@ -792,12 +787,23 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		 * @return yyyy-MM-dd HH:mm:ss 格式<BR>
 		 *         如果年份小于1000，会在年份前面补上0。与SimpleDateFormat兼容
 		 */
-		StringBuilder to_yyyy_MM_dd_HH_mm_ss() {
-			return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss());
+		UnsafeFormater to_yyyy_MM_dd_HH_mm_ss() {
+			this.to_yyyy_MM_dd();
+			sb.append(' ');
+			this.to_HH_mm_ss();
+			return this;
 		}
 
-		StringBuilder to_yyyy_MM_dd_HH_mm_ss_SSS() {
-			return this.to_yyyy_MM_dd().append(' ').append(this.to_HH_mm_ss_SSS());
+		UnsafeFormater to_yyyy_MM_dd_HH_mm_ss_SSS() {
+			this.to_yyyy_MM_dd();
+			sb.append(' ');
+			this.to_HH_mm_ss_SSS();
+			return this;
+		}
+
+		@Override
+		public String toString() {
+			return sb.toString();
 		}
 	}
 }

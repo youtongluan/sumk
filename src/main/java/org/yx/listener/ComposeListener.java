@@ -21,7 +21,7 @@ import java.util.Objects;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
 
-public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<T> {
+public class ComposeListener implements SumkListener {
 
 	private SumkListener[] listeners = new SumkListener[0];
 
@@ -32,8 +32,7 @@ public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<
 		}
 	}
 
-	@Override
-	public void setListener(T[] listeners) {
+	public void setListener(SumkListener[] listeners) {
 		for (SumkListener lis : Objects.requireNonNull(listeners)) {
 			if (lis == null) {
 				throw new SumkException(2453451, "监听器不能为null");
@@ -43,7 +42,6 @@ public class ListenerGroupImpl<T extends SumkListener> implements ListenerGroup<
 
 	}
 
-	@Override
 	public List<SumkListener> getListeners() {
 		return CollectionUtil.unmodifyList(this.listeners);
 	}

@@ -23,7 +23,6 @@ import java.sql.Statement;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
@@ -41,11 +40,10 @@ import org.yx.util.SumkDate;
 
 public class SumkStatement implements AutoCloseable {
 	private static final Logger LOG = Log.get("sumk.sql.plain");
+	private static long executeCount;
 	private static SqlLog sqlLog = (a, b, c) -> {
 	};
 	private static CodeLineMarker marker = new CodeLineMarker("org.yx.db.");
-	private static final AtomicLong EXECUTE_COUNT = new AtomicLong();
-	private static final AtomicLong CLOSED_COUNT = new AtomicLong();
 	private static BiConsumer<PreparedStatement, List<Object>> statementParamAttacher = (ps, params) -> {
 		int size = params.size();
 		if (size == 0) {
@@ -126,7 +124,7 @@ public class SumkStatement implements AutoCloseable {
 		if (statement == null) {
 			throw new SumkException(SumkExceptionCode.DB_CONNECTION_CLOSED, "连接已关闭");
 		}
-		EXECUTE_COUNT.incrementAndGet();
+		executeCount++;
 		return statement;
 	}
 
@@ -168,7 +166,6 @@ public class SumkStatement implements AutoCloseable {
 				LOG.error(marker, DBKits.getSqlOfStatement(statement) + ", 发生异常", this.exception);
 			}
 			statement.close();
-			CLOSED_COUNT.incrementAndGet();
 			int totalTime = (int) (System.currentTimeMillis() - beginTime);
 			if (DBSettings.isUnionLogEnable() && (this.exception != null || totalTime >= DBSettings.unionLogTime())) {
 				sqlLog.log(this, totalTime, this.exception);
@@ -231,10 +228,6 @@ public class SumkStatement implements AutoCloseable {
 	}
 
 	public static long getExecuteCount() {
-		return EXECUTE_COUNT.get();
-	}
-
-	public static long getClosedCount() {
-		return CLOSED_COUNT.get();
+		return executeCount;
 	}
 }

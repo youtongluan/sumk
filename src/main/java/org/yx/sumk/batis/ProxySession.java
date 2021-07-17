@@ -35,7 +35,7 @@ public class ProxySession implements SqlSession {
 
 	@Override
 	public Connection getConnection() {
-		throw new SumkException(8675, "getConnection not support");
+		throw new SumkException(-148675, "getConnection not support");
 	}
 
 	protected SqlSession readSession() {

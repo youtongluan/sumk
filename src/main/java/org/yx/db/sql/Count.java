@@ -36,10 +36,12 @@ public class Count {
 
 	public long execute() {
 		List<Object> paramters = new ArrayList<>(8);
-		select.pojoMeta = select.parsePojoMeta(true);
-		Objects.requireNonNull(select.pojoMeta, "pojo meta cannot be null");
+		PojoMeta pojoMeta = select.makeSurePojoMeta();
+		pojoMeta.getCounter().incrQueryCount();
+
+		Objects.requireNonNull(pojoMeta, "pojo meta cannot be null");
 		StringBuilder sql = new StringBuilder();
-		sql.append("SELECT count(*) FROM ").append(select.pojoMeta.getTableName());
+		sql.append("SELECT count(*) FROM ").append(pojoMeta.getTableName());
 		CharSequence where = select.buildWhere(paramters);
 		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);

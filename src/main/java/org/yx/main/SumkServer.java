@@ -39,8 +39,8 @@ import org.yx.util.StringUtil;
 public final class SumkServer {
 	private static volatile boolean started;
 	private static volatile boolean destoryed;
-	private static volatile boolean httpEnable;
-	private static volatile boolean rpcEnable;
+	private static boolean httpEnable;
+	private static boolean rpcEnable;
 
 	private static boolean test;
 	private static long startTime;
@@ -51,6 +51,21 @@ public final class SumkServer {
 
 	public static void resetStatus() {
 		started = false;
+		destoryed = false;
+	}
+
+	/**
+	 * 如果使用BootWatcher来加载远程配置，需要在BootWatcher里调用本方法
+	 */
+	public static void resetConfig() {
+		StartContext sc = StartContext.inst();
+		SumkServer.test = AppInfo.getBoolean("sumk.test", false);
+		if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
+			rpcEnable = true;
+		}
+		if (sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
+			httpEnable = true;
+		}
 	}
 
 	public static boolean isHttpEnable() {
@@ -112,13 +127,7 @@ public final class SumkServer {
 			if (sc.get(StartConstants.THREAD_ON_DEAMON) != null) {
 				SumkThreadPool.setDaemon(true);
 			}
-			SumkServer.test = AppInfo.getBoolean("sumk.test", false);
-			if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
-				rpcEnable = true;
-			}
-			if (sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
-				httpEnable = true;
-			}
+			resetConfig();
 			String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
 			List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
 					: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);

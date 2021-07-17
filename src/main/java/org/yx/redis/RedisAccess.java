@@ -17,49 +17,40 @@ package org.yx.redis;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.yx.db.sql.PojoMeta;
-import org.yx.exception.SumkException;
+import org.yx.db.visit.RecordAccess;
 import org.yx.log.Log;
 
-public final class RecordRepository {
+public final class RedisAccess implements RecordAccess {
 
-	private static Logger logger = Log.get("sumk.db.redis");
+	private static Logger logger = Log.get("sumk.redis.access");
 
-	public static String get(PojoMeta m, String id) {
-		if (!m.getCounter().visit()) {
-			return null;
-		}
-		String s = _get(m, id);
-		if (s != null) {
-			m.getCounter().incrCacheMeet();
-		}
-		return s;
-	}
-
-	public static String getKey(PojoMeta m, String id) {
-		return m.getPre() + id;
-	}
-
-	private static String _get(PojoMeta m, String id) {
-		return muteRedis(m.getTableName()).get(getKey(m, id));
-	}
-
-	public static Redis muteRedis(String tableName) {
+	protected Redis muteRedis(String tableName) {
 		return RedisPool.get(tableName).mute();
 	}
 
-	public static void set(PojoMeta m, String id, String json) {
-		if (json == null) {
-			return;
+	protected String getKey(PojoMeta m, String id) {
+		return m.getPre() + id;
+	}
+
+	protected String[] getKeys(PojoMeta m, String[] ids) {
+		String[] keys = new String[ids.length];
+		for (int i = 0; i < ids.length; i++) {
+			keys[i] = getKey(m, ids[i]);
 		}
-		if (id == null || id.isEmpty()) {
-			throw new SumkException(657645465, "key of redis value cannot be null");
-		}
-		m.getCounter().incrModifyCount();
+		return keys;
+	}
+
+	@Override
+	public String get(PojoMeta m, String id) {
+		return muteRedis(m.getTableName()).get(getKey(m, id));
+	}
+
+	@Override
+	public void set(PojoMeta m, String id, String json) {
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		int ttl = m.getTtlSec();
@@ -76,8 +67,8 @@ public final class RecordRepository {
 		}
 	}
 
-	public static void del(PojoMeta m, String id) {
-		m.getCounter().incrModifyCount();
+	@Override
+	public void del(PojoMeta m, String id) {
 		String key = getKey(m, id);
 		String tableName = m.getTableName();
 		muteRedis(tableName).del(key);
@@ -86,19 +77,8 @@ public final class RecordRepository {
 		}
 	}
 
-	protected static String[] getKeys(PojoMeta m, String[] ids) {
-		String[] keys = new String[ids.length];
-		for (int i = 0; i < ids.length; i++) {
-			keys[i] = getKey(m, ids[i]);
-		}
-		return keys;
-	}
-
-	public static void delMulti(PojoMeta m, String[] ids) {
-		if (ids == null || ids.length == 0) {
-			return;
-		}
-		m.getCounter().incrModifyCount();
+	@Override
+	public void delMulti(PojoMeta m, String[] ids) {
 		String[] keys = getKeys(m, ids);
 		muteRedis(m.getTableName()).del(keys);
 		if (logger.isTraceEnabled()) {
@@ -108,20 +88,9 @@ public final class RecordRepository {
 		}
 	}
 
-	public static List<String> getMultiValue(PojoMeta m, Collection<String> ids) {
-		if (ids == null || ids.isEmpty()) {
-			return Collections.emptyList();
-		}
-
-		if (!m.getCounter().visit()) {
-			return Collections.emptyList();
-		}
-
+	@Override
+	public List<String> getMultiValue(PojoMeta m, Collection<String> ids) {
 		String[] keys = getKeys(m, ids.toArray(new String[ids.size()]));
-		List<String> ret = muteRedis(m.getTableName()).mget(keys);
-		if (ret != null && ret.size() > 0) {
-			m.getCounter().incrCacheMeet();
-		}
-		return ret;
+		return muteRedis(m.getTableName()).mget(keys);
 	}
 }

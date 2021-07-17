@@ -19,21 +19,24 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.yx.db.sql.PojoMeta;
 import org.yx.log.Log;
-import org.yx.redis.RecordRepository;
 import org.yx.redis.RedisPool;
 import org.yx.util.StringUtil;
 
 public class Exchange {
 
-	private List<Map<String, Object>> leftIn;
+	private List<Map<String, Object>> leftIn = Collections.emptyList();
 
 	private List<String> data;
 
-	public Exchange(List<Map<String, Object>> leftIn) {
-		this.leftIn = leftIn == null ? null : Collections.unmodifiableList(leftIn);
+	public Exchange() {
+	}
+
+	public void setLeftIn(List<Map<String, Object>> leftIn) {
+		this.leftIn = Objects.requireNonNull(leftIn);
 	}
 
 	public List<Map<String, Object>> getLeftIn() {
@@ -81,7 +84,7 @@ public class Exchange {
 
 				notFound.add(conditon);
 			}
-			this.leftIn = Collections.unmodifiableList(notFound);
+			this.leftIn = notFound.isEmpty() ? null : notFound;
 		} catch (Exception e) {
 			this.data = null;
 			Log.printStack("sumk.sql", e);

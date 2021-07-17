@@ -22,9 +22,9 @@ import java.util.function.Function;
 
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
+import org.yx.db.visit.RecordRepository;
 import org.yx.exception.SumkException;
 import org.yx.exception.SumkExceptionCode;
-import org.yx.redis.RecordRepository;
 import org.yx.util.StringUtil;
 
 public final class DBKits {

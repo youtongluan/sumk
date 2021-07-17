@@ -59,7 +59,7 @@ public class RedisLoader {
 			RedisConfig config = createConfig(host, configMap);
 			Logs.redis().debug("{} : {}", name, config);
 
-			Redis redis = RedisFactory.create(config);
+			Redis redis = RedisSettings.getFactroy().apply(config);
 			if ("*".equals(name) || "default".equals(name)) {
 				RedisPool.setDefaultRedis(redis);
 			} else {

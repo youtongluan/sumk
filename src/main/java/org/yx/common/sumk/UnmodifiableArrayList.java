@@ -36,6 +36,7 @@ public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomA
 	}
 
 	public UnmodifiableArrayList(Collection<E> col) {
+
 		this.elements = col.toArray();
 	}
 

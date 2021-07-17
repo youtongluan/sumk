@@ -117,7 +117,7 @@ public final class Booter {
 		if (obj instanceof Predicate) {
 			return (Predicate<String>) obj;
 		}
-		return BooleanMatcher.FALSE;
+		return Matchers.createWildcardMatcher(AppInfo.get("sumk.ioc.optional"));
 	}
 
 	private List<Class<?>> loadClasses(List<String> packageNames, Predicate<String> optional) throws Exception {

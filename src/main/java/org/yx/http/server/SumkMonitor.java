@@ -215,7 +215,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		if (!"1".equals(req.getParameter("db.cache"))) {
 			return;
 		}
-		writer.append(Monitors.dbCacheVisitInfo());
+		writer.append(Monitors.dbVisitInfo());
 		writer.append(TYPE_SPLIT);
 	}
 

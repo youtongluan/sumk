@@ -15,17 +15,27 @@
  */
 package org.yx.db.sql;
 
+/**
+ * 数据库及cache的访问计数器
+ */
 public interface VisitCounter {
 
-	int getVisitCount();
+	public int getInterval();
 
-	int getCachedMeet();
+	long getCacheKeyVisits();
 
-	int getModifyCount();
+	long getCacheKeyHits();
 
-	void incrCacheMeet();
+	long getModifyCount();
+
+	long getQueryCount();
+
+	void incrCacheHit(int c);
 
 	void incrModifyCount();
 
-	boolean visit();
+	void incrQueryCount();
+
+	boolean willVisitCache(int c);
+
 }

@@ -23,20 +23,18 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.apache.mina.core.filterchain.DefaultIoFilterChainBuilder;
 import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketAcceptor;
-import org.apache.mina.transport.socket.SocketSessionConfig;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.main.StartContext;
+import org.yx.rpc.InnerRpcUtil;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.util.ExceptionUtil;
 
@@ -102,14 +100,7 @@ public class MinaServer implements Runnable {
 					new ExecutorFilter(StartContext.inst().getExecutorService("sumk.rpc.server.executor")));
 
 			acceptor.setHandler(handler);
-
-			acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(Const.SOA_SESSION_IDLE, 600));
-			if (acceptor.getSessionConfig() instanceof SocketSessionConfig) {
-				SocketSessionConfig conf = (SocketSessionConfig) acceptor.getSessionConfig();
-				conf.setKeepAlive(AppInfo.getBoolean("sumk.rpc.server.conf.keepAlive", true));
-				conf.setReceiveBufferSize(AppInfo.getInt("sumk.rpc.server.conf.receiveBufferSize", 100));
-				conf.setSendBufferSize(AppInfo.getInt("sumk.rpc.server.conf.sendBufferSize", 8192));
-			}
+			InnerRpcUtil.config(acceptor.getSessionConfig(), true);
 			boolean randomPort = this.port < 1;
 			for (int i = 0; i < 50; i++) {
 				try {

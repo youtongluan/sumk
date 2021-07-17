@@ -82,7 +82,7 @@ public class DBPlugin implements Plugin {
 
 	protected void buildDBListeners() {
 		List<DBEventListener> listeners = IOC.getBeans(DBEventListener.class);
-		DBEventPublisher.group().setListener(listeners.toArray(new DBEventListener[0]));
+		DBEventPublisher.setListener(listeners.toArray(new DBEventListener[0]));
 	}
 
 	protected void loadSDBResources() {

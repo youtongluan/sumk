@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.yx.bean.IOC;
 import org.yx.common.context.ActionContext;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SoaException;
 import org.yx.log.Log;
 import org.yx.rpc.InnerRpcUtil;
@@ -65,7 +64,7 @@ public class ServerHandler implements IoHandler {
 	@Override
 	public void sessionIdle(IoSession session, IdleStatus status) {
 		long time = System.currentTimeMillis() - session.getLastIoTime();
-		if (time > AppInfo.getLong(Const.SOA_SESSION_IDLE, 60) * 1000) {
+		if (time > AppInfo.getLong("sumk.rpc.server.idle", 1000L * 60 * 10)) {
 			log.info("rpc session {} {} for {}ms,closed by this server", session.getId(), status,
 					session.getLastIoTime(), time);
 			session.closeOnFlush();

@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
+import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -29,9 +30,21 @@ public class PojoResultHandler implements ResultHandler {
 
 	public static final PojoResultHandler handler = new PojoResultHandler();
 
+	public void filterSelectColumns(PojoMeta pm, Object obj, List<String> selectColumns)
+			throws IllegalArgumentException, IllegalAccessException {
+		if (selectColumns.isEmpty()) {
+			return;
+		}
+		for (ColumnMeta c : pm.fieldMetas()) {
+			if (!selectColumns.contains(c.getFieldName())) {
+				c.getField().set(obj, null);
+			}
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons)
+	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns)
 			throws InstantiationException, IllegalAccessException {
 		if (CollectionUtil.isEmpty(jsons)) {
 			return null;
@@ -48,6 +61,7 @@ public class PojoResultHandler implements ResultHandler {
 					continue;
 				}
 				for (Object t : ts) {
+					this.filterSelectColumns(pm, t, selectColumns);
 					list.add(t);
 				}
 				continue;
@@ -57,6 +71,7 @@ public class PojoResultHandler implements ResultHandler {
 			if (obj == null) {
 				continue;
 			}
+			this.filterSelectColumns(pm, obj, selectColumns);
 			list.add(obj);
 		}
 		return (List<T>) list;

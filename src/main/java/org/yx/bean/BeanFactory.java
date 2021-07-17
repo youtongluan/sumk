@@ -19,13 +19,17 @@ import java.util.Collection;
 
 import org.yx.annotation.spec.BeanSpec;
 import org.yx.annotation.spec.Specs;
+import org.yx.common.Predicator;
+import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
+import org.yx.util.StringUtil;
 
 public class BeanFactory extends AbstractBootWatcher {
 
 	@Override
 	public void accept(Class<?> clz) throws Exception {
 		BeanSpec b = Specs.extractBean(clz);
-		if (b == null) {
+		if (b == null || !valid(clz, b)) {
 			return;
 		}
 		if (FactoryBean.class.isAssignableFrom(clz)) {
@@ -34,6 +38,21 @@ public class BeanFactory extends AbstractBootWatcher {
 		} else {
 			InnerIOC.putClass(b.value(), clz);
 		}
+	}
+
+	public static boolean valid(Class<?> clz, BeanSpec bean) {
+		String v = bean.conditionOnProperty();
+		if (StringUtil.isNotEmpty(v)) {
+			boolean match = bean.onProperty();
+			boolean exist = Predicator.test(v, name -> AppInfo.get(name, null) != null);
+			if (match ^ exist) {
+				Logs.system().info("{} exclude because conditionOnProperty donot meet.on match:{},exist:{}",
+						clz.getName(), match, exist);
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public static void registerFactoryBean(Collection<?> beans) throws Exception {

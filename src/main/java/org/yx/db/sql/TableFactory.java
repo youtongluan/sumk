@@ -32,6 +32,10 @@ import org.yx.util.S;
 
 public class TableFactory extends AbstractBootWatcher {
 
+	public TableFactory() {
+		DBSettings.init();
+	}
+
 	@Override
 	public void accept(Class<?> clz) {
 		TableSpec spec = Specs.extractTable(clz);

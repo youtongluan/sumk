@@ -25,9 +25,9 @@ import org.yx.db.event.InsertEvent;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.sql.PojoMetaHolder;
+import org.yx.db.visit.RecordRepository;
 import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
-import org.yx.redis.RecordRepository;
 
 @Bean
 public class InsertListener implements DBEventListener {

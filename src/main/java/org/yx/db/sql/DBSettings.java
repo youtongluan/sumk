@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.Objects;
+import java.util.function.IntFunction;
 
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.DBType;
@@ -36,6 +37,32 @@ public final class DBSettings {
 			117, 109, 107 };
 
 	private static DBType readType;
+
+	private static int MAX_QUERY_CACHE_SIZE;
+
+	private static SoftDeleteParser softDeleteParser = new SoftDeleteParserImpl();
+
+	private static IntFunction<VisitCounter> visitCounterFactory;
+
+	public static IntFunction<VisitCounter> visitCounterFactory() {
+		return visitCounterFactory;
+	}
+
+	public static void setVisitCounterFactory(IntFunction<VisitCounter> factory) {
+		DBSettings.visitCounterFactory = factory;
+	}
+
+	public static SoftDeleteParser softDeleteParser() {
+		return softDeleteParser;
+	}
+
+	public static void setSoftDeleteParser(SoftDeleteParser parser) {
+		DBSettings.softDeleteParser = parser;
+	}
+
+	public static int maxQueryCacheSize() {
+		return MAX_QUERY_CACHE_SIZE;
+	}
 
 	public static DBType readType() {
 		return readType;
@@ -82,7 +109,7 @@ public final class DBSettings {
 	}
 
 	public static synchronized void init() {
-		if (LIMIT_AS_NO_LIMIT > 0) {
+		if (DBSettings.readType != null || LIMIT_AS_NO_LIMIT > 0) {
 			return;
 		}
 		AppInfo.addObserver(info -> {
@@ -95,6 +122,7 @@ public final class DBSettings {
 				UNION_LOG_TIME = AppInfo.getInt("sumk.unionlog.sql.time", 0);
 				UNION_LOG_ENABLE = AppInfo.getBoolean("sumk.unionlog.sql.enable", true);
 				DEBUG_LOG_SPEND_TIME = AppInfo.getInt("sumk.sql.debug.spendTime", 100);
+				MAX_QUERY_CACHE_SIZE = AppInfo.getInt("sumk.select.query.maxsize", 1000);
 			} catch (Exception e) {
 				Logs.db().info(e.getMessage(), e);
 			}

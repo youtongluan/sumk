@@ -68,8 +68,8 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				return;
 			}
 			if (obj.getSessionObject() == null || StringUtil.isEmpty(obj.getSessionObject().getUserId())) {
-				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "未正确设置session对象，或者session对象中的userId为空",
-						charset);
+				Logs.http().warn("{} :sid:{} 未正确设置session对象，或者session对象中的userId为空", user, sid);
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
 				return;
 			}
 
@@ -81,8 +81,8 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 
 			byte[] key = createEncryptKey(req);
 			if (!this.setSession(req, sid, obj, key)) {
-				Logs.http().debug("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
-				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
+				Logs.http().warn("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed.", charset);
 				return;
 			}
 			String userId = obj.getSessionObject().getUserId();

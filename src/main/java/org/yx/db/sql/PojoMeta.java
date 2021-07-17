@@ -24,11 +24,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntFunction;
 
 import org.yx.annotation.db.AutoCreateTime;
 import org.yx.annotation.doc.Comment;
+import org.yx.annotation.doc.NotNull;
 import org.yx.annotation.spec.TableSpec;
 import org.yx.bean.Loader;
 import org.yx.common.date.TimeUtil;
@@ -37,7 +39,6 @@ import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.log.Logs;
-import org.yx.main.StartContext;
 import org.yx.redis.RedisPool;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -53,8 +54,10 @@ public final class PojoMeta implements Cloneable {
 	 */
 	final Class<?> pojoClz;
 
+	@NotNull
 	final List<ColumnMeta> cacheIDs;
 
+	@NotNull
 	final List<ColumnMeta> databaseIds;
 
 	private VisitCounter counter;
@@ -120,15 +123,22 @@ public final class PojoMeta implements Cloneable {
 		return counter;
 	}
 
-	public int getTtlSec() {
-		return ttlSec;
+	/**
+	 * 重置计数器
+	 * 
+	 * @return 旧计数器
+	 */
+	public VisitCounter resetCounter() {
+		VisitCounter old = this.counter;
+		int maxHit = AppInfo.getInt("sumk.db.table.cache.maxHit." + this.tableName, old.getInterval());
+		IntFunction<VisitCounter> factory = DBSettings.visitCounterFactory();
+		VisitCounter c = factory != null ? factory.apply(maxHit) : new EstimateVisitCounter(maxHit);
+		this.counter = Objects.requireNonNull(c);
+		return old;
 	}
 
-	private List<ColumnMeta> unmodifyList(List<ColumnMeta> source) {
-		if (source.size() > 1) {
-			return CollectionUtil.unmodifyList(source.toArray(new ColumnMeta[source.size()]));
-		}
-		return CollectionUtil.unmodifyList(source);
+	public int getTtlSec() {
+		return ttlSec;
 	}
 
 	public PojoMeta(TableSpec table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
@@ -156,16 +166,12 @@ public final class PojoMeta implements Cloneable {
 				}
 			}
 		}
-		this.cacheIDs = unmodifyList(rids);
-		this.databaseIds = pids.equals(rids) ? this.cacheIDs : unmodifyList(pids);
-		this.createColumns = unmodifyList(ctimes);
-		this.softDelete = softDeleteParser().parse(this.pojoClz, this.fieldMetas);
+		this.cacheIDs = CollectionUtil.unmodifyList(rids);
+		this.databaseIds = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids);
+		this.createColumns = CollectionUtil.unmodifyList(ctimes);
+		this.softDelete = DBSettings.softDeleteParser().parse(this.pojoClz, this.fieldMetas);
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
-	}
-
-	private SoftDeleteParser softDeleteParser() {
-		return StartContext.inst().get(SoftDeleteParser.class, new SoftDeleteParserImpl());
 	}
 
 	private void parseTable(TableSpec table) {
@@ -177,10 +183,6 @@ public final class PojoMeta implements Cloneable {
 		} else {
 			this.ttlSec = -1;
 		}
-		int maxHit = AppInfo.getInt("sumk.db.table.cache.maxHit", table.maxHit());
-		@SuppressWarnings("unchecked")
-		IntFunction<VisitCounter> factory = (IntFunction<VisitCounter>) StartContext.inst().get(VisitCounter.class);
-		this.counter = factory != null ? factory.apply(maxHit) : new DefaultVisitCounter(maxHit);
 
 		this.tableName = StringUtil.isEmpty(table.value())
 				? DBNameResolvers.getTableNameResolver().apply(this.pojoClz.getSimpleName())
@@ -191,6 +193,9 @@ public final class PojoMeta implements Cloneable {
 			_pre = DBNameResolvers.getCachePrefixResolver().apply(this.tableName);
 		}
 		this.pre = _pre.replace('?', '#');
+
+		this.counter = new EstimateVisitCounter(table.maxHit());
+		this.resetCounter();
 	}
 
 	public String getTableName() {

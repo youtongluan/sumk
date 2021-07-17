@@ -18,7 +18,6 @@ package org.yx.rpc.client;
 import java.util.function.Supplier;
 
 import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.SocketConnector;
@@ -26,9 +25,9 @@ import org.apache.mina.transport.socket.nio.NioSocketConnector;
 import org.yx.bean.IOC;
 import org.yx.bean.Loader;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.rpc.InnerRpcUtil;
 import org.yx.rpc.codec.SumkCodecFactory;
 import org.yx.util.ExceptionUtil;
 
@@ -53,7 +52,7 @@ public class SocketConnectorSupplier implements Supplier<SocketConnector> {
 			NioSocketConnector con = new NioSocketConnector(
 					AppInfo.getInt("sumk.rpc.client.poolsize", Runtime.getRuntime().availableProcessors() + 1));
 			con.setConnectTimeoutMillis(AppInfo.getInt("sumk.rpc.connect.timeout", 5000));
-			con.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, AppInfo.getInt(Const.SOA_SESSION_IDLE, 600));
+			InnerRpcUtil.config(con.getSessionConfig(), false);
 			con.setHandler(createClientHandler());
 			con.getFilterChain().addLast("codec", new ProtocolCodecFilter(IOC.get(SumkCodecFactory.class)));
 			if (AppInfo.getBoolean("sumk.rpc.client.threadpool.enable", true)) {

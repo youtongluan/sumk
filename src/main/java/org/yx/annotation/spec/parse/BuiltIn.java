@@ -23,6 +23,7 @@ import java.util.function.Function;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.Box;
+import org.yx.annotation.ConditionOnProperty;
 import org.yx.annotation.Inject;
 import org.yx.annotation.Param;
 import org.yx.annotation.db.Column;
@@ -47,6 +48,7 @@ import org.yx.annotation.spec.SumkServletSpec;
 import org.yx.annotation.spec.TableSpec;
 import org.yx.annotation.spec.UploadSpec;
 import org.yx.annotation.spec.WebSpec;
+import org.yx.util.StringUtil;
 
 public final class BuiltIn {
 
@@ -79,7 +81,11 @@ public final class BuiltIn {
 		if (c == null) {
 			return null;
 		}
-		return new BeanSpec(c.value());
+		ConditionOnProperty p = clz.getAnnotation(ConditionOnProperty.class);
+		if (p == null) {
+			return new BeanSpec(c.value(), null, true);
+		}
+		return new BeanSpec(c.value(), StringUtil.toLatin(p.value()), p.onMatch());
 	};
 
 	public static final BiFunction<Object, Field, InjectSpec> INJECT_PARSER = (src, f) -> {
@@ -168,4 +174,5 @@ public final class BuiltIn {
 		}
 		return new SoaClientConfigSpec(c.timeout(), c.tryCount());
 	};
+
 }

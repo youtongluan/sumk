@@ -28,7 +28,7 @@ public abstract class InnerDelete {
 	}
 
 	protected MapedSql toMapedSql(StringBuilder sb, MapedSql ms) throws InstantiationException, IllegalAccessException {
-		PojoMeta pojoMeta = delete.parsePojoMeta(true);
+		PojoMeta pojoMeta = delete.makeSurePojoMeta();
 		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
 		boolean isSingle = delete.in.size() == 1;
 		for (Map<String, Object> oneWhere : delete.in) {
@@ -64,7 +64,7 @@ class HardDelete extends InnerDelete implements SqlBuilder {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		StringBuilder sb = new StringBuilder();
-		sb.append("DELETE FROM ").append(delete.parsePojoMeta(true).getTableName());
+		sb.append("DELETE FROM ").append(delete.makeSurePojoMeta().getTableName());
 		return this.toMapedSql(sb, new MapedSql());
 	}
 
@@ -78,7 +78,7 @@ class SoftDelete extends InnerDelete implements SqlBuilder {
 
 	public MapedSql toMapedSql() throws InstantiationException, IllegalAccessException {
 		StringBuilder sb = new StringBuilder();
-		PojoMeta pojoMeta = delete.parsePojoMeta(true);
+		PojoMeta pojoMeta = delete.makeSurePojoMeta();
 		SoftDeleteMeta sm = pojoMeta.softDelete;
 		sb.append("UPDATE ").append(pojoMeta.getTableName()).append(" SET ").append(sm.columnName).append(" =? ");
 		MapedSql ms = new MapedSql();

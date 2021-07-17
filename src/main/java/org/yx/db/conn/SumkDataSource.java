@@ -47,11 +47,11 @@ public class SumkDataSource implements DataSource {
 		this.index = index;
 	}
 
-	public long getOpenCounter() {
+	public long getOpenCount() {
 		return openCounter.get();
 	}
 
-	public long getCloseCounter() {
+	public long getCloseCount() {
 		return closeCounter.get();
 	}
 
@@ -160,10 +160,9 @@ public class SumkDataSource implements DataSource {
 		if (inner != null) {
 			map.putAll(inner);
 		}
-		map.put("openCount", openCounter.get());
-		map.put("closeCount", closeCounter.get());
+		map.put("openCount", getOpenCount());
+		map.put("closeCount", getCloseCount());
 		return map;
-
 	}
 
 }

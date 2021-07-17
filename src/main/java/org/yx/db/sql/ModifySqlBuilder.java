@@ -13,12 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.listener;
+package org.yx.db.sql;
 
-import java.util.List;
+import org.yx.db.visit.SumkDbVisitor;
 
-public interface ListenerFactory<T> {
+public abstract class ModifySqlBuilder extends AbstractSqlBuilder<Integer> {
 
-	List<T> create() throws Exception;
+	public ModifySqlBuilder(SumkDbVisitor<Integer> visitor) {
+		super(visitor);
+	}
+
+	public int execute() {
+		this.makeSurePojoMeta().getCounter().incrModifyCount();
+		return this.accept(visitor);
+	}
 
 }

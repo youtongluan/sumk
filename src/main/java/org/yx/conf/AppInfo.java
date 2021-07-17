@@ -186,20 +186,6 @@ public final class AppInfo {
 		}
 	}
 
-	public static Charset systemCharset() {
-
-		String charsetName = info == null ? null : info.get("sumk.charset");
-		if (charsetName == null || charsetName.isEmpty() || "utf8".equalsIgnoreCase(charsetName)
-				|| "utf-8".equalsIgnoreCase(charsetName)) {
-			return UTF8;
-		}
-		if (!Charset.isSupported(charsetName)) {
-			RawLog.error("sumk.conf", "charset '" + charsetName + "' is not supported");
-			return UTF8;
-		}
-		return Charset.forName(charsetName);
-	}
-
 	public static boolean getBoolean(String name, boolean defaultValue) {
 		String value = info.get(name);
 		if (value == null || value.length() == 0) {

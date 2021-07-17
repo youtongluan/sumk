@@ -55,7 +55,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	@Override
 	public MapedSql toMapedSql() throws Exception {
 		List<Object> paramters = new ArrayList<>(10);
-		this.pojoMeta = parsePojoMeta(true);
+		makeSurePojoMeta();
 		StringBuilder sql = new StringBuilder(32);
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
@@ -104,6 +104,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	protected CharSequence buildField() {
+		PojoMeta pojoMeta = this.pojoMeta;
 		StringJoiner sj = new StringJoiner(",");
 		if (this.selectColumns != null && this.selectColumns.size() > 0) {
 			for (String filedName : this.selectColumns) {
@@ -115,7 +116,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			}
 			return sj.toString();
 		}
-		for (ColumnMeta cm : this.pojoMeta.fieldMetas) {
+		for (ColumnMeta cm : pojoMeta.fieldMetas) {
 			sj.add(cm.dbColumn);
 		}
 		return sj.toString();
@@ -145,7 +146,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	}
 
 	private CharSequence buildCompare(List<Object> paramters) {
-		if (this._compare == null) {
+		if (CollectionUtil.isEmpty(this._compare)) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
@@ -194,8 +195,9 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				throw new SumkException(2342423, filedName + "的值为null");
 			}
 		}
-		if (type == Operation.IN) {
-			joiner.item().append(cm.dbColumn).append(" IN ( ");
+		joiner.item().append(cm.dbColumn).append(type.op);
+		if (type == Operation.IN || type == Operation.NOT_IN) {
+			joiner.append("(");
 			boolean first = true;
 			for (Object obj : (Object[]) v) {
 				if (first) {
@@ -206,10 +208,10 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				}
 				paramters.add(obj);
 			}
-			joiner.append(" ) ");
+			joiner.append(") ");
 			return;
 		}
-		joiner.item().append(cm.dbColumn).append(type.op).append(" ? ");
+		joiner.append(" ? ");
 		paramters.add(v);
 
 	}

@@ -164,34 +164,46 @@ public class Monitors {
 		return sb.toString();
 	}
 
-	public static String dbCacheVisitInfo() {
+	public static String dbVisitInfo() {
 		List<PojoMeta> list = PojoMetaHolder.allPojoMeta();
 		StringBuilder sb = new StringBuilder(32);
-		sb.append("##tableName").append(BLANK).append("modifyCount").append(BLANK).append("visitCount").append(BLANK)
-				.append("cachedMeeted").append(AppInfo.LN);
+		sb.append("##tableName(*)").append(BLANK).append("queryCount").append(BLANK).append("modifyCount").append(BLANK)
+				.append("cacheKeyVisits").append(BLANK).append("cacheKeyHits").append(AppInfo.LN);
+		long modify, query, cacheVisit, cacheHit;
+		long totalModify = 0, totalQuery = 0, totalCacheVisit = 0, totalCacheHit = 0;
 		for (PojoMeta p : list) {
+			VisitCounter c = p.getCounter();
+			query = c.getQueryCount();
+			modify = c.getModifyCount();
+			sb.append(p.getTableName()).append(BLANK).append(query).append(BLANK).append(modify).append(BLANK);
+			totalModify += modify;
+			totalQuery += query;
 			if (p.isNoCache()) {
+				sb.append("-").append(BLANK).append("-").append(AppInfo.LN);
 				continue;
 			}
-			VisitCounter c = p.getCounter();
-			sb.append(p.getTableName()).append(BLANK).append(c.getModifyCount()).append(BLANK).append(c.getVisitCount())
-					.append(BLANK).append(c.getCachedMeet()).append(AppInfo.LN);
+			cacheVisit = c.getCacheKeyVisits();
+			cacheHit = c.getCacheKeyHits();
+			sb.append(cacheVisit).append(BLANK).append(cacheHit).append(AppInfo.LN);
+			totalCacheVisit += cacheVisit;
+			totalCacheHit += cacheHit;
 		}
+		sb.append("*total*").append(BLANK).append(totalQuery).append(BLANK).append(totalModify).append(BLANK)
+				.append(totalCacheVisit).append(BLANK).append(totalCacheHit).append(AppInfo.LN);
 		return sb.toString();
 	}
 
-	public static String dataSourceStatus(String ds) {
-		if (StringUtil.isEmpty(ds)) {
+	public static String dataSourceStatus(String name) {
+		if (StringUtil.isEmpty(name)) {
 			return null;
 		}
 		StringBuilder sb = new StringBuilder(200);
-		sb.append("#statement执行次数").append(BLANK).append(SumkStatement.getExecuteCount()).append(BLANK)
-				.append("statement关闭次数").append(BLANK).append(SumkStatement.getClosedCount()).append(LN);
-		if (!DataSources.getManagerSelector().dbNames().contains(ds)) {
+		sb.append("##statement执行次数*").append(BLANK).append(SumkStatement.getExecuteCount()).append(LN);
+		if (!DataSources.getManagerSelector().dbNames().contains(name)) {
 			sb.append(DataSources.getManagerSelector().dbNames());
 			return sb.toString();
 		}
-		DataSourceManager manager = DataSources.getManager(ds);
+		DataSourceManager manager = DataSources.getManager(name);
 		if (manager == null) {
 			return sb.toString();
 		}

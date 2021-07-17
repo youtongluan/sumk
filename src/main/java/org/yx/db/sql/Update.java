@@ -27,7 +27,7 @@ import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
 import org.yx.util.kit.TypeConverter;
 
-public class Update extends AbstractSqlBuilder<Integer> implements Executable {
+public class Update extends ModifySqlBuilder {
 
 	private boolean fullUpdate;
 
@@ -75,11 +75,6 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		return this;
 	}
 
-	@Override
-	public int execute() {
-		return this.accept(visitor);
-	}
-
 	public Update(SumkDbVisitor<Integer> visitor) {
 		super(visitor);
 	}
@@ -125,12 +120,11 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			this.updateTo = new HashMap<>((Map<String, Object>) pojo);
 			return this;
 		}
-		this.pojoMeta = PojoMetaHolder.getPojoMeta(pojo.getClass(), this.sub);
-		if (this.pojoMeta == null) {
-			throw new SumkException(-536541, pojo.getClass() + " does not config as a table");
+		if (this.tableClass == null) {
+			this.tableClass = pojo.getClass();
 		}
 		try {
-			this.updateTo = this.pojoMeta.populate(pojo, false);
+			this.updateTo = this.makeSurePojoMeta().populate(pojo, false);
 		} catch (Exception e) {
 			throw new SumkException(-345461, e.getMessage(), e);
 		}
@@ -149,7 +143,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		if (this.updateTo.isEmpty() && CollectionUtil.isEmpty(this.incrMap)) {
 			throw new SumkException(-3464601, "updateTo is null or empty");
 		}
-		this.pojoMeta = this.parsePojoMeta(true);
+
 		this.checkMap(this.updateTo, this.pojoMeta);
 		if (CollectionUtil.isEmpty(this.in)) {
 			this.addDBIDs2Where();
@@ -158,6 +152,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 	}
 
 	protected MapedSql _toMapedSql() throws Exception {
+		PojoMeta pojoMeta = this.pojoMeta;
 		MapedSql ms = new MapedSql();
 		StringBuilder sb = new StringBuilder(32);
 		List<ColumnMeta> fms = pojoMeta.fieldMetas;
@@ -196,7 +191,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 			if (where.isEmpty()) {
 				continue;
 			}
-			this.checkMap(where, this.pojoMeta);
+			this.checkMap(where, pojoMeta);
 			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
 			for (ColumnMeta fm : fms) {
 				Object value = null;
@@ -260,7 +255,7 @@ public class Update extends AbstractSqlBuilder<Integer> implements Executable {
 		if (v == null) {
 			throw new SumkException(5349238, "cannot incr " + fieldName + "(java) by null");
 		}
-		PojoMeta pm = this.parsePojoMeta(true);
+		PojoMeta pm = makeSurePojoMeta();
 		ColumnMeta columnMeta = pm.getByFieldName(fieldName);
 		if (columnMeta == null) {
 			throw new SumkException(5912239, "cannot found java field " + fieldName + " in " + pm.pojoClz);
