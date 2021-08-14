@@ -82,6 +82,7 @@ public class UrlSystemConfig extends MultiNodeConfig {
 		for (URL url : list) {
 			byte[] data = this.extractData(url);
 			if (data == null) {
+				RawLog.error(LOG_NAME, "data on [" + url + "] is null");
 				return;
 			}
 			if (data.length > 0) {

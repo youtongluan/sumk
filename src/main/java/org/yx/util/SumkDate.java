@@ -32,6 +32,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 
 import org.yx.common.date.DateFormater;
 import org.yx.common.date.DateTimeFormater;
@@ -59,6 +60,17 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 
 	private static final int MIL_TO_NANO = 1000_000;
 	private static volatile CacheDate CACHED;
+	private static int cacheChangeCount;
+
+	/**
+	 * 只是个预估数字
+	 * 
+	 * @return 缓存修改的次数
+	 */
+	public static int cacheChangeCount() {
+		return cacheChangeCount;
+	}
+
 	private static final SumkDateFormater[] formaters = { FullDateTimeFormater.inst, DateTimeFormater.inst,
 			DateFormater.inst };
 
@@ -66,21 +78,31 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	 * @return 当前时间
 	 */
 	public static SumkDate now() {
-		final long ms = System.currentTimeMillis();
-		final long sec = ms / 1000;
-		CacheDate cache = CACHED;
-		if (cache != null && sec == cache.second) {
-			return cache.date.withMilSecond((int) (ms % 1000));
-		}
-		SumkDate sd = _create(ms);
-		CACHED = new CacheDate(sec, sd);
-		return sd;
+		return create(System.currentTimeMillis(), true);
 	}
 
-	private static SumkDate _create(long timeInMillis) {
+	private static SumkDate create(final long currentMS, boolean toCache) {
+		final long currentSeconds = currentMS / 1000;
+		CacheDate cache = CACHED;
+		if (cache != null) {
+			if (currentSeconds == cache.seconds) {
+				return cache.date.withMilSecond((int) (currentMS % 1000));
+			}
+			long newSec = currentSeconds - cache.seconds + cache.date.second;
+			if (newSec >= 0 && newSec < 60) {
+				SumkDate c = cache.date;
+				return new SumkDate(c.year, c.month, c.day, c.hour, c.minute, (byte) newSec,
+						(short) (currentMS % 1000));
+			}
+		}
 		Calendar.Builder builder = new Calendar.Builder();
-		builder.setInstant(timeInMillis);
-		return of(builder.build());
+		builder.setInstant(currentMS);
+		SumkDate sd = of(builder.build());
+		if (toCache) {
+			CACHED = new CacheDate(currentSeconds, sd);
+			cacheChangeCount++;
+		}
+		return sd;
 	}
 
 	public static SumkDate of(Calendar cal) {
@@ -95,14 +117,7 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	}
 
 	public static SumkDate of(long timeInMillis) {
-		CacheDate cache = CACHED;
-		if (cache != null) {
-			long sec = timeInMillis / 1000;
-			if (sec == cache.second) {
-				return cache.date.withMilSecond((int) (timeInMillis % 1000));
-			}
-		}
-		return _create(timeInMillis);
+		return create(timeInMillis, false);
 	}
 
 	/**
@@ -681,17 +696,17 @@ public final class SumkDate implements Comparable<SumkDate>, Serializable {
 		return d == null ? "null" : of(d).toString();
 	}
 
-	private static class CacheDate {
-		final long second;
+	private static final class CacheDate {
+		final long seconds;
 		final SumkDate date;
 
 		CacheDate(long second, SumkDate date) {
-			this.second = second;
-			this.date = date;
+			this.seconds = second;
+			this.date = Objects.requireNonNull(date);
 		}
 	}
 
-	private static class UnsafeFormater {
+	private static final class UnsafeFormater {
 		private static final char DATE_SPLIT = '-';
 		private static final char TIME_SPLIT = ':';
 

@@ -35,7 +35,6 @@ import java.util.Properties;
 import java.util.concurrent.Executor;
 
 import org.yx.common.context.ActionContext;
-import org.yx.db.event.EventLane;
 import org.yx.log.Log;
 import org.yx.log.Logs;
 
@@ -130,13 +129,11 @@ public final class SumkConnection implements Connection {
 			throw new SQLException("connection is closed");
 		}
 		inner.commit();
-		EventLane.realPubuish(this);
 	}
 
 	@Override
 	public void rollback() throws SQLException {
 		inner.rollback();
-		EventLane.remove(this);
 	}
 
 	@Override
@@ -147,14 +144,10 @@ public final class SumkConnection implements Connection {
 		if (Log.get("sumk.conn").isTraceEnabled()) {
 			Log.get("sumk.conn").trace("close connection: " + this);
 		}
-		EventLane.remove(this);
 		try {
 			this.recoverAutoCommit();
 		} catch (Exception e) {
 			Log.get("sumk.conn").error(e.getMessage(), e);
-		}
-		if (dataSource != null) {
-			dataSource.incrCloseCount();
 		}
 		inner.close();
 		this.inner = null;

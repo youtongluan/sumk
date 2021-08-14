@@ -69,7 +69,7 @@ public final class ZkRouteParser {
 	}
 
 	public void readRouteAndListen() throws IOException {
-		Map<String, RouteInfo> datas = new HashMap<>();
+		List<RouteInfo> datas = new ArrayList<>();
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 		ZkClientHelper.makeSure(zk, SOA_ROOT);
 
@@ -84,7 +84,7 @@ public final class ZkRouteParser {
 					dataPath = dataPath.substring(index + 1);
 				}
 				RouteInfo d = ZkDataOperators.inst().deserialize(new ZKPathData(dataPath, (byte[]) data));
-				if (d == null || d.intfs().isEmpty()) {
+				if (d == null || d.apis().isEmpty()) {
 					logger.debug("{} has no interface or is invalid node", dataPath);
 					parser.handle(RouteEvent.deleteEvent(dataPath));
 					return;
@@ -151,7 +151,7 @@ public final class ZkRouteParser {
 				continue;
 			}
 			zk.subscribeDataChanges(SOA_ROOT + "/" + path, nodeListener);
-			datas.put(path, d);
+			datas.add(d);
 		}
 		RpcRoutes.refresh(datas);
 	}
@@ -194,9 +194,12 @@ public final class ZkRouteParser {
 				if (list.isEmpty()) {
 					return;
 				}
-				Map<String, RouteInfo> map = new HashMap<>(RpcRoutes.currentDatas());
+				Map<String, RouteInfo> map = new HashMap<>();
+				for (RouteInfo info : RpcRoutes.current().zkDatas()) {
+					map.put(info.path(), info);
+				}
 				if (handleData(map, list) > 0) {
-					RpcRoutes.refresh(map);
+					RpcRoutes.refresh(map.values());
 				}
 			}
 		});
@@ -214,7 +217,7 @@ public final class ZkRouteParser {
 				if (logger.isDebugEnabled()) {
 					logger.debug("{}: {} {}", count, event.getType(), event.getNodeName());
 					if (logger.isTraceEnabled()) {
-						logger.trace("event的接口列表：{}", event.getRoute().intfs());
+						logger.trace("event的接口列表：{}", event.getRoute().apis());
 					}
 				}
 				data.put(event.getNodeName(), event.getRoute());

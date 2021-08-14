@@ -29,6 +29,7 @@ public final class SLock implements Lock {
 	private final int intervalTime;
 
 	private long endTime;
+	private long startNS;
 
 	public SLock(String keyId, String value, int maxLockTime, int intervalTime) {
 		Asserts.requireTrue(keyId != null && (keyId = keyId.trim()).length() > 0, "lock name cannot be empty");
@@ -61,6 +62,7 @@ public final class SLock implements Lock {
 	}
 
 	boolean tryLock() {
+		this.startNS = System.nanoTime();
 		String ret = Locker.redis(id).set(id, value, "NX", "PX", maxLockTime);
 		if (ret == null) {
 			return false;
@@ -112,7 +114,7 @@ public final class SLock implements Lock {
 		Locker.redis(id).evalsha(SHA, 1, id, value);
 		this.endTime = CLOSED;
 		Locker.inst.remove(this);
-		Log.get("sumk.lock").debug("unlock: {}={}", id, value);
+		Log.get("sumk.lock").info("unlock {}:{},spent {}ns", id, value, System.nanoTime() - this.startNS);
 	}
 
 	@Override

@@ -53,7 +53,7 @@ public final class HttpActions {
 
 	public static synchronized void init(List<StringEntity<HttpActionNode>> infos) {
 		if (nameResolver == null) {
-			nameResolver = new ActNameResolver(AppInfo.getBoolean("sumk.http.act.ingorecase", false));
+			nameResolver = new ActNameResolver(AppInfo.getBoolean("sumk.http.act.ignorecase", false));
 		}
 		if (selector == null) {
 			selector = new DefaultHttpActionSelector();

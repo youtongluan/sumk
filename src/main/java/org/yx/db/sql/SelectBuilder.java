@@ -21,19 +21,12 @@ import java.util.Map;
 import java.util.StringJoiner;
 
 import org.yx.common.ItemJoiner;
-import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>> {
-
-	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
-		super(visitor);
-		this.fromCache = DBSettings.fromCache();
-		this.toCache = DBSettings.toCache();
-	}
 
 	protected List<String> selectColumns;
 
@@ -45,12 +38,10 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected int limit;
 
-	protected boolean fromCache;
-	protected boolean toCache;
-
-	protected boolean allowEmptyWhere;
-
-	protected CompareNullPolicy compareNullPolicy = CompareNullPolicy.CONTINUE;
+	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
+		super(visitor);
+		this.limit = DBSettings.MaxLimit();
+	}
 
 	@Override
 	public MapedSql toMapedSql() throws Exception {
@@ -59,7 +50,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		StringBuilder sql = new StringBuilder(32);
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
-		if (StringUtil.isEmpty(where) && !this.allowEmptyWhere) {
+		if (StringUtil.isEmpty(where) && !this.isOn(DBFlag.SELECT_ALLOW_EMPTY_WHERE)) {
 			throw new SumkException(63254325, "empty where");
 		}
 		if (StringUtil.isNotEmpty(where)) {
@@ -69,9 +60,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		if (StringUtil.isNotEmpty(order)) {
 			sql.append(" ORDER BY ").append(order);
 		}
-		if (this.limit > 0) {
-			buildLimitAndOffset(sql);
-		}
+		buildLimitAndOffset(sql);
 		return new MapedSql(sql.toString(), paramters);
 	}
 
@@ -83,7 +72,9 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	 */
 	protected void buildLimitAndOffset(StringBuilder sql) {
 
-		sql.append(" LIMIT ").append(this.limit);
+		if (limit > 0) {
+			sql.append(" LIMIT ").append(this.limit);
+		}
 		if (offset > 0) {
 			sql.append(" OFFSET ").append(this.offset);
 		}
@@ -178,7 +169,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		Operation type = cop.type;
 		ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 		if (cm == null) {
-			if (this.failIfPropertyNotMapped) {
+			if (this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
 				throw new SumkException(-54675234, filedName + "这个字段没有在java的pojo类中定义");
 			}
 			return;
@@ -188,11 +179,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				joiner.item().append(cm.dbColumn).append(" IS NOT NULL ");
 				return;
 			}
-			if (this.compareNullPolicy == null || this.compareNullPolicy == CompareNullPolicy.CONTINUE) {
-				return;
-			}
-			if (this.compareNullPolicy == CompareNullPolicy.FAIL) {
+			if (!this.isOn(DBFlag.SELECT_COMPARE_ALLOW_NULL)) {
 				throw new SumkException(2342423, filedName + "的值为null");
+			}
+			if (this.isOn(DBFlag.SELECT_COMPARE_IGNORE_NULL)) {
+				return;
 			}
 		}
 		joiner.item().append(cm.dbColumn).append(type.op);
@@ -227,7 +218,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
-				if (this.failIfPropertyNotMapped) {
+				if (this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
 					throw new SumkException(-7331234, filedName + "这个字段没有在java的pojo类中定义");
 				}
 				continue;

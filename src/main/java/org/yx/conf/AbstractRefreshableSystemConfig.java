@@ -31,11 +31,11 @@ public abstract class AbstractRefreshableSystemConfig extends StartOnceLifecycle
 
 	@Override
 	public void onRefresh() {
-		notifyListener();
+		this.invokeConsumer();
 		AppInfo.notifyUpdate();
 	}
 
-	protected final void notifyListener() {
+	protected final void invokeConsumer() {
 		Consumer<RefreshableSystemConfig> ob = this.observer;
 		if (ob != null) {
 			ob.accept(this);
@@ -46,7 +46,7 @@ public abstract class AbstractRefreshableSystemConfig extends StartOnceLifecycle
 	protected final void onStart() {
 		this.init();
 		RawLog.setLogger(RawLog.SLF4J_LOG);
-		this.notifyListener();
+		this.invokeConsumer();
 	}
 
 	protected abstract void init();

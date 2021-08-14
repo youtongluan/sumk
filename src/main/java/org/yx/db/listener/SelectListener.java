@@ -16,36 +16,53 @@
 package org.yx.db.listener;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ThreadLocalRandom;
 
 import org.yx.annotation.Bean;
+import org.yx.common.listener.SumkListener;
+import org.yx.conf.Const;
 import org.yx.db.DBJson;
+import org.yx.db.conn.ConnectionPool;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.QueryEvent;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
-import org.yx.db.sql.PojoMetaHolder;
 import org.yx.db.visit.RecordRepository;
-import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
 
 @Bean
-public class SelectListener implements DBEventListener {
+public class SelectListener implements SumkListener {
 
 	@Override
-	public void listen(SumkEvent ev) {
-		if (!DBSettings.toCache() || !(ev instanceof QueryEvent)) {
+	public Collection<String> acceptType() {
+		return Collections.singletonList(Const.LISTENER_DB_QUERY);
+	}
+
+	@Override
+	public void listen(Object ev) {
+		if (!(ev instanceof QueryEvent)) {
 			return;
 		}
 		QueryEvent event = (QueryEvent) ev;
+		PojoMeta pm = event.getTableMeta();
+
+		if (pm == null || pm.isNoCache() || event.getResult() == null || ConnectionPool.get().existModifyEvent(pm)) {
+			return;
+		}
 		try {
-			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
-			if (pm == null || pm.isNoCache() || event.getResult() == null) {
+			List<Map<String, Object>> in = event.getIn();
+			if (in == null) {
 				return;
 			}
-			List<Map<String, Object>> in = event.getIn();
-			if (in == null || in.size() != 1) {
+			if (in.size() != 1) {
+				if (pm.isPrimeKeySameWithCache() && pm.getDatabaseIds().size() == 1
+						&& pm.cacheType() == CacheType.SINGLE) {
+					this.singleIdCache(pm, event.getResult());
+				}
 				return;
 			}
 
@@ -81,4 +98,25 @@ public class SelectListener implements DBEventListener {
 		}
 	}
 
+	private void singleIdCache(PojoMeta pm, List<?> result) throws Exception {
+		int size = result.size();
+		int max = DBSettings.maxSingleKeyToCache();
+		if (size > max) {
+			size = max;
+			result = new ArrayList<>(result);
+			Collections.shuffle(result, ThreadLocalRandom.current());
+		}
+		for (int i = 0; i < size; i++) {
+			Object obj = result.get(i);
+			if (obj == null) {
+				continue;
+			}
+			String id = pm.getCacheID(obj, false);
+			if (id == null) {
+				continue;
+			}
+			RecordRepository.set(pm, id, DBJson.operator().toJson(obj));
+		}
+
+	}
 }

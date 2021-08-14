@@ -18,18 +18,15 @@ package org.yx.db.mapper;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.yx.annotation.Bean;
-import org.yx.bean.IOC;
 import org.yx.bean.Plugin;
 import org.yx.conf.AppInfo;
 import org.yx.conf.MultiResourceLoader;
 import org.yx.db.conn.DataSources;
 import org.yx.db.event.DBEventPublisher;
-import org.yx.db.listener.DBEventListener;
 import org.yx.db.sql.DBSettings;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -47,7 +44,7 @@ public class DBPlugin implements Plugin {
 	@Override
 	public void prepare() {
 		DBSettings.init();
-		buildDBListeners();
+		DBEventPublisher.init();
 		loadSDBResources();
 
 		preHotDataSource();
@@ -78,11 +75,6 @@ public class DBPlugin implements Plugin {
 			DataSources.getManager(name);
 		}
 
-	}
-
-	protected void buildDBListeners() {
-		List<DBEventListener> listeners = IOC.getBeans(DBEventListener.class);
-		DBEventPublisher.setListener(listeners.toArray(new DBEventListener[0]));
 	}
 
 	protected void loadSDBResources() {

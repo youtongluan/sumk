@@ -25,7 +25,9 @@ import org.slf4j.Logger;
 import org.yx.common.context.ActionContext;
 import org.yx.db.enums.DBType;
 import org.yx.db.enums.TxHook;
+import org.yx.db.event.DBEvent;
 import org.yx.db.event.EventLane;
+import org.yx.db.sql.PojoMeta;
 import org.yx.exception.SimpleSumkException;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
@@ -52,6 +54,7 @@ public final class ConnectionPool implements AutoCloseable {
 	private SumkConnection readConn;
 	private SumkConnection writeConn;
 	private List<SqlSessionHook> hooks;
+	private final EventLane eventLane;
 
 	public void addHook(TxHook type, Consumer<HookContext> r) {
 		SqlSessionHook act = new SqlSessionHook(type, r);
@@ -90,6 +93,7 @@ public final class ConnectionPool implements AutoCloseable {
 		this.dbName = Objects.requireNonNull(dbName);
 		this.dbType = Objects.requireNonNull(dbType);
 		this.autoCommit = autoCommit;
+		this.eventLane = new EventLane();
 	}
 
 	public static ConnectionPool get() {
@@ -119,7 +123,6 @@ public final class ConnectionPool implements AutoCloseable {
 		} catch (Exception e) {
 			LOGGER.error(e.getMessage(), e);
 		}
-		EventLane.removeALL();
 	}
 
 	public SumkConnection connection(DBType userType) throws SQLException {
@@ -235,6 +238,7 @@ public final class ConnectionPool implements AutoCloseable {
 				LOGGER.trace("commit {}", this.dbName);
 			}
 			this.writeConn.commit();
+			this.eventLane.realPubuish(this.writeConn);
 		}
 		if (this.hooks != null) {
 			runHook(TxHook.COMMITED, null);
@@ -242,6 +246,7 @@ public final class ConnectionPool implements AutoCloseable {
 	}
 
 	public void rollback(Throwable e) throws SQLException {
+		eventLane.clear();
 		if (this.writeConn != null) {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("rollback {}", this.dbName);
@@ -255,6 +260,7 @@ public final class ConnectionPool implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
+		eventLane.clear();
 		if (this.writeConn != null) {
 			try {
 				this.writeConn.close();
@@ -292,5 +298,15 @@ public final class ConnectionPool implements AutoCloseable {
 
 	public boolean isAutoCommit() {
 		return autoCommit;
+	}
+
+	public void pubuishModify(DBEvent event) {
+		if (this.writeConn != null) {
+			this.eventLane.pubuishModify(this.writeConn, event);
+		}
+	}
+
+	public boolean existModifyEvent(PojoMeta pm) {
+		return this.eventLane.existModifyEvent(pm.getTableName());
 	}
 }

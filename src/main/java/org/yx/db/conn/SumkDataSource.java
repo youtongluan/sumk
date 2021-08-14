@@ -38,7 +38,6 @@ public class SumkDataSource implements DataSource {
 	private final String index;
 	private boolean enable = true;
 	private final AtomicLong openCounter = new AtomicLong();
-	private final AtomicLong closeCounter = new AtomicLong();
 
 	public SumkDataSource(String name, String index, DBType type, DataSource ds) {
 		this.name = Objects.requireNonNull(name);
@@ -49,14 +48,6 @@ public class SumkDataSource implements DataSource {
 
 	public long getOpenCount() {
 		return openCounter.get();
-	}
-
-	public long getCloseCount() {
-		return closeCounter.get();
-	}
-
-	void incrCloseCount() {
-		this.closeCounter.incrementAndGet();
 	}
 
 	public String getIndex() {
@@ -161,7 +152,6 @@ public class SumkDataSource implements DataSource {
 			map.putAll(inner);
 		}
 		map.put("openCount", getOpenCount());
-		map.put("closeCount", getCloseCount());
 		return map;
 	}
 

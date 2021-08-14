@@ -20,6 +20,9 @@ import java.util.Map;
 
 import org.yx.db.sql.PojoMeta;
 
+/**
+ * 处理结果要包含所有的原始字段，并且返回值的toJson()也不能有字段损失
+ */
 public interface ResultHandler {
 
 	<T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns) throws Exception;

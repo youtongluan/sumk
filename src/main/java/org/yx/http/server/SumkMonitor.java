@@ -38,13 +38,10 @@ import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
-import org.yx.http.act.HttpActionInfo;
-import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.main.SumkThreadPool;
-import org.yx.rpc.RpcActions;
 import org.yx.util.StringUtil;
 
 @Bean
@@ -65,16 +62,17 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		this.outputServerInfo(req, writer);
 		this.outputStatis(req, writer);
 		this.visitInfo(req, writer);
-		this.outputActs(req, writer);
-		this.outputRpcActs(req, writer);
 		this.outputSystem(req, writer);
 		this.outputJvmInfo(req, writer);
+		this.outputGcInfo(req, writer);
 		this.outputAllTrack(req, writer);
 		this.outputThreadPool(req, writer);
 		this.outputLogLevels(req, writer);
 		this.outputLocalSessions(req, writer);
 		this.outputAppInfo(req, writer);
 		this.outputDataSource(req, writer);
+		this.outputSumkDate(req, writer);
+		this.outputRpcDatas(req, writer);
 
 		writer.flush();
 		String ret = writer.toString();
@@ -102,24 +100,6 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		writer.append(Monitors.serverInfo());
-		writer.append(TYPE_SPLIT);
-	}
-
-	private void outputActs(HttpServletRequest req, Writer writer) throws IOException {
-		if (!"1".equals(req.getParameter("acts"))) {
-			return;
-		}
-		for (HttpActionInfo act : HttpActions.actions()) {
-			writer.append(act.rawAct()).append("  ");
-		}
-		writer.append(TYPE_SPLIT);
-	}
-
-	private void outputRpcActs(HttpServletRequest req, Writer writer) throws IOException {
-		if (!"1".equals(req.getParameter("acts.rpc"))) {
-			return;
-		}
-		writer.append(RpcActions.soaSet().toString());
 		writer.append(TYPE_SPLIT);
 	}
 
@@ -225,6 +205,30 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 			return;
 		}
 		writer.append(Monitors.dataSourceStatus(ds));
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputSumkDate(HttpServletRequest req, UnsafeStringWriter writer) {
+		if (!"1".equals(req.getParameter("sumkdate"))) {
+			return;
+		}
+		writer.append(Monitors.sumkDateCacheChangeCount());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputGcInfo(HttpServletRequest req, UnsafeStringWriter writer) {
+		if (!"1".equals(req.getParameter("gc"))) {
+			return;
+		}
+		writer.append(Monitors.gcInfo());
+		writer.append(TYPE_SPLIT);
+	}
+
+	private void outputRpcDatas(HttpServletRequest req, Writer writer) throws IOException {
+		if (!"1".equals(req.getParameter("rpcData"))) {
+			return;
+		}
+		writer.append(Monitors.rpcDatas());
 		writer.append(TYPE_SPLIT);
 	}
 }

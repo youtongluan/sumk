@@ -38,7 +38,6 @@ import java.util.Objects;
 import java.util.Set;
 
 import org.yx.db.enums.CacheType;
-import org.yx.db.enums.CompareNullPolicy;
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.event.QueryEvent;
 import org.yx.db.kit.DBKits;
@@ -60,12 +59,12 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * @param fail
+	 * @param onOff
 	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
 	 * @return 当前对象
 	 */
-	public Select failIfPropertyNotMapped(boolean fail) {
-		this.failIfPropertyNotMapped = fail;
+	public Select failIfPropertyNotMapped(boolean onOff) {
+		this.setOnOff(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED, onOff);
 		return this;
 	}
 
@@ -89,7 +88,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select allowEmptyWhere(boolean empty) {
-		this.allowEmptyWhere = empty;
+		this.setOnOff(DBFlag.SELECT_ALLOW_EMPTY_WHERE, empty);
 		return this;
 	}
 
@@ -100,15 +99,13 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	/**
-	 * select的where比较条件中，对于null的处理
-	 * 
-	 * @param policy
-	 *            null的处理策略
-	 * @return 当前对象
-	 */
-	public Select compareNullPolicy(CompareNullPolicy policy) {
-		this.compareNullPolicy = Objects.requireNonNull(policy);
+	public Select compareAllowNull(boolean onOff) {
+		this.setOnOff(DBFlag.SELECT_COMPARE_ALLOW_NULL, onOff);
+		return this;
+	}
+
+	public Select compareIgnoreNull(boolean onOff) {
+		this.setOnOff(DBFlag.SELECT_COMPARE_IGNORE_NULL, onOff);
 		return this;
 	}
 
@@ -247,7 +244,7 @@ public class Select extends SelectBuilder {
 	/**
 	 * 根据字段名和判断条件移除所有符合条件的比较
 	 * 
-	 * @param name
+	 * @param key
 	 *            java字段名，可以为null。null表示所有的字段都要移除
 	 * @param op
 	 *            比较条件，可以为null。null表示所有的条件都要移除
@@ -312,7 +309,12 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
-		Asserts.requireTrue(offset >= 0, "offset must bigger or equal than 0");
+		if (this.isOn(DBFlag.SELECT_IGNORE_MAX_OFFSET)) {
+			if (offset < 0 || offset > DBSettings.MaxOffset()) {
+				throw new SumkException(-235345347,
+						"offset需要在0-" + DBSettings.MaxOffset() + "之间,通过ignoreMaxOffset(true)可以取消这个限制");
+			}
+		}
 		this.offset = offset;
 		return this;
 	}
@@ -324,7 +326,12 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
-		Asserts.requireTrue(limit >= 0, "limit must bigger or equal than 0");
+		if (this.isOn(DBFlag.SELECT_IGNORE_MAX_LIMIT)) {
+			if (limit <= 0 || limit > DBSettings.MaxLimit()) {
+				throw new SumkException(-235345346,
+						"limit需要在1-" + DBSettings.MaxLimit() + "之间,通过ignoreMaxLimit(true)可以取消这个限制");
+			}
+		}
 		this.limit = limit;
 		return this;
 	}
@@ -352,7 +359,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select fromCache(boolean fromCache) {
-		this.fromCache = fromCache;
+		this.setOnOff(DBFlag.SELECT_FROM_CACHE, fromCache);
 		return this;
 	}
 
@@ -364,7 +371,17 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select toCache(boolean toCache) {
-		this.toCache = toCache;
+		this.setOnOff(DBFlag.SELECT_TO_CACHE, toCache);
+		return this;
+	}
+
+	public Select ignoreMaxLimit(boolean on) {
+		this.setOnOff(DBFlag.SELECT_IGNORE_MAX_LIMIT, on);
+		return this;
+	}
+
+	public Select ignoreMaxOffset(boolean on) {
+		this.setOnOff(DBFlag.SELECT_IGNORE_MAX_OFFSET, on);
 		return this;
 	}
 
@@ -469,6 +486,7 @@ public class Select extends SelectBuilder {
 		if (CollectionUtil.isEmpty(this.in) && CollectionUtil.isEmpty(this._compare)) {
 			return null;
 		}
+		boolean fromCache = this.isOn(DBFlag.SELECT_FROM_CACHE);
 		if (!(fromCache && this.orderby == null && this.offset == 0 && !pojoMeta.isNoCache())) {
 			return null;
 		}
@@ -538,15 +556,15 @@ public class Select extends SelectBuilder {
 			list = merge(list, dbData);
 			List<Map<String, Object>> eventIn = canUseCache ? exchange.getLeftIn() : this.in;
 
-			if (this.toCache && selectColumns == null && this.offset == 0
+			if (this.isOn(DBFlag.SELECT_TO_CACHE) && selectColumns == null && this.offset == 0
 					&& (canUseCache || CollectionUtil.isEmpty(this._compare))
-					&& (limit <= 0 || limit >= DBSettings.asNoLimit()) && CollectionUtil.isNotEmpty(eventIn)
-					&& eventIn.size() == 1 && dbData.size() < DBSettings.maxQueryCacheSize()) {
+					&& (limit <= 0 || limit >= DBSettings.MaxLimit()) && CollectionUtil.isNotEmpty(eventIn)
+					&& dbData.size() < DBSettings.maxQueryCacheSize()) {
 
 				QueryEvent event = new QueryEvent(this.pojoMeta.getTableName());
 				event.setIn(eventIn);
 				event.setResult(dbData);
-				DBEventPublisher.publish(event);
+				DBEventPublisher.publishQuery(event);
 			}
 			if (this.limit > 0 && list.size() > this.limit) {
 				return list.subList(0, this.limit);

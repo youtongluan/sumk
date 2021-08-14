@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
@@ -26,9 +27,10 @@ import org.yx.log.Logs;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisCluster;
+import redis.clients.jedis.JedisClusterCommand;
 import redis.clients.jedis.JedisPool;
 
-public class Redis2Cluster extends JedisCluster implements Redis {
+public class Redis2Cluster extends JedisCluster implements Redis, Redis2 {
 
 	protected String hosts;
 	protected RedisConfig config;
@@ -110,6 +112,16 @@ public class Redis2Cluster extends JedisCluster implements Redis {
 
 		}
 		return ret;
+	}
+
+	@Override
+	public <T> T execute(String key, Function<Jedis, T> callback) {
+		return new JedisClusterCommand<T>(connectionHandler, maxAttempts) {
+			@Override
+			public T execute(Jedis connection) {
+				return callback.apply(connection);
+			}
+		}.run(key);
 	}
 
 	@Override

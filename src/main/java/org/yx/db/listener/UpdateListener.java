@@ -15,33 +15,45 @@
  */
 package org.yx.db.listener;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
+import org.yx.common.listener.SumkListener;
+import org.yx.conf.Const;
 import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
-import org.yx.db.sql.PojoMetaHolder;
 import org.yx.db.visit.RecordRepository;
-import org.yx.listener.SumkEvent;
 import org.yx.log.Log;
 
 @Bean
-public class UpdateListener implements DBEventListener {
+public class UpdateListener implements SumkListener {
 
 	@Override
-	public void listen(SumkEvent ev) {
+	public int order() {
+		return 91;
+	}
+
+	@Override
+	public Collection<String> acceptType() {
+		return Collections.singletonList(Const.LISTENER_DB_MODIFY);
+	}
+
+	@Override
+	public void listen(Object ev) {
 		if (!DBSettings.toCache() || !(ev instanceof UpdateEvent)) {
 			return;
 		}
 		UpdateEvent event = (UpdateEvent) ev;
 		try {
-			PojoMeta pm = PojoMetaHolder.getTableMeta(event.getTable());
+			PojoMeta pm = event.getTableMeta();
 			if (pm == null || pm.isNoCache()) {
 				return;
 			}

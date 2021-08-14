@@ -16,25 +16,26 @@
 package org.yx.common.action;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicLongArray;
 
 public class StatisItem {
 	private final String name;
-
-	private final AtomicLongArray counter = new AtomicLongArray(4);
+	private int successCount;
+	private long successTime;
+	private int failedCount;
+	private long failedTime;
 
 	public StatisItem(String name) {
 		this.name = Objects.requireNonNull(name);
 	}
 
 	public void successVisit(long t) {
-		counter.incrementAndGet(0);
-		counter.addAndGet(1, t);
+		successCount++;
+		successTime += t;
 	}
 
 	public void failedVisit(long t) {
-		counter.incrementAndGet(2);
-		counter.addAndGet(3, t);
+		failedCount++;
+		failedTime += t;
 	}
 
 	@Override
@@ -60,19 +61,19 @@ public class StatisItem {
 	}
 
 	public long getSuccessCount() {
-		return counter.get(0);
+		return Integer.toUnsignedLong(this.successCount);
 	}
 
 	public long getSuccessTime() {
-		return counter.get(1);
+		return this.successTime;
 	}
 
 	public long getFailedCount() {
-		return counter.get(2);
+		return Integer.toUnsignedLong(this.failedCount);
 	}
 
 	public long getFailedTime() {
-		return counter.get(3);
+		return this.failedTime;
 	}
 
 }

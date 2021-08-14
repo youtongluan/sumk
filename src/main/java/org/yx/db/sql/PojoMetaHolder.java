@@ -79,7 +79,7 @@ public class PojoMetaHolder {
 	}
 
 	public static void register(Class<?> pojoClz, TableSpec table, List<ColumnMeta> columns) {
-		PojoMeta tm = new PojoMeta(table, columns.toArray(new ColumnMeta[columns.size()]), pojoClz);
+		PojoMeta tm = new PojoMeta(table, columns, pojoClz);
 		if (tm.databaseIds.isEmpty()) {
 			throw new SumkException(56456456, pojoClz.getName() + " has no database primary key");
 		}

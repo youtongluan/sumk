@@ -24,6 +24,7 @@ import java.util.Set;
 
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
+import org.yx.util.BitUtil;
 import org.yx.util.CollectionUtil;
 
 public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
@@ -36,7 +37,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	protected List<Map<String, Object>> in;
 
-	protected boolean failIfPropertyNotMapped;
+	protected int flag;
 
 	protected String sub;
 
@@ -48,7 +49,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 	}
 
 	protected void checkMap(Map<String, ?> map, PojoMeta pm) {
-		if (!this.failIfPropertyNotMapped) {
+		if (!this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
 			return;
 		}
 		Set<String> keys = map.keySet();
@@ -115,7 +116,19 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 
 	public AbstractSqlBuilder(SumkDbVisitor<T> visitor) {
 		this.visitor = visitor;
-		this.failIfPropertyNotMapped = DBSettings.failIfPropertyNotMapped();
+		this.flag = DBSettings.flag();
+	}
+
+	protected boolean isOn(int flagBit) {
+		return BitUtil.getBit(this.flag, flagBit);
+	}
+
+	protected void setOnOff(int flagBit, boolean onOff) {
+		this.flag = BitUtil.setBit(this.flag, flagBit, onOff);
+	}
+
+	public int flag() {
+		return this.flag;
 	}
 
 	protected T accept(SumkDbVisitor<T> visitor) {

@@ -25,7 +25,7 @@ import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Consumer;
 
-public class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, Serializable {
+public final class UnmodifiableArrayList<E> extends AbstractList<E> implements RandomAccess, Serializable {
 
 	private static final long serialVersionUID = 1L;
 

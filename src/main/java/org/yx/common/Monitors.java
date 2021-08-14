@@ -17,6 +17,7 @@ package org.yx.common;
 
 import static org.yx.conf.AppInfo.LN;
 
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryPoolMXBean;
 import java.text.DecimalFormat;
@@ -44,6 +45,8 @@ import org.yx.db.visit.SumkStatement;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.main.SumkServer;
+import org.yx.rpc.client.route.RpcRoutes;
+import org.yx.rpc.data.RouteInfo;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
@@ -166,8 +169,8 @@ public class Monitors {
 
 	public static String dbVisitInfo() {
 		List<PojoMeta> list = PojoMetaHolder.allPojoMeta();
-		StringBuilder sb = new StringBuilder(32);
-		sb.append("##tableName(*)").append(BLANK).append("queryCount").append(BLANK).append("modifyCount").append(BLANK)
+		StringBuilder sb = new StringBuilder(128);
+		sb.append("##tableName").append(BLANK).append("queryCount").append(BLANK).append("modifyCount").append(BLANK)
 				.append("cacheKeyVisits").append(BLANK).append("cacheKeyHits").append(AppInfo.LN);
 		long modify, query, cacheVisit, cacheHit;
 		long totalModify = 0, totalQuery = 0, totalCacheVisit = 0, totalCacheHit = 0;
@@ -208,6 +211,44 @@ public class Monitors {
 			return sb.toString();
 		}
 		sb.append(manager.status());
+		return sb.toString();
+	}
+
+	public static String sumkDateCacheChangeCount() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("##sumkDateCached").append(BLANK).append(SumkDate.cacheChangeCount());
+		return sb.toString();
+	}
+
+	public static String gcInfo() {
+		StringBuilder sb = new StringBuilder(64).append("##name").append(BLANK).append("count").append(BLANK)
+				.append("time(ms)");
+		for (GarbageCollectorMXBean mxBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+			sb.append(LN).append(getGcName(mxBean.getName())).append(BLANK).append(mxBean.getCollectionCount())
+					.append(BLANK).append(mxBean.getCollectionTime());
+		}
+		return sb.toString();
+	}
+
+	private static String getGcName(String name) {
+		if ("PS Scavenge".equals(name) || "ParNew".equals(name) || "G1 Young Generation".equals(name)
+				|| "Copy".equals(name)) {
+			return "Young";
+		}
+		if ("PS MarkSweep".equals(name) || "ConcurrentMarkSweep".equals(name) || "G1 Old Generation".equals(name)
+				|| "MarkSweepCompact".equals(name)) {
+			return "Old";
+		}
+		return name;
+	}
+
+	public static String rpcDatas() {
+		RpcRoutes route = RpcRoutes.current();
+		StringBuilder sb = new StringBuilder(64).append("##rpcData").append(BLANK)
+				.append(SumkDate.of(route.createTime()));
+		for (RouteInfo info : route.zkDatas()) {
+			sb.append(LN).append(info.path()).append(BLANK).append(info.host()).append(BLANK).append(info.apis());
+		}
 		return sb.toString();
 	}
 

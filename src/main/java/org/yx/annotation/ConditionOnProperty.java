@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 
 /**
  * 指定的属性名存在时该bean才会被初始化。属性指定是可以通过AppInfo获取的属性。<BR>
- * 可以使用,或&&来表示依赖多个属性。用||来表示其中任何一个属性存在就可以初始化
+ * 可以使用,或&amp;&amp;来表示依赖多个属性。用||来表示其中任何一个属性存在就可以初始化
  */
 @Target({ ElementType.TYPE })
 @Retention(RetentionPolicy.RUNTIME)

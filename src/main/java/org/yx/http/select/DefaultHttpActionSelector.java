@@ -33,7 +33,7 @@ import org.yx.exception.SumkException;
 import org.yx.http.act.HttpActionInfo;
 import org.yx.http.act.HttpActionNode;
 import org.yx.http.act.HttpActions;
-import org.yx.http.act.IngoreNameActionInfo;
+import org.yx.http.act.IgnoreNameActionInfo;
 import org.yx.http.act.PrefixMappingActionInfo;
 import org.yx.log.Logs;
 
@@ -134,7 +134,7 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 						parsedName.substring(0, parsedName.length() - 1)), startList);
 				continue;
 			}
-			HttpActionInfo info = new IngoreNameActionInfo(kv.key(), kv.value(), parsedName);
+			HttpActionInfo info = new IgnoreNameActionInfo(kv.key(), kv.value(), parsedName);
 			HttpActionInfo[] old = actMap.get(parsedName);
 			if (old == null) {
 				actMap.put(parsedName, new HttpActionInfo[] { info });

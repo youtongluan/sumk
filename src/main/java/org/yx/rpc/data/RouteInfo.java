@@ -15,30 +15,34 @@
  */
 package org.yx.rpc.data;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.yx.common.Host;
+import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class RouteInfo {
-	private Collection<IntfInfo> intfs = new ArrayList<IntfInfo>();
+	private Collection<ApiInfo> apis = Collections.emptyList();
+	private final Host host;
+	private final String path;
+
 	private int weight;
 	private int clientCount;
-	private final Host host;
 
 	private int feature;
 
-	public RouteInfo(Host url) {
+	public RouteInfo(Host url, String path) {
 		this.host = url;
+		this.path = path;
 	}
 
-	public Collection<IntfInfo> intfs() {
-		return intfs;
+	public Collection<ApiInfo> apis() {
+		return apis;
 	}
 
-	void addIntf(IntfInfo intf) {
-		this.intfs.add(intf);
+	void setApis(Collection<ApiInfo> list) {
+		this.apis = CollectionUtil.unmodifyList(list);
 	}
 
 	void setWeight(String w) {
@@ -55,6 +59,10 @@ public class RouteInfo {
 		this.clientCount = Integer.parseInt(w);
 	}
 
+	void setFeature(int feature) {
+		this.feature = feature;
+	}
+
 	public int weight() {
 		return this.weight;
 	}
@@ -67,11 +75,12 @@ public class RouteInfo {
 		return host;
 	}
 
-	public int getFeature() {
+	public int feature() {
 		return feature;
 	}
 
-	void setFeature(int feature) {
-		this.feature = feature;
+	public String path() {
+		return path;
 	}
+
 }

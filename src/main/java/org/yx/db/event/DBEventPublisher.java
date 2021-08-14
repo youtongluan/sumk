@@ -17,23 +17,30 @@ package org.yx.db.event;
 
 import java.util.List;
 
-import org.yx.listener.ComposeListener;
-import org.yx.listener.SumkListener;
+import org.yx.bean.IOC;
+import org.yx.common.listener.EventBus;
+import org.yx.conf.Const;
 
 public final class DBEventPublisher {
 
-	private static final ComposeListener group = new ComposeListener();
+	private static EventBus modifyBus;
+	private static EventBus queryBus;
 
-	public static void publish(DBEvent event) {
-		group.listen(event);
+	public static void init() {
+		modifyBus = IOC.get(Const.LISTENER_DB_MODIFY, EventBus.class);
+		queryBus = IOC.get(Const.LISTENER_DB_QUERY, EventBus.class);
 	}
 
-	public static void setListener(SumkListener[] listeners) {
-		group.setListener(listeners);
+	public static void publishModify(List<DBEvent> events) {
+		modifyBus.publishBatch(events);
 	}
 
-	public List<SumkListener> getListeners() {
-		return group.getListeners();
+	public static void publishModify(DBEvent event) {
+		modifyBus.publish(event);
+	}
+
+	public static void publishQuery(QueryEvent event) {
+		queryBus.publish(event);
 	}
 
 }

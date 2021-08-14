@@ -59,7 +59,7 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 				});
 				map = tmp;
 			} catch (Exception e) {
-				RawLog.error("sumk.sys", "iterate system properties error," + e);
+				RawLog.error("sumk.conf", "iterate system properties error," + e);
 			}
 		}
 		return new ComposedConfig(map, conf);
@@ -91,7 +91,7 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 
 	@Override
 	public Set<String> keys() {
-		return this.composedMap.keySet();
+		return Collections.unmodifiableSet(this.composedMap.keySet());
 	}
 
 	public boolean isReserveEnable() {
@@ -113,5 +113,9 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 
 	public int size() {
 		return this.composedMap.size();
+	}
+
+	public RefreshableSystemConfig innerConfig() {
+		return this.config;
 	}
 }

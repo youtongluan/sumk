@@ -94,7 +94,7 @@ public class ZKSystemConfig extends MultiNodeConfig {
 			Collections.reverse(list);
 			for (String path : list) {
 				if (!client.exists(path)) {
-					RawLog.warn(LOG_NAME, "该zk地址不存在: " + path);
+					RawLog.error(LOG_NAME, "该zk地址不存在: " + path);
 					return;
 				}
 				byte[] data = client.readData(path);

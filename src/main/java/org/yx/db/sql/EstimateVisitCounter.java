@@ -29,24 +29,31 @@ public class EstimateVisitCounter implements VisitCounter {
 
 	private int queryCount;
 
+	private int willVisit;
+
 	public EstimateVisitCounter(int interval) {
 		this.interval = interval > 0 ? interval : AppInfo.getInt("sumk.cache.count", 500);
+		this.willVisit = this.interval;
 	}
 
 	@Override
 	public long getCacheKeyVisits() {
-		return visitCount & 0xFFFFFFFFL;
+		return Integer.toUnsignedLong(visitCount);
 	}
 
 	@Override
 	public long getCacheKeyHits() {
-		return cacheMeet & 0xFFFFFFFFL;
+		return Integer.toUnsignedLong(cacheMeet);
 	}
 
 	@Override
 	public boolean willVisitCache(int c) {
+		if (--willVisit <= 0) {
+			this.willVisit = this.interval;
+			return false;
+		}
 		visitCount += c;
-		return visitCount % interval >= c || c > 100;
+		return true;
 	}
 
 	@Override
@@ -56,7 +63,7 @@ public class EstimateVisitCounter implements VisitCounter {
 
 	@Override
 	public long getModifyCount() {
-		return this.modifyCount & 0xFFFFFFFFL;
+		return Integer.toUnsignedLong(this.modifyCount);
 	}
 
 	@Override
@@ -66,7 +73,7 @@ public class EstimateVisitCounter implements VisitCounter {
 
 	@Override
 	public long getQueryCount() {
-		return this.queryCount & 0xFFFFFFFFL;
+		return Integer.toUnsignedLong(this.queryCount);
 	}
 
 	@Override

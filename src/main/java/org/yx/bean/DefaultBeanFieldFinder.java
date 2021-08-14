@@ -15,20 +15,26 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 	@Override
 	public Object findTarget(Field f, Object bean, InjectSpec inject) throws Exception {
 		Class<?> fieldType = f.getType();
+
 		if (fieldType.isArray()) {
 			return getArrayField(f, bean, inject.allowEmpty());
 		}
 		if (List.class == fieldType || Collection.class == fieldType) {
 			return getListField(f, bean, inject.allowEmpty());
 		}
-		return getBean(f);
+
+		return getSimpleBean(f, inject);
 	}
 
-	protected Object getBean(Field f) {
-		String name = f.getName();
+	protected Object getSimpleBean(Field f, InjectSpec inject) {
 		Class<?> clz = f.getType();
+		String name = inject.value();
 
-		List<?> list = InnerIOC.pool.getBeans(name, clz);
+		if (name != null && (name = name.trim()).length() > 0) {
+			return IOC.get(name, clz);
+		}
+
+		List<?> list = InnerIOC.pool.getBeans(f.getName(), clz);
 		if (list.size() == 1) {
 			return list.get(0);
 		}

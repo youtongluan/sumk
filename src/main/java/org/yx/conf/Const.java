@@ -42,4 +42,7 @@ public final class Const {
 	public static final String LN = "\n";
 
 	public static final int DEFAULT_TOPLIMIT = 50000;
+
+	public static final String LISTENER_DB_MODIFY = "LISTENER_DB_MODIFY";
+	public static final String LISTENER_DB_QUERY = "LISTENER_DB_QUERY";
 }

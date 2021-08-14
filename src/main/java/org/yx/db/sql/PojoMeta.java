@@ -48,34 +48,63 @@ public final class PojoMeta implements Cloneable {
 	public static final String WILDCHAR = "#";
 	private static final char KEY_SPLIT = ':';
 
-	final List<ColumnMeta> fieldMetas;
 	/**
 	 * 数据库表所对应的java pojo类
 	 */
 	final Class<?> pojoClz;
+	final Type pojoArrayClz;
+	private final CacheType cacheType;
+
+	@NotNull
+	final List<ColumnMeta> fieldMetas;
+	@NotNull
+	final List<ColumnMeta> databaseIds;
 
 	@NotNull
 	final List<ColumnMeta> cacheIDs;
 
 	@NotNull
-	final List<ColumnMeta> databaseIds;
+	final List<ColumnMeta> createColumns;
 
 	private VisitCounter counter;
 	private int ttlSec;
 
 	private String pre;
-
-	private final CacheType cacheType;
-
 	private String tableName;
+
 	final SoftDeleteMeta softDelete;
 
-	private final Map<String, ColumnMeta> columnDBNameMap = new HashMap<>();
-	private final Map<String, ColumnMeta> filedNameMap = new HashMap<>();
-
-	final List<ColumnMeta> createColumns;
-
-	final Type pojoArrayClz;
+	public PojoMeta(TableSpec table, List<ColumnMeta> fieldMetas, Class<?> pojoClz) {
+		CacheType tableCacheType = Objects.requireNonNull(table.cacheType());
+		this.fieldMetas = CollectionUtil.unmodifyList(fieldMetas);
+		this.pojoClz = pojoClz;
+		List<ColumnMeta> rids = new ArrayList<>();
+		List<ColumnMeta> pids = new ArrayList<>();
+		List<ColumnMeta> ctimes = new ArrayList<>();
+		for (ColumnMeta m : this.fieldMetas) {
+			if (tableCacheType != CacheType.NOCACHE && m.isCacheID()) {
+				rids.add(m);
+			}
+			if (m.isDBID()) {
+				pids.add(m);
+			}
+			if (m.field.isAnnotationPresent(AutoCreateTime.class)) {
+				if (TimeUtil.isGenericDate(m.field.getType()) && !timeOnly(m.field.getType())) {
+					ctimes.add(m);
+				} else {
+					Logs.db().warn("{}.{}的类型{}不是@CreateTime支持的类型", pojoClz.getSimpleName(), m.field.getName(),
+							m.field.getType());
+				}
+			}
+		}
+		this.databaseIds = CollectionUtil.unmodifyList(pids);
+		this.cacheIDs = pids.equals(rids) ? this.databaseIds : CollectionUtil.unmodifyList(rids);
+		this.cacheType = this.cacheIDs.isEmpty() ? CacheType.NOCACHE : tableCacheType;
+		this.createColumns = CollectionUtil.unmodifyList(ctimes);
+		this.softDelete = DBSettings.softDeleteParser().parse(this.pojoClz, this.fieldMetas);
+		this.parseTable(table);
+		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
+	}
 
 	public Type pojoArrayClz() {
 		return this.pojoArrayClz;
@@ -86,21 +115,25 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	public ColumnMeta getByColumnDBName(String columnDBName) {
-		if (columnDBName == null || columnDBName.isEmpty()) {
-			return null;
+		for (ColumnMeta cm : this.fieldMetas) {
+			if (cm.getDbColumn().equalsIgnoreCase(columnDBName)) {
+				return cm;
+			}
 		}
-		return this.columnDBNameMap.get(columnDBName.toLowerCase());
+		return null;
 	}
 
 	public ColumnMeta getByFieldName(String fieldName) {
-		if (fieldName == null || fieldName.isEmpty()) {
-			return null;
+		for (ColumnMeta cm : this.fieldMetas) {
+			if (cm.getFieldName().equalsIgnoreCase(fieldName)) {
+				return cm;
+			}
 		}
-		return this.filedNameMap.get(fieldName.toLowerCase());
+		return null;
 	}
 
 	public boolean isNoCache() {
-		return cacheType == CacheType.NOCACHE || RedisPool.defaultRedis() == null || this.cacheIDs.isEmpty();
+		return cacheType == CacheType.NOCACHE || RedisPool.defaultRedis() == null;
 	}
 
 	public CacheType cacheType() {
@@ -139,39 +172,6 @@ public final class PojoMeta implements Cloneable {
 
 	public int getTtlSec() {
 		return ttlSec;
-	}
-
-	public PojoMeta(TableSpec table, ColumnMeta[] fieldMetas, Class<?> pojoClz) {
-		this.cacheType = table.cacheType();
-		this.fieldMetas = CollectionUtil.unmodifyList(fieldMetas);
-		this.pojoClz = pojoClz;
-		List<ColumnMeta> rids = new ArrayList<>();
-		List<ColumnMeta> pids = new ArrayList<>();
-		List<ColumnMeta> ctimes = new ArrayList<>();
-		for (ColumnMeta m : this.fieldMetas) {
-			columnDBNameMap.put(m.dbColumn.toLowerCase(), m);
-			filedNameMap.put(m.getFieldName().toLowerCase(), m);
-			if (m.isCacheID()) {
-				rids.add(m);
-			}
-			if (m.isDBID()) {
-				pids.add(m);
-			}
-			if (m.field.isAnnotationPresent(AutoCreateTime.class)) {
-				if (TimeUtil.isGenericDate(m.field.getType()) && !timeOnly(m.field.getType())) {
-					ctimes.add(m);
-				} else {
-					Logs.db().warn("{}.{}的类型{}不是@CreateTime支持的类型", pojoClz.getSimpleName(), m.field.getName(),
-							m.field.getType());
-				}
-			}
-		}
-		this.cacheIDs = CollectionUtil.unmodifyList(rids);
-		this.databaseIds = pids.equals(rids) ? this.cacheIDs : CollectionUtil.unmodifyList(pids);
-		this.createColumns = CollectionUtil.unmodifyList(ctimes);
-		this.softDelete = DBSettings.softDeleteParser().parse(this.pojoClz, this.fieldMetas);
-		this.parseTable(table);
-		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
 	}
 
 	private void parseTable(TableSpec table) {

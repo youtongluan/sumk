@@ -21,14 +21,19 @@ import java.util.function.IntFunction;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.DBType;
 import org.yx.log.Logs;
+import org.yx.util.BitUtil;
 
 public final class DBSettings {
-	private static boolean FAIL_IF_PROPERTY_NOT_MAPPED;
-	private static boolean FROM_CACHE;
 	private static boolean TO_CACHE;
+
+	private static int FLAG;
+
 	private static int MAX_LOG_PARAM_LENGTH;
 
-	private static int LIMIT_AS_NO_LIMIT;
+	private static int MAX_SINGLEKEY_TO_CACHE;
+
+	private static int MAX_LIMIT;
+	private static int MAX_OFFSET;
 
 	private static int UNION_LOG_TIME;
 	private static boolean UNION_LOG_ENABLE;
@@ -43,6 +48,10 @@ public final class DBSettings {
 	private static SoftDeleteParser softDeleteParser = new SoftDeleteParserImpl();
 
 	private static IntFunction<VisitCounter> visitCounterFactory;
+
+	public static int flag() {
+		return FLAG;
+	}
 
 	public static IntFunction<VisitCounter> visitCounterFactory() {
 		return visitCounterFactory;
@@ -68,6 +77,10 @@ public final class DBSettings {
 		return readType;
 	}
 
+	public static int maxSingleKeyToCache() {
+		return MAX_SINGLEKEY_TO_CACHE;
+	}
+
 	public static byte[] getPasswordKey() {
 		return PASSWORD_KEY;
 	}
@@ -88,20 +101,16 @@ public final class DBSettings {
 		return UNION_LOG_ENABLE;
 	}
 
-	public static boolean failIfPropertyNotMapped() {
-		return FAIL_IF_PROPERTY_NOT_MAPPED;
-	}
-
-	public static boolean fromCache() {
-		return FROM_CACHE;
-	}
-
 	public static boolean toCache() {
 		return TO_CACHE;
 	}
 
-	public static int asNoLimit() {
-		return LIMIT_AS_NO_LIMIT;
+	public static int MaxLimit() {
+		return MAX_LIMIT;
+	}
+
+	public static int MaxOffset() {
+		return MAX_OFFSET;
 	}
 
 	public static int maxSqlParamLength() {
@@ -109,29 +118,53 @@ public final class DBSettings {
 	}
 
 	public static synchronized void init() {
-		if (DBSettings.readType != null || LIMIT_AS_NO_LIMIT > 0) {
+		if (DBSettings.readType != null || MAX_LIMIT > 0) {
 			return;
 		}
+
+		DBSettings.FLAG = BitUtil.setBit(DBSettings.FLAG, DBFlag.UPDATE_FULL_UPDATE,
+				AppInfo.getBoolean("sumk.db.update.full", false));
+		DBSettings.FLAG = BitUtil.setBit(DBSettings.FLAG, DBFlag.UPDATE_UPDATE_DBID,
+				AppInfo.getBoolean("sumk.db.update.dbid", false));
+
 		AppInfo.addObserver(info -> {
 			try {
-				FAIL_IF_PROPERTY_NOT_MAPPED = AppInfo.getBoolean("sumk.db.failIfPropertyNotMapped", true);
-				FROM_CACHE = AppInfo.getBoolean("sumk.db.fromCache", true);
 				TO_CACHE = AppInfo.getBoolean("sumk.db.toCache", true);
-				LIMIT_AS_NO_LIMIT = AppInfo.getInt("sumk.db.asnolimit", 5000);
+				MAX_LIMIT = AppInfo.getInt("sumk.db.select.max.limit", 10000);
+				MAX_OFFSET = AppInfo.getInt("sumk.db.select.max.offset", 10000);
 				MAX_LOG_PARAM_LENGTH = AppInfo.getInt("sumk.sql.param.maxlength", 5000);
 				UNION_LOG_TIME = AppInfo.getInt("sumk.unionlog.sql.time", 0);
 				UNION_LOG_ENABLE = AppInfo.getBoolean("sumk.unionlog.sql.enable", true);
 				DEBUG_LOG_SPEND_TIME = AppInfo.getInt("sumk.sql.debug.spendTime", 100);
 				MAX_QUERY_CACHE_SIZE = AppInfo.getInt("sumk.select.query.maxsize", 1000);
+				MAX_SINGLEKEY_TO_CACHE = AppInfo.getInt("sumk.select.singlekey.max.tocache", 10);
+				int flag = DBSettings.FLAG;
+				flag = BitUtil.setBit(flag, DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED,
+						AppInfo.getBoolean("sumk.db.failIfPropertyNotMapped", true));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_FROM_CACHE, AppInfo.getBoolean("sumk.db.fromCache", true));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_TO_CACHE,
+						TO_CACHE && AppInfo.getBoolean("sumk.db.select.toCache", true));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_COMPARE_IGNORE_NULL,
+						AppInfo.getBoolean("sumk.db.select.compare.null.ignore", true));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_COMPARE_ALLOW_NULL,
+						AppInfo.getBoolean("sumk.db.select.compare.null.allow", true));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_IGNORE_MAX_LIMIT,
+						AppInfo.getBoolean("sumk.db.select.ignore.maxlimit", false));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_IGNORE_MAX_OFFSET,
+						AppInfo.getBoolean("sumk.db.select.ignore.maxoffset", false));
+				flag = BitUtil.setBit(flag, DBFlag.SELECT_ALLOW_EMPTY_WHERE,
+						AppInfo.getBoolean("sumk.db.select.emptywhere", false));
+				DBSettings.FLAG = flag;
+				Logs.db().info("flag : {}", Integer.toHexString(DBSettings.FLAG));
 			} catch (Exception e) {
-				Logs.db().info(e.getMessage(), e);
+				Logs.db().error(e.getMessage(), e);
 			}
 			String read = AppInfo.get("sumk.db.readtype", null);
 			if (read != null) {
 				try {
 					DBSettings.readType = DBType.valueOf(read.toUpperCase());
 				} catch (Exception e) {
-					Logs.db().info("sumk.db.readtype配置不正确," + e.getMessage(), e);
+					Logs.db().error("sumk.db.readtype配置不正确," + e.getMessage(), e);
 				}
 			} else {
 				DBSettings.readType = DBType.ANY;

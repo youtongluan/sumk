@@ -23,7 +23,6 @@ import java.util.Map;
 
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.enums.DBType;
-import org.yx.db.event.EventLane;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.InsertResult;
 import org.yx.db.sql.MapedSql;
@@ -58,14 +57,14 @@ public final class Visitors {
 	}
 
 	public static final SumkDbVisitor<Integer> modifyVisitor = builder -> {
-		Connection conn = ConnectionPool.get().connection(DBType.WRITE);
+		ConnectionPool pool = ConnectionPool.get();
 		MapedSql maped = builder.toMapedSql();
 		int ret;
-		try (SumkStatement statement = SumkStatement.create(conn, maped)) {
+		try (SumkStatement statement = SumkStatement.create(pool.connection(DBType.WRITE), maped)) {
 			ret = statement.executeUpdate();
 		}
 		if (ret > 0) {
-			EventLane.pubuish(conn, maped.getEvent());
+			pool.pubuishModify(maped.getEvent());
 		}
 		return ret;
 	};

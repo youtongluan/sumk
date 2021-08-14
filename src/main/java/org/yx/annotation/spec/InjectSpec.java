@@ -18,8 +18,15 @@ package org.yx.annotation.spec;
 public class InjectSpec {
 	private final boolean allowEmpty;
 
-	public InjectSpec(boolean allowEmpty) {
+	private final String value;
+
+	public InjectSpec(String value, boolean allowEmpty) {
+		this.value = value;
 		this.allowEmpty = allowEmpty;
+	}
+
+	public String value() {
+		return value;
 	}
 
 	/**

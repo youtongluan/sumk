@@ -286,3 +286,12 @@ v2.10.1
 5、修改AbstractCachable的cacheEnable方法，这个只在自动生成的代码(sumk-codetool)里使用
 6、@Bean增加辅助注解@ConditionOnPropert，支持组合关系：并且（用,或&&分隔)以及或者(用||分隔)。其中onMatch属性用来做取反操作
 7、改进SumkDate转String的性能
+
+v2.10.2
+1、Select的offset、limit增加最大值1万的限制。可以通过代码突破这个限制。这意味着开发人员知道该语句比较耗性能
+2、细节优化以提升性能或降低内存使用。比如用List或数组替代map，将一些计数器从Atomic类型改为普通类型等
+3、提供监听器功能。监听器实现SumkListener接口，然后使用相应的EventBus发布事件。sumk-server-demo工程中InfoListener是它的使用例子
+4、去掉DBEventListener接口，使用SumkListener改写数据库事件监听。sumk-server-demo工程中TableListener是它的使用例子
+5、@Inject增加value属性，该属性强制指定注入bean的名称
+6、去掉RedisUtil工具类(基本也用不到)，增加Redis2接口
+

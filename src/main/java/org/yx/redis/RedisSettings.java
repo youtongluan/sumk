@@ -34,12 +34,12 @@ public final class RedisSettings {
 				String type = conf.getType();
 				if (RedisType.SENTINEL.accept(type)) {
 					Logs.redis().warn("sentinel has not be tested.if any problem,send email to 3205207767@qq.com");
-					return new RedisImpl(new SentinelJedis2Executor(conf));
+					return new Redis2Impl(new SentinelJedis2Executor(conf));
 				}
 				if (RedisType.CLUSTER.accept(type) || conf.hosts().contains(",")) {
 					return Jedis2Factorys.getJedisClusterFactory().apply(conf);
 				}
-				return new RedisImpl(new SingleJedis2Executor(conf));
+				return new Redis2Impl(new SingleJedis2Executor(conf));
 			};
 		} catch (Throwable e) {
 			Logs.redis().error("初始化redis的factory失败", e);

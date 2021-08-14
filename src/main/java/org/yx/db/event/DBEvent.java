@@ -15,16 +15,25 @@
  */
 package org.yx.db.event;
 
-import org.yx.listener.SumkEvent;
+import java.util.Objects;
 
-public class DBEvent extends SumkEvent {
+import org.yx.db.sql.PojoMeta;
+import org.yx.db.sql.PojoMetaHolder;
 
-	public String getTable() {
-		return (String) this.source;
-	}
+public class DBEvent {
+
+	private final String tableName;
 
 	public DBEvent(String table) {
-		super(table);
+		this.tableName = Objects.requireNonNull(table);
+	}
+
+	public String getTable() {
+		return this.tableName;
+	}
+
+	public PojoMeta getTableMeta() {
+		return PojoMetaHolder.getTableMeta(this.tableName);
 	}
 
 }

@@ -29,10 +29,7 @@ import org.yx.util.kit.TypeConverter;
 
 public class Update extends ModifySqlBuilder {
 
-	private boolean fullUpdate;
-
 	private Map<String, Object> updateTo;
-	private boolean updateDBID;
 
 	private Map<String, Number> incrMap;
 
@@ -42,18 +39,18 @@ public class Update extends ModifySqlBuilder {
 	 * @return 当前对象
 	 */
 	public Update updateDBID(boolean update) {
-		this.updateDBID = update;
+		this.setOnOff(DBFlag.UPDATE_UPDATE_DBID, update);
 		return this;
 	}
 
 	/**
 	 * 
-	 * @param fail
+	 * @param onOff
 	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
 	 * @return 当前对象
 	 */
-	public Update failIfPropertyNotMapped(boolean fail) {
-		this.failIfPropertyNotMapped = fail;
+	public Update failIfPropertyNotMapped(boolean onOff) {
+		this.setOnOff(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED, onOff);
 		return this;
 	}
 
@@ -85,7 +82,7 @@ public class Update extends ModifySqlBuilder {
 	 * @return 当前对象
 	 */
 	public Update fullUpdate(boolean fullUpdate) {
-		this.fullUpdate = fullUpdate;
+		this.setOnOff(DBFlag.UPDATE_FULL_UPDATE, fullUpdate);
 		return this;
 	}
 
@@ -173,10 +170,10 @@ public class Update extends ModifySqlBuilder {
 				continue;
 			}
 
-			if (!fm.containsKey(this.updateTo) && !this.fullUpdate) {
+			if (!fm.containsKey(this.updateTo) && !this.isOn(DBFlag.UPDATE_FULL_UPDATE)) {
 				continue;
 			}
-			if (fm.isDBID() && !this.updateDBID) {
+			if (fm.isDBID() && !this.isOn(DBFlag.UPDATE_UPDATE_DBID)) {
 				continue;
 			}
 			sb.append(notFirst ? " , " : " SET ");
@@ -227,8 +224,8 @@ public class Update extends ModifySqlBuilder {
 		}
 		sb.append(whereStr);
 		ms.sql = sb.toString();
-		ms.event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in, this.fullUpdate,
-				this.updateDBID);
+		ms.event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in,
+				this.isOn(DBFlag.UPDATE_FULL_UPDATE), this.isOn(DBFlag.UPDATE_UPDATE_DBID));
 		return ms;
 	}
 

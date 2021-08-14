@@ -15,73 +15,53 @@
  */
 package org.yx.db.event;
 
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.yx.log.Logs;
+import org.yx.db.conn.SumkConnection;
 
 public final class EventLane {
-	private static final ThreadLocal<Map<Connection, EventLane>> POOL = new ThreadLocal<Map<Connection, EventLane>>() {
-		@Override
-		protected Map<Connection, EventLane> initialValue() {
-			return new HashMap<Connection, EventLane>(4);
-		}
-
-	};
-	private final List<DBEvent> events = new ArrayList<DBEvent>(8);
+	private List<DBEvent> events;
 
 	public EventLane() {
 	}
 
-	private static EventLane pool(Connection conn) {
-		return POOL.get().get(conn);
+	private List<DBEvent> makeSureEvents() {
+		if (this.events == null) {
+			this.events = new ArrayList<>();
+		}
+		return this.events;
 	}
 
-	public static void pubuish(Connection conn, DBEvent event) {
-		if (event == null) {
+	public void pubuishModify(SumkConnection conn, DBEvent event) {
+		if (!conn.getAutoCommit()) {
+			makeSureEvents().add(event);
+		} else {
+			DBEventPublisher.publishModify(event);
+		}
+	}
+
+	public void realPubuish(SumkConnection conn) {
+		if (this.events == null) {
 			return;
 		}
-		if (event instanceof ModifyEvent && !isAutoCommit(conn)) {
-			EventLane pool = pool(conn);
-			if (pool == null) {
-				pool = new EventLane();
-				POOL.get().put(conn, pool);
-			}
-			pool.events.add(event);
-		} else {
-			DBEventPublisher.publish(event);
-		}
+		DBEventPublisher.publishModify(events);
+		this.clear();
 	}
 
-	private static boolean isAutoCommit(Connection conn) {
-		try {
-			return conn.getAutoCommit();
-		} catch (SQLException e) {
-			Logs.db().error("获取连接的autoCommit属性失败", e);
+	public void clear() {
+		this.events = null;
+	}
+
+	public boolean existModifyEvent(String table) {
+		if (this.events == null) {
 			return false;
 		}
-	}
-
-	public static void realPubuish(Connection conn) {
-		EventLane pool = pool(conn);
-		if (pool == null) {
-			return;
+		for (DBEvent event : this.events) {
+			if (event.getTable().equals(table) && (event instanceof ModifyEvent)) {
+				return true;
+			}
 		}
-		for (DBEvent event : pool.events) {
-			DBEventPublisher.publish(event);
-		}
-		pool.events.clear();
-	}
-
-	public static void remove(Connection conn) {
-		POOL.get().remove(conn);
-	}
-
-	public static void removeALL() {
-		POOL.remove();
+		return false;
 	}
 }

@@ -15,9 +15,11 @@
  */
 package org.yx.rpc.client.route;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,30 +30,30 @@ import org.yx.common.route.WeightedServer;
 import org.yx.log.Log;
 import org.yx.rpc.client.ReqSession;
 import org.yx.rpc.client.ReqSessionHolder;
-import org.yx.rpc.data.IntfInfo;
+import org.yx.rpc.data.ApiInfo;
 import org.yx.rpc.data.RouteInfo;
+import org.yx.util.CollectionUtil;
 
 public final class RpcRoutes {
 
 	private final Map<String, Router<Host>> rpcRoutes;
-	private final Map<String, RouteInfo> zkDatas;
-	private final Map<Host, Integer> protocols;
 
-	private RpcRoutes(Map<String, RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
-		this.zkDatas = Objects.requireNonNull(zkDatas);
+	private final List<RouteInfo> zkDatas;
+	private final Map<Host, Integer> protocols;
+	private final long createTime;
+
+	private RpcRoutes(Collection<RouteInfo> zkDatas, Map<String, Router<Host>> routes) {
+		this.zkDatas = CollectionUtil.unmodifyList(Objects.requireNonNull(zkDatas));
 		this.rpcRoutes = Objects.requireNonNull(routes);
 		Map<Host, Integer> p = new HashMap<>();
-		for (RouteInfo info : zkDatas.values()) {
-			p.put(info.host(), info.getFeature());
+		for (RouteInfo info : zkDatas) {
+			p.put(info.host(), info.feature());
 		}
 		this.protocols = p;
+		this.createTime = System.currentTimeMillis();
 	}
 
-	private static volatile RpcRoutes ROUTE = new RpcRoutes(Collections.emptyMap(), Collections.emptyMap());
-
-	public static Map<String, RouteInfo> currentDatas() {
-		return Collections.unmodifiableMap(ROUTE.zkDatas);
-	}
+	private static volatile RpcRoutes ROUTE = new RpcRoutes(Collections.emptyList(), Collections.emptyMap());
 
 	public static Set<Host> servers() {
 		return new HashSet<>(ROUTE.protocols.keySet());
@@ -73,13 +75,12 @@ public final class RpcRoutes {
 		return ROUTE.rpcRoutes.size();
 	}
 
-	private static void _refresh(Map<String, RouteInfo> rawData, Map<String, Router<Host>> route) {
-		Map<String, RouteInfo> data = new HashMap<>(rawData);
-		RpcRoutes r = new RpcRoutes(data, route);
+	private static void _refresh(Collection<RouteInfo> rawData, Map<String, Router<Host>> route) {
+		RpcRoutes r = new RpcRoutes(rawData, route);
 		RpcRoutes.ROUTE = r;
 		if (Log.get("sumk.rpc.client").isTraceEnabled()) {
 			StringBuilder sb = new StringBuilder("微服务源:");
-			for (RouteInfo d : data.values()) {
+			for (RouteInfo d : rawData) {
 				sb.append("  ").append(d.host());
 			}
 			Log.get("sumk.rpc.client").trace(sb.toString());
@@ -100,9 +101,9 @@ public final class RpcRoutes {
 		}
 	}
 
-	public static synchronized void refresh(Map<String, RouteInfo> datas) {
+	public static synchronized void refresh(Collection<RouteInfo> datas) {
 		Map<String, Set<WeightedServer<Host>>> map = new HashMap<>();
-		for (RouteInfo r : datas.values()) {
+		for (RouteInfo r : datas) {
 			fillWeightedServer(createServerMachine(r), map);
 		}
 		Map<String, Router<Host>> routes = new HashMap<>();
@@ -141,11 +142,27 @@ public final class RpcRoutes {
 	private static Map<String, WeightedServer<Host>> createServerMachine(RouteInfo data) {
 		Map<String, WeightedServer<Host>> servers = new HashMap<>();
 		int weight = data.weight() > 0 ? data.weight() : 100;
-		for (IntfInfo intf : data.intfs()) {
+		for (ApiInfo intf : data.apis()) {
 			WeightedServer<Host> server = new WeightedHost(data.host(), weight);
 			servers.put(intf.getName(), server);
 		}
 		return servers;
+	}
+
+	public static RpcRoutes current() {
+		return ROUTE;
+	}
+
+	public Map<String, Router<Host>> routes() {
+		return CollectionUtil.unmodifyMap(this.rpcRoutes);
+	}
+
+	public List<RouteInfo> zkDatas() {
+		return this.zkDatas;
+	}
+
+	public long createTime() {
+		return this.createTime;
 	}
 
 }

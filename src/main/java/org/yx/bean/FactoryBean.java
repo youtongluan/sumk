@@ -28,6 +28,6 @@ public interface FactoryBean {
 	 * 
 	 * @return 可以为null或空list
 	 */
-	Collection<Object> beans();
+	Collection<?> beans();
 
 }

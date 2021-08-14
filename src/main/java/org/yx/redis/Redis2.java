@@ -17,77 +17,22 @@ package org.yx.redis;
 
 import java.util.function.Function;
 
-import org.yx.exception.SumkException;
-import org.yx.log.Logs;
-
 import redis.clients.jedis.Jedis;
 
-public abstract class Redis2 implements Redis, Cloneable {
-
-	protected final Jedis2Executor jedis2Executor;
-	private boolean mute;
-	private transient Redis2 muteConnectionExceptionRedis;
-
-	public Redis2(Jedis2Executor executor) {
-		this.jedis2Executor = executor;
-		if (this.jedis2Executor instanceof Checkable) {
-			RedisChecker.get().addRedis((Checkable) this.jedis2Executor);
-		}
-	}
-
-	@Override
-	public RedisConfig getRedisConfig() {
-		return this.jedis2Executor.getRedisConfig();
-	}
-
-	@Override
-	public String hosts() {
-		return jedis2Executor.hosts();
-	}
-
-	public <T> T execAndRetry(Function<Jedis, T> callback) {
-		return this.jedis2Executor.execAndRetry(callback, mute);
-	}
-
-	public void shutdownPool() {
-		this.jedis2Executor.shutdownPool();
-		if (this.jedis2Executor instanceof Checkable) {
-			RedisChecker.get().remove((Checkable) this.jedis2Executor);
-		}
-	}
-
-	@Override
-	public Redis mute() {
-		Redis2 r = this.muteConnectionExceptionRedis;
-		if (r != null) {
-			return r;
-		}
-		if (this.mute) {
-			return this;
-		}
-		try {
-			r = (Redis2) super.clone();
-		} catch (Exception e) {
-			Logs.redis().error(e.toString(), e);
-			throw new SumkException(345345, this.getClass().getName() + "无法clone");
-		}
-		r.mute = true;
-		this.muteConnectionExceptionRedis = r;
-		return r;
-	}
-
-	@Override
-	public boolean isMuted() {
-		return mute;
-	}
-
-	@Override
-	public RedisType redisType() {
-		return this.jedis2Executor.redisType();
-	}
-
-	@Override
-	public String toString() {
-		return "Redis[" + this.jedis2Executor + "]";
-	}
+/**
+ * jedis2.x 额外增加的方法
+ */
+public interface Redis2 {
+	/**
+	 * 执行redis的批量操作或jedis的原生操作。
+	 * 注意:<B>如果是集群情况下，要保证所有的操作确实在key所对应的节点上才行，所以这个方法在集群环境里要慎重使用</B>
+	 * 
+	 * @param <T> 返回值类型
+	 * @param sampleKey
+	 *            只有在集群情况下才有意义，用于寻找真正的jedis节点
+	 * @param callback
+	 *            批处理的代码
+	 * @return 返回的是callback的返回值
+	 */
+	<T> T execute(String sampleKey, Function<Jedis, T> callback);
 }

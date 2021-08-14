@@ -154,9 +154,6 @@ public final class SumkThreadPool {
 	}
 
 	static void scheduleThreadPoolMonitor() {
-		if (SumkServer.isRpcEnable() || SumkServer.isHttpEnable()) {
-			SumkThreadPool.executor().setCorePoolSize(200);
-		}
 		long period = AppInfo.getLong("sumk.threadpool.task.period", 10_000);
 
 		scheduledExecutor.scheduleAtFixedRate(new ThreadPoolReSeter(), period, period, TimeUnit.MILLISECONDS);

@@ -23,8 +23,8 @@ public class Delete extends ModifySqlBuilder {
 		super(visitor);
 	}
 
-	public Delete failIfPropertyNotMapped(boolean fail) {
-		this.failIfPropertyNotMapped = fail;
+	public Delete failIfPropertyNotMapped(boolean onOff) {
+		this.setOnOff(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED, onOff);
 		return this;
 	}
 

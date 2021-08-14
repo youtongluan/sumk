@@ -15,14 +15,16 @@
  */
 package org.yx.db.dao;
 
+import org.yx.db.sql.DBFlag;
 import org.yx.db.sql.DBSettings;
+import org.yx.util.BitUtil;
 
 public abstract class AbstractCachable {
 
 	private boolean cacheEnable = true;
 
 	public boolean isCacheEnable() {
-		return cacheEnable && DBSettings.fromCache();
+		return cacheEnable && BitUtil.getBit(DBSettings.flag(), DBFlag.SELECT_FROM_CACHE);
 	}
 
 	protected void setCacheEnable(boolean cache) {

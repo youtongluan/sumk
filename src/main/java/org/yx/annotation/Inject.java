@@ -37,6 +37,13 @@ import java.lang.annotation.Target;
 public @interface Inject {
 
 	/**
+	 * 如果设置了这个属性，会强制使用这个值去寻找bean，忽略掉智能推断。 该属性对数组或集合类型的注入无效
+	 * 
+	 * @return 要注入的bean的名称
+	 */
+	String value() default "";
+
+	/**
 	 * 数组、集合类型不可能为null，但是可以为空
 	 * 
 	 * @return 如果为true，表示可以为null或空集合

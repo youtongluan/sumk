@@ -60,12 +60,8 @@ public final class SumkServer {
 	public static void reloadConfig() {
 		StartContext sc = StartContext.inst();
 		SumkServer.test = AppInfo.getBoolean("sumk.test", false);
-		if (sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0) {
-			rpcEnable = true;
-		}
-		if (sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0) {
-			httpEnable = true;
-		}
+		SumkServer.rpcEnable = sc.get(StartConstants.NOSOA) == null && StartContext.soaPort() >= 0;
+		SumkServer.httpEnable = sc.get(StartConstants.NOHTTP) == null && StartContext.httpPort() > 0;
 	}
 
 	public static boolean isHttpEnable() {

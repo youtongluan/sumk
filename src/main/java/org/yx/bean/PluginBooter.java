@@ -77,6 +77,9 @@ public class PluginBooter {
 	}
 
 	private void preHotCoreThreads(SumkExecutorService executor) {
+		if (SumkServer.isRpcEnable() || SumkServer.isHttpEnable()) {
+			SumkThreadPool.executor().setCorePoolSize(200);
+		}
 		if (AppInfo.getBoolean("sumk.thread.prestartAllCoreThreads", true)
 				&& (SumkServer.isHttpEnable() || SumkServer.isRpcEnable()) && executor instanceof ThreadPoolExecutor) {
 			ThreadPoolExecutor pool = (ThreadPoolExecutor) executor;

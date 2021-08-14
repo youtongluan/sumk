@@ -37,7 +37,7 @@ import org.yx.conf.Const;
  */
 public final class CollectionUtil {
 
-	private static final String INGORE_PREFIX = "#";
+	private static final String IGNORE_PREFIX = "#";
 
 	public static Map<String, String> loadMapFromText(String text, String bigDelimiter, String smallDelimiter) {
 		return fillMapFromText(new HashMap<String, String>(), text, bigDelimiter, smallDelimiter);
@@ -90,7 +90,7 @@ public final class CollectionUtil {
 		for (Map.Entry<String, String> entry : temp.entrySet()) {
 			String k = entry.getKey();
 			String v = entry.getValue();
-			if (k.startsWith(INGORE_PREFIX) || v == null || v.isEmpty()) {
+			if (k.startsWith(IGNORE_PREFIX) || v == null || v.isEmpty()) {
 				continue;
 			}
 			map.put(k, v);
@@ -193,6 +193,10 @@ public final class CollectionUtil {
 		if (col == null || col.isEmpty()) {
 			return Collections.emptyList();
 		}
+		if (col instanceof List && (col instanceof UnmodifiableArrayList
+				|| "java.util.Collections$SingletonList".equals(col.getClass().getName()))) {
+			return (List<T>) col;
+		}
 		if (col.size() == 1) {
 			return Collections.singletonList(col.iterator().next());
 		}
@@ -219,7 +223,7 @@ public final class CollectionUtil {
 	}
 
 	/**
-	 * 本方法的目标是尽量减少内存消耗，适用于需要在内存中保持比较长的对象。
+	 * 生成不可变map
 	 * 
 	 * @param <K>
 	 *            key的类型
@@ -229,12 +233,17 @@ public final class CollectionUtil {
 	 *            原始map
 	 * @return 返回值不可修改，且不为null
 	 */
-	public static <K, V> Map<K, V> unmodifyMap(Map<? extends K, ? extends V> m) {
+	public static <K, V> Map<K, V> unmodifyMap(Map<K, V> m) {
 		if (m == null || m.isEmpty()) {
 			return Collections.emptyMap();
 		}
+		String clzName = m.getClass().getName();
+		if ("java.util.Collections$SingletonMap".equals(clzName)
+				|| "java.util.Collections$UnmodifiableMap".equals(clzName)) {
+			return m;
+		}
 		if (m.size() == 1) {
-			Entry<? extends K, ? extends V> kv = m.entrySet().iterator().next();
+			Entry<K, V> kv = m.entrySet().iterator().next();
 			return Collections.singletonMap(kv.getKey(), kv.getValue());
 		}
 		return Collections.unmodifiableMap(m);

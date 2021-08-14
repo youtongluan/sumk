@@ -52,13 +52,14 @@ public class ReqEncoder implements SumkMinaEncoder {
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
 		Req req = (Req) message;
 		String jsonedArg = req.getJsonedParam();
-		String[] params = req.getParamArray();
 
 		if (req.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
 			this.encodeRequestString(ReqParamType.REQ_PARAM_JSON, out, new String[] { RpcJson.operator().toJson(req),
 					Protocols.LINE_SPLIT + Protocols.LINE_SPLIT, jsonedArg });
 			return;
 		}
+
+		String[] params = req.getParamArray();
 
 		if (params == null) {
 			params = new String[0];

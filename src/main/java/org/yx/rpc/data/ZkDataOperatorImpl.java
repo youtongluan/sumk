@@ -16,7 +16,9 @@
 package org.yx.rpc.data;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
@@ -54,7 +56,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 				return null;
 			}
 		}
-		RouteInfo info = new RouteInfo(host);
+		RouteInfo info = new RouteInfo(host, data.name());
 		String f = map.get(ZKConst.FEATURE);
 		if (StringUtil.isNotEmpty(f)) {
 			try {
@@ -66,20 +68,22 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 			}
 		}
 		info.setWeight(map.get(ZKConst.WEIGHT));
+		List<ApiInfo> intfs = new ArrayList<>();
 		for (Map.Entry<String, String> entry : methodMap.entrySet()) {
 			String m = entry.getKey();
 			String value = entry.getValue();
 			if (m.length() == 0) {
 				continue;
 			}
-			IntfInfo intf = new IntfInfo();
+			ApiInfo intf = new ApiInfo();
 			intf.setName(m);
-			info.addIntf(intf);
+			intfs.add(intf);
 			if (value != null && value.length() > 0) {
 				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
 				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
 			}
 		}
+		info.setApis(intfs);
 		if (logger.isTraceEnabled()) {
 			logger.trace("反序列化:  {}\nzk上的数据: {}\ninfo:  {}", data.name(), v, S.json().toJson(info));
 		}

@@ -23,16 +23,16 @@ import org.yx.util.StringUtil;
 
 public class ActNameResolver implements Function<String, String> {
 
-	private final boolean ingoreCase;
+	private final boolean ignoreCase;
 
-	public ActNameResolver(boolean ingoreCase) {
-		this.ingoreCase = ingoreCase;
+	public ActNameResolver(boolean ignoreCase) {
+		this.ignoreCase = ignoreCase;
 	}
 
 	@Override
 	public String apply(String name) {
 		String act = this.solve(Objects.requireNonNull(name));
-		if (ingoreCase) {
+		if (ignoreCase) {
 			return act.toLowerCase();
 		}
 		return act;
