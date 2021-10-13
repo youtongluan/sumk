@@ -100,7 +100,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 	protected String getRawAct(HttpServletRequest req) {
 		String act = req.getPathInfo();
 		if (StringUtil.isEmpty(act) && AppInfo.getBoolean("sumk.http.act.query", false)) {
-			act = req.getParameter("act");
+			act = req.getParameter("_act");
 			if (act != null) {
 				act = act.replace('.', '/');
 			}

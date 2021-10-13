@@ -41,7 +41,7 @@ public class RedisPlugin implements Plugin {
 			return;
 		}
 		try {
-			Loader.loadClassExactly("redis.clients.jedis.Jedis");
+			Loader.loadClass("redis.clients.jedis.Jedis");
 		} catch (Throwable e) {
 			Logs.redis().warn("Jedis is not in use because of " + e.getMessage());
 			return;

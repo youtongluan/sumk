@@ -37,6 +37,7 @@ import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.util.S;
 import org.yx.util.UUIDSeed;
+import org.yx.util.WebUtil;
 
 public final class InnerHttpUtil {
 	private static HttpKit kit = new DefaultHttpKit();
@@ -112,7 +113,8 @@ public final class InnerHttpUtil {
 	public static boolean preServerHandle(HttpServletRequest req, HttpServletResponse resp, String firstKey) {
 		resp.setContentType("text/plain;charset=UTF-8");
 		String md5 = AppInfo.get(firstKey, "sumk.union.monitor", "61c72b1ce5858d83c90ba7b5b1096697");
-		String sign = req.getParameter("sign");
+
+		String sign = WebUtil.fromHeaderOrParamter(req, "sign");
 		if (sign == null) {
 			Logs.http().debug("sign is empty");
 			return false;

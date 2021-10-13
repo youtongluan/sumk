@@ -47,20 +47,20 @@ public class JettyHttpsServer extends JettyServer {
 			throw new SumkException(-2345345, msg);
 		}
 		sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
-		sslContextFactory.setKeyStorePassword(get("sumk.jetty.ssl.storePassword"));
-		sslContextFactory.setKeyManagerPassword(get("sumk.jetty.ssl.managerPassword"));
-		sslContextFactory.setCertAlias(get("sumk.jetty.ssl.alias"));
+		sslContextFactory.setKeyStorePassword(get("sumk.webserver.ssl.storePassword"));
+		sslContextFactory.setKeyManagerPassword(get("sumk.webserver.ssl.managerPassword"));
+		sslContextFactory.setCertAlias(get("sumk.webserver.ssl.alias"));
 
-		String v = AppInfo.get("sumk.jetty.ssl.storeType", null);
+		String v = AppInfo.get("sumk.webserver.ssl.storeType", null);
 		if (v != null) {
 			sslContextFactory.setKeyStoreType(v);
 		}
 
-		sslContextFactory.setTrustAll(AppInfo.getBoolean("sumk.jetty.ssl.trustAll", false));
+		sslContextFactory.setTrustAll(AppInfo.getBoolean("sumk.webserver.ssl.trustAll", false));
 
 		Logs.http().info("using https");
 		return new ConnectionFactory[] {
-				new SslConnectionFactory(sslContextFactory, AppInfo.get("sumk.jetty.ssl.protocol", "http/1.1")),
+				new SslConnectionFactory(sslContextFactory, AppInfo.get("sumk.webserver.ssl.protocol", "http/1.1")),
 				new HttpConnectionFactory() };
 	}
 
@@ -75,7 +75,7 @@ public class JettyHttpsServer extends JettyServer {
 	@Override
 	protected ServerConnector createConnector() throws Exception {
 		ServerConnector connector = super.createConnector();
-		connector.setDefaultProtocol(AppInfo.get("sumk.jetty.ssl.protocol", "SSL"));
+		connector.setDefaultProtocol(AppInfo.get("sumk.webserver.ssl.protocol", "SSL"));
 		return connector;
 	}
 

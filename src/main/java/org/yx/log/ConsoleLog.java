@@ -52,7 +52,7 @@ public class ConsoleLog extends SumkLogger {
 	}
 
 	private void show(LogLevel level, String msg, Object... args) {
-		msg = this.buildMessage(msg, args);
+		msg = LogKits.buildMessage(msg, args);
 		StringBuilder sb = new StringBuilder();
 		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ")

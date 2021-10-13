@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.Priority;
@@ -12,6 +13,7 @@ import org.yx.bean.FactoryBean;
 import org.yx.bean.IOC;
 import org.yx.bean.NamedBean;
 import org.yx.log.Log;
+import org.yx.main.StartContext;
 
 @Bean
 @Priority(20000)
@@ -38,7 +40,8 @@ public class EventBusFactory implements FactoryBean {
 		}
 		List<NamedBean> beans = new ArrayList<>();
 		for (String type : map.keySet()) {
-			EventBus bus = new EventBus(map.get(type));
+			Executor ex = StartContext.inst().getExecutor("sumk.event.executor." + type);
+			EventBus bus = new EventBus(map.get(type), ex);
 			beans.add(new NamedBean(type, bus));
 		}
 		return beans;

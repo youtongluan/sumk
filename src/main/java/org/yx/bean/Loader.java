@@ -58,16 +58,6 @@ public final class Loader {
 	}
 
 	public static Class<?> loadClass(String clz) throws ClassNotFoundException {
-		if (!clz.startsWith("org.") && !clz.startsWith("com.") && !clz.startsWith("net.") && !clz.startsWith("io.")) {
-			try {
-				return loader().loadClass("org.yx.".concat(clz));
-			} catch (Throwable e) {
-			}
-		}
-		return loadClassExactly(clz);
-	}
-
-	public static Class<?> loadClassExactly(String clz) throws ClassNotFoundException {
 		return loader().loadClass(clz);
 	}
 

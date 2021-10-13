@@ -26,6 +26,16 @@ public class RedisConfig extends GenericObjectPoolConfig {
 	private int db = 0;
 	private int connectionTimeout = 5000;
 	private int timeout = 2000;
+	private String user;
+
+	public String getUser() {
+		return user;
+	}
+
+	public void setUser(String user) {
+		this.user = user;
+	}
+
 	private String password;
 	private int maxAttempts = 3;
 	private String master;
@@ -109,8 +119,8 @@ public class RedisConfig extends GenericObjectPoolConfig {
 
 	@Override
 	public String toString() {
-		return "hosts=" + hosts + ", db=" + db + ", password=" + password + ", timeout=" + timeout + ", maxAttempts="
-				+ maxAttempts + " , " + super.toString();
+		return "hosts=" + hosts + ", db=" + db + ", user=" + user + ", password=" + password + ", timeout=" + timeout
+				+ ", maxAttempts=" + maxAttempts + " , " + super.toString();
 	}
 
 	public String getType() {

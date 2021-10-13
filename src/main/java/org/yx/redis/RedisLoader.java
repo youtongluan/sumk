@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.conf.SimpleBeanUtil;
 import org.yx.exception.SumkException;
@@ -59,7 +60,7 @@ public class RedisLoader {
 			RedisConfig config = createConfig(host, configMap);
 			Logs.redis().debug("{} : {}", name, config);
 
-			Redis redis = RedisSettings.getFactroy().apply(config);
+			Redis redis = IOC.getFirstBean(RedisFactory.class, false).create(config);
 			if ("*".equals(name) || "default".equals(name)) {
 				RedisPool.setDefaultRedis(redis);
 			} else {

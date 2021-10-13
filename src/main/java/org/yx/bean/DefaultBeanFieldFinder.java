@@ -56,7 +56,7 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 					bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
 		}
 		genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
-		Class<?> clz = Loader.loadClassExactly(genericName);
+		Class<?> clz = Loader.loadClass(genericName);
 		if (clz == Object.class) {
 			throw new SimpleSumkException(-23984568,
 					bean.getClass().getName() + "." + f.getName() + ": beanClz of @Inject in list type cannot be null");

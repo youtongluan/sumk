@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.yx.common.lock.Locker;
+import org.yx.common.sumk.map.ListMap;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.Base64;
@@ -30,7 +31,11 @@ import com.google.gson.Gson;
 
 public final class SBuilder {
 	public static class MapBuilder<T> {
-		private Map<String, T> map = new HashMap<>();
+		private final Map<String, T> map;
+
+		public MapBuilder(Map<String, T> map) {
+			this.map = map;
+		}
 
 		public MapBuilder<T> put(String key, T value) {
 			map.put(key, value);
@@ -43,11 +48,15 @@ public final class SBuilder {
 	}
 
 	public static <T> MapBuilder<T> map(Class<T> valueType) {
-		return new MapBuilder<>();
+		return new MapBuilder<>(new HashMap<String, T>());
+	}
+
+	public static <T> MapBuilder<T> listMap(Class<T> valueType) {
+		return new MapBuilder<>(new ListMap<String, T>());
 	}
 
 	public static MapBuilder<Object> map() {
-		return new MapBuilder<>();
+		return new MapBuilder<>(new HashMap<String, Object>());
 	}
 
 	public static MapBuilder<Object> map(String key, Object value) {

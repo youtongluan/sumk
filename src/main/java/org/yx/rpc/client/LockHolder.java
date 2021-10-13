@@ -65,7 +65,7 @@ public final class LockHolder {
 		return locks.size();
 	}
 
-	private static class LockTimeoutMonitor implements Runnable {
+	private static final class LockTimeoutMonitor implements Runnable {
 
 		private static final DelayQueue<DelayedObject> QUEUE = new DelayQueue<>();
 
@@ -91,7 +91,7 @@ public final class LockHolder {
 		}
 	}
 
-	private static class DelayedObject implements Delayed {
+	private static final class DelayedObject implements Delayed {
 
 		private final long endTime;
 		final String sn;

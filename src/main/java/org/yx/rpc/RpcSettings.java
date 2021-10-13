@@ -70,6 +70,14 @@ public final class RpcSettings {
 		return clientLogDisable;
 	}
 
+	public static long maxServerIdleTime() {
+		return AppInfo.getLong("sumk.rpc.server.idle", 1000L * 60 * 10);
+	}
+
+	public static long maxClientIdleTime() {
+		return AppInfo.getLong("sumk.rpc.client.idle", 1000L * 60 * 5);
+	}
+
 	public synchronized static void init() {
 		if (started) {
 			return;

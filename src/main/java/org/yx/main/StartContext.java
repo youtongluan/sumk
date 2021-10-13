@@ -17,6 +17,7 @@ package org.yx.main;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -112,11 +113,19 @@ public final class StartContext {
 		return (ThreadPoolExecutor) obj;
 	}
 
-	public ExecutorService getExecutorService(String name) {
+	public Executor getExecutor(String name) {
 		Object obj = map.get(name);
 		if (obj == null || !ExecutorService.class.isInstance(obj)) {
 			return SumkThreadPool.executor();
 		}
-		return (ExecutorService) obj;
+		return (Executor) obj;
+	}
+
+	public String getAppInfo(String key, String defaultV) {
+		Object v = map.get(key);
+		if (v instanceof String) {
+			return (String) v;
+		}
+		return AppInfo.get(key, defaultV);
 	}
 }

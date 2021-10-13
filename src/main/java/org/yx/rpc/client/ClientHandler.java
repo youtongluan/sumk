@@ -15,83 +15,34 @@
  */
 package org.yx.rpc.client;
 
-import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.FilterEvent;
-import org.yx.bean.IOC;
-import org.yx.conf.AppInfo;
-import org.yx.exception.SumkException;
 import org.yx.log.Log;
-import org.yx.rpc.codec.ProtocolDeserializer;
+import org.yx.rpc.BusinessHandler;
 import org.yx.rpc.server.Response;
+import org.yx.rpc.transport.TransportChannel;
 
-public class ClientHandler implements IoHandler {
-
-	private final ProtocolDeserializer deserializer;
-
-	public ClientHandler() {
-		deserializer = IOC.get(ProtocolDeserializer.class);
-	}
+public class ClientHandler implements BusinessHandler {
 
 	@Override
-	public void sessionCreated(IoSession session) throws Exception {
-
-	}
-
-	@Override
-	public void sessionOpened(IoSession session) throws Exception {
-
-	}
-
-	@Override
-	public void sessionClosed(IoSession session) throws Exception {
-
-	}
-
-	@Override
-	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
-		long time = System.currentTimeMillis() - session.getLastIoTime();
-		if (time > AppInfo.getLong("sumk.rpc.client.idle", 1000L * 60 * 5)) {
-			Log.get("sumk.rpc.client").info("rpc session {} {} for {}ms,closed by this client", session.getId(), status,
-					session.getLastIoTime(), time);
-			session.closeOnFlush();
-		}
-	}
-
-	@Override
-	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		Log.get("sumk.rpc.client").error(session + " throw exception", cause);
-
-	}
-
-	@Override
-	public void messageReceived(IoSession session, Object message) throws Exception {
-		Object obj = this.deserializer.deserialize(message);
-		if (obj == null) {
+	public void received(TransportChannel channel, Object message) {
+		if (message == null) {
 			return;
 		}
-		if (obj instanceof Response) {
-			Response resp = (Response) obj;
+		if (message instanceof Response) {
+			Response resp = (Response) message;
 			LockHolder.unLockAndSetResult(resp);
 			return;
 		}
-		throw new SumkException(458223, obj.getClass().getName() + " has not deserialized");
+		Log.get("sumk.rpc.client").warn("unkown client message type:{}", message.getClass().getName());
 	}
 
 	@Override
-	public void messageSent(IoSession session, Object message) throws Exception {
-
+	public void exceptionCaught(TransportChannel channel, Throwable exception) {
+		Log.get("sumk.rpc.client").error(channel + " throw exception", exception);
+		channel.closeNow();
 	}
 
 	@Override
-	public void inputClosed(IoSession session) throws Exception {
-		session.closeNow();
-	}
-
-	@Override
-	public void event(IoSession arg0, FilterEvent arg1) throws Exception {
-
+	public void closed(TransportChannel channel) {
 	}
 
 }

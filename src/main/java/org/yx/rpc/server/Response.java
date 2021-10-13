@@ -17,19 +17,27 @@ package org.yx.rpc.server;
 
 import java.io.Serializable;
 
+import org.yx.common.codec.DataStream;
+import org.yx.common.codec.StreamAble;
 import org.yx.exception.SoaException;
+import org.yx.exception.SumkException;
+import org.yx.rpc.codec.CodecKit;
+import org.yx.rpc.codec.Protocols;
+import org.yx.util.S;
 
-public class Response implements Serializable {
+public class Response implements StreamAble, Serializable {
 
-	private static final long serialVersionUID = 45678L;
+	private static final long serialVersionUID = 1L;
+	private static final byte BODY_TYPE_JSON = 1;
+	private static final byte BODY_TYPE_EXCEPTION = 2;
 
 	private String sn;
 	private String json;
 	private SoaException exception;
 
-	private long ms = -1;
+	private long _ms = -1;
 
-	private int clientAcceptedProtocol;
+	private int _clientProtocol;
 
 	public String sn() {
 		return sn;
@@ -40,7 +48,7 @@ public class Response implements Serializable {
 	}
 
 	public long serviceInvokeMilTime() {
-		return ms;
+		return _ms;
 	}
 
 	public void sn(String sn) {
@@ -52,7 +60,7 @@ public class Response implements Serializable {
 	}
 
 	public void serviceInvokeMilTime(long ms) {
-		this.ms = ms;
+		this._ms = ms;
 	}
 
 	public Response() {
@@ -74,12 +82,56 @@ public class Response implements Serializable {
 		return this.exception == null;
 	}
 
-	public int getClientAcceptedProtocol() {
-		return clientAcceptedProtocol;
+	public int getClientProtocol() {
+		return _clientProtocol;
 	}
 
-	public void setClientAcceptedProtocol(int clientAcceptedProtocol) {
-		this.clientAcceptedProtocol = clientAcceptedProtocol;
+	public void setClientProtocol(int clientAcceptedProtocol) {
+		this._clientProtocol = clientAcceptedProtocol;
 	}
 
+	public void writeTo(DataStream s) throws Exception {
+		s.writeInt(1, 1);
+		s.writePrefixedString(this.sn, 1);
+
+		s.writeInt(0, 1);
+		if (this.exception != null) {
+			s.writeInt(BODY_TYPE_EXCEPTION, 1);
+			String strException = S.json().toJson(exception);
+			s.writePrefixedString(strException, 4);
+			return;
+		}
+
+		s.writeInt(BODY_TYPE_JSON, 1);
+		s.writePrefixedString(json, 4);
+
+	}
+
+	public void readFrom(DataStream s) throws Exception {
+
+		int size = s.readInt(1);
+		this.sn = s.readPrefixedString(1);
+		CodecKit.skipPrefixedString(s, size - 1);
+
+		size = s.readInt(1);
+		CodecKit.skipPrefixedString(s, size);
+
+		int type = s.readInt(1);
+		switch (type) {
+		case BODY_TYPE_JSON:
+			this.json = s.readPrefixedString(4);
+			break;
+		case BODY_TYPE_EXCEPTION:
+			String ex = s.readPrefixedString(4);
+			this.exception = S.json().fromJson(ex, SoaException.class);
+			break;
+		default:
+			throw new SumkException(-45432239, "不支持resp的body类型：" + type);
+		}
+	}
+
+	@Override
+	public int getMessageType() {
+		return Protocols.RESPONSE;
+	}
 }

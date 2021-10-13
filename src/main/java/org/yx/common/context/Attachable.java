@@ -22,10 +22,8 @@ public interface Attachable {
 	/**
 	 * 设置上下文的附加属性
 	 * 
-	 * @param key
-	 *            key
-	 * @param value
-	 *            如果value为null，就相当于remove
+	 * @param key   序列化后的长度要在255以内
+	 * @param value 序列化后的长度要在255以内。如果value为null，就相当于remove
 	 */
 	void setAttachment(String key, String value);
 

@@ -33,14 +33,12 @@ public interface Plugin extends Ordered {
 	}
 
 	/**
-	 * 在所有的prepare()之后异步执行，它执行的时候，redis、db可能还没初始化完成。<BR>
-	 * 如果抛出异常，会导致应用启动失败
+	 * 在所有的prepare()之后异步执行。 如果抛出异常，会导致应用启动失败
 	 */
 	void startAsync();
 
 	/**
-	 * 在所有的startAsync()之后执行。<BR>
-	 * 如果抛出异常，会导致应用启动失败
+	 * 在所有的startAsync()之后执行。如果抛出异常，会导致应用启动失败
 	 */
 	default void afterStarted() {
 

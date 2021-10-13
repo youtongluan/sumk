@@ -16,6 +16,7 @@
 package org.yx.log;
 
 public final class LogKits {
+	private static final String DELIM_STR = "{}";
 
 	public static String shorterPrefix(String name, int maxLogNameLength) {
 		if (maxLogNameLength < 5 || name == null || name.length() <= maxLogNameLength) {
@@ -31,4 +32,35 @@ public final class LogKits {
 		return text.substring(0, maxLogNameLength - 2).concat("..");
 	}
 
+	public static String buildMessage(String msg, Object... args) {
+		if (msg == null || args == null || args.length == 0 || !msg.contains(DELIM_STR)) {
+			return msg;
+		}
+		StringBuilder sb = new StringBuilder(msg.length() + 50);
+
+		int argIndex = 0;
+		int start = 0;
+		int index = 0;
+		while (argIndex < args.length && (index = msg.indexOf(DELIM_STR, start)) >= 0) {
+			int escapeCount = 0;
+			for (int i = index - 1; i >= start; i--) {
+				if (msg.charAt(i) != '\\') {
+					break;
+				}
+				escapeCount++;
+			}
+			sb.append(msg.substring(start, index));
+			if (escapeCount % 2 == 0) {
+				sb.append(String.valueOf(args[argIndex]));
+				argIndex++;
+			} else {
+				sb.append(DELIM_STR);
+			}
+			start = index + 2;
+		}
+		if (start < msg.length()) {
+			sb.append(msg.substring(start));
+		}
+		return sb.toString();
+	}
 }

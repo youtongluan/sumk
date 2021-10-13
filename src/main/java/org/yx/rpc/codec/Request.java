@@ -15,7 +15,6 @@
  */
 package org.yx.rpc.codec;
 
-import org.yx.rpc.RpcJson;
 import org.yx.rpc.client.Req;
 
 public class Request extends Req {
@@ -31,13 +30,18 @@ public class Request extends Req {
 		return startInServer;
 	}
 
-	public static Request from(Req req) {
-
-		String json = RpcJson.operator().toJson(req);
-		Request request = RpcJson.operator().fromJson(json, Request.class);
-
-		request.setParams(req.protocol(), req.getParams());
-		return request;
+	public Request() {
 	}
 
+	public Request(Req req) {
+		this.protocol = req.protocol();
+		this.setApi(req.getApi());
+		this.setUserId(req.getUserId());
+		this.setFullSn(req.getSn(), req.getTraceId(), req.getSpanId());
+		this.setFrom(req.getFrom());
+		this.setStart(req.getStart());
+
+		this.setAttachments(req.getAttachments());
+		this.setParams(req.protocol(), req.getParams());
+	}
 }

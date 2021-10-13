@@ -34,8 +34,7 @@ public class Update extends ModifySqlBuilder {
 	private Map<String, Number> incrMap;
 
 	/**
-	 * @param update
-	 *            如果为false，则数据库主键不会被更新。默认为false。
+	 * @param update 如果为false，则数据库主键不会被更新。默认为false。
 	 * @return 当前对象
 	 */
 	public Update updateDBID(boolean update) {
@@ -45,8 +44,7 @@ public class Update extends ModifySqlBuilder {
 
 	/**
 	 * 
-	 * @param onOff
-	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * @param onOff 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
 	 * @return 当前对象
 	 */
 	public Update failIfPropertyNotMapped(boolean onOff) {
@@ -62,8 +60,7 @@ public class Update extends ModifySqlBuilder {
 	 * <LI><B>注意：如果pojo是map类型，那么它的null值是有效条件</B></LI>
 	 * </UL>
 	 * 
-	 * @param pojo
-	 *            bean类型或Map.如果是pojo对象，其中的null字段会被忽略掉
+	 * @param pojo bean类型或Map.如果是pojo对象，其中的null字段会被忽略掉
 	 * @return 当前对象
 	 */
 
@@ -77,8 +74,7 @@ public class Update extends ModifySqlBuilder {
 	}
 
 	/**
-	 * @param fullUpdate
-	 *            设置为true的话，整条记录全部更新，包括null字段。默认为false
+	 * @param fullUpdate 设置为true的话，整条记录全部更新，包括null字段。默认为false
 	 * @return 当前对象
 	 */
 	public Update fullUpdate(boolean fullUpdate) {
@@ -89,8 +85,7 @@ public class Update extends ModifySqlBuilder {
 	/**
 	 * 分表的情况下，设置分区名。这个方法只能调用一次
 	 * 
-	 * @param sub
-	 *            分区名
+	 * @param sub 分区名
 	 * @return 当前对象
 	 */
 	public Update partition(String sub) {
@@ -105,10 +100,9 @@ public class Update extends ModifySqlBuilder {
 	 * <LI>有可能只是单条记录变成这样，有可能是多条记录变成这样</LI>
 	 * </UL>
 	 * 
-	 * @param pojo
-	 *            Pojo或Map类型.如果是Map类型，要设置tableClass。
-	 *            <B>如果本表使用了缓存，并且没有where条件，本参数必须包含所有redis主键</B>
-	 *            <B>如果本字段包含在自增长里面，那它将会被排除掉</B>
+	 * @param pojo Pojo或Map类型.如果是Map类型，要设置tableClass。
+	 *             <B>如果本表使用了缓存，并且没有where条件，本参数必须包含所有redis主键</B>
+	 *             <B>如果本字段包含在自增长里面，那它将会被排除掉</B>
 	 * @return 当前对象
 	 */
 	@SuppressWarnings("unchecked")
@@ -242,10 +236,8 @@ public class Update extends ModifySqlBuilder {
 	/**
 	 * 增加或减少表中数字类型字段的值
 	 * 
-	 * @param fieldName
-	 *            需要增长或减少的字段的名字,不能是redis主键
-	 * @param v
-	 *            如果是减少，直接用负数就行了
+	 * @param fieldName 需要增长或减少的字段的名字,不能是redis主键
+	 * @param v         如果是减少，直接用负数就行了
 	 * @return 当前对象
 	 */
 	public Update incrNum(String fieldName, Number v) {

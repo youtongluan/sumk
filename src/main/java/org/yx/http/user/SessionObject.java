@@ -43,8 +43,7 @@ public class SessionObject {
 	/**
 	 * 如果设置了过期时间，即使用户一直在操作， 当达到过期时间后，session也会被清理
 	 * 
-	 * @param expiredTime
-	 *            最大的过期时间，精确到毫秒。null表示不自动清理
+	 * @param expiredTime 最大的过期时间，精确到毫秒。null表示不自动清理
 	 */
 	public void setExpiredTime(Long expiredTime) {
 		this.expiredTime = expiredTime;

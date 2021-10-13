@@ -132,6 +132,8 @@ public final class SumkThreadPool {
 
 			try {
 				target.run();
+			} catch (Throwable e) {
+				RawLog.error("sumk.thread", target + "执行失败，" + e.getLocalizedMessage(), e);
 			} finally {
 				this.working = 0;
 				lock.unlock();

@@ -32,7 +32,6 @@ import org.yx.db.event.QueryEvent;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.visit.RecordRepository;
-import org.yx.log.Log;
 
 @Bean
 public class SelectListener implements SumkListener {
@@ -43,7 +42,7 @@ public class SelectListener implements SumkListener {
 	}
 
 	@Override
-	public void listen(Object ev) {
+	public void listen(Object ev) throws Exception {
 		if (!(ev instanceof QueryEvent)) {
 			return;
 		}
@@ -53,49 +52,44 @@ public class SelectListener implements SumkListener {
 		if (pm == null || pm.isNoCache() || event.getResult() == null || ConnectionPool.get().existModifyEvent(pm)) {
 			return;
 		}
-		try {
-			List<Map<String, Object>> in = event.getIn();
-			if (in == null) {
-				return;
-			}
-			if (in.size() != 1) {
-				if (pm.isPrimeKeySameWithCache() && pm.getDatabaseIds().size() == 1
-						&& pm.cacheType() == CacheType.SINGLE) {
-					this.singleIdCache(pm, event.getResult());
-				}
-				return;
-			}
-
-			Map<String, Object> where = in.get(0);
-			if (!pm.isOnlyCacheID(where)) {
-				return;
-			}
-			String id = pm.getCacheID(where, false);
-			if (id == null) {
-				return;
-			}
-
-			List<Object> list = new ArrayList<>(4);
-			for (Object obj : event.getResult()) {
-				if (id.equals(pm.getCacheID(obj, false))) {
-					list.add(obj);
-				}
-			}
-			if (list.isEmpty()) {
-				return;
-			}
-
-			if (pm.cacheType() == CacheType.LIST) {
-				RecordRepository.set(pm, id, DBJson.operator().toJson(list));
-				return;
-			}
-			if (list.size() != 1 || list.get(0) == null) {
-				return;
-			}
-			RecordRepository.set(pm, id, DBJson.operator().toJson(list.get(0)));
-		} catch (Exception e) {
-			Log.printStack("sumk.db.listener", e);
+		List<Map<String, Object>> in = event.getIn();
+		if (in == null) {
+			return;
 		}
+		if (in.size() != 1) {
+			if (pm.isPrimeKeySameWithCache() && pm.getDatabaseIds().size() == 1 && pm.cacheType() == CacheType.SINGLE) {
+				this.singleIdCache(pm, event.getResult());
+			}
+			return;
+		}
+
+		Map<String, Object> where = in.get(0);
+		if (!pm.isOnlyCacheID(where)) {
+			return;
+		}
+		String id = pm.getCacheID(where, false);
+		if (id == null) {
+			return;
+		}
+
+		List<Object> list = new ArrayList<>(4);
+		for (Object obj : event.getResult()) {
+			if (id.equals(pm.getCacheID(obj, false))) {
+				list.add(obj);
+			}
+		}
+		if (list.isEmpty()) {
+			return;
+		}
+
+		if (pm.cacheType() == CacheType.LIST) {
+			RecordRepository.set(pm, id, DBJson.operator().toJson(list));
+			return;
+		}
+		if (list.size() != 1 || list.get(0) == null) {
+			return;
+		}
+		RecordRepository.set(pm, id, DBJson.operator().toJson(list.get(0)));
 	}
 
 	private void singleIdCache(PojoMeta pm, List<?> result) throws Exception {

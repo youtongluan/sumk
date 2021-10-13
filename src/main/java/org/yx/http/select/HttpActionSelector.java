@@ -28,20 +28,16 @@ public interface HttpActionSelector {
 	/**
 	 * 用于初始化，在sumk启动的时候调用一次。
 	 * 
-	 * @param infos
-	 *            里面的key是解析后的act，跟@Web中定义的格式可能不同
-	 * @param nameResolver
-	 *            名称解析器
+	 * @param infos        里面的key是解析后的act，跟@Web中定义的格式可能不同
+	 * @param nameResolver 名称解析器
 	 */
 	void init(List<StringEntity<HttpActionNode>> infos, Function<String, String> nameResolver);
 
 	/**
 	 * 根据真正的act获取HttpActionInfo。对于url含参数等场景，可以返回HttpActionInfo子类
 	 * 
-	 * @param act
-	 *            解析后的act
-	 * @param method
-	 *            http请求的方法，比如GET、POST，参加HttpMethod接口
+	 * @param act    解析后的act
+	 * @param method http请求的方法，比如GET、POST，参加HttpMethod接口
 	 * @return 如果没找到，可以返回默认servlet，也可以返回null
 	 */
 	HttpActionInfo getHttpInfo(String act, String method);

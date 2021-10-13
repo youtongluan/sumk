@@ -15,7 +15,6 @@
  */
 package org.yx.rpc.server.start;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +23,6 @@ import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.slf4j.Logger;
-import org.yx.bean.IOC;
 import org.yx.common.Host;
 import org.yx.common.Lifecycle;
 import org.yx.conf.AppInfo;
@@ -36,14 +34,14 @@ import org.yx.rpc.Profile;
 import org.yx.rpc.RpcActions;
 import org.yx.rpc.ZKConst;
 import org.yx.rpc.data.ZkDataOperators;
-import org.yx.rpc.server.MinaServer;
-import org.yx.rpc.server.RequestHandler;
+import org.yx.rpc.transport.TransportServer;
+import org.yx.rpc.transport.Transports;
 import org.yx.util.ZkClientHelper;
 
 public class SoaServer implements Lifecycle {
 
 	private volatile boolean started = false;
-	private MinaServer server;
+	private TransportServer server;
 	private String zkUrl;
 	private Host host;
 	private boolean enable;
@@ -107,9 +105,8 @@ public class SoaServer implements Lifecycle {
 	}
 
 	protected int startServer(String ip, int port) throws Exception {
-		List<RequestHandler> handlers = IOC.getBeans(RequestHandler.class);
-		server = new MinaServer(ip, port, handlers);
-		server.run();
+		server = Transports.factory().bind(ip, port);
+		server.start();
 		return server.getPort();
 	}
 
@@ -143,7 +140,7 @@ public class SoaServer implements Lifecycle {
 		if (this.server != null) {
 			try {
 				this.server.stop();
-			} catch (IOException e) {
+			} catch (Exception e) {
 				logger.error(e.getLocalizedMessage(), e);
 			}
 		}

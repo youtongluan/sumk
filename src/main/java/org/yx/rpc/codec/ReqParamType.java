@@ -17,9 +17,7 @@ package org.yx.rpc.codec;
 
 public interface ReqParamType {
 
-	int REQ_PARAM_JSON = 0x0100;
+	int REQ_PARAM_JSON = 0x01_00_00;
 
-	int REQ_PARAM_ORDER = 0x0200;
-
-	int REQ_PARAM_BYTES = 0x0400;
+	int REQ_PARAM_ORDER = 0x02_00_00;
 }

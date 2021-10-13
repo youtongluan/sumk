@@ -29,7 +29,6 @@ import org.yx.db.event.InsertEvent;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.visit.RecordRepository;
-import org.yx.log.Log;
 
 @Bean
 public class InsertListener implements SumkListener {
@@ -45,30 +44,26 @@ public class InsertListener implements SumkListener {
 	}
 
 	@Override
-	public void listen(Object ev) {
+	public void listen(Object ev) throws Exception {
 		if (!DBSettings.toCache() || !(ev instanceof InsertEvent)) {
 			return;
 		}
 		InsertEvent event = (InsertEvent) ev;
-		try {
-			PojoMeta pm = event.getTableMeta();
-			List<Map<String, Object>> list = event.getPojos();
-			if (pm == null || pm.isNoCache() || list == null) {
+		PojoMeta pm = event.getTableMeta();
+		List<Map<String, Object>> list = event.getPojos();
+		if (pm == null || pm.isNoCache() || list == null) {
+			return;
+		}
+		for (Map<String, Object> map : list) {
+			String id = pm.getCacheID(map, false);
+			if (id == null) {
+				continue;
+			}
+			if (pm.cacheType() == CacheType.LIST) {
+				RecordRepository.del(pm, id);
 				return;
 			}
-			for (Map<String, Object> map : list) {
-				String id = pm.getCacheID(map, false);
-				if (id == null) {
-					continue;
-				}
-				if (pm.cacheType() == CacheType.LIST) {
-					RecordRepository.del(pm, id);
-					return;
-				}
-				RecordRepository.set(pm, id, DBJson.operator().toJson(map));
-			}
-		} catch (Exception e) {
-			Log.printStack("sumk.db.listener", e);
+			RecordRepository.set(pm, id, DBJson.operator().toJson(map));
 		}
 	}
 

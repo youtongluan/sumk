@@ -100,7 +100,7 @@ public class HttpPlugin implements Plugin {
 	}
 
 	protected void initServer(int port) throws Exception {
-		String nojetty = StartConstants.NOJETTY;
+		String nojetty = StartConstants.EMBED_WEBSERVER_DISABLE;
 		if (StartContext.inst().get(nojetty) != null || AppInfo.getBoolean(nojetty, false)) {
 			return;
 		}
@@ -108,7 +108,7 @@ public class HttpPlugin implements Plugin {
 		String httpServerClass = StringUtil.isEmpty(AppInfo.get(Const.KEY_STORE_PATH)) ? "JettyServer"
 				: "JettyHttpsServer";
 		String hs = AppInfo.get("sumk.http.starter.class", "org.yx.http.start." + httpServerClass);
-		Class<?> httpClz = Loader.loadClassExactly(hs);
+		Class<?> httpClz = Loader.loadClass(hs);
 		Constructor<?> c = httpClz.getConstructor(int.class);
 		this.server = (Lifecycle) c.newInstance(port);
 	}
@@ -143,7 +143,7 @@ public class HttpPlugin implements Plugin {
 			return false;
 		}
 		try {
-			Loader.loadClassExactly("javax.servlet.http.HttpServlet");
+			Loader.loadClass("javax.servlet.http.HttpServlet");
 		} catch (Exception e) {
 			Logs.http().warn("javax-servlet-api-**.jar is not imported");
 			return false;

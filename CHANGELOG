@@ -295,3 +295,19 @@ v2.10.2
 5、@Inject增加value属性，该属性强制指定注入bean的名称
 6、去掉RedisUtil工具类(基本也用不到)，增加Redis2接口
 
+v3.0.0
+1、Redis2接口改为Redis3x，并增加增加发布订阅方法。依赖的jedis从2.x升级到3.7.0
+2、监听器增加异步功能，同时支持异步发布事件以及异步监听两种模式
+3、配置文件的sumk.jetty开头的配置改为sumk.webserver开头
+4、列表为基础的Map替代HashMap作为小Map使用，以压缩内存的的占用。从SBuilder.listMap()可以获取到
+5、slf4j支持\\{}转义
+6、除data外，其它http rest请求的paramter名称都在前面加_，比如sign改为_sign，这些参数不常用
+7、重构rpc的序列化协议，并把mina改为netty。mina的支持移到sumk-rpc-mina项目中
+8、升级了许多依赖包的版本，这些依赖包用原来的版本也是兼容的
+
+与2.x不兼容的地方
+1、两者的rpc协议不同，不能互相通信
+2、http的sign、act、plainKey参数前面增加了_
+3、Redis2接口改为Redis3x
+
+

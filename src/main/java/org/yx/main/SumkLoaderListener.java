@@ -51,7 +51,7 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 /**
- * 如果使用tomcat等外部容器启动sumk，需要将sumk.http.nojetty设为1，并在web.xml中添加：<BR>
+ * 如果使用tomcat等外部容器启动sumk，需要将sumk.webserver.disable设为1，并在web.xml中添加：<BR>
  * &lt;listener&gt;<br>
  * &nbsp;&nbsp;
  * &lt;listener-class&gt;org.yx.main.SumkLoaderListener&lt;/listener-class&gt;
@@ -67,7 +67,7 @@ public class SumkLoaderListener implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		Logs.http().debug("contextInitialized");
 		try {
-			SumkServer.start(Collections.singleton(StartConstants.NOJETTY));
+			SumkServer.start(Collections.singleton(StartConstants.EMBED_WEBSERVER_DISABLE));
 			if (!SumkServer.isHttpEnable()) {
 				return;
 			}
@@ -205,7 +205,7 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	private void addListener(ServletContext context, List<String> intfs) throws ClassNotFoundException {
 		for (String intf : intfs) {
-			Class<?> clz = Loader.loadClassExactly(intf);
+			Class<?> clz = Loader.loadClass(intf);
 			if (!EventListener.class.isAssignableFrom(clz)) {
 				Logs.http().info(intf + " is not implement EventListener");
 				continue;

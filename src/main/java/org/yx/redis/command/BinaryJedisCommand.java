@@ -31,19 +31,9 @@ public interface BinaryJedisCommand {
 
 	String type(byte[] key);
 
-	Long expire(byte[] key, int seconds);
-
 	Long pexpire(byte[] key, long milliseconds);
 
 	Long pttl(byte[] key);
-
-	Long touch(byte[] key);
-
-	Boolean setbit(byte[] key, long offset, boolean value);
-
-	Boolean setbit(byte[] key, long offset, byte[] value);
-
-	Boolean getbit(byte[] key, long offset);
 
 	Long setrange(byte[] key, long offset, byte[] value);
 
@@ -64,8 +54,6 @@ public interface BinaryJedisCommand {
 	Boolean hexists(byte[] key, byte[] field);
 
 	Long hdel(byte[] key, byte[]... field);
-
-	Long hlen(byte[] key);
 
 	Set<byte[]> hkeys(byte[] key);
 

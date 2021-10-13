@@ -56,8 +56,6 @@ public interface JedisCommand {
 
 	Boolean setbit(String key, long offset, boolean value);
 
-	Boolean setbit(String key, long offset, String value);
-
 	Boolean getbit(String key, long offset);
 
 	Long setrange(String key, long offset, String value);
@@ -233,8 +231,6 @@ public interface JedisCommand {
 	Long bitcount(String key);
 
 	Long bitcount(String key, long start, long end);
-
-	Long bitpos(String key, boolean value);
 
 	Long pfadd(String key, String... elements);
 

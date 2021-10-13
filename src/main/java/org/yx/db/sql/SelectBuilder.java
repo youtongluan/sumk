@@ -67,8 +67,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	/**
 	 * 组装分页，也就是offset和limit
 	 * 
-	 * @param sql
-	 *            已组装出来的sql
+	 * @param sql 已组装出来的sql
 	 */
 	protected void buildLimitAndOffset(StringBuilder sql) {
 

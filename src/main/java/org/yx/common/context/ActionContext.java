@@ -18,7 +18,9 @@ package org.yx.common.context;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.yx.common.Executable;
 import org.yx.exception.SumkException;
+import org.yx.log.Log;
 import org.yx.main.SumkServer;
 
 public final class ActionContext implements org.yx.common.context.Attachable, Cloneable {
@@ -75,6 +77,32 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 		ActionContext c = new ActionContext(logContext);
 		holder.set(c);
 		return c;
+	}
+
+	public static Runnable wrap(Runnable r) {
+		ActionContext ac = ActionContext.current();
+		return () -> {
+			ActionContext.store(ac);
+			try {
+				r.run();
+			} finally {
+				ActionContext.remove();
+			}
+		};
+	}
+
+	public static Runnable wrap(Executable r) {
+		ActionContext ac = ActionContext.current();
+		return () -> {
+			ActionContext.store(ac);
+			try {
+				r.run();
+			} catch (Throwable e) {
+				Log.get("sumk.execute").error(r + "异步执行出错," + e.getLocalizedMessage(), e);
+			} finally {
+				ActionContext.remove();
+			}
+		};
 	}
 
 	public static void store(ActionContext c) {

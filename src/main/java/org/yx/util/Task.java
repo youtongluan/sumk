@@ -19,6 +19,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.yx.common.Executable;
 import org.yx.common.context.ActionContext;
 import org.yx.main.SumkThreadPool;
 
@@ -38,15 +39,7 @@ public final class Task {
 		return scheduleAtFixedRate(job, unit.toMillis(delay), unit.toMillis(period));
 	}
 
-	public static void executeWithCurrentContext(Executor ex, Runnable r) {
-		ActionContext ac = ActionContext.current();
-		ex.execute(() -> {
-			ActionContext.store(ac);
-			try {
-				r.run();
-			} finally {
-				ActionContext.remove();
-			}
-		});
+	public static void executeWithCurrentContext(Executor ex, Executable r) {
+		ex.execute(ActionContext.wrap(r));
 	}
 }

@@ -51,7 +51,7 @@ public final class ClassScaner {
 		Set<String> names = new HashSet<>(clzNames);
 		Set<Class<? extends T>> set = new HashSet<>();
 		for (String className : names) {
-			Class<?> clz = Loader.loadClassExactly(className);
+			Class<?> clz = Loader.loadClass(className);
 			if (baseClz.isAssignableFrom(clz) && (!clz.isInterface())
 					&& ((clz.getModifiers() & Modifier.ABSTRACT) == 0)) {
 				set.add((Class<? extends T>) clz);

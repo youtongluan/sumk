@@ -115,7 +115,7 @@ public final class HttpSettings {
 
 	public static boolean allowPlain(HttpServletRequest request) {
 		String plainKey = HttpSettings.plainKey;
-		return plainKey != null && plainKey.equals(request.getParameter("plainKey"));
+		return plainKey != null && plainKey.equals(request.getParameter("_plainKey"));
 	}
 
 	public static Map<String, String> responseHeaders() {

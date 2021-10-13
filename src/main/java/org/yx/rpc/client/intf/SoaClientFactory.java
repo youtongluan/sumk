@@ -98,7 +98,7 @@ public class SoaClientFactory implements FactoryBean {
 		Set<String> clzNames = this.getInterfaceNames();
 		for (String c : clzNames) {
 			try {
-				Class<?> intf = Loader.loadClassExactly(c);
+				Class<?> intf = Loader.loadClass(c);
 				if (!intf.isInterface() || (intf.getModifiers() & Modifier.PUBLIC) == 0) {
 					continue;
 				}

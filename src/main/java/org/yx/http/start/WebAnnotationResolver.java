@@ -23,9 +23,9 @@ import java.util.function.Predicate;
 
 import org.yx.annotation.spec.Specs;
 import org.yx.annotation.spec.WebSpec;
-import org.yx.asm.ParamPojos;
 import org.yx.asm.AsmUtils;
 import org.yx.asm.MethodParamInfo;
+import org.yx.asm.ParamPojos;
 import org.yx.bean.BeanKit;
 import org.yx.common.StringEntity;
 import org.yx.common.matcher.BooleanMatcher;
@@ -96,7 +96,7 @@ public class WebAnnotationResolver {
 				continue;
 			}
 			for (String name : names) {
-				infos.add(new StringEntity<>(name, node));
+				infos.add(StringEntity.create(name, node));
 			}
 		}
 		return infos;

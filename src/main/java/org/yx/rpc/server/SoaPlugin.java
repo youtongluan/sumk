@@ -31,6 +31,7 @@ import org.yx.main.SumkServer;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.server.impl.RpcHandler;
 import org.yx.rpc.server.start.SoaAnnotationResolver;
+import org.yx.rpc.transport.Transports;
 
 @Bean
 public class SoaPlugin implements Plugin {
@@ -47,10 +48,11 @@ public class SoaPlugin implements Plugin {
 		try {
 			RpcSettings.init();
 			resolveSoaAnnotation(InnerIOC.beans());
+			Transports.init();
 			RpcHandler.init();
 
 			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
-			Class<?> clz = Loader.loadClassExactly(clzName);
+			Class<?> clz = Loader.loadClass(clzName);
 			Constructor<?> c = clz.getConstructor(int.class);
 			server = (Lifecycle) c.newInstance(port);
 		} catch (Throwable e) {

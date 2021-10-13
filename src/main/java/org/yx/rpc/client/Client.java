@@ -21,7 +21,6 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.context.ActionContext;
 import org.yx.common.route.Router;
@@ -35,10 +34,11 @@ import org.yx.rpc.RpcJson;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.client.route.RpcRoutes;
-import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.Request;
 import org.yx.rpc.server.LocalRequestHandler;
 import org.yx.rpc.server.Response;
+import org.yx.rpc.transport.RpcWriteFuture;
+import org.yx.rpc.transport.TransportClient;
 import org.yx.util.UUIDSeed;
 
 public final class Client {
@@ -70,8 +70,7 @@ public final class Client {
 	/**
 	 * 设置发送的尝试次数。只有发送失败会重试，其它的不会
 	 * 
-	 * @param tryCount
-	 *            尝试次数，包含第一次发送
+	 * @param tryCount 尝试次数，包含第一次发送
 	 * @return 当前对象
 	 */
 	public Client tryCount(int tryCount) {
@@ -82,8 +81,7 @@ public final class Client {
 	/**
 	 * 设置直连url不能用的时候，是否使用注册中心上的地址
 	 * 
-	 * @param backup
-	 *            失败时是否启用注册中心上的地址
+	 * @param backup 失败时是否启用注册中心上的地址
 	 * @return 当前对象
 	 */
 	public Client backup(boolean backup) {
@@ -107,7 +105,14 @@ public final class Client {
 		}
 		String[] params = new String[args.length];
 		for (int i = 0; i < args.length; i++) {
-			params[i] = RpcJson.client().toJson(args[i]);
+			Object arg = args[i];
+			if (arg == null) {
+				params[i] = null;
+			} else if (arg.getClass() == String.class) {
+				params[i] = (String) arg;
+			} else {
+				params[i] = RpcJson.client().toJson(arg);
+			}
 		}
 		this.params = params;
 		this.paramType = ParamType.JSONARRAY;
@@ -136,7 +141,6 @@ public final class Client {
 		req.setUserId(context.userId());
 		req.setApi(this.api);
 		req.setFrom(Rpc.appId());
-		req.initAcceptResponseTypes(Protocols.RESPONSE_ACCEPT_TYPES);
 
 		req.setAttachments(context.attachmentView());
 		return req;
@@ -220,9 +224,9 @@ public final class Client {
 		}
 		locker.url(url);
 		req.setServerProtocol(RpcRoutes.getServerProtocol(url));
-		WriteFuture f = null;
+		RpcWriteFuture f = null;
 		try {
-			ReqSession reqSession = ReqSessionHolder.getSession(url);
+			TransportClient reqSession = TransportClientHolder.getSession(url);
 			LockHolder.register(locker, endTime);
 			f = reqSession.write(req);
 		} catch (Exception e) {
@@ -246,7 +250,7 @@ public final class Client {
 			return null;
 		}
 
-		Request request = Request.from(req);
+		Request request = new Request(req);
 		req = null;
 
 		ActionContext context = ActionContext.current().clone();

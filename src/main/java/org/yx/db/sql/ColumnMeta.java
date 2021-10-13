@@ -43,7 +43,8 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 			this.columnOrder = c.order();
 		}
 		this.dbColumn = (c == null || StringUtil.isEmpty(c.value()))
-				? DBNameResolvers.getColumnNameResolver().apply(field.getName()) : c.value();
+				? DBNameResolvers.getColumnNameResolver().apply(field.getName())
+				: c.value();
 	}
 
 	public boolean isDBID() {

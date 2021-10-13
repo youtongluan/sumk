@@ -16,7 +16,7 @@
 package org.yx.rpc.client;
 
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
@@ -26,7 +26,9 @@ import org.yx.main.StartContext;
 import org.yx.main.SumkThreadPool;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.client.route.ZkRouteParser;
+import org.yx.rpc.transport.Transports;
 import org.yx.util.S;
+import org.yx.util.Task;
 
 public final class Rpc {
 	private Rpc() {
@@ -40,9 +42,9 @@ public final class Rpc {
 		return appId;
 	}
 
-	private static ExecutorService clientExecutor = SumkThreadPool.executor();
+	private static Executor clientExecutor = SumkThreadPool.executor();
 
-	public static ExecutorService clientExecutor() {
+	public static Executor clientExecutor() {
 		return clientExecutor;
 	}
 
@@ -57,7 +59,7 @@ public final class Rpc {
 		try {
 			appId = AppInfo.appId("sumk");
 			RpcSettings.init();
-			Rpc.clientExecutor = StartContext.inst().getExecutorService("sumk.rpc.client.executor");
+			Rpc.clientExecutor = StartContext.inst().getExecutor("sumk.rpc.client.executor");
 			String zkUrl = AppInfo.getClinetZKUrl();
 			if (zkUrl != null) {
 				Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
@@ -65,7 +67,9 @@ public final class Rpc {
 			} else {
 				Logs.rpc().warn("##因为没有配置{},所以只能调用本机的微服务接口##", Const.ZK_URL);
 			}
-			ReqSession.init();
+			Transports.init();
+			Transports.factory().initClient();
+			Task.scheduleAtFixedRate(TransportClientHolder::cleanReqSession, 60_000, 60_000);
 			strated = true;
 		} catch (Exception e) {
 			throw SumkException.wrap(e);
@@ -80,15 +84,11 @@ public final class Rpc {
 	 * 根据参数顺序调用rpc方法<BR>
 	 * 参数对象是原始的参数对象，不需要进行gson转化
 	 * 
-	 * @param api
-	 *            注册的接口名称，如a.b.c
-	 * @param args
-	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型。
+	 * @param api  注册的接口名称，如a.b.c
+	 * @param args 支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型。
 	 * @return json格式的服务器响应结果
-	 * @throws org.yx.exception.SoaException
-	 *             rpc异常
-	 * @throws org.yx.exception.BizException
-	 *             业务异常
+	 * @throws org.yx.exception.SoaException rpc异常
+	 * @throws org.yx.exception.BizException 业务异常
 	 */
 	public static String call(String api, Object... args) {
 		return callAsync(api, args).getOrException();
@@ -116,10 +116,8 @@ public final class Rpc {
 	/**
 	 * 根据参数顺序<b>异步</b>调用rpc方法
 	 * 
-	 * @param api
-	 *            注册的接口名称，如a.b.c
-	 * @param args
-	 *            支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
+	 * @param api  注册的接口名称，如a.b.c
+	 * @param args 支持泛型，比如List&lt;Integer&gt;之类的。但不提倡使用泛型
 	 * @return json格式的服务器响应结果
 	 */
 	public static RpcFuture callAsync(String api, Object... args) {

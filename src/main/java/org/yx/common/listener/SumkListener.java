@@ -20,18 +20,18 @@ import java.util.List;
 
 import org.yx.common.Ordered;
 
+/**
+ * 异步执行使用ConcurrentSumkListener
+ */
 public interface SumkListener extends Ordered {
 
 	Collection<String> acceptType();
 
-	default void listenBatch(List<?> events) {
+	default void listenBatch(List<?> events) throws Exception {
 		for (Object event : events) {
-			if (event == null) {
-				continue;
-			}
 			this.listen(event);
 		}
 	}
 
-	void listen(Object event);
+	void listen(Object event) throws Exception;
 }

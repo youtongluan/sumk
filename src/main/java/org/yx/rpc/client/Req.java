@@ -17,60 +17,48 @@ package org.yx.rpc.client;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.StringJoiner;
 
+import org.yx.common.codec.DataStream;
+import org.yx.common.codec.StreamAble;
+import org.yx.common.sumk.map.ListMap;
+import org.yx.conf.Const;
+import org.yx.rpc.codec.CodecKit;
 import org.yx.rpc.codec.Protocols;
 import org.yx.rpc.codec.ReqParamType;
+import org.yx.util.CollectionUtil;
 
-public class Req implements Serializable {
+public class Req implements StreamAble, Serializable {
 
 	private static final long serialVersionUID = 123L;
 
-	private String u;
+	private String api;
 
-	private String n;
+	private String userId;
 
-	private transient String sn;
+	private String sn;
 
-	private transient String spanId;
+	private String spanId;
 
-	private transient String traceId;
+	private String traceId;
 
-	private transient Object params;
+	private Object params;
 
-	private String a;
+	private String from;
 
-	private String f;
+	private long startTime;
 
-	private long s;
+	protected int protocol = Const.SUMK_VERSION;
 
-	protected int z;
+	private int _serverProtocol;
 
-	private transient int serverProtocol;
-
-	private Map<String, String> t;
-
-	private void parseSn() {
-		if (n == null) {
-			this.sn = "";
-			return;
-		}
-		String[] ss = n.split(",", 3);
-		this.sn = ss[0];
-		this.traceId = ss.length < 2 ? this.sn : ss[1];
-		this.spanId = ss.length < 3 ? "#" : ss[2];
-		if (this.traceId == null || this.traceId.length() == 0) {
-			this.traceId = sn;
-		}
-	}
+	private Map<String, String> attachments;
 
 	public void setFullSn(String sn, String traceId, String spanId) {
-		StringJoiner joiner = new StringJoiner(",");
-		joiner.add(Objects.requireNonNull(sn));
-		joiner.add(traceId == null ? "" : traceId);
-		joiner.add(Objects.requireNonNull(spanId));
-		this.n = joiner.toString();
+		this.sn = Objects.requireNonNull(sn);
+		this.traceId = traceId;
+		this.spanId = Objects.requireNonNull(spanId);
 	}
 
 	public String getJsonedParam() {
@@ -83,73 +71,69 @@ public class Req implements Serializable {
 	}
 
 	private void setParamType(int type) {
-		int p = this.z & (~Protocols.REQUEST_PARAM_TYPES);
-		this.z = p | type;
+		int p = this.protocol & (~Protocols.REQUEST_PARAM_TYPES);
+		this.protocol = p | type;
 	}
 
 	public Object getParams() {
 		return this.params;
 	}
 
+	/**
+	 * 数组方式传参才有，否则为null
+	 * 
+	 * @return 如果参数是null,返回的也是null，如果是String类型，就是参数本身，否则是参数的json
+	 */
 	public String[] getParamArray() {
 		return this.hasFeature(ReqParamType.REQ_PARAM_ORDER) ? (String[]) params : null;
 	}
 
 	public long getStart() {
-		return s;
+		return startTime;
 	}
 
 	public void setStart(long start) {
-		this.s = start;
+		this.startTime = start;
 	}
 
 	public String getSn() {
-		if (sn == null) {
-			parseSn();
-		}
 		return sn;
 	}
 
 	public String getTraceId() {
-		if (sn == null) {
-			parseSn();
-		}
 		return this.traceId;
 	}
 
 	public String getSpanId() {
-		if (sn == null) {
-			parseSn();
-		}
 		return this.spanId;
 	}
 
 	public String getApi() {
-		return a;
+		return api;
 	}
 
 	public void setApi(String api) {
-		this.a = api;
+		this.api = api;
 	}
 
 	public String getFrom() {
-		return f;
+		return from;
 	}
 
 	public void setFrom(String src) {
-		this.f = src;
+		this.from = src;
 	}
 
 	public void addFeature(int feature) {
-		this.z |= feature;
+		this.protocol |= feature;
 	}
 
 	public boolean hasFeature(int feature) {
-		return Protocols.hasFeature(z, feature);
+		return Protocols.hasFeature(protocol, feature);
 	}
 
 	public int protocol() {
-		return this.z;
+		return this.protocol;
 	}
 
 	public void setTest(boolean b) {
@@ -161,36 +145,97 @@ public class Req implements Serializable {
 	}
 
 	public String getUserId() {
-		return this.u;
+		return this.userId;
 	}
 
 	public void setUserId(String userId) {
-		this.u = userId;
+		this.userId = userId;
 	}
 
 	public Map<String, String> getAttachments() {
-		return t;
+		return attachments;
 	}
 
 	public void setAttachments(Map<String, String> attachments) {
-		this.t = attachments;
-	}
-
-	public void initAcceptResponseTypes(int protocol) {
-		protocol &= Protocols.RESPONSE_FULL_TYPES;
-		this.z |= protocol;
-	}
-
-	public int getAcceptResponseTypes() {
-		return this.z & Protocols.RESPONSE_FULL_TYPES;
+		this.attachments = attachments == null ? null : CollectionUtil.unmodifyMap(attachments);
 	}
 
 	public int getServerProtocol() {
-		return serverProtocol;
+		return _serverProtocol;
 	}
 
 	public void setServerProtocol(int serverProtocol) {
-		this.serverProtocol = serverProtocol;
+		this._serverProtocol = serverProtocol;
 	}
 
+	public void writeTo(DataStream s) throws Exception {
+		s.writeInt(8, 1);
+		s.writePrefixedString(Integer.toString(this.protocol, Character.MAX_RADIX), 1);
+		s.writePrefixedString(this.api, 1);
+		s.writePrefixedString(this.userId, 1);
+		s.writePrefixedString(this.sn, 1);
+		s.writePrefixedString(this.traceId, 1);
+		s.writePrefixedString(this.spanId, 1);
+		s.writePrefixedString(this.from, 1);
+		s.writePrefixedString(Long.toString(this.startTime, Character.MAX_RADIX), 1);
+
+		int size = this.attachments == null ? 0 : this.attachments.size();
+		s.writeInt(size, 1);
+		if (size > 0) {
+			for (Entry<String, String> en : this.attachments.entrySet()) {
+				s.writePrefixedString(en.getKey(), 1);
+				s.writePrefixedString(en.getValue(), 1);
+			}
+		}
+
+		if (this.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
+			s.writePrefixedString(this.getJsonedParam(), 4);
+		} else {
+			String[] ps = this.getParamArray();
+			s.writeInt(ps.length, 1);
+			for (String p : ps) {
+				s.writePrefixedString(p, 4);
+			}
+		}
+	}
+
+	public void readFrom(DataStream s) throws Exception {
+
+		int size = s.readInt(1);
+		this.protocol = Integer.parseInt(s.readPrefixedString(1), Character.MAX_RADIX);
+		this.api = s.readPrefixedString(1);
+		this.userId = s.readPrefixedString(1);
+		this.sn = s.readPrefixedString(1);
+		this.traceId = s.readPrefixedString(1);
+		this.spanId = s.readPrefixedString(1);
+		this.from = s.readPrefixedString(1);
+		this.startTime = Long.parseLong(s.readPrefixedString(1), Character.MAX_RADIX);
+		CodecKit.skipPrefixedString(s, size - 8);
+
+		size = s.readInt(1);
+		if (size > 0) {
+			Map<String, String> map = new ListMap<>();
+			for (int i = 0; i < size; i++) {
+				map.put(s.readPrefixedString(1), s.readPrefixedString(1));
+			}
+			this.attachments = CollectionUtil.unmodifyMap(map);
+		}
+
+		if (this.hasFeature(ReqParamType.REQ_PARAM_JSON)) {
+			this.params = s.readPrefixedString(4);
+		} else {
+			size = s.readInt(1);
+			String[] ps = new String[size];
+			for (int i = 0; i < size; i++) {
+				ps[i] = s.readPrefixedString(4);
+			}
+			this.params = ps;
+		}
+
+	}
+
+	@Override
+	public int getMessageType() {
+		return Protocols.REQUEST;
+	}
 }

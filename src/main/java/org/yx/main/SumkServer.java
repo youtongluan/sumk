@@ -74,7 +74,7 @@ public final class SumkServer {
 
 	public static void main(String[] args) {
 		start(args == null ? Collections.emptyList() : Arrays.asList(args));
-		Logs.system().info("启动完成,耗时：{}毫秒", System.currentTimeMillis() - startTime);
+		Logs.system().info("启动完成,框架版本号:{},耗时：{}毫秒", Const.sumkVersion(), System.currentTimeMillis() - startTime);
 	}
 
 	public static void main(Class<?> startClass, String[] args) {

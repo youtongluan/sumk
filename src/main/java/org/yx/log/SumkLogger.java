@@ -49,23 +49,6 @@ public abstract class SumkLogger implements Logger {
 		return module;
 	}
 
-	protected String buildMessage(String msg, Object... args) {
-		if (msg == null || args == null) {
-			return msg;
-		}
-		String[] tmps = msg.split("\\{\\}", -1);
-		if (tmps.length < 2) {
-			return msg;
-		}
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < tmps.length - 1; i++) {
-			sb.append(tmps[i]);
-			sb.append(args.length > i ? String.valueOf(args[i]) : "{}");
-		}
-		sb.append(tmps[tmps.length - 1]);
-		return sb.toString();
-	}
-
 	protected boolean isLogable(LogLevel methodLevel) {
 		return methodLevel.ordinal() >= Loggers.getLevel(this).ordinal();
 	}

@@ -35,6 +35,12 @@ import org.yx.exception.SumkException;
  */
 public final class NamedExecutor {
 
+	private static int toSqlCount;
+
+	public static int getExecuteCount() {
+		return toSqlCount;
+	}
+
 	private static class InnerSqlBuilder implements SqlBuilder {
 
 		private final Map<String, Object> map;
@@ -47,6 +53,7 @@ public final class NamedExecutor {
 
 		@Override
 		public MapedSql toMapedSql() throws Exception {
+			toSqlCount++;
 			return sqlParser.toMapedSql(map);
 		}
 

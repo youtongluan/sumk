@@ -22,6 +22,7 @@ import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpCiphers;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
+import org.yx.util.WebUtil;
 
 @Bean
 public class ReqSignValidateHandler implements HttpHandler {
@@ -50,7 +51,7 @@ public class ReqSignValidateHandler implements HttpHandler {
 		if (bs == null) {
 			return;
 		}
-		String sign = ctx.httpRequest().getParameter("sign");
+		String sign = WebUtil.fromHeaderOrParamter(ctx.httpRequest(), "_sign");
 		if (StringUtil.isEmpty(sign)) {
 			throw BizException.create(HttpErrorCode.SIGN_EMPTY, "签名不能为空");
 		}

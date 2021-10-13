@@ -20,8 +20,8 @@ import java.util.Collection;
 import org.yx.annotation.spec.BeanSpec;
 import org.yx.annotation.spec.Specs;
 import org.yx.common.Predicator;
-import org.yx.conf.AppInfo;
 import org.yx.log.Logs;
+import org.yx.main.StartContext;
 import org.yx.util.StringUtil;
 
 public class BeanFactory extends AbstractBootWatcher {
@@ -44,7 +44,7 @@ public class BeanFactory extends AbstractBootWatcher {
 		String v = bean.conditionOnProperty();
 		if (StringUtil.isNotEmpty(v)) {
 			boolean match = bean.onProperty();
-			boolean exist = Predicator.test(v, name -> AppInfo.get(name, null) != null);
+			boolean exist = Predicator.test(v, name -> StartContext.inst().getAppInfo(name, null) != null);
 			if (match ^ exist) {
 				Logs.system().info("{} exclude because conditionOnProperty donot meet.on match:{},exist:{}",
 						clz.getName(), match, exist);

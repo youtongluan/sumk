@@ -28,8 +28,6 @@ import org.yx.common.Host;
 import org.yx.common.route.Router;
 import org.yx.common.route.WeightedServer;
 import org.yx.log.Log;
-import org.yx.rpc.client.ReqSession;
-import org.yx.rpc.client.ReqSessionHolder;
 import org.yx.rpc.data.ApiInfo;
 import org.yx.rpc.data.RouteInfo;
 import org.yx.util.CollectionUtil;
@@ -119,24 +117,6 @@ public final class RpcRoutes {
 			}
 		}
 		_refresh(datas, routes);
-		cleanReqSession();
-	}
-
-	private static void cleanReqSession() {
-		Set<Host> current = servers();
-		Map<Host, ReqSession> map = ReqSessionHolder.view();
-		for (Host h : map.keySet()) {
-			if (current.contains(h)) {
-				continue;
-			}
-			ReqSession session = map.get(h);
-			if (session == null || !session.isIdle()) {
-				continue;
-			}
-
-			ReqSessionHolder.remove(h, session);
-			session.closeOnFlush();
-		}
 	}
 
 	private static Map<String, WeightedServer<Host>> createServerMachine(RouteInfo data) {

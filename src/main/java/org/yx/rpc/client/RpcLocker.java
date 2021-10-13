@@ -21,8 +21,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.LockSupport;
 import java.util.function.Consumer;
 
-import org.apache.mina.core.future.IoFutureListener;
-import org.apache.mina.core.future.WriteFuture;
 import org.yx.common.Host;
 import org.yx.common.context.ActionContext;
 import org.yx.common.context.LogContext;
@@ -32,8 +30,10 @@ import org.yx.rpc.RpcErrorCode;
 import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.log.RpcLog;
 import org.yx.rpc.log.RpcLogs;
+import org.yx.rpc.transport.RpcWriteFuture;
+import org.yx.rpc.transport.RpcWriteListener;
 
-public final class RpcLocker implements IoFutureListener<WriteFuture> {
+public final class RpcLocker implements RpcWriteListener {
 
 	private final AtomicReference<RpcResult> result = new AtomicReference<>();
 
@@ -107,7 +107,7 @@ public final class RpcLocker implements IoFutureListener<WriteFuture> {
 	}
 
 	@Override
-	public void operationComplete(final WriteFuture future) {
+	public void afterWrited(final RpcWriteFuture future) {
 		if (future.getException() == null) {
 			return;
 		}

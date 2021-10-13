@@ -16,6 +16,7 @@
 package org.yx.rpc;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 import org.yx.asm.ParamPojo;
 import org.yx.asm.Parameters;
@@ -23,6 +24,7 @@ import org.yx.common.context.CalleeNode;
 import org.yx.exception.BizException;
 import org.yx.exception.SumkException;
 import org.yx.log.Logs;
+import org.yx.rpc.codec.ReqParamType;
 import org.yx.rpc.codec.Request;
 
 public final class RpcActionNode extends CalleeNode {
@@ -54,7 +56,11 @@ public final class RpcActionNode extends CalleeNode {
 		}
 		String[] args = req.getParamArray();
 		if (args == null) {
-			throw new SumkException(12012, method.getName() + "的参数不能为空");
+			if (req.hasFeature(ReqParamType.REQ_PARAM_ORDER)) {
+				Logs.rpc().debug("{}需要传递{}个参数，实际却是null", method.getName(), paramLength);
+				return pojo;
+			}
+			throw new SumkException(12012, method.getName() + "的参数类型不对，不是order类型");
 		}
 		if (args.length != paramLength) {
 			Logs.rpc().debug("{}需要传递{}个参数，实际传递{}个", method.getName(), paramLength, args.length);
@@ -65,7 +71,12 @@ public final class RpcActionNode extends CalleeNode {
 			if (i >= args.length || args[i] == null) {
 				continue;
 			}
-			objs[i] = RpcJson.server().fromJson(args[i], this.params.getParamType(i));
+			Type paramType = this.params.getParamType(i);
+			if (paramType == String.class) {
+				objs[i] = args[i];
+			} else {
+				objs[i] = RpcJson.server().fromJson(args[i], paramType);
+			}
 		}
 		pojo.setParams(objs);
 		return pojo;

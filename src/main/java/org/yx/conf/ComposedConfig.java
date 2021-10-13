@@ -42,7 +42,7 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 
 	public static ComposedConfig createSystemConfig(RefreshableSystemConfig conf) {
 		Predicate<String> exclude = Matchers.createWildcardMatcher(
-				"java.*,sun.*,awt.toolkit,file.encoding,file.encoding.pkg,file.separator,line.separator,os.arch,os.name,os.version,path.separator,user.country,user.dir,user.home,user.language,user.name,user.script,user.timezone,user.variant",
+				"java.*,sun.*,jdk.*,awt.toolkit,file.encoding,file.encoding.pkg,file.separator,line.separator,os.arch,os.name,os.version,path.separator,user.country,user.dir,user.home,user.language,user.name,user.script,user.timezone,user.variant",
 				1);
 		Map<String, String> map = Collections.emptyMap();
 		for (int i = 0; i < 1000; i++) {

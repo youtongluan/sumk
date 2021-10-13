@@ -27,13 +27,13 @@ public class JettyHandlerSupplier {
 	private static Supplier<GzipHandler> gzipHandlerSupplier = () -> {
 		GzipHandler h = new GzipHandler();
 		h.addIncludedMethods("POST");
-		h.setMinGzipSize(AppInfo.getInt("sumk.jetty.gzip.minsize", 1000));
+		h.setMinGzipSize(AppInfo.getInt("sumk.webserver.gzip.minsize", 1000));
 		return h;
 	};
 
 	private static Supplier<ResourceHandler> resourceHandlerSupplier = () -> {
 		ResourceHandler handler = new ResourceHandler();
-		String welcomes = AppInfo.get("sumk.jetty.resource.welcomes");
+		String welcomes = AppInfo.get("sumk.webserver.resource.welcomes");
 		if (welcomes != null && welcomes.length() > 0) {
 			handler.setWelcomeFiles(welcomes.replace('，', ',').split(","));
 		}

@@ -134,7 +134,7 @@ public final class Booter {
 					logger.trace("{} begin loading", c);
 				}
 
-				Class<?> clz = Loader.loadClassExactly(c);
+				Class<?> clz = Loader.loadClass(c);
 				if ((clz.getModifiers() & (Modifier.ABSTRACT | Modifier.STATIC | Modifier.FINAL | Modifier.PUBLIC
 						| Modifier.INTERFACE)) != Modifier.PUBLIC || clz.isAnonymousClass() || clz.isLocalClass()
 						|| clz.isAnnotation() || clz.isEnum()) {

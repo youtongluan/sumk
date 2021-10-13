@@ -121,6 +121,25 @@ public final class WebUtil {
 		return null;
 	}
 
+	public static String fromHeaderOrParamter(HttpServletRequest req, String name) {
+		if (req == null) {
+			return null;
+		}
+		String v = req.getHeader(name);
+		if (v != null && v.length() > 0) {
+			return v;
+		}
+		v = req.getParameter(name);
+		if (v != null) {
+			return v;
+		}
+		Object attr = req.getAttribute(name);
+		if (attr != null && attr.getClass() == String.class) {
+			return (String) attr;
+		}
+		return null;
+	}
+
 	public static String getUserFlag(HttpServletRequest req) {
 		return fromHeaderOrCookieOrParamter(req, HttpHeaderName.userFlag());
 	}
@@ -149,8 +168,7 @@ public final class WebUtil {
 	/**
 	 * 根据name获取对应的MultipartItem，<B>仅用于@upload修饰的接口</B>
 	 * 
-	 * @param name
-	 *            MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
+	 * @param name MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
 	 * @return 对应的MultipartItem，如果不存在就返回null
 	 */
 	public static MultipartItem getPart(String name) {

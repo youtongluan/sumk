@@ -31,7 +31,6 @@ import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.visit.RecordRepository;
-import org.yx.log.Log;
 
 @Bean
 public class UpdateListener implements SumkListener {
@@ -47,25 +46,21 @@ public class UpdateListener implements SumkListener {
 	}
 
 	@Override
-	public void listen(Object ev) {
+	public void listen(Object ev) throws Exception {
 		if (!DBSettings.toCache() || !(ev instanceof UpdateEvent)) {
 			return;
 		}
 		UpdateEvent event = (UpdateEvent) ev;
-		try {
-			PojoMeta pm = event.getTableMeta();
-			if (pm == null || pm.isNoCache()) {
-				return;
-			}
-			List<Map<String, Object>> wheres = event.getWheres();
-			for (Map<String, Object> where : wheres) {
-
-				handleUpdate(event, pm, where);
-			}
-
-		} catch (Exception e) {
-			Log.printStack("sumk.db.listener", e);
+		PojoMeta pm = event.getTableMeta();
+		if (pm == null || pm.isNoCache()) {
+			return;
 		}
+		List<Map<String, Object>> wheres = event.getWheres();
+		for (Map<String, Object> where : wheres) {
+
+			handleUpdate(event, pm, where);
+		}
+
 	}
 
 	private void handleUpdate(UpdateEvent event, PojoMeta pm, Map<String, Object> where) throws Exception {

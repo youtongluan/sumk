@@ -148,7 +148,7 @@ public final class AsmUtils {
 
 		synchronized (AsmUtils.class) {
 			try {
-				return Loader.loadClassExactly(fullName);
+				return Loader.loadClass(fullName);
 			} catch (Throwable e) {
 				if (!(e instanceof ClassNotFoundException)) {
 					Logs.asm().warn(fullName + " 加载失败", e);

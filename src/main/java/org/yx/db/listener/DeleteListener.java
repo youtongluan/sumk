@@ -27,7 +27,6 @@ import org.yx.db.event.DeleteEvent;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.PojoMeta;
 import org.yx.db.visit.RecordRepository;
-import org.yx.log.Log;
 
 @Bean
 public class DeleteListener implements SumkListener {
@@ -43,26 +42,22 @@ public class DeleteListener implements SumkListener {
 	}
 
 	@Override
-	public void listen(Object ev) {
+	public void listen(Object ev) throws Exception {
 		if (!DBSettings.toCache() || !(ev instanceof DeleteEvent)) {
 			return;
 		}
 		DeleteEvent event = (DeleteEvent) ev;
-		try {
-			PojoMeta pm = event.getTableMeta();
-			if (pm == null || pm.isNoCache()) {
-				return;
-			}
-			List<Map<String, Object>> wheres = event.getWheres();
-			if (wheres == null || wheres.isEmpty()) {
-				return;
-			}
-			for (Map<String, Object> src : wheres) {
-				String id = pm.getCacheID(src, true);
-				RecordRepository.del(pm, id);
-			}
-		} catch (Exception e) {
-			Log.printStack("sumk.db.listener", e);
+		PojoMeta pm = event.getTableMeta();
+		if (pm == null || pm.isNoCache()) {
+			return;
+		}
+		List<Map<String, Object>> wheres = event.getWheres();
+		if (wheres == null || wheres.isEmpty()) {
+			return;
+		}
+		for (Map<String, Object> src : wheres) {
+			String id = pm.getCacheID(src, true);
+			RecordRepository.del(pm, id);
 		}
 	}
 

@@ -28,7 +28,7 @@ public @interface Soa {
 	/**
 	 * 在@SoaClass注解中，这个参数会被忽略
 	 * 
-	 * @return 服务名称，如果为空。发布的服务名称=appId.methodName。
+	 * @return 服务名称，如果为空，就使用method name。
 	 */
 	String value() default "";
 
