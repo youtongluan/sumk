@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 
+import org.yx.common.context.ActionContext;
 import org.yx.log.Log;
 import org.yx.util.CollectionUtil;
-import org.yx.util.Task;
 
 /**
  * 它的bean统一有框架创建
@@ -43,11 +43,11 @@ public class EventBus {
 	}
 
 	public void asyncPublishBatch(List<?> events) {
-		Task.executeWithCurrentContext(this.executor, () -> this.publishBatch(events));
+		executor.execute(ActionContext.wrapExecutable(() -> this.publishBatch(events)));
 	}
 
 	public void asyncPublish(Object event) {
-		Task.executeWithCurrentContext(this.executor, () -> this.publish(event));
+		executor.execute(ActionContext.wrapExecutable(() -> this.publish(event)));
 	}
 
 	public List<SumkListener> listeners() {

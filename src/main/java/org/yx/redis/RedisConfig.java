@@ -46,6 +46,7 @@ public class RedisConfig extends GenericObjectPoolConfig {
 	 */
 	private String type;
 
+	@SuppressWarnings("deprecation")
 	public RedisConfig(String host) {
 		if (host == null || host.isEmpty()) {
 			throw new SumkException(657645465, "redis host cannot be empty");

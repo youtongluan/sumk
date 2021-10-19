@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -43,6 +44,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		this.limit = DBSettings.MaxLimit();
 	}
 
+	/**
+	 * 这个方法用于两个地方，一个是框架内部调用，一旦外部调用有可能影响最终结果 另一个是开发调试的时候，调用本方法查看最终的sql，这时候它不需要放在事务中
+	 * 
+	 * @throws Exception 异常信息
+	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
 		List<Object> paramters = new ArrayList<>(10);
@@ -185,6 +191,18 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				return;
 			}
 		}
+
+		if (v instanceof Collection) {
+			ItemJoiner orJoiner = ItemJoiner.create(" OR ", " (", ") ");
+			Collection<?> col = (Collection<?>) v;
+			for (Object obj : col) {
+				orJoiner.item().append(cm.dbColumn).append(type.op).append(" ? ");
+				paramters.add(obj);
+			}
+			joiner.item().append(orJoiner, null, null);
+			return;
+		}
+
 		joiner.item().append(cm.dbColumn).append(type.op);
 		if (type == Operation.IN || type == Operation.NOT_IN) {
 			joiner.append("(");
@@ -201,6 +219,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			joiner.append(") ");
 			return;
 		}
+
 		joiner.append(" ? ");
 		paramters.add(v);
 

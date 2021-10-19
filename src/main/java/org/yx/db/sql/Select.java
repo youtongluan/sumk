@@ -155,7 +155,7 @@ public class Select extends SelectBuilder {
 	 * like操作，%号要自己添加
 	 * 
 	 * @param key   字段名
-	 * @param value 值，不会自动添加%
+	 * @param value 值，不会自动添加%。如果是Collection类型，会自动转化为( OR )的方式
 	 * @return 当前对象
 	 */
 	public Select like(String key, Object value) {

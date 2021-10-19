@@ -310,4 +310,7 @@ v3.0.0
 2、http的sign、act、plainKey参数前面增加了_
 3、Redis2接口改为Redis3x
 
+v3.0.1 这是小版本，只是调整了点功能
+1、去掉Attachable接口，RpcUtil.attachments()改为RpcUtil
+2、DB.select的比较函数，比如like，支持传入集合类型，这时候它们是OR的关系
 

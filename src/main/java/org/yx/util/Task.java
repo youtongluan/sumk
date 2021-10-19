@@ -15,12 +15,9 @@
  */
 package org.yx.util;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.yx.common.Executable;
-import org.yx.common.context.ActionContext;
 import org.yx.main.SumkThreadPool;
 
 /**
@@ -37,9 +34,5 @@ public final class Task {
 
 	public static ScheduledFuture<?> scheduleAtFixedRate(Runnable job, long delay, long period, TimeUnit unit) {
 		return scheduleAtFixedRate(job, unit.toMillis(delay), unit.toMillis(period));
-	}
-
-	public static void executeWithCurrentContext(Executor ex, Executable r) {
-		ex.execute(ActionContext.wrap(r));
 	}
 }

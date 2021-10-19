@@ -18,8 +18,8 @@ package org.yx.common.listener;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import org.yx.common.context.ActionContext;
 import org.yx.util.S;
-import org.yx.util.Task;
 
 public abstract class ConcurrentSumkListener implements SumkListener {
 
@@ -32,12 +32,12 @@ public abstract class ConcurrentSumkListener implements SumkListener {
 
 	@Override
 	public void listenBatch(List<?> events) throws Exception {
-		Task.executeWithCurrentContext(this.executor, () -> this.asyncListenBatch(events));
+		executor.execute(ActionContext.wrapExecutable(() -> this.asyncListenBatch(events)));
 	}
 
 	@Override
 	public void listen(Object event) throws Exception {
-		Task.executeWithCurrentContext(this.executor, () -> this.asyncListen(event));
+		executor.execute(ActionContext.wrapExecutable(() -> this.asyncListen(event)));
 	}
 
 	public Executor executor() {
@@ -49,7 +49,9 @@ public abstract class ConcurrentSumkListener implements SumkListener {
 	 * 
 	 * @return 线程池，如果返回null就使用系统默认的线程池
 	 */
-	protected abstract Executor createExecutor();
+	protected Executor createExecutor() {
+		return null;
+	}
 
 	protected void asyncListenBatch(List<?> events) throws Exception {
 		for (Object event : events) {

@@ -19,11 +19,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.common.Executable;
+import org.yx.common.sumk.map.ListMap;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.main.SumkServer;
 
-public final class ActionContext implements org.yx.common.context.Attachable, Cloneable {
+public final class ActionContext implements Cloneable {
 
 	private LogContext logContext;
 
@@ -91,7 +92,7 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 		};
 	}
 
-	public static Runnable wrap(Executable r) {
+	public static Runnable wrapExecutable(Executable r) {
 		ActionContext ac = ActionContext.current();
 		return () -> {
 			ActionContext.store(ac);
@@ -134,12 +135,16 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 		this.logContext = LogContext.create(lc.act, lc.traceId, lc.spanId, userId, lc.test, lc.attachments);
 	}
 
-	@Override
 	public Map<String, String> attachmentView() {
 		return logContext.attachments;
 	}
 
-	@Override
+	/**
+	 * 设置上下文的附加属性
+	 * 
+	 * @param key   序列化后的长度要在255以内
+	 * @param value 序列化后的长度要在255以内。如果value为null，就相当于remove
+	 */
 	public void setAttachment(String key, String value) {
 		if (value == null) {
 			if (this.logContext.attachments != null) {
@@ -150,12 +155,11 @@ public final class ActionContext implements org.yx.common.context.Attachable, Cl
 			return;
 		}
 		Map<String, String> attachments = this.logContext.attachments;
-		attachments = attachments == null ? new HashMap<>() : new HashMap<>(attachments);
+		attachments = attachments == null ? new ListMap<>() : new ListMap<>(attachments);
 		attachments.put(key, value);
 		this.logContext = LogContext.create(this.logContext, attachments);
 	}
 
-	@Override
 	public String getAttachment(String key) {
 		Map<String, String> attachments = this.logContext.attachments;
 		if (attachments == null) {

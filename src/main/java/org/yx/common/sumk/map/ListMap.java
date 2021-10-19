@@ -36,7 +36,7 @@ public class ListMap<K, V> extends AbstractMap<K, V> implements Serializable {
 	}
 
 	public ListMap(Map<K, V> map) {
-		this.data = new ListEntrySet<K, V>(new ArrayList<>());
+		this.data = new ListEntrySet<K, V>(new ArrayList<>(map.size() + 5));
 		for (Entry<K, V> en : map.entrySet()) {
 			data.add(new AbstractMap.SimpleEntry<>(en));
 		}

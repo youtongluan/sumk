@@ -17,12 +17,12 @@ package org.yx.util;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.yx.common.Host;
 
 import org.yx.common.context.ActionContext;
 import org.yx.common.route.Router;
-import org.yx.rpc.RpcAttachment;
 import org.yx.rpc.client.route.RpcRoutes;
 import org.yx.rpc.server.LocalRpcContext;
 import org.yx.rpc.server.RpcContext;
@@ -46,8 +46,16 @@ public final class RpcUtil {
 		return false;
 	}
 
-	public static RpcAttachment attachments() {
-		return RpcAttachment.get();
+	public static Map<String, String> attachmentView() {
+		return ActionContext.current().attachmentView();
+	}
+
+	public static void setAttachment(String key, String value) {
+		ActionContext.current().setAttachment(key, value);
+	}
+
+	public static String getAttachment(String key) {
+		return ActionContext.current().getAttachment(key);
 	}
 
 	public static void removeContext() {
