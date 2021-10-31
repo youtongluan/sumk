@@ -1,8 +1,8 @@
 package org.yx.db.sql;
 
 public enum Operation {
-	BIG(">"), BIG_EQUAL(">="), LESS("<"), LESS_EQUAL("<="), LIKE(" LIKE "), NOT_LIKE(" NOT LIKE "), NOT(" != "),
-	IN(" IN "), NOT_IN(" NOT IN ");
+	BIG(" > "), BIG_EQUAL(" >= "), LESS(" < "), LESS_EQUAL(" <= "), LIKE(" LIKE "), NOT_LIKE(" NOT LIKE "), NOT(" <> "),
+	IN(" IN "), NOT_IN(" NOT IN "), EQUAL(" = ");
 
 	final String op;
 

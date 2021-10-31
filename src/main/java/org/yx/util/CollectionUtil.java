@@ -68,7 +68,7 @@ public final class CollectionUtil {
 
 	public static String saveMapToText(Map<String, ?> map, String bigDelimiter, String smallDelimiter) {
 		StringBuilder sb = new StringBuilder();
-		for (Map.Entry<String, ?> entry : map.entrySet()) {
+		for (Entry<String, ?> entry : map.entrySet()) {
 			String k = entry.getKey();
 			Object v = entry.getValue();
 			sb.append(k);
@@ -88,7 +88,7 @@ public final class CollectionUtil {
 
 		text = StringUtil.formatNewLineFlag(text).replace(Const.CONFIG_NEW_LINE, "").replace(CONFIG_NEW_LINE2, "");
 		Map<String, String> temp = fillMapFromText(new LinkedHashMap<String, String>(), text, Const.LN, "=");
-		for (Map.Entry<String, String> entry : temp.entrySet()) {
+		for (Entry<String, String> entry : temp.entrySet()) {
 			String k = entry.getKey();
 			String v = entry.getValue();
 			if (k.startsWith(IGNORE_PREFIX) || v == null || v.isEmpty()) {
@@ -127,7 +127,7 @@ public final class CollectionUtil {
 	@SuppressWarnings("unchecked")
 	public static Map<String, Object> flatMapToTree(@NotNull Map<String, String> map) {
 		Map<String, Object> ret = new HashMap<>();
-		for (Map.Entry<String, String> entry : map.entrySet()) {
+		for (Entry<String, String> entry : map.entrySet()) {
 			String k = entry.getKey();
 			String v = entry.getValue();
 			if (!k.contains(".")) {
@@ -158,7 +158,7 @@ public final class CollectionUtil {
 	public static <T> Map<String, T> subMap(@NotNull Map<String, T> source, @NotNull String prefix) {
 		int len = prefix.length();
 		Map<String, T> map = new HashMap<>();
-		for (Map.Entry<String, T> entry : source.entrySet()) {
+		for (Entry<String, T> entry : source.entrySet()) {
 			String key = entry.getKey();
 			T value = entry.getValue();
 			if (key.startsWith(prefix)) {
@@ -170,7 +170,7 @@ public final class CollectionUtil {
 
 	public static <K, V> Map<K, V> removeNull(@NotNull Map<K, V> map) {
 		Map<K, V> ret = new HashMap<>();
-		for (Map.Entry<K, V> entry : map.entrySet()) {
+		for (Entry<K, V> entry : map.entrySet()) {
 			K k = entry.getKey();
 			V v = entry.getValue();
 			if (k == null || v == null) {
@@ -192,9 +192,16 @@ public final class CollectionUtil {
 		if (col == null || col.isEmpty()) {
 			return Collections.emptyList();
 		}
-		if (col instanceof List && (col instanceof UnmodifiableArrayList
-				|| "java.util.Collections$SingletonList".equals(col.getClass().getName()))) {
-			return (List<T>) col;
+		if (col instanceof UnmodifiableArrayList) {
+			return (UnmodifiableArrayList<T>) col;
+		}
+		if (col instanceof List) {
+			String clzName = col.getClass().getName();
+			if ("java.util.Collections$SingletonList".equals(clzName)
+					|| "java.util.Collections$UnmodifiableRandomAccessList".equals(clzName)
+					|| "java.util.Collections$UnmodifiableList".equals(clzName)) {
+				return (List<T>) col;
+			}
 		}
 		if (col.size() == 1) {
 			return Collections.singletonList(col.iterator().next());
@@ -220,7 +227,7 @@ public final class CollectionUtil {
 	}
 
 	/**
-	 * 生成不可变map
+	 * 生成不可变map。如果是特殊map，它的特性可能丢失，比如大小写不敏感特性
 	 * 
 	 * @param   <K> key的类型
 	 * @param   <V> value的类型

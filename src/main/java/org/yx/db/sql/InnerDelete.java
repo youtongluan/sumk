@@ -16,6 +16,7 @@
 package org.yx.db.sql;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yx.common.ItemJoiner;
 import org.yx.db.event.DeleteEvent;
@@ -29,27 +30,29 @@ public abstract class InnerDelete {
 
 	protected MapedSql toMapedSql(StringBuilder sb, MapedSql ms) throws InstantiationException, IllegalAccessException {
 		PojoMeta pojoMeta = delete.makeSurePojoMeta();
-		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
-		boolean isSingle = delete.in.size() == 1;
+		sb.append(" WHERE ");
+		ItemJoiner orItem = new ItemJoiner(" OR ", null, null);
 		for (Map<String, Object> oneWhere : delete.in) {
 			delete.checkMap(oneWhere, pojoMeta);
-			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
-			for (ColumnMeta fm : pojoMeta.fieldMetas) {
-				if (!oneWhere.containsKey(fm.getFieldName())) {
+			ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
+			for (Entry<String, Object> en : oneWhere.entrySet()) {
+				ColumnMeta fm = pojoMeta.getByFieldName(en.getKey());
+				if (fm == null) {
+					delete.failIfNotAllowPropertyMiss(en.getKey());
 					continue;
 				}
-				Object value = fm.value(oneWhere);
+				Object value = en.getValue();
 				if (value == null) {
-					andItem.item().append(fm.dbColumn).append(" IS NULL ");
+					andItem.item().append(fm.dbColumn).append(" IS NULL");
 					continue;
 				}
-				andItem.item().append(fm.dbColumn).append("=?");
+				andItem.item().append(fm.dbColumn).append(" = ?");
 				ms.addParam(value);
 			}
 			orItem.item().append(andItem.toCharSequence());
 		}
 
-		sb.append(orItem.toCharSequence(true));
+		sb.append(orItem.toCharSequence());
 		ms.sql = sb.toString();
 		ms.event = new DeleteEvent(pojoMeta.getTableName(), delete.in);
 		return ms;
@@ -80,7 +83,7 @@ class SoftDelete extends InnerDelete implements SqlBuilder {
 		StringBuilder sb = new StringBuilder();
 		PojoMeta pojoMeta = delete.makeSurePojoMeta();
 		SoftDeleteMeta sm = pojoMeta.softDelete;
-		sb.append("UPDATE ").append(pojoMeta.getTableName()).append(" SET ").append(sm.columnName).append(" =? ");
+		sb.append("UPDATE ").append(pojoMeta.getTableName()).append(" SET ").append(sm.columnName).append(" = ? ");
 		MapedSql ms = new MapedSql();
 		ms.addParam(sm.inValidValue);
 		return this.toMapedSql(sb, ms);

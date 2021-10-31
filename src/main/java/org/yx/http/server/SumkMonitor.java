@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -39,10 +40,15 @@ import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.http.kit.InnerHttpUtil;
+import org.yx.http.user.AbstractUserSession;
+import org.yx.http.user.SessionObject;
+import org.yx.http.user.TimedCachedObject;
 import org.yx.http.user.UserSession;
 import org.yx.http.user.WebSessions;
 import org.yx.main.SumkThreadPool;
+import org.yx.util.S;
 import org.yx.util.StringUtil;
+import org.yx.util.SumkDate;
 
 @Bean
 @SumkServlet(path = { "/_sumk_monitor/*" }, loadOnStartup = -1, appKey = "sumkMonitor")
@@ -79,19 +85,39 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		resp.getOutputStream().write(ret.getBytes(StandardCharsets.UTF_8));
 	}
 
-	private String localSessions() {
+	private String localSessions(boolean full) {
 		UserSession userSession = WebSessions.userSession();
 		if (userSession == null) {
 			return "";
 		}
-		return new StringBuilder("##localSessions:").append("  ").append(userSession.localCacheSize()).toString();
+		StringBuilder sb = new StringBuilder("##localSessions:").append("  ").append(userSession.localCacheSize());
+		if (full && (userSession instanceof AbstractUserSession)) {
+			AbstractUserSession us = (AbstractUserSession) userSession;
+			boolean fullKey = AppInfo.getBoolean("sumk.http.monitor.session.fullkey", false);
+			for (Entry<String, TimedCachedObject> en : us.localCache().entrySet()) {
+				String sessionId = en.getKey();
+				if (!fullKey) {
+					int mark = sessionId.length() / 2;
+					sessionId = "**" + sessionId.substring(mark);
+				}
+				sb.append(AppInfo.LN).append(sessionId).append(" : ")
+						.append(SumkDate.of(en.getValue().getRefreshTime())).append("   ")
+						.append(S.json().fromJson(en.getValue().getJson(), SessionObject.class).getUserId());
+			}
+		}
+		return sb.toString();
 	}
 
 	private void outputLocalSessions(HttpServletRequest req, Writer writer) throws IOException {
-		if (!"1".equals(req.getParameter("localSessions"))) {
+		String local = req.getParameter("localSessions");
+		if ("1".equals(local)) {
+			writer.append(localSessions(false));
+		} else if ("full".equals(local)) {
+			writer.append(localSessions(true));
+		} else {
 			return;
 		}
-		writer.append(localSessions());
+
 		writer.append(TYPE_SPLIT);
 	}
 

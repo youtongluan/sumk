@@ -15,10 +15,10 @@
  */
 package org.yx.annotation.spec;
 
-import static org.yx.annotation.spec.parse.SpecParsers.parse;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 import org.yx.annotation.spec.parse.SpecParsers;
 
@@ -78,5 +78,13 @@ public final class Specs {
 
 	public static SoaClientConfigSpec extractSoaClientConfig(Method m) {
 		return parse(m, SpecParsers.getSoaClientConfigParser());
+	}
+
+	private static <T, R> R parse(T t, Function<T, R> parser) {
+		return parser.apply(t);
+	}
+
+	private static <T, U, R> R parse(T t, U u, BiFunction<T, U, R> parser) {
+		return parser.apply(t, u);
 	}
 }

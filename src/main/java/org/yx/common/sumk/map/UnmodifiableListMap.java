@@ -18,9 +18,15 @@ package org.yx.common.sumk.map;
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yx.util.CollectionUtil;
+
+/**
+ * 支持key、value为null
+ */
 public class UnmodifiableListMap<K, V> extends AbstractMap<K, V> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -28,11 +34,11 @@ public class UnmodifiableListMap<K, V> extends AbstractMap<K, V> implements Seri
 	private final ListEntrySet<K, V> data;
 
 	public UnmodifiableListMap(Map<K, V> map) {
-		ListEntrySet<K, V> set = new ListEntrySet<K, V>(new ArrayList<>(map.size()));
+		List<Entry<K, V>> list = new ArrayList<>(map.size());
 		for (Entry<K, V> en : map.entrySet()) {
-			set.add(new AbstractMap.SimpleImmutableEntry<>(en));
+			list.add(new AbstractMap.SimpleImmutableEntry<>(en));
 		}
-		this.data = set.unmodifySet();
+		this.data = new ListEntrySet<>(CollectionUtil.unmodifyList(list));
 	}
 
 	@Override

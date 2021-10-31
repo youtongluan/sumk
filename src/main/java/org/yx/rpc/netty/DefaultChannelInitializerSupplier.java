@@ -48,7 +48,6 @@ public class DefaultChannelInitializerSupplier implements Supplier<ChannelInitia
 			protected void initChannel(SocketChannel ch) throws Exception {
 
 				ch.pipeline()
-
 						.addLast(new IdleStateHandler(
 								isServer ? RpcSettings.maxServerIdleTime() : RpcSettings.maxClientIdleTime(),
 								AppInfo.getLong("sumk.rpc.idle.write", 0), 0, TimeUnit.MILLISECONDS))

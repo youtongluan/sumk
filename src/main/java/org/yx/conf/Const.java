@@ -22,7 +22,7 @@ public final class Const {
 
 	public static final String DEFAULT_DB_NAME = "sumk";
 
-	public static final int SUMK_VERSION = 0x300;
+	public static final int SUMK_VERSION = 0x310;
 
 	public static String sumkVersion() {
 		return new StringBuilder(10).append((Const.SUMK_VERSION >> 8) & 0x0F).append('.')

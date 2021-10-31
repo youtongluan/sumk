@@ -310,7 +310,12 @@ v3.0.0
 2、http的sign、act、plainKey参数前面增加了_
 3、Redis2接口改为Redis3x
 
-v3.0.1 这是小版本，只是调整了点功能
+v3.0.1
 1、去掉Attachable接口，RpcUtil.attachments()改为RpcUtil
-2、DB.select的比较函数，比如like，支持传入集合类型，这时候它们是OR的关系
 
+v3.1.0
+最主要的是将rpc透传数据的最大长度从255提升到60K，这个造成微服务跟旧版不兼容(无透传时仍然可以调用)
+1、@Inject增加allowMulti属性，允许存在多个bean的情况下，取第一个注入
+2、Select增加and方法，可以处理or表达式，也可以处理自定义的比较表达式
+3、去掉Select的addEquals方法（此方法意义不大，增加理解成本），开发者通过多次调用addEqual来实现
+4、优化DB代码，减少中间过程内存的使用量，并优化sql语句中的空格。不等号统一改为<>

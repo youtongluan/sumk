@@ -21,10 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
+import org.yx.common.sumk.map.ListMap;
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
+import org.yx.exception.SumkException;
 import org.yx.util.kit.Asserts;
 
 public final class ResultSetUtils {
@@ -46,20 +47,26 @@ public final class ResultSetUtils {
 		return list;
 	}
 
-	public static List<Map<String, Object>> toMapList(ResultSet rs, PojoMeta pm) throws java.sql.SQLException {
-		List<Map<String, Object>> list = new ArrayList<>(10);
+	public static List<Map<ColumnMeta, Object>> toMapList(ResultSet rs, PojoMeta pm) throws java.sql.SQLException {
+		List<Map<ColumnMeta, Object>> list = new ArrayList<>();
 		if (rs == null) {
 			return list;
 		}
 		ResultSetMetaData md = rs.getMetaData();
 		int columnCount = md.getColumnCount();
-		Map<String, Object> rowData;
+		ColumnMeta[] columns = new ColumnMeta[columnCount + 1];
+		for (int i = 1; i <= columnCount; i++) {
+			ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
+			if (cm == null) {
+				throw new SumkException(-629234, md.getColumnName(i) + "这个字段没有在java的pojo类中定义");
+			}
+			columns[i] = cm;
+		}
+		Map<ColumnMeta, Object> rowData;
 		while (rs.next()) {
-			rowData = new HashMap<>(columnCount * 2);
+			rowData = new ListMap<>(columnCount);
 			for (int i = 1; i <= columnCount; i++) {
-				ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
-				Objects.requireNonNull(cm, md.getColumnName(i) + "这个字段没有在java的pojo类中定义");
-				rowData.put(cm.getFieldName(), rs.getObject(i));
+				rowData.put(columns[i], rs.getObject(i));
 			}
 			list.add(rowData);
 		}

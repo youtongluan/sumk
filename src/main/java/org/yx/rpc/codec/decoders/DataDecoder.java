@@ -15,9 +15,10 @@
  */
 package org.yx.rpc.codec.decoders;
 
+import org.yx.common.Ordered;
 import org.yx.rpc.transport.DataBuffer;
 
-public interface DataDecoder {
+public interface DataDecoder extends Ordered {
 
 	boolean accept(int protocol);
 

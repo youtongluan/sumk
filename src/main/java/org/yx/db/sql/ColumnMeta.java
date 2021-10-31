@@ -64,10 +64,6 @@ public final class ColumnMeta implements Comparable<ColumnMeta> {
 		return field.get(owner);
 	}
 
-	public boolean containsKey(Map<String, Object> owner) throws IllegalArgumentException, IllegalAccessException {
-		return owner.containsKey(field.getName());
-	}
-
 	public void setValue(Object owner, final Object value) throws Exception {
 		if (owner instanceof Map) {
 			@SuppressWarnings("unchecked")

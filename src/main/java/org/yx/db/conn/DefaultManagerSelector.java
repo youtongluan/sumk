@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -45,7 +46,7 @@ public class DefaultManagerSelector implements DataSourceManagerSelector {
 		Map<String, String> configMap = AppInfo.subMap("s.alias.db.");
 		if (configMap.size() > 0) {
 			Map<String, String> temp = new HashMap<>();
-			for (Map.Entry<String, String> entry : configMap.entrySet()) {
+			for (Entry<String, String> entry : configMap.entrySet()) {
 				String name = entry.getKey();
 				String value = entry.getValue();
 				if (name.isEmpty() || StringUtil.isEmpty(value)) {

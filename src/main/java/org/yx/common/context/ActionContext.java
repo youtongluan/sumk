@@ -15,7 +15,6 @@
  */
 package org.yx.common.context;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.yx.common.Executable;
@@ -143,19 +142,19 @@ public final class ActionContext implements Cloneable {
 	 * 设置上下文的附加属性
 	 * 
 	 * @param key   序列化后的长度要在255以内
-	 * @param value 序列化后的长度要在255以内。如果value为null，就相当于remove
+	 * @param value 序列化后的长度要在60K以内。如果value为null，就相当于remove
 	 */
 	public void setAttachment(String key, String value) {
 		if (value == null) {
 			if (this.logContext.attachments != null) {
-				Map<String, String> attachments = new HashMap<>(this.logContext.attachments);
+				Map<String, String> attachments = new ListMap<>(this.logContext.attachments);
 				attachments.remove(key);
 				this.logContext = LogContext.create(this.logContext, attachments);
 			}
 			return;
 		}
 		Map<String, String> attachments = this.logContext.attachments;
-		attachments = attachments == null ? new ListMap<>() : new ListMap<>(attachments);
+		attachments = attachments == null ? new ListMap<>() : new ListMap<>(attachments, 1);
 		attachments.put(key, value);
 		this.logContext = LogContext.create(this.logContext, attachments);
 	}

@@ -18,22 +18,15 @@ package org.yx.rpc.data;
 import org.yx.util.StringUtil;
 
 public class ApiInfo {
-	private String name;
+	private final String name;
 	private Integer weight;
 
-	public static ApiInfo create(String name, Integer weight) {
-		ApiInfo info = new ApiInfo();
-		info.name = name;
-		info.weight = weight;
-		return info;
+	public ApiInfo(String name) {
+		this.name = name;
 	}
 
 	public String getName() {
 		return name;
-	}
-
-	void setName(String name) {
-		this.name = name;
 	}
 
 	public Integer getWeight() {

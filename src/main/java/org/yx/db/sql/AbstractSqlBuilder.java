@@ -17,11 +17,11 @@ package org.yx.db.sql;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.yx.common.sumk.map.ListMap;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
 import org.yx.util.BitUtil;
@@ -53,14 +53,20 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 			return;
 		}
 		Set<String> keys = map.keySet();
-		MAPKEY: for (String key : keys) {
-			for (ColumnMeta p : pm.fieldMetas) {
-				if (p.getFieldName().equals(key)) {
-					continue MAPKEY;
-				}
+		for (String key : keys) {
+			if (pm.getByFieldName(key) == null) {
+				throw new SumkException(-743257, key + " is not a field in " + pm.pojoClz.getName());
 			}
-			throw new SumkException(-743257, key + " is not a field in " + pm.pojoClz);
 		}
+	}
+
+	protected void failIfNotAllowPropertyMiss(String key) {
+		if (!this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
+			return;
+		}
+		String msg = this.pojoMeta == null ? key + " is not a field"
+				: key + " is not a field in " + pojoMeta.pojoClz.getName();
+		throw new SumkException(-743257, msg);
 	}
 
 	protected void checkIn() {
@@ -79,8 +85,9 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 			return Collections.emptyMap();
 		}
 		if (src instanceof Map) {
-			return new HashMap<>((Map<String, Object>) src);
+			return new ListMap<>((Map<String, Object>) src);
 		}
+
 		if (this.tableClass == null) {
 			this.tableClass = src.getClass();
 		}
@@ -119,11 +126,11 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		this.flag = DBSettings.flag();
 	}
 
-	protected boolean isOn(int flagBit) {
+	public final boolean isOn(int flagBit) {
 		return BitUtil.getBit(this.flag, flagBit);
 	}
 
-	protected void setOnOff(int flagBit, boolean onOff) {
+	protected final void setOnOff(int flagBit, boolean onOff) {
 		this.flag = BitUtil.setBit(this.flag, flagBit, onOff);
 	}
 

@@ -113,14 +113,6 @@ public final class SpecParsers {
 		return webParser;
 	}
 
-	public static <T, R> R parse(T t, Function<T, R> parser) {
-		return parser.apply(t);
-	}
-
-	public static <T, U, R> R parse(T t, U u, BiFunction<T, U, R> parser) {
-		return parser.apply(t, u);
-	}
-
 	public static void setBeanParser(Function<Class<?>, BeanSpec> beanParser) {
 		SpecParsers.beanParser = Objects.requireNonNull(beanParser);
 	}

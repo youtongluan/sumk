@@ -15,6 +15,8 @@
  */
 package org.yx.http.user;
 
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -98,5 +100,9 @@ public abstract class AbstractUserSession implements UserSession {
 	@Override
 	public int localCacheSize() {
 		return this.cache.size();
+	}
+
+	public Map<String, TimedCachedObject> localCache() {
+		return Collections.unmodifiableMap(cache);
 	}
 }

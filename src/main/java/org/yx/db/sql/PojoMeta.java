@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.function.IntFunction;
 
 import org.yx.annotation.db.AutoCreateTime;
@@ -34,10 +33,10 @@ import org.yx.annotation.doc.NotNull;
 import org.yx.annotation.spec.TableSpec;
 import org.yx.bean.Loader;
 import org.yx.common.date.TimeUtil;
+import org.yx.common.sumk.map.ListMap;
 import org.yx.conf.AppInfo;
 import org.yx.db.enums.CacheType;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.redis.RedisPool;
 import org.yx.util.CollectionUtil;
@@ -55,8 +54,10 @@ public final class PojoMeta implements Cloneable {
 	final Type pojoArrayClz;
 	private final CacheType cacheType;
 
+	private final Map<String, ColumnMeta> javaNameDict;
+
 	@NotNull
-	final List<ColumnMeta> fieldMetas;
+	private final List<ColumnMeta> fieldMetas;
 	@NotNull
 	final List<ColumnMeta> databaseIds;
 
@@ -64,7 +65,7 @@ public final class PojoMeta implements Cloneable {
 	final List<ColumnMeta> cacheIDs;
 
 	@NotNull
-	final List<ColumnMeta> createColumns;
+	private final List<ColumnMeta> createColumns;
 
 	private VisitCounter counter;
 	private int ttlSec;
@@ -104,6 +105,11 @@ public final class PojoMeta implements Cloneable {
 		this.softDelete = DBSettings.softDeleteParser().parse(this.pojoClz, this.fieldMetas);
 		this.parseTable(table);
 		this.pojoArrayClz = Array.newInstance(this.pojoClz, 0).getClass();
+		HashMap<String, ColumnMeta> dict = new HashMap<>();
+		for (ColumnMeta cm : this.fieldMetas) {
+			dict.put(cm.getFieldName().toLowerCase(), cm);
+		}
+		this.javaNameDict = dict;
 	}
 
 	public Type pojoArrayClz() {
@@ -116,7 +122,7 @@ public final class PojoMeta implements Cloneable {
 
 	public ColumnMeta getByColumnDBName(String columnDBName) {
 		for (ColumnMeta cm : this.fieldMetas) {
-			if (cm.getDbColumn().equalsIgnoreCase(columnDBName)) {
+			if (cm.dbColumn.equalsIgnoreCase(columnDBName)) {
 				return cm;
 			}
 		}
@@ -124,12 +130,7 @@ public final class PojoMeta implements Cloneable {
 	}
 
 	public ColumnMeta getByFieldName(String fieldName) {
-		for (ColumnMeta cm : this.fieldMetas) {
-			if (cm.getFieldName().equalsIgnoreCase(fieldName)) {
-				return cm;
-			}
-		}
-		return null;
+		return this.javaNameDict.get(fieldName.toLowerCase());
 	}
 
 	public boolean isNoCache() {
@@ -186,13 +187,13 @@ public final class PojoMeta implements Cloneable {
 
 		this.tableName = StringUtil.isEmpty(table.value())
 				? DBNameResolvers.getTableNameResolver().apply(this.pojoClz.getSimpleName())
-				: table.value().replace('?', '#');
+				: table.value().replace("?", WILDCHAR);
 		String _pre = table.preInCache();
 
 		if (StringUtil.isEmpty(_pre)) {
 			_pre = DBNameResolvers.getCachePrefixResolver().apply(this.tableName);
 		}
-		this.pre = _pre.replace('?', '#');
+		this.pre = _pre.replace("?", WILDCHAR);
 
 		this.counter = new EstimateVisitCounter(table.maxHit());
 		this.resetCounter();
@@ -222,8 +223,7 @@ public final class PojoMeta implements Cloneable {
 			if (map.size() != this.cacheIDs.size()) {
 				return false;
 			}
-			Set<Map.Entry<String, Object>> set = map.entrySet();
-			for (Map.Entry<String, Object> entry : set) {
+			for (Entry<String, Object> entry : map.entrySet()) {
 				if (entry.getValue() == null) {
 					continue;
 				}
@@ -248,8 +248,7 @@ public final class PojoMeta implements Cloneable {
 			return null;
 		}
 		Object ret = Loader.newInstance(this.pojoClz);
-		Set<Entry<String, Object>> set = map.entrySet();
-		for (Entry<String, Object> en : set) {
+		for (Entry<String, Object> en : map.entrySet()) {
 			String key = en.getKey();
 			ColumnMeta m = this.getByColumnDBName(key);
 			if (m == null) {
@@ -267,11 +266,11 @@ public final class PojoMeta implements Cloneable {
 		if (source instanceof Map) {
 			return (Map<String, Object>) source;
 		}
-		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
 			throw new SumkException(548092345,
 					source.getClass().getName() + " is not instance of " + this.pojoClz.getName());
 		}
+		Map<String, Object> map = new ListMap<>(this.fieldMetas.size());
 		for (ColumnMeta m : this.fieldMetas) {
 			Object v = m.value(source);
 			if (!keepNull && v == null) {
@@ -283,30 +282,17 @@ public final class PojoMeta implements Cloneable {
 		return map;
 	}
 
-	public Object buildPojo(Map<String, Object> map) throws Exception {
-		Object obj = Loader.newInstance(this.pojoClz);
-		for (ColumnMeta m : this.fieldMetas) {
-			Object v = map.get(m.getFieldName());
-			if (v == null) {
-				continue;
-			}
-			m.setValue(obj, v);
-		}
-		return obj;
-	}
-
 	@SuppressWarnings("unchecked")
 	public Map<String, Object> populateByDbColumn(Object source, boolean withnull)
 			throws InstantiationException, IllegalAccessException {
 		if (source instanceof Map) {
 			return (Map<String, Object>) source;
 		}
-		Map<String, Object> map = new HashMap<>();
 		if (!this.pojoClz.isInstance(source)) {
-			Log.get("sumk.event").debug("{} is not instance of {}", source.getClass().getName(),
-					this.pojoClz.getName());
-			return map;
+			throw new SumkException(548092346,
+					source.getClass().getName() + " is not instance of " + this.pojoClz.getName());
 		}
+		Map<String, Object> map = new HashMap<>();
 		for (ColumnMeta m : this.fieldMetas) {
 			Object v = m.value(source);
 			if (!withnull && v == null) {

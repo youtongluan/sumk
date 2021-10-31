@@ -18,7 +18,9 @@ package org.yx.db.visit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
+import org.yx.bean.Loader;
 import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
 import org.yx.db.sql.ColumnMeta;
@@ -30,26 +32,24 @@ public class PojoResultHandler implements ResultHandler {
 
 	public static final PojoResultHandler handler = new PojoResultHandler();
 
-	public void filterSelectColumns(PojoMeta pm, Object obj, List<String> selectColumns)
-			throws IllegalArgumentException, IllegalAccessException {
+	public void filterSelectColumns(PojoMeta pm, Object obj, List<String> selectColumns) throws Exception {
 		if (selectColumns.isEmpty()) {
 			return;
 		}
-		for (ColumnMeta c : pm.fieldMetas()) {
-			if (!selectColumns.contains(c.getFieldName())) {
-				c.getField().set(obj, null);
+		for (ColumnMeta cm : pm.fieldMetas()) {
+			if (!selectColumns.contains(cm.getFieldName())) {
+				cm.getField().set(obj, null);
 			}
 		}
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns)
-			throws InstantiationException, IllegalAccessException {
+	public <T> List<T> parseFromJson(PojoMeta pm, List<String> jsons, List<String> selectColumns) throws Exception {
 		if (CollectionUtil.isEmpty(jsons)) {
 			return null;
 		}
-		List<Object> list = new ArrayList<>();
+		List<Object> list = new ArrayList<>(jsons.size());
 		for (String json : jsons) {
 			if (StringUtil.isEmpty(json)) {
 				continue;
@@ -79,15 +79,25 @@ public class PojoResultHandler implements ResultHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> List<T> parse(PojoMeta pm, List<Map<String, Object>> list) throws Exception {
+	public <T> List<T> parse(PojoMeta pm, List<Map<ColumnMeta, Object>> list) throws Exception {
 		List<Object> ret = new ArrayList<>();
-		for (Map<String, Object> map : list) {
+		for (Map<ColumnMeta, Object> map : list) {
 			if (map.isEmpty()) {
 				continue;
 			}
-			ret.add(pm.buildPojo(map));
+			ret.add(buildPojo(pm, map));
 		}
 		return (List<T>) ret;
 	}
 
+	private Object buildPojo(PojoMeta pm, Map<ColumnMeta, Object> map) throws Exception {
+		Object obj = Loader.newInstance(pm.pojoClz());
+		for (Entry<ColumnMeta, Object> en : map.entrySet()) {
+			if (en.getValue() == null) {
+				continue;
+			}
+			en.getKey().setValue(obj, en.getValue());
+		}
+		return obj;
+	}
 }

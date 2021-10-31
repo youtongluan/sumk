@@ -17,6 +17,7 @@ package org.yx.http.user;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.yx.log.Log;
@@ -34,10 +35,10 @@ public final class CacheHelper {
 	private static void expire0(Map<String, TimedCachedObject> map, long duration, Logger log) {
 		int beginSize = map.size();
 		long begin = System.currentTimeMillis() - duration;
-		Iterator<Map.Entry<String, TimedCachedObject>> it = map.entrySet().iterator();
+		Iterator<Entry<String, TimedCachedObject>> it = map.entrySet().iterator();
 		while (it.hasNext()) {
 
-			Map.Entry<String, TimedCachedObject> en = it.next();
+			Entry<String, TimedCachedObject> en = it.next();
 			if (en == null) {
 				continue;
 			}

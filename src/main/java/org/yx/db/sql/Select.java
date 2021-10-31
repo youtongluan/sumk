@@ -26,17 +26,16 @@ import static org.yx.db.sql.Operation.NOT_IN;
 import static org.yx.db.sql.Operation.NOT_LIKE;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import org.yx.common.sumk.map.ListMap;
 import org.yx.db.enums.CacheType;
 import org.yx.db.event.DBEventPublisher;
 import org.yx.db.event.QueryEvent;
@@ -54,7 +53,7 @@ import org.yx.util.kit.Asserts;
  * 比较中用到的key，都是java中的key，大小写敏感.
  */
 public class Select extends SelectBuilder {
-	public Select(SumkDbVisitor<List<Map<String, Object>>> visitor) {
+	public Select(SumkDbVisitor<List<Map<ColumnMeta, Object>>> visitor) {
 		super(visitor);
 	}
 
@@ -106,25 +105,19 @@ public class Select extends SelectBuilder {
 		return this;
 	}
 
-	protected Select addCompares(Operation op, Object pojo) {
+	protected Select andCompares(Operation op, Object pojo) {
 		Map<String, Object> map = this.populate(pojo, false);
 		if (CollectionUtil.isEmpty(map)) {
 			return this;
 		}
-		for (Map.Entry<String, Object> en : map.entrySet()) {
-			this.setCompare(op, en.getKey(), en.getValue());
+		for (Entry<String, Object> en : map.entrySet()) {
+			this.and(op, en.getKey(), en.getValue());
 		}
 		return this;
 	}
 
-	protected Select setCompare(Operation op, String key, Object value) {
-		if (key == null || key.isEmpty()) {
-			return this;
-		}
-		if (_compare == null) {
-			_compare = new ArrayList<>(8);
-		}
-		this._compare.add(new ColumnOperation(key, op, value));
+	private Select and(Operation op, String key, Object value) {
+		this._compare.and(key, op, value);
 		return this;
 	}
 
@@ -136,34 +129,45 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select bigThan(String key, Object value) {
-		return setCompare(BIG, key, value);
+		return and(BIG, key, value);
 	}
 
 	public Select bigOrEqual(String key, Object value) {
-		return setCompare(BIG_EQUAL, key, value);
+		return and(BIG_EQUAL, key, value);
 	}
 
 	public Select lessThan(String key, Object value) {
-		return setCompare(LESS, key, value);
+		return and(LESS, key, value);
 	}
 
 	public Select lessOrEqual(String key, Object value) {
-		return setCompare(LESS_EQUAL, key, value);
+		return and(LESS_EQUAL, key, value);
 	}
 
 	/**
 	 * like操作，%号要自己添加
 	 * 
 	 * @param key   字段名
-	 * @param value 值，不会自动添加%。如果是Collection类型，会自动转化为( OR )的方式
+	 * @param value 值，不会自动添加%
 	 * @return 当前对象
 	 */
 	public Select like(String key, Object value) {
-		return setCompare(LIKE, key, value);
+		return and(LIKE, key, value);
 	}
 
 	public Select notLike(String key, Object value) {
-		return setCompare(NOT_LIKE, key, value);
+		return and(NOT_LIKE, key, value);
+	}
+
+	/**
+	 * 增加一些特别的表达式，主要是为了扩展对OR操作符的支持
+	 * 
+	 * @param op 一般使用GroupOR.create()来创建一个or表达式
+	 * @return 当前对象
+	 */
+	public Select and(CompareOperation op) {
+		this._compare.and(op);
+		return this;
 	}
 
 	/**
@@ -174,7 +178,7 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select not(String key, Object value) {
-		return setCompare(NOT, key, value);
+		return and(NOT, key, value);
 	}
 
 	/**
@@ -185,15 +189,15 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select in(String key, Collection<?> values) {
-		return setCompare(IN, key, values.toArray(new Object[values.size()]));
+		return and(IN, key, CollectionUtil.unmodifyList(values));
 	}
 
 	public Select notIn(String key, Collection<?> values) {
-		return setCompare(NOT_IN, key, values.toArray(new Object[values.size()]));
+		return and(NOT_IN, key, CollectionUtil.unmodifyList(values));
 	}
 
 	public Select bigThan(Object pojo) {
-		return addCompares(BIG, pojo);
+		return andCompares(BIG, pojo);
 	}
 
 	/**
@@ -203,11 +207,11 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select bigOrEqual(Object pojo) {
-		return addCompares(BIG_EQUAL, pojo);
+		return andCompares(BIG_EQUAL, pojo);
 	}
 
 	public Select lessThan(Object pojo) {
-		return addCompares(LESS, pojo);
+		return andCompares(LESS, pojo);
 	}
 
 	/**
@@ -217,42 +221,26 @@ public class Select extends SelectBuilder {
 	 * @return 当前对象
 	 */
 	public Select lessOrEqual(Object pojo) {
-		return addCompares(LESS_EQUAL, pojo);
+		return andCompares(LESS_EQUAL, pojo);
 	}
 
 	public Select like(Object pojo) {
-		return addCompares(LIKE, pojo);
+		return andCompares(LIKE, pojo);
 	}
 
 	public Select not(Object pojo) {
-		return addCompares(NOT, pojo);
+		return andCompares(NOT, pojo);
 	}
 
 	/**
-	 * 根据字段名和判断条件移除所有符合条件的比较
+	 * 根据字段名和判断条件移除所有符合条件的比较。只移除第一级的条件
 	 * 
 	 * @param key java字段名，可以为null。null表示所有的字段都要移除
 	 * @param op  比较条件，可以为null。null表示所有的条件都要移除
 	 * @return 当前对象
 	 */
 	public Select removeCompares(String key, Operation op) {
-		if (_compare == null) {
-			return this;
-		}
-		Iterator<ColumnOperation> it = this._compare.iterator();
-		while (it.hasNext()) {
-			ColumnOperation cp = it.next();
-			if (key != null && !key.equals(cp.name)) {
-				continue;
-			}
-			if (op != null && cp.type != op) {
-				continue;
-			}
-			it.remove();
-		}
-		if (this._compare.isEmpty()) {
-			this._compare = null;
-		}
+		this._compare.removeCompares(key, op);
 		return this;
 	}
 
@@ -327,7 +315,7 @@ public class Select extends SelectBuilder {
 			this.selectColumns = null;
 			return this;
 		}
-		this.selectColumns = Arrays.asList(columns);
+		this.selectColumns = CollectionUtil.unmodifyList(columns);
 		return this;
 	}
 
@@ -388,19 +376,6 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * 传入多个条件
-	 * 
-	 * @param ins 集合各元素之间是or关系，对象中各个kv是and关系
-	 * @return 当前对象
-	 */
-	public Select addEquals(Collection<?> ins) {
-		for (Object src : ins) {
-			this._addIn(src);
-		}
-		return this;
-	}
-
-	/**
 	 * 通过数据库主键列表查询主键，单主键ids就只有一个，多主键就传入多个 <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
 	 * @param ids id列表，顺序跟pojo中定义的一致(按order顺序或书写顺序)
@@ -430,7 +405,7 @@ public class Select extends SelectBuilder {
 		makeSurePojoMeta();
 		List<ColumnMeta> cms = databaseId ? this.pojoMeta.getDatabaseIds() : this.pojoMeta.getCacheIDs();
 		Asserts.requireTrue(cms != null && cms.size() == ids.length, pojoMeta.getTableName() + "没有设置主键，或者主键个数跟参数个数不一致");
-		Map<String, Object> map = new HashMap<>();
+		Map<String, Object> map = new ListMap<>(cms.size());
 		for (int i = 0; i < ids.length; i++) {
 			map.put(cms.get(i).getFieldName(), ids[i]);
 		}
@@ -447,15 +422,25 @@ public class Select extends SelectBuilder {
 		return this.resultHandler == null ? PojoResultHandler.handler : this.resultHandler;
 	}
 
+	private boolean isCompareOnlyCacheId() {
+		if (_compare.size() != 1) {
+			return false;
+		}
+		CompareOperation c0 = _compare.get(0);
+		if (!(c0 instanceof ColumnOperation)) {
+			return false;
+		}
+		ColumnOperation cp = (ColumnOperation) c0;
+		return cp.getType() == IN && cp.getName().equals(this.pojoMeta.cacheIDs.get(0).field.getName());
+	}
+
 	protected boolean canUseInCache() {
 		return this.pojoMeta.cacheIDs.size() == 1 && CollectionUtil.isEmpty(this.in)
-				&& this.pojoMeta.cacheType() == CacheType.SINGLE && _compare != null && _compare.size() == 1
-				&& _compare.get(0).type == IN
-				&& _compare.get(0).name.equals(this.pojoMeta.cacheIDs.get(0).field.getName());
+				&& this.pojoMeta.cacheType() == CacheType.SINGLE && isCompareOnlyCacheId();
 	}
 
 	protected <T> List<T> queryFromCache(Exchange exchange) throws Exception {
-		if (CollectionUtil.isEmpty(this.in) && CollectionUtil.isEmpty(this._compare)) {
+		if (CollectionUtil.isEmpty(this.in) && this._compare.isEmpty()) {
 			return null;
 		}
 		boolean fromCache = this.isOn(DBFlag.SELECT_FROM_CACHE);
@@ -465,13 +450,14 @@ public class Select extends SelectBuilder {
 
 		String singleKeyName = this.canUseInCache() ? this.pojoMeta.cacheIDs.get(0).field.getName() : null;
 		if (singleKeyName != null) {
-			Object[] vs = (Object[]) _compare.get(0).value;
-			List<Map<String, Object>> newIN = new ArrayList<>(vs.length);
+			ColumnOperation cp = (ColumnOperation) _compare.get(0);
+			List<?> vs = (List<?>) cp.getValue();
+			List<Map<String, Object>> newIN = new ArrayList<>(vs.size());
 			for (Object v : vs) {
 				newIN.add(Collections.singletonMap(singleKeyName, v));
 			}
 			exchange.setLeftIn(newIN);
-		} else if (CollectionUtil.isEmpty(_compare)) {
+		} else if (_compare.isEmpty()) {
 			exchange.setLeftIn(this.in);
 		} else {
 			return null;
@@ -497,19 +483,37 @@ public class Select extends SelectBuilder {
 			for (Map<String, Object> m : left) {
 				vs.add(m.get(singleKeyName));
 			}
-			this._compare = Collections.singletonList(new ColumnOperation(singleKeyName, IN, vs.toArray()));
+			this._compare = GroupAND.create().and(singleKeyName, IN, vs);
 		} else {
 			this.in = left;
 		}
 		return list;
 	}
 
+	protected final void validSelectColumns() {
+		if (this.selectColumns == null || this.selectColumns.isEmpty()) {
+			this.selectColumns = null;
+			return;
+		}
+		List<String> list = new ArrayList<>(this.selectColumns.size());
+		for (String filedName : selectColumns) {
+			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
+			if (cm == null) {
+				this.failIfNotAllowPropertyMiss(filedName);
+				continue;
+			}
+			list.add(cm.getFieldName());
+		}
+		this.selectColumns = list.isEmpty() ? null : list;
+	}
+
 	public <T> List<T> queryList() {
 
 		final List<Map<String, Object>> origin = this.in = CollectionUtil.unmodifyList(this.in);
-		final List<ColumnOperation> orginCompare = this._compare = CollectionUtil.unmodifyList(this._compare);
+		final GroupAND orginCompare = this._compare.unmodifyFirstLevel();
 		try {
 			makeSurePojoMeta().getCounter().incrQueryCount();
+			this.validSelectColumns();
 			Exchange exchange = new Exchange();
 			List<T> list = this.queryFromCache(exchange);
 			if (list != null && CollectionUtil.isEmpty(exchange.getLeftIn())) {
@@ -528,9 +532,8 @@ public class Select extends SelectBuilder {
 			List<Map<String, Object>> eventIn = canUseCache ? exchange.getLeftIn() : this.in;
 
 			if (this.isOn(DBFlag.SELECT_TO_CACHE) && selectColumns == null && this.offset <= 0
-					&& (canUseCache || CollectionUtil.isEmpty(this._compare))
-					&& (limit <= 0 || limit >= DBSettings.MaxLimit()) && CollectionUtil.isNotEmpty(eventIn)
-					&& dbData.size() < DBSettings.maxQueryCacheSize()) {
+					&& (canUseCache || this._compare.isEmpty()) && (limit <= 0 || limit >= DBSettings.MaxLimit())
+					&& CollectionUtil.isNotEmpty(eventIn) && dbData.size() < DBSettings.maxQueryCacheSize()) {
 
 				QueryEvent event = new QueryEvent(this.pojoMeta.getTableName());
 				event.setIn(eventIn);

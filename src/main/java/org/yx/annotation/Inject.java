@@ -49,4 +49,11 @@ public @interface Inject {
 	 * @return 如果为true，表示可以为null或空集合
 	 */
 	boolean allowEmpty() default false;
+
+	/**
+	 * 是否允许存在多个bean。设置为true的时候，最好和Ordered接口一起使用
+	 * 
+	 * @return 如果设置为true，存在多个bean的时候，返回第一个
+	 */
+	boolean allowMulti() default false;
 }

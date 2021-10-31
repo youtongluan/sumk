@@ -71,7 +71,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 				throw BizException.create(HttpErrorCode.THREAD_THRESHOLD_OVER, "系统限流降级");
 			}
 			InnerHttpUtil.startContext(req, resp, rawAct);
-			wc = new WebContext(info, req, resp, beginTime, charset);
+			wc = new WebContext(info, req, resp, charset);
 			LocalWebContext.setCtx(wc);
 			handle(wc);
 		} catch (Throwable e) {

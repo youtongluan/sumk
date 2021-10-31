@@ -15,9 +15,10 @@
  */
 package org.yx.rpc.codec.encoders;
 
+import org.yx.common.Ordered;
 import org.yx.rpc.transport.DataBuffer;
 
-public interface DataEncoder {
+public interface DataEncoder extends Ordered {
 
 	boolean encode(Object message, DataBuffer buf) throws Exception;
 }

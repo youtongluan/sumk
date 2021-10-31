@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
@@ -87,7 +88,7 @@ public final class RpcRoutes {
 
 	private static void fillWeightedServer(Map<String, WeightedServer<Host>> source,
 			Map<String, Set<WeightedServer<Host>>> dest) {
-		for (Map.Entry<String, WeightedServer<Host>> entry : source.entrySet()) {
+		for (Entry<String, WeightedServer<Host>> entry : source.entrySet()) {
 			String m = entry.getKey();
 			WeightedServer<Host> serverMachine = entry.getValue();
 			Set<WeightedServer<Host>> server = dest.get(m);
@@ -105,7 +106,7 @@ public final class RpcRoutes {
 			fillWeightedServer(createServerMachine(r), map);
 		}
 		Map<String, Router<Host>> routes = new HashMap<>();
-		for (Map.Entry<String, Set<WeightedServer<Host>>> entry : map.entrySet()) {
+		for (Entry<String, Set<WeightedServer<Host>>> entry : map.entrySet()) {
 			String method = entry.getKey();
 			Set<WeightedServer<Host>> servers = entry.getValue();
 			if (servers == null || servers.isEmpty()) {

@@ -16,12 +16,16 @@
 package org.yx.db.visit;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yx.db.DBJson;
 import org.yx.db.enums.CacheType;
+import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.PojoMeta;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -86,8 +90,19 @@ public class MapResultHandler implements ResultHandler {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> List<T> parse(PojoMeta pm, List<Map<String, Object>> list) {
-		return (List<T>) list;
+	public <T> List<T> parse(PojoMeta pm, List<Map<ColumnMeta, Object>> list) {
+		if (list == null || list.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<Map<String, Object>> ret = new ArrayList<>(list.size());
+		for (Map<ColumnMeta, Object> m0 : list) {
+			Map<String, Object> map = new HashMap<>();
+			for (Entry<ColumnMeta, Object> en : m0.entrySet()) {
+				map.put(en.getKey().getFieldName(), en.getValue());
+			}
+			ret.add(map);
+		}
+		return (List<T>) ret;
 	}
 
 }

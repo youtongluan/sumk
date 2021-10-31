@@ -17,13 +17,14 @@ package org.yx.db.sql;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.yx.common.ItemJoiner;
+import org.yx.common.sumk.map.ListMap;
 import org.yx.db.event.InsertEvent;
 import org.yx.db.visit.SumkDbVisitor;
+import org.yx.exception.SumkException;
 import org.yx.util.SeqUtil;
 
 public class Insert extends ModifySqlBuilder {
@@ -71,7 +72,7 @@ public class Insert extends ModifySqlBuilder {
 		MapedSql ms = new MapedSql();
 		ItemJoiner columns = ItemJoiner.create(",", " ( ", " ) ");
 		ItemJoiner placeholder = ItemJoiner.create(",", " ( ", " ) ");
-		List<ColumnMeta> fms = pojoMeta.fieldMetas;
+		List<ColumnMeta> fms = pojoMeta.fieldMetas();
 		int recodeSize = in.size();
 
 		boolean softDeleteAndNotProvided = pojoMeta.isSoftDelete() && !pojoMeta.softDelete.fieldProvided;
@@ -100,16 +101,17 @@ public class Insert extends ModifySqlBuilder {
 		List<Map<String, Object>> cacheList = new ArrayList<>(recodeSize);
 		for (int i = 0; i < recodeSize; i++) {
 			Map<String, Object> pojoMap = this.in.get(i);
-			Map<String, Object> map = new HashMap<>();
+			this.checkMap(pojoMap, pojoMeta);
+			Map<String, Object> map = new ListMap<>(pojoMap.size());
 			this.fillSpecialColumns(pojoMap, src.get(i));
-
 			for (ColumnMeta fm : fms) {
-				Object value = fm.value(pojoMap);
+				String key = fm.getFieldName();
+				Object value = pojoMap.get(key);
 				ms.addParam(value);
-				map.put(fm.getFieldName(), value);
+				map.put(key, value);
 			}
 			if (map.isEmpty()) {
-				continue;
+				throw new SumkException(-829341, "存在无效的待插入记录");
 			}
 			cacheList.add(map);
 			if (softDeleteAndNotProvided) {

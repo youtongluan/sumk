@@ -141,7 +141,7 @@ public class BeanConverter {
 			return bean;
 		}
 		Map<String, Object> tmp = new HashMap<>();
-		for (Map.Entry<String, Object> entry : map.entrySet()) {
+		for (Entry<String, Object> entry : map.entrySet()) {
 			String k = entry.getKey();
 			Object v = entry.getValue();
 			if (k == null || v == null) {

@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.enums.DBType;
+import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.InsertResult;
 import org.yx.db.sql.MapedSql;
@@ -88,14 +89,13 @@ public final class Visitors {
 		}
 	};
 
-	public static final SumkDbVisitor<List<Map<String, Object>>> queryVisitorForORM = builder -> {
+	public static final SumkDbVisitor<List<Map<ColumnMeta, Object>>> queryVisitorForORM = builder -> {
 		MapedSql maped = builder.toMapedSql();
 		Connection conn = ConnectionPool.get().connection(DBSettings.readType());
 		try (SumkStatement statement = SumkStatement.create(conn, maped)) {
 			ResultSet ret = statement.executeQuery();
 			PojoMeta pm = ((SelectBuilder) builder).makeSurePojoMeta();
-			List<Map<String, Object>> list = ResultSetUtils.toMapList(ret, pm);
-			return list;
+			return ResultSetUtils.toMapList(ret, pm);
 		}
 	};
 

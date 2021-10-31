@@ -114,7 +114,12 @@ public class Response implements StreamAble, Serializable {
 		CodecKit.skipPrefixedString(s, size - 1);
 
 		size = s.readInt(1);
-		CodecKit.skipPrefixedString(s, size);
+		if (size > 0) {
+			for (int i = 0; i < size; i++) {
+				s.readPrefixedString(1);
+				s.readPrefixedString(2);
+			}
+		}
 
 		int type = s.readInt(1);
 		switch (type) {

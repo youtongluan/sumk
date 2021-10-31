@@ -38,12 +38,22 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 		if (list.size() == 1) {
 			return list.get(0);
 		}
+
 		if (list.size() > 1) {
 			for (Object obj : list) {
 
 				if (clz == BeanKit.getTargetClass(obj)) {
 					return obj;
 				}
+			}
+			if (inject.allowMulti()) {
+				return list.get(0);
+			}
+		}
+		if (inject.allowMulti()) {
+			list = InnerIOC.pool.getBeans(null, clz);
+			if (list.size() > 0) {
+				return list.get(0);
 			}
 		}
 		return IOC.get(clz);

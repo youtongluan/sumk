@@ -15,7 +15,7 @@
  */
 package org.yx.common;
 
-public class ItemJoiner {
+public final class ItemJoiner {
 
 	public static ItemJoiner create(CharSequence delimiter, CharSequence pre, CharSequence suf) {
 		return new ItemJoiner(delimiter, pre, suf);

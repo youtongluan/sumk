@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -60,7 +61,7 @@ public final class RpcActions {
 
 	public static List<String> publishSoaSet() {
 		List<String> list = new ArrayList<>(actMap.size());
-		for (Map.Entry<String, RpcActionNode> entry : actMap.entrySet()) {
+		for (Entry<String, RpcActionNode> entry : actMap.entrySet()) {
 			String api = entry.getKey();
 			if (needPublish(api, entry.getValue())) {
 				list.add(api);

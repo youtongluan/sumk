@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.sql.Connection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,8 +133,8 @@ public class SqlSessionFactory {
 
 	SqlSessionFactory sqlParse() throws Exception {
 		Map<String, byte[]> sqls = resourceLoader.get().openResources(db);
-		Set<Map.Entry<String, byte[]>> entries = sqls.entrySet();
-		for (Map.Entry<String, byte[]> entry : entries) {
+		Set<Entry<String, byte[]>> entries = sqls.entrySet();
+		for (Entry<String, byte[]> entry : entries) {
 			byte[] bs = entry.getValue();
 			XMLMapperBuilder xmlMapperBuilder = new XMLMapperBuilder(new ByteArrayInputStream(bs), configuration,
 					entry.getKey(), configuration.getSqlFragments());

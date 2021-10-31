@@ -184,7 +184,7 @@ public class Req implements StreamAble, Serializable {
 		if (size > 0) {
 			for (Entry<String, String> en : this.attachments.entrySet()) {
 				s.writePrefixedString(en.getKey(), 1);
-				s.writePrefixedString(en.getValue(), 1);
+				s.writePrefixedString(en.getValue(), 2);
 			}
 		}
 
@@ -214,9 +214,9 @@ public class Req implements StreamAble, Serializable {
 
 		size = s.readInt(1);
 		if (size > 0) {
-			Map<String, String> map = new ListMap<>();
+			Map<String, String> map = new ListMap<>(size);
 			for (int i = 0; i < size; i++) {
-				map.put(s.readPrefixedString(1), s.readPrefixedString(1));
+				map.put(s.readPrefixedString(1), s.readPrefixedString(2));
 			}
 			this.attachments = CollectionUtil.unmodifyMap(map);
 		}

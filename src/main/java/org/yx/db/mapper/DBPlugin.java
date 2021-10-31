@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.yx.annotation.Bean;
@@ -105,7 +106,7 @@ public class DBPlugin implements Plugin {
 		}
 		Map<String, SqlParser> sqlMap = new HashMap<>();
 		try {
-			for (Map.Entry<String, byte[]> entry : inputMap.entrySet()) {
+			for (Entry<String, byte[]> entry : inputMap.entrySet()) {
 				String fileName = entry.getKey();
 				byte[] bs = entry.getValue();
 				if (bs == null || bs.length == 0) {

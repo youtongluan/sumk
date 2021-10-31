@@ -16,9 +16,9 @@
 package org.yx.db.sql;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringJoiner;
 
 import org.yx.common.ItemJoiner;
@@ -27,11 +27,11 @@ import org.yx.exception.SumkException;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>> {
+public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Object>>> {
 
 	protected List<String> selectColumns;
 
-	protected List<ColumnOperation> _compare;
+	protected GroupAND _compare = GroupAND.create();
 
 	protected List<Order> orderby;
 
@@ -39,7 +39,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 	protected int limit;
 
-	public SelectBuilder(SumkDbVisitor<List<Map<String, Object>>> visitor) {
+	public SelectBuilder(SumkDbVisitor<List<Map<ColumnMeta, Object>>> visitor) {
 		super(visitor);
 		this.limit = DBSettings.MaxLimit();
 	}
@@ -51,8 +51,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
-		List<Object> paramters = new ArrayList<>(10);
 		makeSurePojoMeta();
+		List<Object> paramters = new ArrayList<>(10);
 		StringBuilder sql = new StringBuilder(32);
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
@@ -106,13 +106,14 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 			for (String filedName : this.selectColumns) {
 				ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 				if (cm == null) {
-					throw new SumkException(-5345340, filedName + "不是有效的java字段");
+					this.failIfNotAllowPropertyMiss(filedName);
+					continue;
 				}
 				sj.add(cm.dbColumn);
 			}
 			return sj.toString();
 		}
-		for (ColumnMeta cm : pojoMeta.fieldMetas) {
+		for (ColumnMeta cm : pojoMeta.fieldMetas()) {
 			sj.add(cm.dbColumn);
 		}
 		return sj.toString();
@@ -132,24 +133,17 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		}
 		StringBuilder sb = new StringBuilder();
 		if (softDelete.equalValid) {
-			sb.append(softDelete.columnName).append(" =? ");
+			sb.append(softDelete.columnName).append(" = ?");
 			paramters.add(softDelete.validValue);
 		} else {
-			sb.append(softDelete.columnName).append(" != ? ");
+			sb.append(softDelete.columnName).append(" <> ?");
 			paramters.add(softDelete.inValidValue);
 		}
 		return sb;
 	}
 
 	private CharSequence buildCompare(List<Object> paramters) {
-		if (CollectionUtil.isEmpty(this._compare)) {
-			return null;
-		}
-		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		for (ColumnOperation op : this._compare) {
-			this.parseOperation(joiner, op, paramters);
-		}
-		return joiner.toCharSequence();
+		return this._compare.buildSql(this, paramters);
 	}
 
 	private CharSequence buildEquals(List<Object> paramters) {
@@ -168,69 +162,12 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 		return joiner.toCharSequence();
 	}
 
-	private void parseOperation(ItemJoiner joiner, ColumnOperation cop, List<Object> paramters) {
-		String filedName = cop.name;
-		Object v = cop.value;
-		Operation type = cop.type;
-		ColumnMeta cm = pojoMeta.getByFieldName(filedName);
-		if (cm == null) {
-			if (this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
-				throw new SumkException(-54675234, filedName + "这个字段没有在java的pojo类中定义");
-			}
-			return;
-		}
-		if (v == null) {
-			if (type == Operation.NOT) {
-				joiner.item().append(cm.dbColumn).append(" IS NOT NULL ");
-				return;
-			}
-			if (!this.isOn(DBFlag.SELECT_COMPARE_ALLOW_NULL)) {
-				throw new SumkException(2342423, filedName + "的值为null");
-			}
-			if (this.isOn(DBFlag.SELECT_COMPARE_IGNORE_NULL)) {
-				return;
-			}
-		}
-
-		if (v instanceof Collection) {
-			ItemJoiner orJoiner = ItemJoiner.create(" OR ", " (", ") ");
-			Collection<?> col = (Collection<?>) v;
-			for (Object obj : col) {
-				orJoiner.item().append(cm.dbColumn).append(type.op).append(" ? ");
-				paramters.add(obj);
-			}
-			joiner.item().append(orJoiner, null, null);
-			return;
-		}
-
-		joiner.item().append(cm.dbColumn).append(type.op);
-		if (type == Operation.IN || type == Operation.NOT_IN) {
-			joiner.append("(");
-			boolean first = true;
-			for (Object obj : (Object[]) v) {
-				if (first) {
-					joiner.append("?");
-					first = false;
-				} else {
-					joiner.append(",?");
-				}
-				paramters.add(obj);
-			}
-			joiner.append(") ");
-			return;
-		}
-
-		joiner.append(" ? ");
-		paramters.add(v);
-
-	}
-
 	private CharSequence parseEqual(Map<String, Object> src, List<Object> paramters) {
 		if (CollectionUtil.isEmpty(src)) {
 			return null;
 		}
 		ItemJoiner joiner = ItemJoiner.create(" AND ", " ( ", " ) ");
-		for (Map.Entry<String, Object> entry : src.entrySet()) {
+		for (Entry<String, Object> entry : src.entrySet()) {
 			String filedName = entry.getKey();
 			Object v = entry.getValue();
 
@@ -242,10 +179,10 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 				continue;
 			}
 			if (v == null) {
-				joiner.item().append(cm.dbColumn).append(" IS NULL ");
+				joiner.item().append(cm.dbColumn).append(" IS NULL");
 				continue;
 			}
-			joiner.item().append(cm.dbColumn).append("=? ");
+			joiner.item().append(cm.dbColumn).append(" = ?");
 			paramters.add(v);
 		}
 
@@ -265,7 +202,10 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<String, Object>>>
 
 		public String toString(PojoMeta pm) {
 			ColumnMeta cm = pm.getByFieldName(name);
-			String dbName = cm == null ? name : cm.dbColumn;
+			if (cm == null) {
+				throw new SumkException(-4532018, "排序字段" + name + "不在" + pm.pojoClz.getName() + "字段中");
+			}
+			String dbName = cm.dbColumn;
 			if (desc) {
 				return dbName + " desc";
 			}

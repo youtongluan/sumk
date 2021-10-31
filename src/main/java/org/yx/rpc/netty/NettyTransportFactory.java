@@ -21,6 +21,7 @@ import org.yx.annotation.Bean;
 import org.yx.bean.IOC;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
+import org.yx.conf.Const;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.transport.TransportClient;
 import org.yx.rpc.transport.TransportFactory;
@@ -54,6 +55,6 @@ public class NettyTransportFactory implements TransportFactory {
 
 	@Override
 	public int order() {
-		return TransportFactory.super.order() + 1000;
+		return Const.DEFAULT_ORDER + 1000;
 	}
 }

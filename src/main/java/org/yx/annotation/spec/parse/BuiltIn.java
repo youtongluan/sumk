@@ -93,7 +93,7 @@ public final class BuiltIn {
 		if (c == null) {
 			return null;
 		}
-		return new InjectSpec(c.value(), c.allowEmpty());
+		return new InjectSpec(c.value(), c.allowEmpty(), c.allowMulti());
 	};
 
 	public static final Function<Field, ParamSpec> PARAM_FIELD_PARSER = f -> {

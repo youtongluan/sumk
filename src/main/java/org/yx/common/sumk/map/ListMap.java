@@ -18,14 +18,23 @@ package org.yx.common.sumk.map;
 import java.io.Serializable;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
+/**
+ * 支持key、value为null
+ */
 public class ListMap<K, V> extends AbstractMap<K, V> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
 	private final ListEntrySet<K, V> data;
+
+	protected ListMap(ListEntrySet<K, V> data) {
+		this.data = Objects.requireNonNull(data);
+	}
 
 	public ListMap() {
 		this.data = new ListEntrySet<K, V>(new ArrayList<>());
@@ -36,10 +45,15 @@ public class ListMap<K, V> extends AbstractMap<K, V> implements Serializable {
 	}
 
 	public ListMap(Map<K, V> map) {
-		this.data = new ListEntrySet<K, V>(new ArrayList<>(map.size() + 5));
+		this(map, 0);
+	}
+
+	public ListMap(Map<K, V> map, int estimateGrowSize) {
+		List<Entry<K, V>> list = new ArrayList<>(map.size() + estimateGrowSize);
 		for (Entry<K, V> en : map.entrySet()) {
-			data.add(new AbstractMap.SimpleEntry<>(en));
+			list.add(new AbstractMap.SimpleEntry<>(en));
 		}
+		this.data = new ListEntrySet<K, V>(list);
 	}
 
 	@Override

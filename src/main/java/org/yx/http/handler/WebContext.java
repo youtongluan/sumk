@@ -39,13 +39,8 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	private Object result;
 	private transient String str_data;
 	private transient String str_resp;
-	private final long beginTime;
 
 	private boolean failed;
-
-	public long beginTime() {
-		return this.beginTime;
-	}
 
 	public String dataInString() {
 		return str_data;
@@ -66,14 +61,12 @@ public class WebContext extends NodeContext<HttpActionNode> {
 		}
 	}
 
-	public WebContext(HttpActionInfo info, HttpServletRequest req, HttpServletResponse resp, long beginTime,
-			Charset charset) {
+	public WebContext(HttpActionInfo info, HttpServletRequest req, HttpServletResponse resp, Charset charset) {
 		super(Objects.requireNonNull(info).node());
 		this.actionInfo = info;
 		this.httpRequest = Objects.requireNonNull(req);
 		this.charset = Objects.requireNonNull(charset);
 		this.httpResponse = resp;
-		this.beginTime = beginTime;
 	}
 
 	public Charset charset() {

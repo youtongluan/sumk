@@ -17,12 +17,14 @@ package org.yx.annotation.spec;
 
 public class InjectSpec {
 	private final boolean allowEmpty;
+	private final boolean allowMulti;
 
 	private final String value;
 
-	public InjectSpec(String value, boolean allowEmpty) {
+	public InjectSpec(String value, boolean allowEmpty, boolean allowMulti) {
 		this.value = value;
 		this.allowEmpty = allowEmpty;
+		this.allowMulti = allowMulti;
 	}
 
 	public String value() {
@@ -36,5 +38,9 @@ public class InjectSpec {
 	 */
 	public boolean allowEmpty() {
 		return this.allowEmpty;
+	}
+
+	public boolean allowMulti() {
+		return allowMulti;
 	}
 }

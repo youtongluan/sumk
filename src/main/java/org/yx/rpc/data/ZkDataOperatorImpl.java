@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.yx.common.Host;
@@ -48,13 +49,8 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 		String s = map.get(SERVER);
 		Host host = null;
 		if (s == null || (host = Host.create(s)) == null) {
-			logger.warn("{} 不是有效的host", s);
-			if (AppInfo.getBoolean("sumk.rpc.host.path.enable", true)) {
-				host = Host.create(data.name());
-			}
-			if (host == null) {
-				return null;
-			}
+			logger.error("{} 不是有效的host", s);
+			return null;
 		}
 		RouteInfo info = new RouteInfo(host, data.name());
 		String f = map.get(ZKConst.FEATURE);
@@ -69,14 +65,13 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 		}
 		info.setWeight(map.get(ZKConst.WEIGHT));
 		List<ApiInfo> intfs = new ArrayList<>();
-		for (Map.Entry<String, String> entry : methodMap.entrySet()) {
+		for (Entry<String, String> entry : methodMap.entrySet()) {
 			String m = entry.getKey();
 			String value = entry.getValue();
 			if (m.length() == 0) {
 				continue;
 			}
-			ApiInfo intf = new ApiInfo();
-			intf.setName(m);
+			ApiInfo intf = new ApiInfo(m);
 			intfs.add(intf);
 			if (value != null && value.length() > 0) {
 				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");

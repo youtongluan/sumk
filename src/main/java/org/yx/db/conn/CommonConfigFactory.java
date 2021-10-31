@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yx.annotation.Bean;
 import org.yx.conf.AppInfo;
@@ -57,7 +58,7 @@ public class CommonConfigFactory implements DBConfigFactory {
 		}
 		final Map<String, Map<String, String>> ret = new HashMap<String, Map<String, String>>();
 
-		for (Map.Entry<String, Object> entry : objectMap.entrySet()) {
+		for (Entry<String, Object> entry : objectMap.entrySet()) {
 			String catagory = entry.getKey();
 			Object value = entry.getValue();
 			if (!(value instanceof Map)) {
@@ -67,7 +68,7 @@ public class CommonConfigFactory implements DBConfigFactory {
 			@SuppressWarnings("unchecked")
 			Map<String, Object> config = (Map<String, Object>) value;
 			Map<String, String> real = new HashMap<>();
-			for (Map.Entry<String, Object> e2 : config.entrySet()) {
+			for (Entry<String, Object> e2 : config.entrySet()) {
 				String propertyName = e2.getKey();
 				Object v = e2.getValue();
 				if (!(v instanceof String)) {

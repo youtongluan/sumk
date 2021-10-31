@@ -16,11 +16,12 @@
 package org.yx.db.sql;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.yx.common.ItemJoiner;
+import org.yx.common.sumk.map.ListMap;
 import org.yx.db.event.UpdateEvent;
 import org.yx.db.visit.SumkDbVisitor;
 import org.yx.exception.SumkException;
@@ -105,20 +106,8 @@ public class Update extends ModifySqlBuilder {
 	 *             <B>如果本字段包含在自增长里面，那它将会被排除掉</B>
 	 * @return 当前对象
 	 */
-	@SuppressWarnings("unchecked")
 	public Update updateTo(Object pojo) {
-		if (pojo instanceof Map) {
-			this.updateTo = new HashMap<>((Map<String, Object>) pojo);
-			return this;
-		}
-		if (this.tableClass == null) {
-			this.tableClass = pojo.getClass();
-		}
-		try {
-			this.updateTo = this.makeSurePojoMeta().populate(pojo, false);
-		} catch (Exception e) {
-			throw new SumkException(-345461, e.getMessage(), e);
-		}
+		this.updateTo = this.populate(pojo, false);
 		return this;
 	}
 
@@ -142,93 +131,104 @@ public class Update extends ModifySqlBuilder {
 		return _toMapedSql();
 	}
 
-	protected MapedSql _toMapedSql() throws Exception {
-		PojoMeta pojoMeta = this.pojoMeta;
-		MapedSql ms = new MapedSql();
-		StringBuilder sb = new StringBuilder(32);
-		List<ColumnMeta> fms = pojoMeta.fieldMetas;
-		SoftDeleteMeta softDelete = pojoMeta.softDelete;
-		sb.append("UPDATE ").append(pojoMeta.getTableName());
-		boolean notFirst = false;
-		Map<String, Object> to = new HashMap<>(this.updateTo);
-
-		for (ColumnMeta fm : fms) {
-			String fieldName = fm.getFieldName();
-
-			if (this.incrMap != null && this.incrMap.containsKey(fieldName)) {
-				to.remove(fieldName);
-				sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append('=').append(fm.dbColumn)
-						.append(" +? ");
-				notFirst = true;
-				ms.addParam(this.incrMap.get(fieldName));
+	protected CharSequence buildSingleEqual(Map<String, Object> oneEqual, MapedSql ms) {
+		if (oneEqual.isEmpty()) {
+			return null;
+		}
+		ItemJoiner andItem = new ItemJoiner(" AND ", " ( ", " ) ");
+		for (Entry<String, Object> en : oneEqual.entrySet()) {
+			ColumnMeta fm = pojoMeta.getByFieldName(en.getKey());
+			if (fm == null) {
+				this.failIfNotAllowPropertyMiss(en.getKey());
 				continue;
 			}
+			Object value = en.getValue();
+			if (value == null) {
+				andItem.item().append(fm.dbColumn).append(" IS NULL");
+				continue;
+			}
+			andItem.item().append(fm.dbColumn).append(" = ?");
+			ms.addParam(value);
+		}
+		if (andItem.isEmpty()) {
+			return null;
+		}
+		SoftDeleteMeta softDelete = pojoMeta.softDelete;
+		if (softDelete != null) {
+			if (softDelete.equalValid) {
+				andItem.item().append(softDelete.columnName).append(" = ?");
+				ms.addParam(softDelete.validValue);
+			} else {
+				andItem.item().append(softDelete.columnName).append(" <> ?");
+				ms.addParam(softDelete.inValidValue);
+			}
+		}
+		return andItem.toCharSequence();
+	}
 
-			if (!fm.containsKey(this.updateTo) && !this.isOn(DBFlag.UPDATE_FULL_UPDATE)) {
+	protected Map<String, Object> buildSetUpdateField(StringBuilder sb, MapedSql mapedSql) {
+		if (this.incrMap != null) {
+			this.checkMap(incrMap, pojoMeta);
+		}
+		boolean notFirst = false;
+		Map<String, Object> to = new ListMap<>(this.updateTo);
+		Object value;
+		for (ColumnMeta fm : pojoMeta.fieldMetas()) {
+			final String fieldName = fm.getFieldName();
+			if (this.incrMap != null && (value = this.incrMap.get(fieldName)) != null) {
+				to.remove(fieldName);
+				sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append(" = ").append(fm.dbColumn)
+						.append(" + ?");
+				mapedSql.addParam(value);
+				notFirst = true;
+				continue;
+			}
+			value = this.updateTo.get(fieldName);
+
+			if (value == null && !this.updateTo.containsKey(fieldName) && !this.isOn(DBFlag.UPDATE_FULL_UPDATE)) {
 				continue;
 			}
 			if (fm.isDBID() && !this.isOn(DBFlag.UPDATE_UPDATE_DBID)) {
 				continue;
 			}
-			sb.append(notFirst ? " , " : " SET ");
-			sb.append(fm.dbColumn).append("=? ");
+			mapedSql.addParam(value);
+			sb.append(notFirst ? " , " : " SET ").append(fm.dbColumn).append(" = ?");
 			notFirst = true;
-			ms.addParam(fm.value(this.updateTo));
 		}
+		return to;
+	}
 
-		ItemJoiner orItem = new ItemJoiner(" OR ", " WHERE ", null);
-		boolean isSingle = in.size() == 1;
-		for (Map<String, Object> where : this.in) {
-			if (where.isEmpty()) {
-				continue;
+	protected MapedSql _toMapedSql() throws Exception {
+		MapedSql mapedSql = new MapedSql();
+		StringBuilder sb = new StringBuilder(64).append("UPDATE ").append(pojoMeta.getTableName());
+
+		Map<String, Object> to = this.buildSetUpdateField(sb, mapedSql);
+		sb.append(" WHERE ");
+
+		ItemJoiner orItem = new ItemJoiner(" OR ", null, null);
+		for (Map<String, Object> oneEqual : this.in) {
+			CharSequence one = this.buildSingleEqual(oneEqual, mapedSql);
+			if (one != null && one.length() > 0) {
+				orItem.item().append(one);
 			}
-			this.checkMap(where, pojoMeta);
-			ItemJoiner andItem = isSingle ? new ItemJoiner(" AND ", null, null) : new ItemJoiner(" AND ", " ( ", " ) ");
-			for (ColumnMeta fm : fms) {
-				Object value = null;
-				if (!where.containsKey(fm.getFieldName())) {
-					continue;
-				}
-				value = where.get(fm.getFieldName());
-				if (value == null) {
-					andItem.item().append(fm.dbColumn).append(" IS NULL ");
-					continue;
-				}
-				andItem.item().append(fm.dbColumn).append("=? ");
-				ms.addParam(value);
-			}
-			if (andItem.isEmpty()) {
-				continue;
-			}
-			if (softDelete != null) {
-				if (softDelete.equalValid) {
-					andItem.item().append(softDelete.columnName).append("=? ");
-					ms.addParam(softDelete.validValue);
-				} else {
-					andItem.item().append(softDelete.columnName).append(" != ? ");
-					ms.addParam(softDelete.inValidValue);
-				}
-			}
-			CharSequence one = andItem.toCharSequence();
-			orItem.item().append(one);
 		}
-		CharSequence whereStr = orItem.toCharSequence(true);
+		CharSequence whereStr = orItem.toCharSequence();
 		if (whereStr == null || whereStr.length() == 0) {
 			throw new SumkException(-7345445, "where cannot be null");
 		}
 		sb.append(whereStr);
-		ms.sql = sb.toString();
-		ms.event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in,
+		mapedSql.sql = sb.toString();
+		mapedSql.event = new UpdateEvent(pojoMeta.getTableName(), to, this.incrMap, this.in,
 				this.isOn(DBFlag.UPDATE_FULL_UPDATE), this.isOn(DBFlag.UPDATE_UPDATE_DBID));
-		return ms;
+		return mapedSql;
 	}
 
 	protected void addDBIDs2Where() throws Exception {
 		List<ColumnMeta> whereColumns = this.pojoMeta.getDatabaseIds();
-		Map<String, Object> paramMap = new HashMap<>();
+		Map<String, Object> paramMap = new ListMap<>(whereColumns.size());
 		for (ColumnMeta fm : whereColumns) {
 			String fieldName = fm.getFieldName();
-			paramMap.put(fieldName, fm.value(this.updateTo));
+			paramMap.put(fieldName, this.updateTo.get(fieldName));
 		}
 		this._addInByMap(paramMap);
 	}
@@ -251,7 +251,7 @@ public class Update extends ModifySqlBuilder {
 		}
 		v = TypeConverter.toType(v, columnMeta.field.getType(), true);
 		if (this.incrMap == null) {
-			this.incrMap = new HashMap<>();
+			this.incrMap = new ListMap<>();
 		}
 		this.incrMap.put(fieldName, v);
 		return this;
