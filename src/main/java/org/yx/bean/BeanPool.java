@@ -52,8 +52,7 @@ public final class BeanPool {
 	public <T> T putClass(String beanName, Class<T> clz) throws Exception {
 		Objects.requireNonNull(clz);
 		Collection<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty())
-				? BeanKit.resloveBeanNames(clz)
-				: StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
+				? BeanKit.resloveBeanNames(clz) : StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
 		if (names == null || names.isEmpty()) {
 			names = Collections.singleton(BeanKit.resloveBeanName(clz));
 		}
@@ -68,8 +67,7 @@ public final class BeanPool {
 	public <T> T putBean(String beanName, T bean) {
 		Class<?> clz = Objects.requireNonNull(bean).getClass();
 		Collection<String> names = (beanName == null || (beanName = beanName.trim()).isEmpty())
-				? BeanKit.resloveBeanNames(clz)
-				: StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
+				? BeanKit.resloveBeanNames(clz) : StringUtil.splitAndTrim(beanName, Const.COMMA, Const.SEMICOLON);
 		if (names == null || names.isEmpty()) {
 			names = Collections.singleton(BeanKit.resloveBeanName(clz));
 		}

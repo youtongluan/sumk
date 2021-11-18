@@ -15,9 +15,6 @@
  */
 package org.test.orm;
 
-import java.io.File;
-import java.net.URL;
-import java.nio.file.Files;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Map;
@@ -27,8 +24,6 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.yx.bean.IOC;
 import org.yx.common.date.TimeUtil;
-import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.orm.LocalSqlDao;
 
 /*
@@ -65,20 +60,6 @@ public class SqlTest extends BaseOrmTest{
 		Assert.assertEquals(age+1, map.get("age"));
 		System.out.println(map.get("lastUpdate").getClass());
 		Assert.assertEquals(lastUpdate, TimeUtil.toType(map.get("lastUpdate"), Timestamp.class, true));
-	}
-	
-	@Test
-	public void versionTest() throws Exception {
-		URL url=this.getClass().getResource("SqlTest.class");
-		File f=new File(url.toURI());
-		while(!f.getName().equals("target")) {
-			f=f.getParentFile();
-		}
-		f=f.getParentFile();
-		f=new File(f,"pom.xml");
-		System.out.println(f);
-		String pom=new String(Files.readAllBytes(f.toPath()),AppInfo.UTF8);
-		Assert.assertEquals(pom.indexOf("<version>"),pom.indexOf("<version>"+Const.sumkVersion()+"</version>"));
 	}
 
 }

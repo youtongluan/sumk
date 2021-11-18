@@ -26,8 +26,10 @@ public final class IOC {
 	/**
 	 * 获取对应的bean
 	 * 
-	 * @param      <T> 返回值类型
-	 * @param name bean的名称
+	 * @param <T>
+	 *            返回值类型
+	 * @param name
+	 *            bean的名称
 	 * @return 如果不存在，就返回null。如果bean不止一个，会抛出SumkException异常
 	 */
 	public static <T> T get(String name) {
@@ -49,9 +51,12 @@ public final class IOC {
 	/**
 	 * 获取该类型bean的第一个，如果不存在就抛出异常。
 	 * 
-	 * @param            <T> bean的类型
-	 * @param clz        bean的类型，返回order最小的那个
-	 * @param allowEmpty true表示允许为空，否则会抛出异常
+	 * @param <T>
+	 *            bean的类型
+	 * @param clz
+	 *            bean的类型，返回order最小的那个
+	 * @param allowEmpty
+	 *            true表示允许为空，否则会抛出异常
 	 * @return 返回第一个符合条件的bean。被自定义名称的bean可能获取不到
 	 */
 	public static <T extends Ordered> T getFirstBean(Class<T> clz, boolean allowEmpty) {

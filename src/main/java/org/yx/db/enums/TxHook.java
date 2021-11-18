@@ -24,9 +24,13 @@ package org.yx.db.enums;
  */
 public enum TxHook {
 	/**
-	 * 只有这个钩子可以操作数据库，但不要做太复杂的操作
+	 * 只有这个钩子可以操作数据库，但不要做太复杂的操作。 它在Const.LISTENER_DB_MODIFY_ON_COMMIT前执行
 	 */
-	ON_COMMIT, COMMITED,
+	ON_COMMIT,
+	/**
+	 * 它在Const.LISTENER_DB_MODIFY后执行
+	 */
+	COMMITED,
 	/**
 	 * 回滚之后执行
 	 */

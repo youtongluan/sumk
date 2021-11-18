@@ -81,7 +81,7 @@ public class PlainClientTest {
 		json.put("name", "小明");
 		String req = S.json().toJson(json);
 		String sign = Encrypt.sign(req.getBytes(charset));
-		HttpPost post = new HttpPost(getUrl(act) + "?_sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);
 		StringEntity se = new StringEntity(req,charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);

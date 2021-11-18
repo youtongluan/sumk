@@ -118,9 +118,12 @@ public final class Locker {
 
 	/**
 	 * 
-	 * @param name        要被锁的对象
-	 * @param maxWaitTime 获取锁的最大时间，单位ms
-	 * @param maxLockTime 最大的锁住时间，单位ms
+	 * @param name
+	 *            要被锁的对象
+	 * @param maxWaitTime
+	 *            获取锁的最大时间，单位ms
+	 * @param maxLockTime
+	 *            最大的锁住时间，单位ms
 	 * @return Key对象,或者null
 	 */
 	public Lock tryLock(String name, int maxWaitTime, int maxLockTime) {
@@ -130,8 +133,10 @@ public final class Locker {
 
 	/**
 	 * 
-	 * @param name        要被锁的对象
-	 * @param maxWaitTime 获取锁的最大时间，单位ms。如果只想尝试一次，可以传0
+	 * @param name
+	 *            要被锁的对象
+	 * @param maxWaitTime
+	 *            获取锁的最大时间，单位ms。如果只想尝试一次，可以传0
 	 * @return 锁的钥匙，获取不到锁就返回null
 	 */
 	public Lock tryLock(String name, int maxWaitTime) {
@@ -146,8 +151,10 @@ public final class Locker {
 	/**
 	 * 尝试加锁，如果锁定失败，就返回null
 	 * 
-	 * @param lock        锁对象
-	 * @param maxWaitTime 获取锁的最大时间，单位ms。无论值为多少，都至少会尝试一次
+	 * @param lock
+	 *            锁对象
+	 * @param maxWaitTime
+	 *            获取锁的最大时间，单位ms。无论值为多少，都至少会尝试一次
 	 * @return Key对象,或者null
 	 */
 	public Lock tryLock(SLock lock, int maxWaitTime) {
@@ -169,8 +176,10 @@ public final class Locker {
 	/**
 	 * 重置锁超时时间，对重进入的锁也适用
 	 * 
-	 * @param lock 锁
-	 * @param mils 重置锁的过期时间为当前值
+	 * @param lock
+	 *            锁
+	 * @param mils
+	 *            重置锁的过期时间为当前值
 	 * @return 如果锁已经被释放，或其它未知原因，就返回false
 	 */
 	public boolean resetExpiredTime(Lock lock, int mils) {

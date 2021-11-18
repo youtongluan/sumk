@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.yx.common.lock.Locker;
-import org.yx.common.sumk.map.ListMap;
 import org.yx.common.thread.SumkExecutorService;
 import org.yx.util.kit.BeanConverter;
 import org.yx.util.secury.Base64;
@@ -30,36 +29,41 @@ import org.yx.util.secury.Hasher;
 import com.google.gson.Gson;
 
 public final class SBuilder {
-	public static class MapBuilder<T> {
-		private final Map<String, T> map;
+	public static class MapBuilder<K, V> {
+		private final Map<K, V> map;
 
-		public MapBuilder(Map<String, T> map) {
+		public MapBuilder(Map<K, V> map) {
 			this.map = map;
 		}
 
-		public MapBuilder<T> put(String key, T value) {
+		public MapBuilder<K, V> put(K key, V value) {
 			map.put(key, value);
 			return this;
 		}
 
-		public Map<String, T> toMap() {
+		public MapBuilder<K, V> remove(K key) {
+			map.remove(key);
+			return this;
+		}
+
+		public Map<K, V> toMap() {
 			return this.map;
 		}
 	}
 
-	public static <T> MapBuilder<T> map(Class<T> valueType) {
+	public static <T> MapBuilder<String, T> map(Class<T> valueType) {
 		return new MapBuilder<>(new HashMap<String, T>());
 	}
 
-	public static <T> MapBuilder<T> listMap(Class<T> valueType) {
-		return new MapBuilder<>(new ListMap<String, T>());
+	public static <K, V> MapBuilder<K, V> map(Map<K, V> map) {
+		return new MapBuilder<>(map);
 	}
 
-	public static MapBuilder<Object> map() {
+	public static MapBuilder<String, Object> map() {
 		return new MapBuilder<>(new HashMap<String, Object>());
 	}
 
-	public static MapBuilder<Object> map(String key, Object value) {
+	public static MapBuilder<String, Object> map(String key, Object value) {
 		return map().put(key, value);
 	}
 

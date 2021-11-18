@@ -34,8 +34,10 @@ public interface HttpActionInfo extends Comparable<HttpActionInfo> {
 	/**
 	 * 是否接受当前请求。有些实现类为了性能考虑，不对act做校验。
 	 * 
-	 * @param act    格式化后的接口名,不为null
-	 * @param method 请求的http方法，不为null
+	 * @param act
+	 *            格式化后的接口名,不为null
+	 * @param method
+	 *            请求的http方法，不为null
 	 * @return true表示接受当前请求
 	 */
 	boolean match(String act, String method);

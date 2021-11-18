@@ -54,11 +54,5 @@ public class SinglePrimaryTest extends BaseOrmTest{
 		Assert.assertEquals(95, bs.length);
 		String script=new String(bs);
 		Assert.assertFalse(script.contains("\r"));
-		
-		in=SumkServer.class.getClassLoader().getResourceAsStream("META-INF/sql.dtd");
-		bs=IOUtil.readAllBytes(in, true);
-		Assert.assertEquals(726, bs.length);
-		script=new String(bs);
-		Assert.assertFalse(script.contains("\r"));
 	}
 }

@@ -40,9 +40,12 @@ public final class StringUtil {
 	/**
 	 * 这个会自动对每个子项做trim()操作，并且过滤掉空值
 	 * 
-	 * @param source      原始字符串，不能为null
-	 * @param splitRegex  分隔符
-	 * @param otherSplits 其它的分隔符，这些分隔符不支持正则表达式。结果集会根据所有的分隔符进行分割
+	 * @param source
+	 *            原始字符串，不能为null
+	 * @param splitRegex
+	 *            分隔符
+	 * @param otherSplits
+	 *            其它的分隔符，这些分隔符不支持正则表达式。结果集会根据所有的分隔符进行分割
 	 * @return 结果不包含null和空字符串。返回值不为null
 	 */
 	public static List<String> splitAndTrim(@NotNull String source, @NotNull String splitRegex, String... otherSplits) {

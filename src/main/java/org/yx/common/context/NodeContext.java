@@ -20,19 +20,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.asm.ParamPojo;
 
 public abstract class NodeContext<T extends CalleeNode> {
-	protected final T node;
 	private ParamPojo argPojo;
 
-	public NodeContext(T node) {
-		this.node = Objects.requireNonNull(node);
-	}
-
-	public T node() {
-		return node;
-	}
+	@NotNull
+	public abstract T node();
 
 	public ParamPojo getParamPojo() {
 		return argPojo;
@@ -48,7 +43,7 @@ public abstract class NodeContext<T extends CalleeNode> {
 	public Map<String, Object> getParams() {
 		Object[] args = argPojo.params();
 		int len = args.length;
-		List<String> names = node.paramNames();
+		List<String> names = node().paramNames();
 		Map<String, Object> map = new LinkedHashMap<>();
 		for (int i = 0; i < len; i++) {
 			String name = names.get(i);

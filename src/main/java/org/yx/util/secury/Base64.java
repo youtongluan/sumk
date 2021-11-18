@@ -20,7 +20,8 @@ public interface Base64 {
 	/**
 	 * 解码，是否含有\r\n都能解码
 	 * 
-	 * @param src 密文
+	 * @param src
+	 *            密文
 	 * @return 明文
 	 */
 	byte[] decode(byte[] src);
@@ -28,7 +29,8 @@ public interface Base64 {
 	/**
 	 * 解码，是否含有\r\n都能解码
 	 * 
-	 * @param src 密文
+	 * @param src
+	 *            密文
 	 * @return 明文
 	 */
 	byte[] decode(String src);
@@ -36,7 +38,8 @@ public interface Base64 {
 	/**
 	 * 使用标准方式进行编码,不含有换行符
 	 * 
-	 * @param src 原文
+	 * @param src
+	 *            原文
 	 * @return 编码后的
 	 */
 	byte[] encode(byte[] src);

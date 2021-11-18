@@ -54,7 +54,7 @@ public abstract class InnerDelete {
 
 		sb.append(orItem.toCharSequence());
 		ms.sql = sb.toString();
-		ms.event = new DeleteEvent(pojoMeta.getTableName(), delete.in);
+		ms.event = new DeleteEvent(pojoMeta.getTableName(), delete.flag(), delete.in);
 		return ms;
 	}
 }

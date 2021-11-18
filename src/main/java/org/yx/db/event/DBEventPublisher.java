@@ -25,10 +25,18 @@ public final class DBEventPublisher {
 
 	private static EventBus modifyBus;
 	private static EventBus queryBus;
+	private static EventBus onCommitBus;
 
 	public static void init() {
 		modifyBus = IOC.get(Const.LISTENER_DB_MODIFY, EventBus.class);
 		queryBus = IOC.get(Const.LISTENER_DB_QUERY, EventBus.class);
+		onCommitBus = IOC.get(Const.LISTENER_DB_MODIFY_ON_COMMIT, EventBus.class);
+	}
+
+	public static void onCommit(List<DBEvent> events) {
+		if (onCommitBus != null) {
+			onCommitBus.publishBatch(events);
+		}
 	}
 
 	public static void publishModify(List<DBEvent> events) {

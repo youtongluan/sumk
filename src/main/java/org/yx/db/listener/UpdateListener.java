@@ -56,14 +56,16 @@ public class UpdateListener implements SumkListener {
 			return;
 		}
 		List<Map<String, Object>> wheres = event.getWheres();
+		boolean canUpdateCache = event.canUpdateCache();
 		for (Map<String, Object> where : wheres) {
 
-			handleUpdate(event, pm, where);
+			handleUpdate(event, pm, where, canUpdateCache);
 		}
 
 	}
 
-	private void handleUpdate(UpdateEvent event, PojoMeta pm, Map<String, Object> where) throws Exception {
+	private void handleUpdate(UpdateEvent event, PojoMeta pm, Map<String, Object> where, boolean canUpdateCache)
+			throws Exception {
 		String id = pm.getCacheID(where, true);
 		Map<String, Object> to = new HashMap<>(event.getTo());
 		if (!event.isUpdateDBID()) {
@@ -80,7 +82,7 @@ public class UpdateListener implements SumkListener {
 				}
 			}
 		}
-		if (event.isFullUpdate() && event.getIncrMap() == null) {
+		if (canUpdateCache) {
 			String id_new = pm.getCacheID(to, true);
 			if (!id.equals(id_new)) {
 				RecordRepository.del(pm, id);

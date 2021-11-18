@@ -119,7 +119,8 @@ public final class AppInfo {
 	}
 
 	/**
-	 * @param defaultValue 如果没有设置的话，就返回这个默认值
+	 * @param defaultValue
+	 *            如果没有设置的话，就返回这个默认值
 	 * @return 当前应用的id
 	 */
 	public static String appId(String defaultValue) {
@@ -127,7 +128,8 @@ public final class AppInfo {
 	}
 
 	/**
-	 * @param name name
+	 * @param name
+	 *            name
 	 * @return name不存在的话，返回null
 	 */
 	public static String get(String name) {

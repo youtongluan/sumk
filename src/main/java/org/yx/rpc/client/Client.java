@@ -70,7 +70,8 @@ public final class Client {
 	/**
 	 * 设置发送的尝试次数。只有发送失败会重试，其它的不会
 	 * 
-	 * @param tryCount 尝试次数，包含第一次发送
+	 * @param tryCount
+	 *            尝试次数，包含第一次发送
 	 * @return 当前对象
 	 */
 	public Client tryCount(int tryCount) {
@@ -81,7 +82,8 @@ public final class Client {
 	/**
 	 * 设置直连url不能用的时候，是否使用注册中心上的地址
 	 * 
-	 * @param backup 失败时是否启用注册中心上的地址
+	 * @param backup
+	 *            失败时是否启用注册中心上的地址
 	 * @return 当前对象
 	 */
 	public Client backup(boolean backup) {

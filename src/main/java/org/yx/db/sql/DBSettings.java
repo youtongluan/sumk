@@ -154,6 +154,7 @@ public final class DBSettings {
 						AppInfo.getBoolean("sumk.db.select.ignore.maxoffset", false));
 				flag = BitUtil.setBit(flag, DBFlag.SELECT_ALLOW_EMPTY_WHERE,
 						AppInfo.getBoolean("sumk.db.select.emptywhere", false));
+				flag = BitUtil.setBit(flag, DBFlag.UPDATE_TO_CACHE, AppInfo.getBoolean("sumk.db.update.toCache", true));
 				DBSettings.FLAG = flag;
 				Logs.db().info("flag : {}", Integer.toHexString(DBSettings.FLAG));
 			} catch (Exception e) {

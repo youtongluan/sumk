@@ -58,7 +58,8 @@ public class Select extends SelectBuilder {
 	}
 
 	/**
-	 * @param onOff 如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
+	 * @param onOff
+	 *            如果为true，会验证map参数中，是否存在无效的key，预防开发人员将key写错。默认为true
 	 * @return 当前对象
 	 */
 	public Select failIfPropertyNotMapped(boolean onOff) {
@@ -69,7 +70,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 物理分表的情况下，设置分区名。这个方法只能调用一次
 	 * 
-	 * @param sub 分区名
+	 * @param sub
+	 *            分区名
 	 * @return 当前对象
 	 */
 	public Select partition(String sub) {
@@ -80,7 +82,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 允许不设置where条件
 	 * 
-	 * @param empty true表示允许where条件为空
+	 * @param empty
+	 *            true表示允许where条件为空
 	 * @return 当前对象
 	 */
 	public Select allowEmptyWhere(boolean empty) {
@@ -124,8 +127,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * 设置大于,一个key只能设置一次，后设置的会覆盖前面设置的。<BR>
 	 * 
-	 * @param key   java字段的名称
-	 * @param value 值
+	 * @param key
+	 *            java字段的名称
+	 * @param value
+	 *            值
 	 * @return 当前对象
 	 */
 	public Select bigThan(String key, Object value) {
@@ -147,8 +152,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * like操作，%号要自己添加
 	 * 
-	 * @param key   字段名
-	 * @param value 值，不会自动添加%
+	 * @param key
+	 *            字段名
+	 * @param value
+	 *            值，不会自动添加%
 	 * @return 当前对象
 	 */
 	public Select like(String key, Object value) {
@@ -162,7 +169,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 增加一些特别的表达式，主要是为了扩展对OR操作符的支持
 	 * 
-	 * @param op 一般使用GroupOR.create()来创建一个or表达式
+	 * @param op
+	 *            一般使用GroupOR.create()来创建一个or表达式
 	 * @return 当前对象
 	 */
 	public Select and(CompareOperation op) {
@@ -173,8 +181,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * 不等于操作
 	 * 
-	 * @param key   字段名
-	 * @param value 值，不会自动添加%
+	 * @param key
+	 *            字段名
+	 * @param value
+	 *            值，不会自动添加%
 	 * @return 当前对象
 	 */
 	public Select not(String key, Object value) {
@@ -184,8 +194,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * sql中的in查询
 	 * 
-	 * @param key    字段名
-	 * @param values 值列表，不能为空
+	 * @param key
+	 *            字段名
+	 * @param values
+	 *            值列表，不能为空
 	 * @return 当前对象
 	 */
 	public Select in(String key, Collection<?> values) {
@@ -203,7 +215,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 大于等于
 	 * 
-	 * @param pojo 对pojo中所有的kv做大于等于操作
+	 * @param pojo
+	 *            对pojo中所有的kv做大于等于操作
 	 * @return 当前对象
 	 */
 	public Select bigOrEqual(Object pojo) {
@@ -217,7 +230,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 小于或等于
 	 * 
-	 * @param pojo 对pojo中所有的kv做小于等于操作
+	 * @param pojo
+	 *            对pojo中所有的kv做小于等于操作
 	 * @return 当前对象
 	 */
 	public Select lessOrEqual(Object pojo) {
@@ -235,8 +249,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * 根据字段名和判断条件移除所有符合条件的比较。只移除第一级的条件
 	 * 
-	 * @param key java字段名，可以为null。null表示所有的字段都要移除
-	 * @param op  比较条件，可以为null。null表示所有的条件都要移除
+	 * @param key
+	 *            java字段名，可以为null。null表示所有的字段都要移除
+	 * @param op
+	 *            比较条件，可以为null。null表示所有的条件都要移除
 	 * @return 当前对象
 	 */
 	public Select removeCompares(String key, Operation op) {
@@ -247,7 +263,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 升序排列。asc和desc的调用顺序决定了在sql中出现的顺序。 此方法可以调用多次
 	 * 
-	 * @param field 升序字段
+	 * @param field
+	 *            升序字段
 	 * @return 当前对象
 	 */
 	public Select orderByAsc(String field) {
@@ -265,7 +282,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 增加降序排列
 	 * 
-	 * @param field 降序字段
+	 * @param field
+	 *            降序字段
 	 * @return 当前对象
 	 */
 	public Select orderByDesc(String field) {
@@ -275,7 +293,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 设置查询的便宜量，从0开始。
 	 * 
-	 * @param offset from的位置
+	 * @param offset
+	 *            from的位置
 	 * @return 当前对象
 	 */
 	public Select offset(int offset) {
@@ -291,7 +310,8 @@ public class Select extends SelectBuilder {
 
 	/**
 	 * 
-	 * @param limit 返回的最大条数。
+	 * @param limit
+	 *            返回的最大条数。
 	 * @return 当前对象
 	 */
 	public Select limit(int limit) {
@@ -307,7 +327,8 @@ public class Select extends SelectBuilder {
 
 	/**
 	 * 
-	 * @param columns 设置查询放回的列，列名是java中的字段名。如果不设，将返回所有的字段
+	 * @param columns
+	 *            设置查询放回的列，列名是java中的字段名。如果不设，将返回所有的字段
 	 * @return 当前对象
 	 */
 	public Select selectColumns(String... columns) {
@@ -322,7 +343,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 如果为false，就不会从缓存中加载数据
 	 * 
-	 * @param fromCache 默认为true。sumk.sql.fromCache=false可以将全局参数设为false
+	 * @param fromCache
+	 *            默认为true。sumk.sql.fromCache=false可以将全局参数设为false
 	 * @return 当前对象
 	 */
 	public Select fromCache(boolean fromCache) {
@@ -333,7 +355,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 如果为false，查出的结果将不会用于更新缓存
 	 * 
-	 * @param toCache 该参数设为true的实际意义不大
+	 * @param toCache
+	 *            该参数设为true的实际意义不大
 	 * @return 当前对象
 	 */
 	public Select toCache(boolean toCache) {
@@ -355,7 +378,8 @@ public class Select extends SelectBuilder {
 	 * 设置相等的条件。本方法可以被多次执行。 src中的各个条件是and关系。不同src之间是or关系<BR>
 	 * <B>注意：如果pojo是map类型，那么它的null值是有效条件</B>
 	 * 
-	 * @param src map或pojo类型。
+	 * @param src
+	 *            map或pojo类型。
 	 * @return 当前对象
 	 */
 	public Select addEqual(Object src) {
@@ -366,8 +390,10 @@ public class Select extends SelectBuilder {
 	/**
 	 * 各个addEqual之间的条件是OR，如果要组装AND条件，请用addEqual(Object src)
 	 * 
-	 * @param field 字段名
-	 * @param value 要查询的条件的值
+	 * @param field
+	 *            字段名
+	 * @param value
+	 *            要查询的条件的值
 	 * @return 当前对象
 	 */
 	public Select addEqual(String field, Object value) {
@@ -378,7 +404,8 @@ public class Select extends SelectBuilder {
 	/**
 	 * 通过数据库主键列表查询主键，单主键ids就只有一个，多主键就传入多个 <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
-	 * @param ids id列表，顺序跟pojo中定义的一致(按order顺序或书写顺序)
+	 * @param ids
+	 *            id列表，顺序跟pojo中定义的一致(按order顺序或书写顺序)
 	 * @return 注意：调用本方法之前，要确保调用过tableClass()方法
 	 */
 	public Select byDatabaseId(Object... ids) {
@@ -390,7 +417,8 @@ public class Select extends SelectBuilder {
 	 * 所有id属于同一条记录，如果要使用单主键的in查询，请用本类的in方法<BR>
 	 * <B>注意：调用本方法之前，要确保调用过tableClass()方法</B>
 	 * 
-	 * @param ids id列表，顺序跟pojo中定义的一致（按order顺序或书写顺序）
+	 * @param ids
+	 *            id列表，顺序跟pojo中定义的一致（按order顺序或书写顺序）
 	 * @return 当前对象
 	 * 
 	 */

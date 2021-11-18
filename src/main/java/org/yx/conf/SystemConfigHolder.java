@@ -23,7 +23,8 @@ public class SystemConfigHolder {
 	/**
 	 * 通过外部方式注入，这种方式不一定会调用init方法
 	 * 
-	 * @param config 外部注入
+	 * @param config
+	 *            外部注入
 	 * @return true表示设置被更新，如果config跟原来是同一个对象，也会返回false
 	 */
 	public static synchronized boolean setSystemConfig(SystemConfig config) {

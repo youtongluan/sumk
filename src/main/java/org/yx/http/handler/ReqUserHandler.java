@@ -17,6 +17,7 @@ package org.yx.http.handler;
 
 import org.yx.annotation.Bean;
 import org.yx.common.context.ActionContext;
+import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.kit.HttpSettings;
@@ -29,6 +30,8 @@ import org.yx.util.WebUtil;
 
 @Bean
 public class ReqUserHandler implements HttpHandler {
+
+	private boolean tokenMode = AppInfo.getBoolean("sumk.http.session.token", false);
 
 	@Override
 	public int order() {
@@ -48,7 +51,9 @@ public class ReqUserHandler implements HttpHandler {
 			throw BizException.create(HttpErrorCode.SESSION_ERROR, "token无效");
 		}
 		UserSession session = WebSessions.loadUserSession();
-		SessionObject obj = session.loadUserObject(sessionId, SessionObject.class);
+
+		SessionObject obj = tokenMode ? session.getUserObject(sessionId, SessionObject.class)
+				: session.loadAndRefresh(sessionId, SessionObject.class);
 
 		if (obj == null) {
 

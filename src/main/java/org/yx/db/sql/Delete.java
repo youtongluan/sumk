@@ -33,7 +33,8 @@ public class Delete extends ModifySqlBuilder {
 	 * 多次执行delete，相互之间是or条件。<BR>
 	 * <B>注意：如果pojo是map类型，那么它的null值是有效条件</B>
 	 * 
-	 * @param pojo map或pojo
+	 * @param pojo
+	 *            map或pojo
 	 * @return 当前对象
 	 */
 	public Delete delete(Object pojo) {
@@ -49,7 +50,8 @@ public class Delete extends ModifySqlBuilder {
 	/**
 	 * 分表的情况下，设置分区名。这个方法只能调用一次
 	 * 
-	 * @param sub 分区名
+	 * @param sub
+	 *            分区名
 	 * @return 当前对象
 	 */
 	public Delete partition(String sub) {

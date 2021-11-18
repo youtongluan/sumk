@@ -16,6 +16,7 @@
 package org.yx.util.kit;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import java.util.Map.Entry;
 import java.util.Objects;
 
 import org.yx.bean.Loader;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 
 /**
@@ -42,7 +42,7 @@ public class BeanConverter {
 
 				@Override
 				protected boolean removeEldestEntry(Entry<Class<?>, Field[]> eldest) {
-					return this.size() > 300;
+					return this.size() > 800;
 				}
 
 			});
@@ -59,7 +59,7 @@ public class BeanConverter {
 			}
 			fs = tempClz.getDeclaredFields();
 			for (Field f : fs) {
-				if ((f.getModifiers() & Const.NOT_PARSE_BEAN_FIELD) != 0) {
+				if ((f.getModifiers() & (Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL)) != 0) {
 					continue;
 				}
 				if (!f.isAccessible()) {
@@ -94,8 +94,10 @@ public class BeanConverter {
 	/**
 	 * 根据field转为map。不会对属性内部的字段再做解析
 	 * 
-	 * @param bean     用于转化的pojo对象。
-	 * @param keepNull 如果为true，那么它就会保留null字段
+	 * @param bean
+	 *            用于转化的pojo对象。
+	 * @param keepNull
+	 *            如果为true，那么它就会保留null字段
 	 * @return 返回map对象，不为null。
 	 */
 	@SuppressWarnings("unchecked")
@@ -126,9 +128,12 @@ public class BeanConverter {
 	 * 根据map的内容填充bean的属性。只转义第一层的key。<BR>
 	 * 对大小写和下划线不敏感
 	 * 
-	 * @param      <T> 参数类型
-	 * @param map  原始map
-	 * @param bean 目标对象，它的属性会被填充进来
+	 * @param <T>
+	 *            参数类型
+	 * @param map
+	 *            原始map
+	 * @param bean
+	 *            目标对象，它的属性会被填充进来
 	 * @return 返回目标对象
 	 */
 	@SuppressWarnings("unchecked")
@@ -167,9 +172,12 @@ public class BeanConverter {
 	/**
 	 * 根据map的内容填充bean的属性。只转义第一层的key。
 	 * 
-	 * @param      <T> 参数类型
-	 * @param map  原始map
-	 * @param bean 目标对象，它的属性会被填充进来
+	 * @param <T>
+	 *            参数类型
+	 * @param map
+	 *            原始map
+	 * @param bean
+	 *            目标对象，它的属性会被填充进来
 	 * @return 返回目标对象
 	 */
 	@SuppressWarnings("unchecked")

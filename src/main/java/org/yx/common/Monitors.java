@@ -28,12 +28,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 import org.yx.bean.InnerIOC;
 import org.yx.bean.NameSlot;
+import org.yx.common.matcher.BooleanMatcher;
+import org.yx.common.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.db.conn.DataSourceManager;
@@ -51,7 +55,7 @@ import org.yx.rpc.data.RouteInfo;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
 
-public class Monitors {
+public final class Monitors {
 
 	private static final String BLANK = "  ";
 
@@ -104,24 +108,39 @@ public class Monitors {
 		return sb.toString();
 	}
 
-	public static String allTrack() {
+	public static String stack(boolean full) {
+		Predicate<String> ignore = full ? BooleanMatcher.FALSE
+				: Matchers.createWildcardMatcher(
+						"org.yx.*,java.*,javax.*,sun.*,org.eclipse.jetty.*,org.apache.zookeeper.*,io.netty.*,org.apache.mina.*");
 		Map<Thread, StackTraceElement[]> map = Thread.getAllStackTraces();
-		StringBuilder sb = new StringBuilder();
-		map.forEach((t, st) -> {
-			sb.append(t.getName() + "  [id:" + t.getId() + "]").append(LN);
+		StringBuilder all = new StringBuilder(2000).append("线程总数:").append(map.size()).append(LN);
+		for (Entry<Thread, StackTraceElement[]> en : map.entrySet()) {
+			Thread t = en.getKey();
+			StackTraceElement[] st = en.getValue();
+			boolean matched = false;
+			StringBuilder sb = new StringBuilder(256).append(t.getName()).append("  [id:").append(t.getId()).append("]")
+					.append(BLANK).append(t.getState()).append(LN);
+			boolean first = true;
 			for (StackTraceElement e : st) {
-				if (sb.length() > 0) {
+				if (first) {
+					first = false;
+				} else {
 					sb.append(BLANK);
 				}
-				sb.append(e.getClassName() + "." + e.getMethodName() + "() ");
+				if (!ignore.test(e.getClassName())) {
+					matched = true;
+				}
+				sb.append(e.getClassName()).append('.').append(e.getMethodName());
 				if (e.getLineNumber() > 0) {
-					sb.append(e.getLineNumber());
+					sb.append(" ").append(e.getLineNumber());
 				}
 				sb.append(LN);
 			}
-			sb.append(LN);
-		});
-		return sb.toString();
+			if (matched) {
+				all.append(sb.append(LN));
+			}
+		}
+		return all.toString();
 	}
 
 	public static String threadPoolInfo(ThreadPoolExecutor pool) {

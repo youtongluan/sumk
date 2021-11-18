@@ -50,7 +50,7 @@ public abstract class AbstractUserSession implements UserSession {
 	}
 
 	@Override
-	public <T extends SessionObject> T loadUserObject(String sessionId, Class<T> clz) {
+	public <T extends SessionObject> T loadAndRefresh(String sessionId, Class<T> clz) {
 		return this._getUserObject(sessionId, clz, true);
 	}
 

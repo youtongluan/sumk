@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,6 +40,8 @@ import org.yx.common.action.StatisItem;
 import org.yx.common.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
+import org.yx.http.act.HttpActionInfo;
+import org.yx.http.act.HttpActions;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.user.AbstractUserSession;
 import org.yx.http.user.SessionObject;
@@ -67,7 +70,9 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 
 		this.outputServerInfo(req, writer);
 		this.outputStatis(req, writer);
-		this.visitInfo(req, writer);
+		this.outputNoVisit(req, writer);
+		this.dbVisitInfo(req, writer);
+		this.outputBeans(req, writer);
 		this.outputSystem(req, writer);
 		this.outputJvmInfo(req, writer);
 		this.outputGcInfo(req, writer);
@@ -129,6 +134,20 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		writer.append(TYPE_SPLIT);
 	}
 
+	private void outputBeans(HttpServletRequest req, Writer writer) throws IOException {
+		if (!"1".equals(req.getParameter("beans"))) {
+			return;
+		}
+
+		List<String> names = Monitors.beans();
+		StringBuilder sb = new StringBuilder().append("##beans:").append(names.size()).append(Const.LN);
+		for (String name : names) {
+			sb.append(name).append(Const.LN);
+		}
+		writer.append(sb.toString());
+		writer.append(TYPE_SPLIT);
+	}
+
 	private void outputStatis(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("statis"))) {
 			return;
@@ -165,6 +184,25 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		writer.append(TYPE_SPLIT);
 	}
 
+	private void outputNoVisit(HttpServletRequest req, Writer writer) throws IOException {
+		if (!"1".equals(req.getParameter("noVisit"))) {
+			return;
+		}
+		Collection<HttpActionInfo> all = HttpActions.actions();
+		Map<String, StatisItem> visited = InnerHttpUtil.getActionStatis().getAll();
+		StringBuilder sb = new StringBuilder(500).append("##total(不含login):  ").append(all.size()).append("   ")
+				.append("visited(含login):  ").append(visited.size()).append(LN);
+		for (HttpActionInfo info : all) {
+			if (visited.containsKey(info.rawAct())) {
+				continue;
+			}
+			sb.append(info.rawAct()).append("   ").append(info.node().cnName()).append(LN);
+		}
+
+		writer.append(sb.toString());
+		writer.append(TYPE_SPLIT);
+	}
+
 	private void outputSystem(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("system"))) {
 			return;
@@ -182,10 +220,14 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 	}
 
 	private void outputAllTrack(HttpServletRequest req, Writer writer) throws IOException {
-		if (!"1".equals(req.getParameter("stack"))) {
+		String stack = req.getParameter("stack");
+		if ("1".equals(stack)) {
+			writer.append(Monitors.stack(false));
+		} else if ("full".equals(stack)) {
+			writer.append(Monitors.stack(true));
+		} else {
 			return;
 		}
-		writer.append(Monitors.allTrack());
 		writer.append(TYPE_SPLIT);
 	}
 
@@ -217,7 +259,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		writer.append(TYPE_SPLIT);
 	}
 
-	private void visitInfo(HttpServletRequest req, Writer writer) throws IOException {
+	private void dbVisitInfo(HttpServletRequest req, Writer writer) throws IOException {
 		if (!"1".equals(req.getParameter("db.cache"))) {
 			return;
 		}

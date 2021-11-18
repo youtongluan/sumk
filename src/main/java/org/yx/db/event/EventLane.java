@@ -15,6 +15,7 @@
  */
 package org.yx.db.event;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +35,9 @@ public final class EventLane {
 	}
 
 	public void pubuishModify(SumkConnection conn, DBEvent event) {
+		if (event == null) {
+			return;
+		}
 		if (!conn.getAutoCommit()) {
 			makeSureEvents().add(event);
 		} else {
@@ -41,10 +45,13 @@ public final class EventLane {
 		}
 	}
 
-	public void realPubuish(SumkConnection conn) {
+	public void commit(SumkConnection conn) throws SQLException {
 		if (this.events == null) {
+			conn.commit();
 			return;
 		}
+		DBEventPublisher.onCommit(events);
+		conn.commit();
 		DBEventPublisher.publishModify(events);
 		this.clear();
 	}

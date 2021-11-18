@@ -1,4 +1,4 @@
-、v2.3.1
+v2.3.1
 1、将JsonUtil改为S.json
 2、sdb和mybatis的配置文件可以打包到jar中
 
@@ -79,9 +79,8 @@ v2.5.2
 
 v2.5.3
 1、将HttpUtil改名为WebUtil
-2、调整app.properties的更新频率为1分钟。上一版错误的将1秒钟的间隔（测试用）发布出去
-3、允许动态调整核心线程池的容量
-4、去掉SimpleBizException类，将BizException的构造方法改为私有，改为使用create方法创建
+2、允许动态调整核心线程池的容量
+3、去掉SimpleBizException类，将BizException的构造方法改为私有，改为使用create方法创建
 
 v2.6.0
 1、重构数据库连接的获取方式，增加读连接的升级功能
@@ -140,10 +139,6 @@ v2.7.3
 3、去掉了http的客户类型功能（即@Web的type），因为这个功能感觉很鸡肋
 4、增加类似dubbo那种，直接用接口注册和调用的微服务。目前对泛型返回值支持不好，如有需要，需借助JsonTypes工具
 
-v2.7.4
-1、增加工具类M，一般用于消息提示，通过与AppInfo的搭配，也可以实现国际化的目的
-2、去掉了http的客户类型功能（即@Web的type），因为这个功能感觉很鸡肋
-3、增加类似dubbo那种，直接用接口注册和调用的微服务。目前对泛型返回值支持不好，如有需要，需借助JsonTypes工具
 
 v2.7.5
 1、可以统一对http服务的出错信息进行定制
@@ -209,8 +204,8 @@ v2.9.0
 3、个别地方性能优化
 
 v2.9.1
-1、部分update支持更新字段为null
-2、支持设置用户session最长的存活时间，即使一直有交付
+1、DB部分更新支持字段为null
+2、支持设置用户session最长的存活时间
 
 v2.9.2
 1、登录时的加密key改为通过header传递
@@ -254,7 +249,7 @@ v2.9.8
 
 v2.9.9
 1、支持对配置中的redis密码进行加密
-2、ttp接口支持名称相同，但是http方法不同的情况，并且支持接口的前缀匹配。对于前缀匹配的情况，WebUtil.getUrlLeft()可以获取剩下的url内容
+2、http接口支持名称相同，但是http方法不同的情况，并且支持接口的前缀匹配。对于前缀匹配的情况，WebUtil.getUrlLeft()可以获取剩下的url内容
 3、SumkException的状态码全部改为负数，以跟BizException进行区分
 4、将redis和数据库的初始化移到Plugin的prepare阶段，同时去掉Plugins类。修改之后，startAsyn阶段的数据库和redis都已经准备好了，不需要再用Plugins来判断
 
@@ -319,3 +314,8 @@ v3.1.0
 2、Select增加and方法，可以处理or表达式，也可以处理自定义的比较表达式
 3、去掉Select的addEquals方法（此方法意义不大，增加理解成本），开发者通过多次调用addEqual来实现
 4、优化DB代码，减少中间过程内存的使用量，并优化sql语句中的空格。不等号统一改为<>
+
+3.1.1
+1、UserSession的loadUserObject()改名为loadAndRefresh()，这个方法开发者一般也很少用到
+2、增加Const.LISTENER_DB_MODIFY_ON_COMMIT类型监听器，它在事务提交前监听，能够操作数据库
+3、ModifyEvent可以获取被影响条数，并且支持boolean类型的传参

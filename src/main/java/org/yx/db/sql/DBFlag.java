@@ -18,7 +18,11 @@ public class DBFlag {
 
 	public static final int SELECT_IGNORE_MAX_LIMIT = 11;
 
-	public static final int UPDATE_UPDATE_DBID = 31;
-	public static final int UPDATE_FULL_UPDATE = 32;
+	public static final int UPDATE_UPDATE_DBID = 21;
+	public static final int UPDATE_FULL_UPDATE = 22;
+	/**
+	 * 如果是fullUpdate，并且其它条件也ok。就使用更新缓存的方式，而不是将缓存删除
+	 */
+	public static final int UPDATE_TO_CACHE = 23;
 
 }

@@ -21,17 +21,18 @@ import java.util.List;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.http.HttpHeaderName;
 import org.yx.http.act.HttpActions;
 import org.yx.http.handler.MultipartHolder;
 import org.yx.http.handler.MultipartItem;
 import org.yx.http.handler.WebContext;
 import org.yx.http.kit.HttpKit;
-import org.yx.http.kit.HttpSettings;
 import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.kit.LocalWebContext;
 import org.yx.http.user.SessionObject;
 import org.yx.http.user.WebSessions;
+import org.yx.log.Logs;
 
 /**
  * <B>注意：本工具类不能在自定义的servlet中调用，比如login</B>
@@ -47,10 +48,6 @@ public final class WebUtil {
 	 */
 	public static void removeUserObject() {
 		WebSessions.remove(getSessionId());
-	}
-
-	public static String getHeader(HttpServletRequest req, String name) {
-		return req.getHeader(name);
 	}
 
 	public static WebContext context() {
@@ -79,15 +76,12 @@ public final class WebUtil {
 		return fromHeaderOrCookieOrParamter(getHttpRequest(), HttpHeaderName.sessionId());
 	}
 
-	private static String fromHeaderOrCookie(HttpServletRequest req, String name) {
-		if (req == null) {
-			return null;
-		}
+	private static String fromHeaderOrCookie(HttpServletRequest req, String name, boolean useCookie) {
 		String value = req.getHeader(name);
 		if (value != null && value.length() > 0) {
 			return value;
 		}
-		if (!HttpSettings.isCookieEnable()) {
+		if (!useCookie) {
 			return null;
 		}
 		Cookie[] cookies = req.getCookies();
@@ -102,42 +96,28 @@ public final class WebUtil {
 		return null;
 	}
 
-	public static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
+	private static String getValueFromRequest(HttpServletRequest req, @NotNull String name, boolean useCookie) {
 		if (req == null) {
+			Logs.http().info("request is null");
 			return null;
 		}
-		String v = fromHeaderOrCookie(req, name);
-		if (v != null) {
-			return v;
-		}
-		v = req.getParameter(name);
-		if (v != null) {
-			return v;
-		}
-		Object attr = req.getAttribute(name);
+		Object attr = req.getAttribute("sumk.".concat(name));
 		if (attr != null && attr.getClass() == String.class) {
 			return (String) attr;
 		}
-		return null;
+		String v = fromHeaderOrCookie(req, name, useCookie);
+		if (v != null) {
+			return v;
+		}
+		return req.getParameter(name);
+	}
+
+	public static String fromHeaderOrCookieOrParamter(HttpServletRequest req, String name) {
+		return getValueFromRequest(req, name, true);
 	}
 
 	public static String fromHeaderOrParamter(HttpServletRequest req, String name) {
-		if (req == null) {
-			return null;
-		}
-		String v = req.getHeader(name);
-		if (v != null && v.length() > 0) {
-			return v;
-		}
-		v = req.getParameter(name);
-		if (v != null) {
-			return v;
-		}
-		Object attr = req.getAttribute(name);
-		if (attr != null && attr.getClass() == String.class) {
-			return (String) attr;
-		}
-		return null;
+		return getValueFromRequest(req, name, false);
 	}
 
 	public static String getUserFlag(HttpServletRequest req) {
@@ -168,7 +148,8 @@ public final class WebUtil {
 	/**
 	 * 根据name获取对应的MultipartItem，<B>仅用于@upload修饰的接口</B>
 	 * 
-	 * @param name MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
+	 * @param name
+	 *            MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
 	 * @return 对应的MultipartItem，如果不存在就返回null
 	 */
 	public static MultipartItem getPart(String name) {

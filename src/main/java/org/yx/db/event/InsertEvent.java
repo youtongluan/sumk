@@ -22,8 +22,8 @@ public class InsertEvent extends ModifyEvent {
 
 	private List<Map<String, Object>> pojos;
 
-	public InsertEvent(String table, List<Map<String, Object>> pojos) {
-		super(table);
+	public InsertEvent(String table, int flag, List<Map<String, Object>> pojos) {
+		super(table, flag);
 		this.pojos = pojos;
 	}
 

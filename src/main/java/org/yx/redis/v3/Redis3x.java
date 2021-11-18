@@ -28,9 +28,12 @@ public interface Redis3x {
 	 * 执行redis的批量操作或jedis的原生操作。<BR>
 	 * 注意:<B>如果是集群情况下，要保证所有的操作确实在key所对应的节点上才行，所以这个方法在集群环境里要慎重使用</B>
 	 * 
-	 * @param           <T> 返回值类型
-	 * @param sampleKey 只有在集群情况下才有意义，用于寻找真正的jedis节点
-	 * @param callback  批处理的代码
+	 * @param <T>
+	 *            返回值类型
+	 * @param sampleKey
+	 *            只有在集群情况下才有意义，用于寻找真正的jedis节点
+	 * @param callback
+	 *            批处理的代码
 	 * @return 返回的是callback的返回值
 	 */
 	<T> T execute(String sampleKey, Function<Jedis, T> callback);

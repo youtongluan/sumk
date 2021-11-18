@@ -26,8 +26,10 @@ public abstract class AbstractBootWatcher implements BootWatcher {
 	/**
 	 * ioc启动处理
 	 * 
-	 * @param clz 这个clz是原始的类
-	 * @throws Exception 只有出现会导致应用停止的异常，才允许抛出
+	 * @param clz
+	 *            这个clz是原始的类
+	 * @throws Exception
+	 *             只有出现会导致应用停止的异常，才允许抛出
 	 */
 	public abstract void accept(Class<?> clz) throws Exception;
 

@@ -21,7 +21,7 @@ public interface UserSession {
 
 	<T extends SessionObject> T getUserObject(String sessionId, Class<T> clz);
 
-	<T extends SessionObject> T loadUserObject(String sessionId, Class<T> clz);
+	<T extends SessionObject> T loadAndRefresh(String sessionId, Class<T> clz);
 
 	boolean setSession(String sessionId, SessionObject sessionObj, byte[] key, boolean singleLogin);
 

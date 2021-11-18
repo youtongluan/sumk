@@ -15,8 +15,6 @@
  */
 package org.yx.conf;
 
-import java.lang.reflect.Modifier;
-
 public final class Const {
 	public static final int DEFAULT_ORDER = 100;
 
@@ -33,8 +31,6 @@ public final class Const {
 
 	public static final String KEY_STORE_PATH = "sumk.webserver.ssl.keyStore";
 
-	public static final int NOT_PARSE_BEAN_FIELD = Modifier.STATIC | Modifier.TRANSIENT | Modifier.FINAL;
-
 	/**
 	 * 分号 ;
 	 */
@@ -49,7 +45,18 @@ public final class Const {
 	public static final String LN = "\n";
 
 	public static final int DEFAULT_TOPLIMIT = 50000;
-
+	/**
+	 * 这个监听程序不要直接操作数据库
+	 */
 	public static final String LISTENER_DB_MODIFY = "LISTENER_DB_MODIFY";
+	/**
+	 * 这个监听程序不要直接操作数据库
+	 */
 	public static final String LISTENER_DB_QUERY = "LISTENER_DB_QUERY";
+
+	/**
+	 * 提交前监听，这个监听程序可以操作数据库,它的插入事件也可以被LISTENER_DB_MODIFY监听器监听到。<BR>
+	 * 注意：它不能监听TransactionType为AUTO_COMMIT的数据库操作
+	 */
+	public static final String LISTENER_DB_MODIFY_ON_COMMIT = "LISTENER_DB_MODIFY_ON_COMMIT";
 }

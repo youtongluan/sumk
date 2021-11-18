@@ -192,11 +192,15 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	/**
 	 * 用于处理登陆业务
 	 * 
-	 * @param sessionId http头部sid的信息
-	 * @param userName  用户名，默认通过request.getParameter("username")获取的
-	 * @param req       用户请求的HttpServletRequest对象
+	 * @param sessionId
+	 *            http头部sid的信息
+	 * @param userName
+	 *            用户名，默认通过request.getParameter("username")获取的
+	 * @param req
+	 *            用户请求的HttpServletRequest对象
 	 * @return 登录信息，无论成功与否，返回值不能是null
-	 * @throws Exception 异常与failed等价
+	 * @throws Exception
+	 *             异常与failed等价
 	 */
 	protected abstract LoginObject login(String sessionId, String userName, HttpServletRequest req) throws Exception;
 }

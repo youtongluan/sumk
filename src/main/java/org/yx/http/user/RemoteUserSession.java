@@ -32,7 +32,7 @@ public class RemoteUserSession extends AbstractUserSession {
 
 	protected final int maxSize;
 
-	private final Redis redis;
+	protected final Redis redis;
 
 	public RemoteUserSession(Redis redis) {
 		this.redis = redis.isMuted() ? redis : redis.mute();
@@ -86,15 +86,13 @@ public class RemoteUserSession extends AbstractUserSession {
 				}
 				return null;
 			}
-			if (needRefresh) {
-				if (log.isTraceEnabled()) {
-					log.trace("{} add to local cache", sid);
-				}
-				if (cache.size() >= this.maxSize) {
-					removeOne();
-				}
-				cache.put(sid, to);
+			if (log.isTraceEnabled()) {
+				log.trace("{} add to local cache", sid);
 			}
+			if (cache.size() >= this.maxSize) {
+				removeOne();
+			}
+			cache.put(sid, to);
 		}
 
 		if (needRefresh && to.refreshTime + this.noFreshTime < now) {

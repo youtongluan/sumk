@@ -22,8 +22,8 @@ public class DeleteEvent extends ModifyEvent {
 
 	private List<Map<String, Object>> wheres;
 
-	public DeleteEvent(String table, List<Map<String, Object>> wheres) {
-		super(table);
+	public DeleteEvent(String table, int flag, List<Map<String, Object>> wheres) {
+		super(table, flag);
 		this.wheres = wheres;
 	}
 

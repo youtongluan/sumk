@@ -45,9 +45,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 	}
 
 	/**
-	 * 这个方法用于两个地方，一个是框架内部调用，一旦外部调用有可能影响最终结果 另一个是开发调试的时候，调用本方法查看最终的sql，这时候它不需要放在事务中
+	 * 这个方法用于两个地方，一个是框架内部调用，一旦外部调用有可能影响最终结果
+	 * 另一个是开发调试的时候，调用本方法查看最终的sql，这时候它不需要放在事务中
 	 * 
-	 * @throws Exception 异常信息
+	 * @throws Exception
+	 *             异常信息
 	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
@@ -56,9 +58,6 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 		StringBuilder sql = new StringBuilder(32);
 		sql.append("SELECT ").append(this.buildField()).append(" FROM ").append(this.pojoMeta.getTableName());
 		CharSequence where = this.buildWhere(paramters);
-		if (StringUtil.isEmpty(where) && !this.isOn(DBFlag.SELECT_ALLOW_EMPTY_WHERE)) {
-			throw new SumkException(63254325, "empty where");
-		}
 		if (StringUtil.isNotEmpty(where)) {
 			sql.append(" WHERE ").append(where);
 		}
@@ -73,7 +72,8 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 	/**
 	 * 组装分页，也就是offset和limit
 	 * 
-	 * @param sql 已组装出来的sql
+	 * @param sql
+	 *            已组装出来的sql
 	 */
 	protected void buildLimitAndOffset(StringBuilder sql) {
 
@@ -121,9 +121,11 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 
 	protected CharSequence buildWhere(List<Object> paramters) {
 		ItemJoiner joiner = new ItemJoiner(" AND ", null, null);
-		joiner.appendNotEmptyItem(buildValid(paramters)).appendNotEmptyItem(buildEquals(paramters))
-				.appendNotEmptyItem(buildCompare(paramters));
-		return joiner.toCharSequence();
+		joiner.appendNotEmptyItem(buildEquals(paramters)).appendNotEmptyItem(buildCompare(paramters));
+		if (joiner.isEmpty() && !this.isOn(DBFlag.SELECT_ALLOW_EMPTY_WHERE)) {
+			throw new SumkException(-63254325, "empty where");
+		}
+		return joiner.appendNotEmptyItem(buildValid(paramters)).toCharSequence();
 	}
 
 	private CharSequence buildValid(List<Object> paramters) {

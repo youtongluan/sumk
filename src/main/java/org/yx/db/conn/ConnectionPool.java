@@ -237,8 +237,7 @@ public final class ConnectionPool implements AutoCloseable {
 			if (LOGGER.isTraceEnabled()) {
 				LOGGER.trace("commit {}", this.dbName);
 			}
-			this.writeConn.commit();
-			this.eventLane.realPubuish(this.writeConn);
+			this.eventLane.commit(this.writeConn);
 		}
 		if (this.hooks != null) {
 			runHook(TxHook.COMMITED, null);

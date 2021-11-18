@@ -122,7 +122,7 @@ public class AesClientTest {
 		String sign = Encrypt.sign(S.json().toJson(map).getBytes(charset));
 		System.out.println("sign:" + sign);
 		
-		HttpPost post = new HttpPost(getUrl(act) + "?_sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?sign=" + sign);
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();

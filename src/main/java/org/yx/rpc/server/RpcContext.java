@@ -15,19 +15,28 @@
  */
 package org.yx.rpc.server;
 
+import org.yx.annotation.doc.NotNull;
 import org.yx.common.context.NodeContext;
 import org.yx.rpc.RpcActionNode;
 import org.yx.rpc.codec.Request;
 
 public class RpcContext extends NodeContext<RpcActionNode> {
+	@NotNull
+	private final RpcActionNode node;
+	@NotNull
 	protected final Request req;
 
 	public RpcContext(RpcActionNode node, Request req) {
-		super(node);
+		this.node = node;
 		this.req = req;
 	}
 
 	public Request req() {
 		return req;
+	}
+
+	@Override
+	public RpcActionNode node() {
+		return this.node;
 	}
 }

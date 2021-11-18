@@ -23,6 +23,8 @@ import java.util.Map;
 
 import org.yx.db.conn.ConnectionPool;
 import org.yx.db.enums.DBType;
+import org.yx.db.event.DBEvent;
+import org.yx.db.event.ModifyEvent;
 import org.yx.db.sql.ColumnMeta;
 import org.yx.db.sql.DBSettings;
 import org.yx.db.sql.InsertResult;
@@ -65,7 +67,12 @@ public final class Visitors {
 			ret = statement.executeUpdate();
 		}
 		if (ret > 0) {
-			pool.pubuishModify(maped.getEvent());
+			DBEvent md = maped.getEvent();
+			if (md instanceof ModifyEvent) {
+				ModifyEvent me = (ModifyEvent) md;
+				me.setAffected(ret);
+			}
+			pool.pubuishModify(md);
 		}
 		return ret;
 	};

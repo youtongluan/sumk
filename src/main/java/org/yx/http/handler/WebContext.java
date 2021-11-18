@@ -62,7 +62,6 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	}
 
 	public WebContext(HttpActionInfo info, HttpServletRequest req, HttpServletResponse resp, Charset charset) {
-		super(Objects.requireNonNull(info).node());
 		this.actionInfo = info;
 		this.httpRequest = Objects.requireNonNull(req);
 		this.charset = Objects.requireNonNull(charset);
@@ -117,7 +116,7 @@ public class WebContext extends NodeContext<HttpActionNode> {
 	}
 
 	public List<String> tags() {
-		return this.node.tags();
+		return this.node().tags();
 	}
 
 	public boolean isFailed() {
@@ -130,5 +129,10 @@ public class WebContext extends NodeContext<HttpActionNode> {
 
 	public HttpActionInfo actionInfo() {
 		return actionInfo;
+	}
+
+	@Override
+	public HttpActionNode node() {
+		return this.actionInfo.node();
 	}
 }

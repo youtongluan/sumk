@@ -24,7 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * 支持key、value为null
+ * 支持key、value为null。 适用于很少调用get、remove甚至put的场景。或者map很小。
+ * 它的优势是占用内存小，并且iterator的性能比HashMap还好
  */
 public class ListMap<K, V> extends AbstractMap<K, V> implements Serializable {
 
