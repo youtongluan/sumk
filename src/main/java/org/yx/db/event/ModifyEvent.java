@@ -43,10 +43,8 @@ public class ModifyEvent extends DBEvent {
 	 * 用于支持event之间传递boolean值，比如是否已经被处理了。调用本方法进行设置，调用getBoolean方法获取设置的结果
 	 * 这个用于扩展，框架本身并没有用到
 	 * 
-	 * @param slot
-	 *            29到32之间的一个数字，只要跟getBoolean里的位数能对上就行，无实际意义
-	 * @param h
-	 *            布尔值
+	 * @param slot 29到32之间的一个数字，只要跟getBoolean里的位数能对上就行，无实际意义
+	 * @param h    布尔值
 	 */
 	public void setBoolean(int slot, boolean h) {
 		if (slot < 29 || slot > 32) {

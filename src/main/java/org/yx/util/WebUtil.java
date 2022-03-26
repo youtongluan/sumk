@@ -148,8 +148,7 @@ public final class WebUtil {
 	/**
 	 * 根据name获取对应的MultipartItem，<B>仅用于@upload修饰的接口</B>
 	 * 
-	 * @param name
-	 *            MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
+	 * @param name MultipartItem对应的名称，注意该名称是part的名称，而不是文件名
 	 * @return 对应的MultipartItem，如果不存在就返回null
 	 */
 	public static MultipartItem getPart(String name) {

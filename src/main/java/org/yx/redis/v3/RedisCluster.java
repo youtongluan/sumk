@@ -17,10 +17,12 @@ package org.yx.redis.v3;
 
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.Logs;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisConfig;
 import org.yx.redis.RedisType;
@@ -111,9 +113,12 @@ public class RedisCluster extends JedisCluster implements Redis, Redis3x {
 	@Override
 	public String scriptLoad(String script) {
 		String ret = null;
-		for (JedisPool pool : this.getClusterNodes().values()) {
-			try (Jedis jedis = pool.getResource()) {
+		for (Map.Entry<String, JedisPool> en : this.getClusterNodes().entrySet()) {
+			try (Jedis jedis = en.getValue().getResource()) {
 				ret = jedis.scriptLoad(script);
+			} catch (RuntimeException e) {
+				Logs.redis().error("分布式锁在{}初始化脚本失败,原因是：{}", en.getKey(), e);
+				throw e;
 			}
 
 		}

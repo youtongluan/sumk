@@ -56,4 +56,9 @@ public final class InnerIOC {
 	public static void clear() {
 		pool.clear();
 	}
+
+	public static String info() {
+		return pool.toString();
+	}
+
 }

@@ -315,7 +315,10 @@ v3.1.0
 3、去掉Select的addEquals方法（此方法意义不大，增加理解成本），开发者通过多次调用addEqual来实现
 4、优化DB代码，减少中间过程内存的使用量，并优化sql语句中的空格。不等号统一改为<>
 
-3.1.1
+v3.1.1
 1、UserSession的loadUserObject()改名为loadAndRefresh()，这个方法开发者一般也很少用到
 2、增加Const.LISTENER_DB_MODIFY_ON_COMMIT类型监听器，它在事务提交前监听，能够操作数据库
 3、ModifyEvent可以获取被影响条数，并且支持boolean类型的传参
+
+v3.1.2
+1、增加BeanProvider接口，IOC通过BeanProvider获取bean。方便与Spring等第三方IOC对接

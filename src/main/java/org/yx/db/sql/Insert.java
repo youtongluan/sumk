@@ -38,8 +38,7 @@ public class Insert extends ModifySqlBuilder {
 	/**
 	 * 分表的情况下，设置分区名。这个方法只能调用一次
 	 * 
-	 * @param sub
-	 *            分区名
+	 * @param sub 分区名
 	 * @return 当前对象
 	 */
 	public Insert partition(String sub) {
@@ -48,9 +47,8 @@ public class Insert extends ModifySqlBuilder {
 	}
 
 	/**
-	 * @param pojo
-	 *            要插入的对象，该对象不会被DB包修改。如果是Map类型，要设置tableClass<BR>
-	 *            但如果对象中主键为null。而且表只有一个主键，并且是Long类型的话，会自动生成一个id，并且赋值到pojo中<br>
+	 * @param pojo 要插入的对象，该对象不会被DB包修改。如果是Map类型，要设置tableClass<BR>
+	 *             但如果对象中主键为null。而且表只有一个主键，并且是Long类型的话，会自动生成一个id，并且赋值到pojo中<br>
 	 * @return 当前对象
 	 */
 	public Insert insert(Object pojo) {

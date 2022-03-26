@@ -27,10 +27,8 @@ public final class NamedBean implements ComplexBean {
 	private final Object bean;
 
 	/**
-	 * @param beanName
-	 *            bean的名称，不能为null或空串
-	 * @param bean
-	 *            可以是class类，也可以包含实力化后的对象。但不能是NamedBean
+	 * @param beanName bean的名称，不能为null或空串
+	 * @param bean     可以是class类，也可以包含实力化后的对象。但不能是NamedBean
 	 */
 	public NamedBean(String beanName, Object bean) {
 		beanName = Objects.requireNonNull(beanName, "beanName cannot be null").trim();

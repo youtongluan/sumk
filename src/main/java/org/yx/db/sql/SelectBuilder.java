@@ -45,11 +45,9 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 	}
 
 	/**
-	 * 这个方法用于两个地方，一个是框架内部调用，一旦外部调用有可能影响最终结果
-	 * 另一个是开发调试的时候，调用本方法查看最终的sql，这时候它不需要放在事务中
+	 * 这个方法用于两个地方，一个是框架内部调用，一旦外部调用有可能影响最终结果 另一个是开发调试的时候，调用本方法查看最终的sql，这时候它不需要放在事务中
 	 * 
-	 * @throws Exception
-	 *             异常信息
+	 * @throws Exception 异常信息
 	 */
 	@Override
 	public MapedSql toMapedSql() throws Exception {
@@ -72,8 +70,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 	/**
 	 * 组装分页，也就是offset和limit
 	 * 
-	 * @param sql
-	 *            已组装出来的sql
+	 * @param sql 已组装出来的sql
 	 */
 	protected void buildLimitAndOffset(StringBuilder sql) {
 

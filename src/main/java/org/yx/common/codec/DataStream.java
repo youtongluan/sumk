@@ -30,12 +30,9 @@ public interface DataStream {
 	/**
 	 * 内部实现推荐用本接口的NULL常量来表示null，read的时候也要做响应的转义。 这个逻辑对使用者透明
 	 * 
-	 * @param s
-	 *            可以为null
-	 * @param lengthBytes
-	 *            用于存储s序列化后的长度，只能是1 2 4其中的一个
-	 * @throws Exception
-	 *             异常信息
+	 * @param s           可以为null
+	 * @param lengthBytes 用于存储s序列化后的长度，只能是1 2 4其中的一个
+	 * @throws Exception 异常信息
 	 */
 	void writePrefixedString(CharSequence s, int lengthBytes) throws Exception;
 

@@ -34,7 +34,7 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 			return IOC.get(name, clz);
 		}
 
-		List<?> list = InnerIOC.pool.getBeans(f.getName(), clz);
+		List<?> list = IOC.getBeans(f.getName(), clz);
 		if (list.size() == 1) {
 			return list.get(0);
 		}
@@ -51,7 +51,7 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 			}
 		}
 		if (inject.allowMulti()) {
-			list = InnerIOC.pool.getBeans(null, clz);
+			list = IOC.getBeans(null, clz);
 			if (list.size() > 0) {
 				return list.get(0);
 			}

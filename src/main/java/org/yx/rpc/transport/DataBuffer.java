@@ -22,8 +22,7 @@ public interface DataBuffer extends DataStream {
 	/**
 	 * 写入byte数组
 	 * 
-	 * @param bs
-	 *            不能为null
+	 * @param bs 不能为null
 	 */
 	void writeBytes(byte[] bs);
 

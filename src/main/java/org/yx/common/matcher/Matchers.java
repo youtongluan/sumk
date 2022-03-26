@@ -115,10 +115,8 @@ public class Matchers {
 	/**
 	 * 创建InOutMatcher、BooleanMatcher或其它Matcher
 	 * 
-	 * @param include
-	 *            可以匹配的Predicate,不能为null
-	 * @param exclude
-	 *            被排除的Predicate,不能为null
+	 * @param include 可以匹配的Predicate,不能为null
+	 * @param exclude 被排除的Predicate,不能为null
 	 * @return 返回值有可能是InOutMatcher类型，也有可能是BooleanMatcher
 	 */
 	public static Predicate<String> includeAndExclude(Predicate<String> include, Predicate<String> exclude) {

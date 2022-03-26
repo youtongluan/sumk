@@ -141,10 +141,8 @@ public final class ActionContext implements Cloneable {
 	/**
 	 * 设置上下文的附加属性
 	 * 
-	 * @param key
-	 *            序列化后的长度要在255以内
-	 * @param value
-	 *            序列化后的长度要在60K以内。如果value为null，就相当于remove
+	 * @param key   序列化后的长度要在255以内
+	 * @param value 序列化后的长度要在60K以内。如果value为null，就相当于remove
 	 */
 	public void setAttachment(String key, String value) {
 		if (value == null) {

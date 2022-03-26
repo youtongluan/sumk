@@ -171,10 +171,8 @@ public final class CollectionUtil {
 	/**
 	 * 返回一个不可变的list，这个list是原来的副本，它不会保存原来col的引用
 	 * 
-	 * @param <T>
-	 *            类型
-	 * @param col
-	 *            原始集合，可以为null
+	 * @param <T> 类型
+	 * @param col 原始集合，可以为null
 	 * @return 返回值不可修改，且不为null
 	 */
 	public static <T> List<T> unmodifyList(Collection<T> col) {
@@ -201,10 +199,8 @@ public final class CollectionUtil {
 	/**
 	 * 支持参数为null
 	 * 
-	 * @param <T>
-	 *            类型
-	 * @param arr
-	 *            原始数组，对原始数组的修改有可能会修改本集合。它可以为null
+	 * @param <T> 类型
+	 * @param arr 原始数组，对原始数组的修改有可能会修改本集合。它可以为null
 	 * @return 返回值不可修改，且不为null
 	 */
 	public static <T> List<T> unmodifyList(T[] arr) {
@@ -220,12 +216,9 @@ public final class CollectionUtil {
 	/**
 	 * 生成不可变map。如果是特殊map，它的特性可能丢失，比如大小写不敏感特性
 	 * 
-	 * @param <K>
-	 *            key的类型
-	 * @param <V>
-	 *            value的类型
-	 * @param m
-	 *            原始map
+	 * @param <K> key的类型
+	 * @param <V> value的类型
+	 * @param m   原始map
 	 * @return 返回值不可修改，且不为null
 	 */
 	public static <K, V> Map<K, V> unmodifyMap(Map<K, V> m) {

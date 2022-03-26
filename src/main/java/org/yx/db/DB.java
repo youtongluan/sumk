@@ -54,8 +54,7 @@ public final class DB {
 	 * 将pojo插入到数据库中<BR>
 	 * 要执行execute方法才能生效
 	 * 
-	 * @param pojo
-	 *            pojo、map或pojo所对应的class对象
+	 * @param pojo pojo、map或pojo所对应的class对象
 	 * @return Insert对象
 	 */
 	public static Insert insert(Object pojo) {
@@ -81,8 +80,7 @@ public final class DB {
 	 * 要执行execute方法才能生效<BR>
 	 * 如果显式指定where条件，每个条件里都必须包含所有的redis主键字段
 	 * 
-	 * @param pojo
-	 *            修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
+	 * @param pojo 修改后的pojo值，如果没有显式设置where条件，那么它的条件就是数据库主键或者redis主键
 	 * @return Update对象
 	 */
 	public static Update update(Object pojo) {
@@ -100,8 +98,7 @@ public final class DB {
 	 * 删除（包括软删除）pojo对象定义<BR>
 	 * 要执行execute方法才能生效
 	 * 
-	 * @param pojo
-	 *            pojo、map或pojo所对应的class对象
+	 * @param pojo pojo、map或pojo所对应的class对象
 	 * @return Delete对象
 	 */
 	public static Delete delete(Object pojo) {
