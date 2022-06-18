@@ -50,12 +50,12 @@ public class LocalRequestHandler {
 				}
 			}
 		} catch (Throwable e) {
-			resp.exception(new SoaException(e, RpcErrorCode.SERVER_UNKNOW, "server handler error"));
+			resp.exception(SoaException.create(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 		}
 		long begin = request.getStartInServer();
 		resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);
 		if (resp.exception() == null) {
-			resp.exception(new SoaException(777, "没有合适的handler", "no accepted handler"));
+			resp.exception(new SoaException(RpcErrorCode.NO_MAPPED_UNKNOW, "没有合适的handler", "no accepted handler"));
 		}
 		return resp;
 	}

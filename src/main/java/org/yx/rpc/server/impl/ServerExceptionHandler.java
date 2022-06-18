@@ -26,7 +26,7 @@ public final class ServerExceptionHandler {
 
 	public static void handle(Request req, Response resp, Throwable e) {
 		resp.json(null);
-		resp.exception(new SoaException(e, RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage()));
+		resp.exception(SoaException.create(RpcErrorCode.SERVER_HANDLE_ERROR, e.getMessage(), e));
 		if (RpcSettings.showServerExceptionLog()) {
 			Log.get("sumk.rpc.log.server.exception").error(e.toString(), e);
 		}

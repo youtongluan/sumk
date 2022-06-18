@@ -15,13 +15,34 @@
  */
 package org.yx.common;
 
-public interface AopExcutor {
+import org.yx.annotation.doc.NotNull;
+import org.yx.db.exec.DBTransaction;
+import org.yx.util.ExceptionUtil;
 
-	public void before(Object[] params);
+public class AopExcutorImpl implements AopExcutor {
 
-	public void onError(Throwable e);
+	@NotNull
+	private final DBTransaction transaction;
 
-	public void after(Object result);
+	public AopExcutorImpl(@NotNull DBTransaction transaction) {
+		this.transaction = transaction;
+	}
 
-	public void close();
+	public void before(Object[] params) {
+		transaction.begin();
+	}
+
+	public void onError(Throwable e) {
+		transaction.rollback(e);
+		throw ExceptionUtil.toRuntimeException(e);
+	}
+
+	public void after(Object result) {
+		transaction.commit();
+	}
+
+	public void close() {
+		transaction.close();
+	}
+
 }

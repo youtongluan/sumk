@@ -37,15 +37,21 @@ public final class SoaException extends CodeException {
 		return exceptionClz;
 	}
 
-	public SoaException(Throwable e, int code, String msg) {
-		super(e instanceof BizException ? ((BizException) e).getCode() : code,
-				e instanceof BizException ? e.getMessage() : msg);
-		this.exceptionClz = e == null ? null : e.getClass().getName();
-		this.detailError = getException(e);
-		this.bizException = e instanceof BizException;
+	public static SoaException create(String code, String msg, Throwable cause) {
+		String detailError = getException(cause);
+		SoaException ex;
+		if (cause instanceof BizException) {
+			BizException bizEx = (BizException) cause;
+			ex = new SoaException(bizEx.getCode(), bizEx.getMessage(), detailError);
+			ex.bizException = true;
+		} else {
+			ex = new SoaException(code, msg, detailError);
+		}
+		ex.exceptionClz = cause == null ? null : cause.getClass().getName();
+		return ex;
 	}
 
-	public SoaException(int code, String msg, String detail) {
+	public SoaException(String code, String msg, String detail) {
 		super(code, msg);
 		this.exceptionClz = null;
 		this.detailError = detail;

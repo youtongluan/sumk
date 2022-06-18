@@ -322,3 +322,9 @@ v3.1.1
 
 v3.1.2
 1、增加BeanProvider接口，IOC通过BeanProvider获取bean。方便与Spring等第三方IOC对接
+
+v3.2.0
+1、异常码从int类型改为String类型（int方式入参仍保留）。旧用户在客户端升级前，可通过sumk.http.interrorcode=1让返回值使用int方式
+2、允许自定义数据库事务的实现
+3、BizException的堆栈信息改为默认打印，可以通过sumk.bizexception.fullstack=0来关闭
+

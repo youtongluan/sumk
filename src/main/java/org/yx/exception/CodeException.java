@@ -15,24 +15,30 @@
  */
 package org.yx.exception;
 
+import java.util.Objects;
+
 public abstract class CodeException extends RuntimeException {
 
 	private static final long serialVersionUID = 1L;
 
-	protected final int code;
+	protected final String code;
 
-	public CodeException(int code, String msg) {
+	public CodeException(String code, String msg) {
 		super(msg);
-		this.code = code;
+		this.code = Objects.requireNonNull(code);
 	}
 
-	public CodeException(int code, String msg, Throwable exception) {
+	public CodeException(String code, String msg, Throwable exception) {
 		super(msg, exception);
-		this.code = code;
+		this.code = Objects.requireNonNull(code);
 	}
 
-	public int getCode() {
+	public String getCode() {
 		return code;
+	}
+
+	public boolean isSameCode(String expect) {
+		return this.code.equals(expect);
 	}
 
 	@Override

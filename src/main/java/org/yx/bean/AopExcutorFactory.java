@@ -16,15 +16,26 @@
 package org.yx.bean;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import org.yx.annotation.spec.BoxSpec;
 import org.yx.common.AopExcutor;
+import org.yx.common.AopExcutorImpl;
 import org.yx.db.exec.DBSource;
 import org.yx.db.exec.DBTransaction;
 import org.yx.db.exec.DefaultDBSource;
 
 public class AopExcutorFactory {
 	private static DBSource[] boxs = new DBSource[0];
+	private static Function<DBSource, AopExcutor> factory = ds -> new AopExcutorImpl(new DBTransaction(ds));
+
+	public static Function<DBSource, AopExcutor> getFactory() {
+		return factory;
+	}
+
+	public static void setFactory(Function<DBSource, AopExcutor> innerFactory) {
+		AopExcutorFactory.factory = Objects.requireNonNull(innerFactory);
+	}
 
 	public static synchronized int add(BoxSpec box) {
 		Objects.requireNonNull(box);
@@ -57,6 +68,7 @@ public class AopExcutorFactory {
 	}
 
 	public static AopExcutor create(int key) {
-		return new AopExcutor(new DBTransaction(boxs[key]));
+		DBSource ds = boxs[key];
+		return factory.apply(ds);
 	}
 }

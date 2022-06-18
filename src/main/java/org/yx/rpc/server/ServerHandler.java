@@ -73,7 +73,7 @@ public class ServerHandler implements BusinessHandler {
 					resp.sn(req.getSn());
 				}
 				resp.serviceInvokeMilTime(System.currentTimeMillis() - begin);
-				resp.exception(new SoaException(e, RpcErrorCode.SERVER_UNKNOW, "server handler error"));
+				resp.exception(SoaException.create(RpcErrorCode.SERVER_UNKNOW, "server handler error", e));
 				session.write(resp);
 			} finally {
 				RpcLogs.serverLog(req, resp);

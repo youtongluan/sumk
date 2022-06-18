@@ -25,7 +25,7 @@ public interface HttpKit {
 
 	Charset charset(HttpServletRequest req);
 
-	void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException;
+	void sendError(HttpServletResponse resp, String code, String errorMsg, Charset charset) throws IOException;
 
 	void setRespHeader(HttpServletResponse resp, Charset charset) throws IOException;
 

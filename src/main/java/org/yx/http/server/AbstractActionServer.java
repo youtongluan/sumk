@@ -93,7 +93,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 		}
 	}
 
-	protected void sendError(HttpServletRequest req, HttpServletResponse resp, int code, String errorMsg) {
+	protected void sendError(HttpServletRequest req, HttpServletResponse resp, String code, String errorMsg) {
 		InnerHttpUtil.sendError(resp, code, errorMsg, InnerHttpUtil.charset(req));
 	}
 
@@ -120,7 +120,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 			temp = ((InvocationTargetException) temp).getTargetException();
 		}
 		if (temp instanceof InvalidParamException) {
-			sendError(req, resp, HttpErrorCode.VALIDATE_ERROR, temp.getMessage());
+			sendError(req, resp, String.valueOf(HttpErrorCode.VALIDATE_ERROR), temp.getMessage());
 			return temp;
 		}
 		Throwable root = temp;
@@ -136,7 +136,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 			}
 		} while ((temp = temp.getCause()) != null);
 
-		sendError(req, resp, HttpErrorCode.HANDLE_ERROR,
+		sendError(req, resp, String.valueOf(HttpErrorCode.HANDLE_ERROR),
 				M.get("sumk.http.error." + HttpErrorCode.HANDLE_ERROR, "请求处理异常"));
 		return root;
 	}

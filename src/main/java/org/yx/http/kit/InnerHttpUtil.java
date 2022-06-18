@@ -98,7 +98,11 @@ public final class InnerHttpUtil {
 		return actStatis;
 	}
 
-	public static void sendError(HttpServletResponse resp, int code, String message, Charset charset) {
+	public static void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) {
+		sendError(resp, String.valueOf(code), errorMsg, charset);
+	}
+
+	public static void sendError(HttpServletResponse resp, String code, String message, Charset charset) {
 		try {
 			kit.sendError(resp, code, message, charset);
 		} catch (IOException e) {
@@ -158,4 +162,5 @@ public final class InnerHttpUtil {
 		Logs.http().warn("配置值{}对应的MessageType是PLAIN", name);
 		return MessageType.PLAIN;
 	}
+
 }

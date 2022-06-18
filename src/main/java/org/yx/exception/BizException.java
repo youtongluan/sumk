@@ -25,6 +25,10 @@ public class BizException extends CodeException {
 	private static final long serialVersionUID = 453453454L;
 
 	public BizException(int code, String msg) {
+		super(String.valueOf(code), msg);
+	}
+
+	public BizException(String code, String msg) {
 		super(code, msg);
 	}
 
@@ -36,9 +40,17 @@ public class BizException extends CodeException {
 		throw new BizException(code, msg);
 	}
 
+	public static BizException create(String code, String msg) {
+		return new BizException(code, msg);
+	}
+
+	public static void throwException(String code, String msg) throws BizException {
+		throw new BizException(code, msg);
+	}
+
 	@Override
 	public Throwable fillInStackTrace() {
-		if (AppInfo.getBoolean("sumk.bizexception.fullstack", false)) {
+		if (AppInfo.getBoolean("sumk.bizexception.fullstack", true)) {
 			return super.fillInStackTrace();
 		}
 		return this;

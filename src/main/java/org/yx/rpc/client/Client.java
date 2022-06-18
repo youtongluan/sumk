@@ -164,7 +164,7 @@ public final class Client {
 				ErrorRpcFuture errorFuture = (ErrorRpcFuture) f;
 				RpcLocker locker = errorFuture.locker;
 				LockHolder.remove(locker.req.getSn());
-				if (--count > 0 && errorFuture.rpcResult().exception().getCode() == RpcErrorCode.SEND_FAILED
+				if (--count > 0 && errorFuture.rpcResult().exception().isSameCode(RpcErrorCode.SEND_FAILED)
 						&& System.currentTimeMillis() + 5 < endTime) {
 					locker.discard(errorFuture.rpcResult());
 					Logs.rpc().warn("无法发送数据到{}，重试rpc请求", locker.url());

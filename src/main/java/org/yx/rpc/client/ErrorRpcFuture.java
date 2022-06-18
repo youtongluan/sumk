@@ -26,7 +26,7 @@ public class ErrorRpcFuture extends AbstractRpcFuture {
 	public ErrorRpcFuture(Throwable e, RpcLocker locker) {
 		super(locker);
 		CodeException exception = e instanceof CodeException ? (CodeException) e
-				: new SoaException(e, RpcErrorCode.UNKNOW, e.getMessage());
+				: SoaException.create(RpcErrorCode.UNKNOW, e.getMessage(), e);
 		this.rpcResult = new RpcResult(null, exception);
 	}
 

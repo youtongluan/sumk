@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.conf.AppInfo;
 import org.yx.http.HttpJson;
 import org.yx.log.Logs;
 import org.yx.util.StringUtil;
@@ -50,10 +51,20 @@ public class DefaultHttpKit implements HttpKit {
 	}
 
 	@Override
-	public void sendError(HttpServletResponse resp, int code, String errorMsg, Charset charset) throws IOException {
+	public void sendError(HttpServletResponse resp, String code, String errorMsg, Charset charset) throws IOException {
 		resp.setStatus(HttpSettings.errorHttpStatus());
 		Map<String, Object> map = new LinkedHashMap<>(2, 1);
-		map.put("code", code);
+		if (AppInfo.getBoolean("sumk.http.interrorcode", false)) {
+			int c = 0;
+			try {
+				c = Integer.valueOf(code);
+			} catch (Exception e) {
+				Logs.http().error(code + "不能转为int");
+			}
+			map.put("code", c);
+		} else {
+			map.put("code", code);
+		}
 		map.put("message", errorMsg);
 		resp.getOutputStream().write(HttpJson.operator().toJson(map).getBytes(charset));
 	}

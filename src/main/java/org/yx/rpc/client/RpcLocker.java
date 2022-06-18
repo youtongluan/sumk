@@ -129,7 +129,7 @@ public final class RpcLocker implements RpcWriteListener {
 		}
 		Thread currentThread = Thread.currentThread();
 		if (!awaitThread.compareAndSet(null, currentThread)) {
-			throw new SoaException(new TimeoutException(), RpcErrorCode.TIMEOUT, "cannot await twice");
+			throw SoaException.create(RpcErrorCode.TIMEOUT, "cannot await twice", new TimeoutException());
 		}
 		while (result.get() == null) {
 

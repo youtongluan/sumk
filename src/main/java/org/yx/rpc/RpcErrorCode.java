@@ -20,43 +20,48 @@ public interface RpcErrorCode {
 	/**
 	 * 线程数溢出
 	 */
-	int THREAD_THRESHOLD_OVER = 700;
+	String THREAD_THRESHOLD_OVER = "700";
 
-	int WAIT_TWICE = 710;
+	String WAIT_TWICE = "710";
 
 	/**
 	 * 该api没有配置路由信息
 	 */
-	int NO_ROUTE = 720;
+	String NO_ROUTE = "720";
 
 	/**
 	 * 存在节点，但是节点不能用
 	 */
-	int NO_NODE_AVAILABLE = 730;
+	String NO_NODE_AVAILABLE = "730";
 
 	/**
 	 * 客户端等待超时
 	 */
-	int TIMEOUT = 740;
+	String TIMEOUT = "740";
 
 	/**
 	 * 客户端发送失败，这个code会触发失败重试。 如果开启了失败重试，客户端一般不会得到这个异常码，而是NO_NODE_AVAILABLE
 	 */
-	int SEND_FAILED = 750;
+	String SEND_FAILED = "750";
 
 	/**
 	 * 客户端参数类型错误、服务器端业务代码出错等，并且异常类型不是BizException
 	 */
-	int SERVER_HANDLE_ERROR = 760;
+	String SERVER_HANDLE_ERROR = "760";
 
 	/**
 	 * 服务器端未知出错
 	 */
-	int SERVER_UNKNOW = 770;
+	String SERVER_UNKNOW = "770";
+
+	/**
+	 * 没有合适的handler
+	 */
+	String NO_MAPPED_UNKNOW = "777";
 
 	/**
 	 * 客户端的未知错误
 	 */
-	int UNKNOW = 799;
+	String UNKNOW = "799";
 
 }

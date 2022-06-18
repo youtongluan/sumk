@@ -91,7 +91,7 @@ public class AesClientTest {
 		resEntity = resp.getEntity();
 		String errMsg = EntityUtils.toString(resEntity);
 		Log.get("aes").info("raw resp:{}", errMsg);
-		Assert.assertEquals("{\"code\":12345,\"message\":\"业务异常\"}", errMsg);
+		Assert.assertEquals("{\"code\":\"12345\",\"message\":\"业务异常\"}", errMsg);
 	}
 
 	//测试加密传输并且签名

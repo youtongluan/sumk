@@ -32,8 +32,8 @@ public class SumkException extends CodeException {
 		super(negative(code), msg, exception);
 	}
 
-	private static int negative(int code) {
-		return code > 0 ? -code : code;
+	private static String negative(int code) {
+		return code > 0 ? String.valueOf(-code) : String.valueOf(code);
 	}
 
 	public static SumkException wrap(Throwable e) {
