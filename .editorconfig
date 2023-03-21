@@ -1,0 +1,26 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+tab_width = 2
+indent_style = space
+indent_size = 2
+ij_continuation_indent_size = 4
+trim_trailing_whitespace = true
+
+ij_markdown_wrap_text_if_long = false
+
+
+[*.java]
+indent_style = tab
+tab_width = 4
+indent_size = 4
+ij_continuation_indent_size = 8
+
+[*.xml]
+indent_style = tab
+
+[*.{md,mkd,markdown}]
+trim_trailing_whitespace = false
