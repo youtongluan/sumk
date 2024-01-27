@@ -1,4 +1,4 @@
-package org.test.web.client;
+package org.test.client;
 
 import java.net.URLEncoder;
 import java.util.Arrays;
@@ -17,6 +17,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.test.web.client.Encrypt;
 import org.yx.common.util.S;
 import org.yx.log.Log;
 
@@ -25,7 +26,7 @@ import org.yx.log.Log;
  * 加解密部分需要些技术功底才好看明白。
  * 好消息是：现在web应用一般都使用https了，就可以不用加解密方式了，就可以不看加解密部分
  */
-public class AesClientTest {
+public class HttpAesClientTest {
 
 	private String getUrl(String act) {
 		String url = "http://localhost:8080/rest/" + act;
@@ -122,7 +123,7 @@ public class AesClientTest {
 		String sign = Encrypt.sign(S.json().toJson(map).getBytes(charset));
 		System.out.println("sign:" + sign);
 		
-		HttpPost post = new HttpPost(getUrl(act) + "?_sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?__sign=" + sign);
 		post.setEntity(se);
 		resp = client.execute(post);
 		String line = resp.getStatusLine().toString();

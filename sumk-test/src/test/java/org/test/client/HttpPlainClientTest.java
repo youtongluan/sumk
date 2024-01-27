@@ -1,4 +1,4 @@
-package org.test.web.client;
+package org.test.client;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +24,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.test.web.client.Encrypt;
 import org.yx.common.util.S;
 import org.yx.demo.member.DemoUser;
 import org.yx.log.Log;
@@ -31,7 +32,7 @@ import org.yx.log.Log;
 /*
  * 通过这个类，可以了解web的通讯。
  */
-public class PlainClientTest {
+public class HttpPlainClientTest {
 
 	private String getUrl(String act) {
 		return "http://localhost:8080/rest/" + act;
@@ -81,7 +82,7 @@ public class PlainClientTest {
 		json.put("name", "小明");
 		String req = S.json().toJson(json);
 		String sign = Encrypt.sign(req.getBytes(charset));
-		HttpPost post = new HttpPost(getUrl(act) + "?_sign=" + sign);
+		HttpPost post = new HttpPost(getUrl(act) + "?__sign=" + sign);
 		StringEntity se = new StringEntity(req,charset);
 		post.setEntity(se);
 		HttpResponse resp = client.execute(post);
@@ -133,7 +134,7 @@ public class PlainClientTest {
 		MultipartEntity reqEntity = new MultipartEntity();
 		reqEntity.addPart("Api", StringBody.create("common", "text/plain", Charset.forName(charset)));
 		reqEntity.addPart("param", StringBody.create(req, "text/plain", Charset.forName(charset)));
-		reqEntity.addPart("img", new FileBody(new File("logo_bluce.jpg")));
+		reqEntity.addPart("img", new FileBody(new File("test.sql")));
 
 		post.setEntity(reqEntity);
 		HttpResponse resp = client.execute(post);

@@ -48,9 +48,9 @@ public class PlainServer {
 		List<MultipartItem> files=WebUtil.getMultiParts();
 		Assert.assertEquals(2, files.size());
 		MultipartItem f=WebUtil.getPart("img");
-		Assert.assertEquals("logo_bluce.jpg", f.getSubmittedFileName());
+		Assert.assertEquals("test.sql", f.getSubmittedFileName());
 		byte[] data=IOUtil.readAllBytes(f.getInputStream(),false);
-		byte[] exp=Files.readAllBytes(new File("logo_bluce.jpg").toPath());
+		byte[] exp=Files.readAllBytes(new File("test.sql").toPath());
 		Assert.assertArrayEquals(exp, data);
 		return "姓名:"+name+",年龄:"+age;
 	}

@@ -46,7 +46,7 @@ public class Encrypt {
 	}
 
 	public static byte[] encryptByte(byte[] data) throws Exception {
-		MessageDigest md = MessageDigest.getInstance("md5");
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
 		md.update(data);
 		return md.digest();
 	}

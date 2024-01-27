@@ -1,4 +1,4 @@
-package org.test;
+package org.test.client;
 
 import java.util.Arrays;
 import java.util.Random;

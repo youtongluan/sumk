@@ -1,4 +1,4 @@
-package org.test.soa.client;
+package org.test.client;
 
 import java.io.IOException;
 import java.util.ArrayList;
