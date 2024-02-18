@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<!-- 如果github返回不了，可以从https://gitee.com/youtongluan/sumk/blob/master/sql.dtd下载原文件 -->
 <!DOCTYPE sdb SYSTEM "https://youtongluan.github.io/sumk/sql.dtd">
 <sdb namespace="demo">
 <sql id="insert">

@@ -16,14 +16,14 @@
 package org.yx.bean.aop;
 
 /**
- * <B>返回值如果是原始类型，因为不支持null，所以在before()返回false和onError()吃掉异常的情况下，框架会抛出异常</B><BR
- * />
+ * <B>返回值如果是原始类型，因为不支持null，所以在before()返回false和after()吃掉异常的情况下，框架会抛出异常</B>。
  * 执行顺序：
- * <LI>先执行before()，如果返回false，就直接执行close()
- * <LI>如果before()和业务方法都执行成功，就执行after()
- * <LI>有异常发生就执行onError(),这个是用来转换异常，如果异常被前面的Executor转换了，将不再被执行。这个方法不建议抛出异常
- * <LI>close()无论什么情况都会被执行。这个方法不建议抛出异常
- * 
+ * <OL>
+ * <LI>先执行before()，如果返回false，就直接执行close() </LI>
+ * <LI>如果before()和业务方法都执行成功，就执行after() </LI>
+ * <LI>有异常发生就执行onError(),这个是用来转换异常，如果异常被前面的Executor转换了，将不再被执行。这个方法不建议抛出异常 </LI>
+ * <LI>close()无论什么情况都会被执行。这个方法不建议抛出异常 </LI>
+ * </OL>
  * @author youtl
  *
  */
@@ -33,6 +33,7 @@ public interface AopExecutor {
 	 * 这个方法可以抛出异常，如果抛出异常，就不会执行后面的AopExecutor，并且真正的业务方法也不会被执行你
 	 * 
 	 * @param params 原始方法的参数
+	 * @throws Exception 如果抛出异常，会中断后面的执行
 	 */
 	void before(Object[] params) throws Exception;
 

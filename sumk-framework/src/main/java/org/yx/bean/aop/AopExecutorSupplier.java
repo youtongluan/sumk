@@ -6,8 +6,10 @@ import org.yx.annotation.doc.NotNull;
 import org.yx.base.Ordered;
 
 /**
- * <LI>这个接口与@Bean无关，不需要@Bean注解
- * <LI>执行顺序由order()方法决定。
+ * <UL>
+ * <LI>这个接口与@Bean无关，不需要@Bean注解</LI>
+ * <LI>执行顺序由order()方法决定。</LI>
+ * </UL>
  *
  */
 public interface AopExecutorSupplier extends Ordered {

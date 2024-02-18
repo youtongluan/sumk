@@ -47,12 +47,6 @@ public class ComposedConfig implements SystemConfig, Consumer<RefreshableSystemC
 		this(top, config, null);
 	}
 
-	/**
-	 * 
-	 * @param reserved
-	 * @param config
-	 * @param reserved2
-	 */
 	public ComposedConfig(Map<String, String> top, RefreshableSystemConfig config, Map<String, String> lowest) {
 		this.top = CollectionUtil.unmodifyMap(top);
 		this.lowest = CollectionUtil.unmodifyMap(lowest);
