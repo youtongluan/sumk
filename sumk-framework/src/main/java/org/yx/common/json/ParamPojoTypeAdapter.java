@@ -66,7 +66,7 @@ public class ParamPojoTypeAdapter<T extends ParamPojo> extends TypeAdapter<T> {
 			pojo.setParams(objs);
 			return pojo;
 		} catch (Exception e) {
-			throw new SumkException(-34534234, info.paramClz().getSimpleName() + "解析" + name + "字段出错：" + e.getMessage(),
+			throw new SumkException(34534234, info.paramClz().getSimpleName() + "解析" + name + "字段出错：" + e.getMessage(),
 					e);
 		}
 	}

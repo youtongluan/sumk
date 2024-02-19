@@ -22,21 +22,21 @@ public interface SumkExceptionCode {
 	/**
 	 * 存在多个bean
 	 */
-	int TOO_MANY_BEAN = -912753951;
+	int TOO_MANY_BEAN = 912753951;
 
 	/**
 	 * 数据库连接已经关闭
 	 */
-	int DB_CONNECTION_CLOSED = -912753820;
+	int DB_CONNECTION_CLOSED = 912753820;
 
 	/**
 	 * 数据库queryOne()的时候，返回的结果不止一条
 	 */
-	int DB_TOO_MANY_RESULTS = -912753811;
+	int DB_TOO_MANY_RESULTS = 912753811;
 
 	/**
 	 * redis连接异常
 	 */
-	int REDIS_DIS_CONNECTION = -912753701;
+	int REDIS_DIS_CONNECTION = 912753701;
 
 }

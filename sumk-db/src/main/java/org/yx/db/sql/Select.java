@@ -281,7 +281,7 @@ public class Select extends SelectBuilder {
 	public Select offset(int offset) {
 		if (this.isOn(DBFlag.SELECT_IGNORE_MAX_OFFSET)) {
 			if (offset < 0 || offset > DBSettings.MaxOffset()) {
-				throw new SumkException(-235345347,
+				throw new SumkException(235345347,
 						"offset需要在0-" + DBSettings.MaxOffset() + "之间,通过ignoreMaxOffset(true)可以取消这个限制");
 			}
 		}
@@ -297,7 +297,7 @@ public class Select extends SelectBuilder {
 	public Select limit(int limit) {
 		if (this.isOn(DBFlag.SELECT_IGNORE_MAX_LIMIT)) {
 			if (limit <= 0 || limit > DBSettings.MaxLimit()) {
-				throw new SumkException(-235345346,
+				throw new SumkException(235345346,
 						"limit需要在1-" + DBSettings.MaxLimit() + "之间,通过ignoreMaxLimit(true)可以取消这个限制");
 			}
 		}

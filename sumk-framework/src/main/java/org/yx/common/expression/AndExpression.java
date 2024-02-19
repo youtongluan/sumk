@@ -29,7 +29,7 @@ public class AndExpression implements Predicate<Map<String, Object>> {
 	@SuppressWarnings("unchecked")
 	public AndExpression(Collection<Predicate<Map<String, Object>>> exps) {
 		if (exps == null || exps.isEmpty()) {
-			throw new SumkException(-3455635, "ParamExpression列表不能为空");
+			throw new SumkException(3455635, "ParamExpression列表不能为空");
 		}
 		this.exps = exps.toArray(new Predicate[exps.size()]);
 	}

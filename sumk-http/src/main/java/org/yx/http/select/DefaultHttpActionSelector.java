@@ -109,7 +109,7 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 			this.urlDuplicate(info.formalName());
 			for (String m : info.node().methods()) {
 				if (old.node().acceptMethod(m)) {
-					throw new SumkException(-345647432, "web接口" + old.formalName() + "重复了,http方法是" + m);
+					throw new SumkException(345647432, "web接口" + old.formalName() + "重复了,http方法是" + m);
 				}
 			}
 		}
@@ -119,7 +119,7 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 	protected void urlDuplicate(String url) {
 		String key = "sumk.http.url.duplicate";
 		if (!AppInfo.getBoolean(key, false)) {
-			throw new SumkException(-345647431, "web接口" + url + "重复了，设置" + key + "=1可以开启url重名功能");
+			throw new SumkException(345647431, "web接口" + url + "重复了，设置" + key + "=1可以开启url重名功能");
 		}
 	}
 
@@ -143,7 +143,7 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 
 			this.urlDuplicate(parsedName);
 			if (this.isDuplicate(info, old)) {
-				throw new SumkException(-345647432, "web接口" + parsedName + "重复了");
+				throw new SumkException(345647432, "web接口" + parsedName + "重复了");
 			}
 			HttpActionInfo[] newInfos = Arrays.copyOf(old, old.length + 1);
 			newInfos[newInfos.length - 1] = info;
@@ -154,7 +154,7 @@ public class DefaultHttpActionSelector implements HttpActionSelector {
 			String key = "sumk.http.url.match.prefix";
 			if (!AppInfo.getBoolean(key, false)) {
 				Logs.http().error("{}接口是前缀匹配，但是本系统没有开启前缀匹配功能。前缀匹配接口共有{}个", startList.get(0).rawAct(), startList.size());
-				throw new SumkException(-345647431, "需要设置" + key + "=1才能开启前缀匹配的功能");
+				throw new SumkException(345647431, "需要设置" + key + "=1才能开启前缀匹配的功能");
 			}
 		}
 		startList.sort(null);

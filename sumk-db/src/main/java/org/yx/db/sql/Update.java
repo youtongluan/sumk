@@ -122,7 +122,7 @@ public class Update extends ModifySqlBuilder {
 			this.updateTo = Collections.emptyMap();
 		}
 		if (this.updateTo.isEmpty() && CollectionUtil.isEmpty(this.incrMap)) {
-			throw new SumkException(-3464601, "updateTo is null or empty");
+			throw new SumkException(3464601, "updateTo is null or empty");
 		}
 
 		this.checkMap(this.updateTo, this.pojoMeta);
@@ -215,7 +215,7 @@ public class Update extends ModifySqlBuilder {
 		}
 		CharSequence whereStr = orItem.toCharSequence();
 		if (whereStr == null || whereStr.length() == 0) {
-			throw new SumkException(-7345445, "where cannot be null");
+			throw new SumkException(7345445, "where cannot be null");
 		}
 		sb.append(whereStr);
 		mapedSql.sql = sb.toString();

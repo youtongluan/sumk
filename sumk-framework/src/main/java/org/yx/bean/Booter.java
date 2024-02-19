@@ -217,8 +217,8 @@ public final class Booter {
 					if (inject.allowEmpty()) {
 						continue;
 					}
-					throw new SimpleSumkException(-235435658,
-							bean.getClass().getName() + "." + f.getName() + " cannot injected.");
+					throw new SimpleSumkException(235435658, bean.getClass().getName() + "." + f.getName()
+							+ " cannot injected. because bean not founds");
 				}
 				injectField(f, bean, target);
 			}

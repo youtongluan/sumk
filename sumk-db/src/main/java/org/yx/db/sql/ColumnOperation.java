@@ -58,7 +58,7 @@ public class ColumnOperation implements CompareOperation {
 		ColumnMeta cm = select.pojoMeta.getByFieldName(name);
 		if (cm == null) {
 			if (select.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
-				throw new SumkException(-54675234, name + "这个字段没有在" + select.pojoMeta.pojoClz.getName() + "中定义");
+				throw new SumkException(54675234, name + "这个字段没有在" + select.pojoMeta.pojoClz.getName() + "中定义");
 			}
 			return "";
 		}

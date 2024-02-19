@@ -31,13 +31,13 @@ public final class SqlParsers {
 
 	public static Predicate<Map<String, Object>> createParamExpression(String test, String matchType) {
 		if (test == null || test.isEmpty()) {
-			throw new SumkException(-34645465, "if中的test不能为空");
+			throw new SumkException(34645465, "if中的test不能为空");
 		}
 		test = StringUtil.toLatin(test.trim());
 		boolean and = test.contains(SPLIT_AND);
 		boolean or = test.contains("|");
 		if (and && or) {
-			throw new SumkException(-34645465, "if的test不能同时出现,和|");
+			throw new SumkException(34645465, "if的test不能同时出现,和|");
 		}
 		return createParamExpression(test, matchType, !or);
 	}

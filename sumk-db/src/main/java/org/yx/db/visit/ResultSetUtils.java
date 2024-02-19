@@ -58,7 +58,7 @@ public final class ResultSetUtils {
 		for (int i = 1; i <= columnCount; i++) {
 			ColumnMeta cm = pm.getByColumnDBName(md.getColumnName(i));
 			if (cm == null) {
-				throw new SumkException(-629234, md.getColumnName(i) + "这个字段没有在java的pojo类中定义");
+				throw new SumkException(629234, md.getColumnName(i) + "这个字段没有在java的pojo类中定义");
 			}
 			columns[i] = cm;
 		}

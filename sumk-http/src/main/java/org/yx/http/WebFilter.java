@@ -27,7 +27,7 @@ public abstract class WebFilter implements Ordered {
 
 	public final void setNext(WebFilter next) {
 		if (this.next != null) {
-			throw new SumkException(-7682343, "next已经赋值了，它是" + this.next);
+			throw new SumkException(7682343, "next已经赋值了，它是" + this.next);
 		}
 		this.next = Objects.requireNonNull(next);
 	}

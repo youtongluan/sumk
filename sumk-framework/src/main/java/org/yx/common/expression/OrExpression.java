@@ -29,7 +29,7 @@ public class OrExpression implements Predicate<Map<String, Object>> {
 	@SuppressWarnings("unchecked")
 	public OrExpression(Collection<Predicate<Map<String, Object>>> exps) {
 		if (exps == null || exps.isEmpty()) {
-			throw new SumkException(-34554565, "ParamExpression列表不能为空");
+			throw new SumkException(34554565, "ParamExpression列表不能为空");
 		}
 		this.exps = exps.toArray(new Predicate[exps.size()]);
 	}

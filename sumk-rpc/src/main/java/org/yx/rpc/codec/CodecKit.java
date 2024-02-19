@@ -42,7 +42,7 @@ public final class CodecKit {
 		final int protocol = in.readInt(4);
 		if ((protocol & 0xFF_00_00_00) != Protocols.MAGIC) {
 			in.position(begin);
-			throw new SumkException(-3432196, "error magic," + Integer.toHexString(protocol));
+			throw new SumkException(3432196, "error magic," + Integer.toHexString(protocol));
 		}
 
 		int dataSize = in.readInt(4);
@@ -57,7 +57,7 @@ public final class CodecKit {
 					return decoder.decode(protocol, in, dataSize);
 				}
 			}
-			throw new SumkException(-394561243, "no sumk decoder:" + Integer.toHexString(protocol));
+			throw new SumkException(394561243, "no sumk decoder:" + Integer.toHexString(protocol));
 		} finally {
 			int pos = in.position();
 			int limit = begin + dataSize + 8;
@@ -78,7 +78,7 @@ public final class CodecKit {
 				return;
 			}
 		}
-		throw new SumkException(-394561241, "no sumk encoder for " + message.getClass().getName());
+		throw new SumkException(394561241, "no sumk encoder for " + message.getClass().getName());
 	}
 
 	public static void skipPrefixedString(DataStream s, int skipSize) throws Exception {

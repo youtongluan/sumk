@@ -50,7 +50,7 @@ public class JettyServerConnector extends ServerConnector {
 			} catch (InterruptedException e1) {
 				Logs.http().error("showdown because of InterruptedException");
 				Thread.currentThread().interrupt();
-				throw new SumkException(-34534560, "收到中断." + e1);
+				throw new SumkException(34534560, "收到中断." + e1);
 			}
 			Logs.http().warn("{} was occupied({}),begin retry {}", this.getPort(), ex.getMessage(), i);
 			try {

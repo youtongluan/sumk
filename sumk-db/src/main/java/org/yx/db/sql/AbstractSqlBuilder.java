@@ -55,7 +55,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		Set<String> keys = map.keySet();
 		for (String key : keys) {
 			if (pm.getByFieldName(key) == null) {
-				throw new SumkException(-743257, key + " is not a field in " + pm.pojoClz.getName());
+				throw new SumkException(743257, key + " is not a field in " + pm.pojoClz.getName());
 			}
 		}
 	}
@@ -66,12 +66,12 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		}
 		String msg = this.pojoMeta == null ? key + " is not a field"
 				: key + " is not a field in " + pojoMeta.pojoClz.getName();
-		throw new SumkException(-743257, msg);
+		throw new SumkException(743257, msg);
 	}
 
 	protected void checkIn() {
 		if (CollectionUtil.isEmpty(this.in)) {
-			throw new SumkException(-7345245, "no conditions");
+			throw new SumkException(7345245, "no conditions");
 		}
 	}
 
@@ -94,7 +94,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 		try {
 			return this.makeSurePojoMeta().populate(src, keepNull);
 		} catch (Exception e) {
-			throw new SumkException(-42534254, e.getMessage(), e);
+			throw new SumkException(42534254, e.getMessage(), e);
 		}
 	}
 
@@ -145,7 +145,7 @@ public abstract class AbstractSqlBuilder<T> implements SqlBuilder {
 			if (e instanceof SumkException) {
 				throw (SumkException) e;
 			}
-			throw new SumkException(-53172189, e.getMessage(), e);
+			throw new SumkException(53172189, e.getMessage(), e);
 		}
 	}
 

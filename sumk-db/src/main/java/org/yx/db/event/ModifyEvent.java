@@ -48,7 +48,7 @@ public class ModifyEvent extends DBEvent {
 	 */
 	public void setBoolean(int slot, boolean h) {
 		if (slot < 29 || slot > 32) {
-			throw new SumkException(-346243451, "slot必须在29-32之间，实际却是:" + slot);
+			throw new SumkException(346243451, "slot必须在29-32之间，实际却是:" + slot);
 		}
 		this.flag = BitUtil.setBit(flag, slot, h);
 	}

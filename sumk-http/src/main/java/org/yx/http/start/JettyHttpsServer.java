@@ -44,7 +44,7 @@ public class JettyHttpsServer extends JettyServer {
 		if (!keystoreFile.exists()) {
 			String msg = path + " is not exist";
 			Logs.http().error(msg);
-			throw new SumkException(-2345345, msg);
+			throw new SumkException(2345345, msg);
 		}
 		sslContextFactory.setKeyStorePath(keystoreFile.getAbsolutePath());
 		sslContextFactory.setKeyStorePassword(get("sumk.webserver.ssl.storePassword"));
@@ -67,7 +67,7 @@ public class JettyHttpsServer extends JettyServer {
 	private String get(String name) {
 		String v = AppInfo.get(name, null);
 		if (v == null) {
-			throw new SumkException(-12391763, name + " is null!!! please set it");
+			throw new SumkException(12391763, name + " is null!!! please set it");
 		}
 		return v;
 	}

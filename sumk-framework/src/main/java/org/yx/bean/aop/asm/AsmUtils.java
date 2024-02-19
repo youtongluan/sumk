@@ -156,7 +156,7 @@ public final class AsmUtils {
 			}
 			Class<?> clz = (Class<?>) defineClass.invoke(Loader.loader(), fullName, b, 0, b.length);
 			if (clz == null) {
-				throw new SumkException(-235345436, "cannot load class " + fullName);
+				throw new SumkException(235345436, "cannot load class " + fullName);
 			}
 			return clz;
 		}

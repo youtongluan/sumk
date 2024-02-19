@@ -35,7 +35,7 @@ public class ProxySession implements SqlSession {
 
 	@Override
 	public Connection getConnection() {
-		throw new SumkException(-148675, "getConnection not support");
+		throw new SumkException(148675, "getConnection not support");
 	}
 
 	protected SqlSession readSession() {
@@ -44,7 +44,7 @@ public class ProxySession implements SqlSession {
 			return SqlSessionFactory.get(context.getDbName()).openSession(context.connection(DBType.READ_PREFER));
 		} catch (SQLException e) {
 			Log.get("sumk.mybatis").error(e.getMessage(), e);
-			throw new SumkException(-345254, "创建mybatis的读session失败");
+			throw new SumkException(345254, "创建mybatis的读session失败");
 		}
 	}
 
@@ -54,7 +54,7 @@ public class ProxySession implements SqlSession {
 			return SqlSessionFactory.get(context.getDbName()).openSession(context.connection(DBType.WRITE));
 		} catch (SQLException e) {
 			Log.get("sumk.mybatis").error(e.getMessage(), e);
-			throw new SumkException(-345255, "创建mybatis的写session失败");
+			throw new SumkException(345255, "创建mybatis的写session失败");
 		}
 	}
 

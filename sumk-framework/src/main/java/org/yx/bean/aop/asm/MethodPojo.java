@@ -39,7 +39,7 @@ public class MethodPojo {
 			this.sample = Loader.newInstance(this.paramClz);
 		} catch (Exception e) {
 			Logs.asm().error(clz.getName() + "初始化失败", e);
-			throw new SumkException(-345354334, clz.getSimpleName() + "初始化失败");
+			throw new SumkException(345354334, clz.getSimpleName() + "初始化失败");
 		}
 	}
 

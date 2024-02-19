@@ -60,7 +60,7 @@ public class NettyDataBuffer extends AbstractDataBuffer {
 
 	private void checkMode(int expect) {
 		if (mode != expect) {
-			throw new SumkException(-35435, "mode要为" + expect + "才正确");
+			throw new SumkException(35435, "mode要为" + expect + "才正确");
 		}
 	}
 

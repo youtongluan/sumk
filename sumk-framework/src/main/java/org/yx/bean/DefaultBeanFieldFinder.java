@@ -63,19 +63,19 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 	protected List<?> getListField(Field f, Object bean, boolean allowEmpty) throws ClassNotFoundException {
 		String genericName = f.getGenericType().getTypeName();
 		if (genericName == null || genericName.isEmpty() || !genericName.contains("<")) {
-			throw new SimpleSumkException(-239845611,
+			throw new SimpleSumkException(239845611,
 					bean.getClass().getName() + "." + f.getName() + "is List,but not List<T>");
 		}
 		genericName = genericName.substring(genericName.indexOf("<") + 1, genericName.length() - 1);
 		Class<?> clz = Loader.loadClass(genericName);
 		if (clz == Object.class) {
-			throw new SimpleSumkException(-23984568,
+			throw new SimpleSumkException(23984568,
 					bean.getClass().getName() + "." + f.getName() + ": beanClz of @Inject in list type cannot be null");
 		}
 		List<?> target = IOC.getBeans(clz);
 		if (target == null || target.isEmpty()) {
 			if (!allowEmpty) {
-				throw new SimpleSumkException(-235435652, bean.getClass().getName() + "." + f.getName() + " is empty.");
+				throw new SimpleSumkException(235435652, bean.getClass().getName() + "." + f.getName() + " is empty.");
 			}
 			return Collections.emptyList();
 		}
@@ -87,7 +87,7 @@ public class DefaultBeanFieldFinder implements BeanFieldFinder {
 		List<?> target = IOC.getBeans(clz);
 		if (target == null || target.isEmpty()) {
 			if (!allowEmpty) {
-				throw new SimpleSumkException(-235435651, bean.getClass().getName() + "." + f.getName() + " is empty.");
+				throw new SimpleSumkException(235435651, bean.getClass().getName() + "." + f.getName() + " is empty.");
 			}
 			return (Object[]) Array.newInstance(clz, 0);
 		}

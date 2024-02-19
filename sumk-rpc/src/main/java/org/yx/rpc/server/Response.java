@@ -131,7 +131,7 @@ public class Response implements StreamAble, Serializable {
 			this.exception = S.json().fromJson(ex, SoaException.class);
 			break;
 		default:
-			throw new SumkException(-45432239, "不支持resp的body类型：" + type);
+			throw new SumkException(45432239, "不支持resp的body类型：" + type);
 		}
 	}
 

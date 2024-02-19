@@ -101,7 +101,7 @@ public class SumkDataSource implements DataSource {
 		if (iface.isInstance(proxy)) {
 			return iface.cast(proxy);
 		}
-		throw new SumkException(-234345, this.getClass().getSimpleName() + " does not wrap " + iface.getName());
+		throw new SumkException(234345, this.getClass().getSimpleName() + " does not wrap " + iface.getName());
 	}
 
 	@Override

@@ -45,7 +45,7 @@ import org.yx.log.Log;
 public final class SumkDate implements Comparable<SumkDate>, Serializable {
 	private static final long serialVersionUID = 100L;
 
-	public static final int SUMKDATE_ERROR_CODE = -912753954;
+	public static final int SUMKDATE_ERROR_CODE = 912753954;
 
 	private static final String LOG_NAME = "sumk.date";
 

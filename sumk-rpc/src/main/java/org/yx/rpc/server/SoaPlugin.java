@@ -59,7 +59,7 @@ public class SoaPlugin implements Plugin {
 			server = (Lifecycle) c.newInstance(port);
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
-			throw new SumkException(-35345436, "rpc服务启动失败");
+			throw new SumkException(35345436, "rpc服务启动失败");
 		}
 	}
 

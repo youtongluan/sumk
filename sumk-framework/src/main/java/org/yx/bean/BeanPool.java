@@ -147,6 +147,7 @@ public final class BeanPool {
 	}
 
 	private synchronized boolean put(String name, Object bean) {
+		Logs.ioc().debug("add bean {} : {}", name, bean);
 		NameSlot oldSlot = slotMap.putIfAbsent(name, new NameSlot(name, new Object[] { bean }));
 		if (oldSlot == null) {
 			return true;

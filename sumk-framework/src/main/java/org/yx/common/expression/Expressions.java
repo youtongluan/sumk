@@ -24,7 +24,7 @@ import org.yx.exception.SumkException;
 public class Expressions {
 	public static SimpleExpression createSimpleExpression(String key, String matchType) {
 		if (key == null || (key = key.trim()).isEmpty()) {
-			throw new SumkException(-345565, "参数有误:" + key);
+			throw new SumkException(345565, "参数有误:" + key);
 		}
 		switch (matchType) {
 		case MatchType.FALSE_BY_NULL:
@@ -34,7 +34,7 @@ public class Expressions {
 		case MatchType.FALSE_BY_EMPTY:
 			return new NotEmptyExpression(key);
 		default:
-			throw new SumkException(-3455651, matchType + "类型不正确");
+			throw new SumkException(3455651, matchType + "类型不正确");
 		}
 	}
 

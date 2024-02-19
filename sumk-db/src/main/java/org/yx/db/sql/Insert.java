@@ -112,7 +112,7 @@ public class Insert extends ModifySqlBuilder {
 				map.put(key, value);
 			}
 			if (map.isEmpty()) {
-				throw new SumkException(-829341, "存在无效的待插入记录");
+				throw new SumkException(829341, "存在无效的待插入记录");
 			}
 			cacheList.add(map);
 			if (softDeleteAndNotProvided) {

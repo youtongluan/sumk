@@ -67,7 +67,7 @@ public final class IOC {
 			if (allowEmpty) {
 				return null;
 			}
-			throw new SumkException(-353451, clz.getName() + "没有实现类，或者实现类不是Bean");
+			throw new SumkException(353451, clz.getName() + "没有实现类，或者实现类不是Bean");
 		}
 		T f = factorys.get(0);
 		Logs.ioc().debug("{}第一个bean是{}", clz.getName(), f);

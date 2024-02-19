@@ -38,7 +38,7 @@ public class NettyDecoder extends ByteToMessageDecoder {
 			out.add(message);
 		} catch (Exception e) {
 			Logs.rpc().error("数据解析出错", e);
-			throw new SumkException(-346456319, "数据解析出错," + e.getMessage());
+			throw new SumkException(346456319, "数据解析出错," + e.getMessage());
 		}
 	}
 

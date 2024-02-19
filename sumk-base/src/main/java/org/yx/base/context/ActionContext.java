@@ -191,7 +191,7 @@ public final class ActionContext implements Cloneable {
 		try {
 			return (ActionContext) super.clone();
 		} catch (CloneNotSupportedException e) {
-			throw new SumkException(-8234235, "clone not supported");
+			throw new SumkException(8234235, "clone not supported");
 		}
 	}
 }

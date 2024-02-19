@@ -28,7 +28,7 @@ import org.yx.util.SumkDate;
 
 public class TimeUtil {
 
-	public static final int DATETIME_CONVERT = -912753916;
+	public static final int DATETIME_CONVERT = 912753916;
 
 	public static boolean isGenericDate(Class<?> type) {
 		return type == Date.class || type == java.sql.Date.class || type == Time.class || type == Timestamp.class

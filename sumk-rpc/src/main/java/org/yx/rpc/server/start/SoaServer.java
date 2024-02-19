@@ -188,7 +188,7 @@ public class SoaServer implements Lifecycle {
 			started = true;
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
-			throw new SumkException(-35334546, "soa服务启动失败");
+			throw new SumkException(35334546, "soa服务启动失败");
 		}
 
 	}
@@ -216,7 +216,7 @@ public class SoaServer implements Lifecycle {
 			}
 		} catch (Exception e) {
 			logger.error(e.getLocalizedMessage(), e);
-			throw new SumkException(-353451436, "soa服务初始化失败");
+			throw new SumkException(353451436, "soa服务初始化失败");
 		}
 
 	}

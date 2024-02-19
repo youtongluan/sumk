@@ -120,7 +120,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 		ItemJoiner joiner = new ItemJoiner(" AND ", null, null);
 		joiner.appendNotEmptyItem(buildEquals(paramters)).appendNotEmptyItem(buildCompare(paramters));
 		if (joiner.isEmpty() && !this.isOn(DBFlag.SELECT_ALLOW_EMPTY_WHERE)) {
-			throw new SumkException(-63254325, "empty where");
+			throw new SumkException(63254325, "empty where");
 		}
 		return joiner.appendNotEmptyItem(buildValid(paramters)).toCharSequence();
 	}
@@ -173,7 +173,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 			ColumnMeta cm = pojoMeta.getByFieldName(filedName);
 			if (cm == null) {
 				if (this.isOn(DBFlag.FAIL_IF_PROPERTY_NOT_MAPPED)) {
-					throw new SumkException(-7331234, filedName + "这个字段没有在java的pojo类中定义");
+					throw new SumkException(7331234, filedName + "这个字段没有在java的pojo类中定义");
 				}
 				continue;
 			}
@@ -202,7 +202,7 @@ public class SelectBuilder extends AbstractSqlBuilder<List<Map<ColumnMeta, Objec
 		public String toString(PojoMeta pm) {
 			ColumnMeta cm = pm.getByFieldName(name);
 			if (cm == null) {
-				throw new SumkException(-4532018, "排序字段" + name + "不在" + pm.pojoClz.getName() + "字段中");
+				throw new SumkException(4532018, "排序字段" + name + "不在" + pm.pojoClz.getName() + "字段中");
 			}
 			String dbName = cm.dbColumn;
 			if (desc) {

@@ -67,7 +67,7 @@ public class SumkStatement implements AutoCloseable {
 				ps.setObject(i + 1, parameterObj);
 			}
 		} catch (Exception e) {
-			throw new SumkException(-3643654,
+			throw new SumkException(3643654,
 					"设置PreparedStatement的参数失败，sql语句: " + DBKits.getSqlOfStatement(ps) + " ,参数: " + params, e);
 		}
 	};

@@ -45,7 +45,7 @@ public class SoftDeleteParserImpl implements SoftDeleteParser {
 		if (Float.class == type || float.class == type) {
 			return Float.valueOf(value);
 		}
-		throw new SumkException(-6234267, type.getName() + " is not supported by soft delete");
+		throw new SumkException(6234267, type.getName() + " is not supported by soft delete");
 	}
 
 	@Override

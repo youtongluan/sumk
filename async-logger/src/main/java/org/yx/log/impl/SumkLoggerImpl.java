@@ -43,7 +43,7 @@ public class SumkLoggerImpl extends SumkLogger implements LocationAwareLogger {
 		case LocationAwareLogger.ERROR_INT:
 			return LogLevel.ERROR;
 		default:
-			throw new SumkException(-34523521, logger_int + "不是有效的日志级别");
+			throw new SumkException(34523521, logger_int + "不是有效的日志级别");
 		}
 	}
 

@@ -42,7 +42,7 @@ public class Redis3Kit {
 			} else if ("XX".equalsIgnoreCase(nxxx)) {
 				params.xx();
 			} else {
-				throw new SumkException(-234325, "nxxx参数错误：" + nxxx);
+				throw new SumkException(234325, "nxxx参数错误：" + nxxx);
 			}
 		}
 		if (expx != null) {
@@ -51,7 +51,7 @@ public class Redis3Kit {
 			} else if ("PX".equalsIgnoreCase(expx)) {
 				params.px(time);
 			} else {
-				throw new SumkException(-234325, "expx参数错误：" + expx);
+				throw new SumkException(234325, "expx参数错误：" + expx);
 			}
 		}
 		return params;

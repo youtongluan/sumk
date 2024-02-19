@@ -54,7 +54,7 @@ public class RedisPlugin implements Plugin {
 					TimeUnit.SECONDS);
 		} catch (Exception e) {
 			Logs.redis().error(e.getMessage(), e);
-			throw new SumkException(-35345436, "redis启动失败");
+			throw new SumkException(35345436, "redis启动失败");
 		}
 		Locker.init();
 	}

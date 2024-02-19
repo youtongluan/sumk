@@ -25,22 +25,22 @@ public class SumkException extends CodeException {
 	private static final long serialVersionUID = 3453246435546L;
 
 	public SumkException(int code, String msg) {
-		super(negative(code), msg);
+		super(stringCode(code), msg);
 	}
 
 	public SumkException(int code, String msg, Throwable exception) {
-		super(negative(code), msg, exception);
+		super(stringCode(code), msg, exception);
 	}
 
-	private static String negative(int code) {
-		return code > 0 ? String.valueOf(-code) : String.valueOf(code);
+	private static String stringCode(int code) {
+		return String.valueOf(code);
 	}
 
 	public static SumkException wrap(Throwable e) {
 		if (e instanceof SumkException) {
 			throw (SumkException) e;
 		}
-		return new SumkException(-34534565, e.getMessage(), e);
+		return new SumkException(34534565, e.getMessage(), e);
 	}
 
 }

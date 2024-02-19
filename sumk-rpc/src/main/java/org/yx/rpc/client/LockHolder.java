@@ -38,7 +38,7 @@ public final class LockHolder {
 		Req req = r.req;
 		if (locks.putIfAbsent(req.getSn(), r) != null) {
 
-			throw new SumkException(-111111111, req.getSn() + " duplicate!!!!!!!!!!!!!!!!!!!!!");
+			throw new SumkException(111111111, req.getSn() + " duplicate!!!!!!!!!!!!!!!!!!!!!");
 		}
 		monitor.add(req.getSn(), endTime);
 	}
