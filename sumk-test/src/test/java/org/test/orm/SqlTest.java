@@ -77,6 +77,7 @@ public class SqlTest extends BaseOrmTest{
 		f=f.getParentFile();
 		f=new File(f,"pom.xml");
 		System.out.println(f);
+		System.out.println(Const.sumkVersion());
 		String pom=new String(Files.readAllBytes(f.toPath()),AppInfo.UTF8);
 		Assert.assertEquals(pom.indexOf("<version>"),pom.indexOf("<version>"+Const.sumkVersion()+"</version>"));
 	}
