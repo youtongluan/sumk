@@ -23,6 +23,7 @@ import java.util.Map.Entry;
 import org.yx.base.sumk.UnsafeStringWriter;
 import org.yx.conf.AppInfo;
 import org.yx.exception.CodeException;
+import org.yx.log.ConsoleLog;
 import org.yx.util.ExceptionUtil;
 
 import com.google.gson.stream.JsonWriter;
@@ -45,7 +46,7 @@ public final class UnionLogUtil {
 			p.mkdirs();
 		}
 		if (!logging.renameTo(dest)) {
-			LogAppenders.consoleLog.error(logging.getName() + " move to loged folder failed");
+			ConsoleLog.defaultLog.error(logging.getName() + " move to loged folder failed");
 		}
 	}
 
@@ -59,7 +60,7 @@ public final class UnionLogUtil {
 			p.mkdirs();
 		}
 		if (!loged.renameTo(dest)) {
-			LogAppenders.consoleLog.error(loged.getName() + " move to error path failed");
+			ConsoleLog.defaultLog.error(loged.getName() + " move to error path failed");
 		}
 	}
 
@@ -80,7 +81,7 @@ public final class UnionLogUtil {
 			return logRoot;
 		}
 		logRoot = getDefaultLoginPath();
-		LogAppenders.consoleLog.info("logRoot:" + logRoot.getAbsolutePath());
+		ConsoleLog.defaultLog.info("logRoot:" + logRoot.getAbsolutePath());
 		return logRoot;
 	}
 

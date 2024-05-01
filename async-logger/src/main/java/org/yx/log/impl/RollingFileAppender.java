@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.yx.base.matcher.BooleanMatcher;
 import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 import org.yx.log.LogSettings;
 import org.yx.util.StringUtil;
 import org.yx.util.SumkDate;
@@ -55,22 +56,22 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 			return false;
 		}
 		if (fileName.indexOf(SLOT) < 0) {
-			LogAppenders.consoleLog.error("{} should contain {}", fileName, SLOT);
+			ConsoleLog.defaultLog.error("{} should contain {}", fileName, SLOT);
 			return false;
 		}
 		if (fileName.indexOf(SLOT) != fileName.lastIndexOf(SLOT)) {
-			LogAppenders.consoleLog.error("{} contain more than one {}", fileName, SLOT);
+			ConsoleLog.defaultLog.error("{} contain more than one {}", fileName, SLOT);
 			return false;
 		}
 		File file = new File(fileName);
 		this.filePattern = file.getName();
 		if (!this.filePattern.contains(SLOT)) {
-			LogAppenders.consoleLog.error("{} should contain {}", this.filePattern, SLOT);
+			ConsoleLog.defaultLog.error("{} should contain {}", this.filePattern, SLOT);
 			return false;
 		}
 		this.dir = file.getParentFile();
 		if (!this.dir.exists() && !this.dir.mkdirs()) {
-			LogAppenders.consoleLog.error("directory [{}{}] is not exists, and cannot create!!!",
+			ConsoleLog.defaultLog.error("directory [{}{}] is not exists, and cannot create!!!",
 					this.dir.getAbsolutePath(), File.pathSeparator);
 			return false;
 		}
@@ -149,7 +150,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 			}
 			File file = new File(this.dir, filePattern.replace(SLOT, date));
 			if (!file.exists() && !file.createNewFile()) {
-				LogAppenders.consoleLog.error("{} create fail ", file.getAbsolutePath());
+				ConsoleLog.defaultLog.error("{} create fail ", file.getAbsolutePath());
 				for (LogObject logObject : msgs) {
 					System.err.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));
 				}
@@ -177,9 +178,9 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 		try {
 			this.channel.force(true);
 			this.dirty = false;
-			LogAppenders.consoleLog.trace("{} finish sync to {}", this.name, this.currentDate);
+			ConsoleLog.defaultLog.trace("{} finish sync to {}", this.name, this.currentDate);
 		} catch (Exception e) {
-			LogAppenders.consoleLog.error(this.name + "刷新到磁盘失败[" + this.currentDate + "]", e);
+			ConsoleLog.defaultLog.error(this.name + "刷新到磁盘失败[" + this.currentDate + "]", e);
 		}
 	}
 
@@ -188,9 +189,9 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 			this.channel.close();
 			this.channel = null;
 			this.currentDate = null;
-			LogAppenders.consoleLog.debug("{} closed {}", this.name, this.currentDate);
+			ConsoleLog.defaultLog.debug("{} closed {}", this.name, this.currentDate);
 		} catch (Exception e) {
-			LogAppenders.consoleLog.error(this.name + "关闭失败[" + this.currentDate + "]", e);
+			ConsoleLog.defaultLog.error(this.name + "关闭失败[" + this.currentDate + "]", e);
 		}
 	}
 
@@ -219,6 +220,7 @@ public abstract class RollingFileAppender extends LogQueue implements LogAppende
 		return StringUtil.isEmpty(v) ? p : String.join(":", p, v);
 	}
 
+	@Override
 	protected boolean onStart(Map<String, String> map) {
 		this.config(map);
 		return this.dir != null && this.filePattern != null;

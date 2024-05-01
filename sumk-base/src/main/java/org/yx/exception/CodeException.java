@@ -43,7 +43,7 @@ public abstract class CodeException extends RuntimeException {
 
 	@Override
 	public String getLocalizedMessage() {
-		return new StringBuilder().append(this.getMessage()).append(" (").append(code).append(")").toString();
+		return new StringBuilder().append(this.getMessage()).append(" [").append(code).append(']').toString();
 	}
 
 	@Override

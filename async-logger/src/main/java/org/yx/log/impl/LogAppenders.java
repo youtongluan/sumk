@@ -15,9 +15,7 @@
  */
 package org.yx.log.impl;
 
-import org.slf4j.Logger;
 import org.yx.conf.AppInfo;
-import org.yx.log.ConsoleLog;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
@@ -27,7 +25,6 @@ public class LogAppenders {
 	public static final String PATH = "path";
 	static LogAppender[] logAppenders = new LogAppender[0];
 	private static boolean started;
-	static final Logger consoleLog = ConsoleLog.get("sumk.log");
 
 	static LogAppender startAppender(String name, String value) {
 		if (value == null || value.isEmpty()) {

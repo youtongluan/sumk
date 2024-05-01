@@ -13,8 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.log;
+package org.yx.common.locale;
 
-public enum LogType {
-	console, slf4j;
+import java.util.Locale;
+
+public interface I18nMessageProvider {
+
+	void setCurrentLocale(Locale locale);
+
+	void clearCurrentLocale();
+
+	Locale getCurrentLocale();
+
+	String get(String orignName, String defaultTemplate, Object... params);
+
+	String getInLocale(Locale locale, String orignName, String defaultTemplate, Object... params);
+
 }

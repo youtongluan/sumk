@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.common.codec;
+package org.yx.rpc.codec;
 
 public interface StreamAble {
 	void writeTo(DataStream s) throws Exception;

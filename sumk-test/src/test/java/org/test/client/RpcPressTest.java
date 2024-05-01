@@ -11,9 +11,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.yx.log.Log;
 import org.yx.log.LogLevel;
-import org.yx.log.LogType;
 import org.yx.log.Loggers;
 import org.yx.main.StartConstants;
 import org.yx.main.SumkServer;
@@ -26,7 +24,6 @@ public class RpcPressTest {
 	@Before
 	public void before(){
 		SumkServer.start(StartConstants.NOHTTP,StartConstants.NOSOA);
-		Log.setLogType(LogType.console);
 		Loggers.setDefaultLevel(LogLevel.ERROR);//这个只能修改默认级别的，如果有具体设置了日志级别，它的优先级比这个高
 		Rpc.init();
 	}
@@ -60,6 +57,7 @@ public class RpcPressTest {
 		AtomicLong totalRT=new AtomicLong();
 		for(int i=0;i<threadCount;i++){
 			new Thread(){
+				@Override
 				public void run(){
 					long t=0;
 					for(int i=0;i<count/threadCount;i++){

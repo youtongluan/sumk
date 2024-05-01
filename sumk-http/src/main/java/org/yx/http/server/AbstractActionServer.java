@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.yx.base.context.ActionContext;
+import org.yx.common.locale.I18n;
 import org.yx.common.validate.InvalidParamException;
 import org.yx.conf.AppInfo;
 import org.yx.exception.BizException;
@@ -35,7 +36,6 @@ import org.yx.http.kit.InnerHttpUtil;
 import org.yx.http.kit.LocalWebContext;
 import org.yx.http.log.HttpLogs;
 import org.yx.log.Logs;
-import org.yx.util.M;
 import org.yx.util.StringUtil;
 
 public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
@@ -60,12 +60,13 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 			if (rawAct == null || rawAct.isEmpty()) {
 				log.error("raw act is empty in {}?{}", req.getPathInfo(), req.getQueryString());
 				throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
-						M.get("sumk.http.error.actformat", "请求格式不正确", rawAct));
+						I18n.get("sumk.http.error.actformat", "{0}请求格式不正确", rawAct));
 			}
 			HttpActionInfo info = HttpActions.getHttpInfo(rawAct, req.getMethod());
 			if (info == null) {
+				log.error("{} is not action", rawAct);
 				throw BizException.create(HttpErrorCode.ACT_NOT_FOUND,
-						M.get("sumk.http.error.act.notfound", "接口不存在", rawAct));
+						I18n.get("sumk.http.error.act.notfound", "接口不存在"));
 			}
 			rawAct = info.rawAct();
 			if (info.node().overflowThreshold()) {
@@ -138,7 +139,7 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 		} while ((temp = temp.getCause()) != null);
 
 		sendError(req, resp, String.valueOf(HttpErrorCode.HANDLE_ERROR),
-				M.get("sumk.http.error." + HttpErrorCode.HANDLE_ERROR, "请求处理异常"));
+				I18n.get("sumk.http.error." + HttpErrorCode.HANDLE_ERROR, "请求处理异常"));
 		return root;
 	}
 }

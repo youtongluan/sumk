@@ -19,12 +19,15 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
 import org.yx.log.SumkLogger;
 
 public final class SumkLoggerFactory implements ILoggerFactory {
-	static final Loggers loggers = Loggers.create("Slf4jLog");
+
+	private static final Loggers loggers = Loggers.create("Slf4jLog");
+
 	private static Function<String, SumkLogger> loggerFactory = SumkLoggerImpl::new;
 	static {
 		LogAppenders.init();
@@ -44,7 +47,8 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 		}
 	}
 
-	public SumkLogger getLogger(String name) {
+	@Override
+	public Logger getLogger(String name) {
 		SumkLogger log = loggers.get(name);
 		if (log != null) {
 			return log;

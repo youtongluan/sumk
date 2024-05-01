@@ -51,7 +51,7 @@ public class LeveledDayRollingFileAppender extends DayRollingFileAppender {
 		try {
 			this.level = LogLevel.valueOf(lev.toUpperCase());
 		} catch (Exception e) {
-			ConsoleLog.get("sumk.log").error("{} is not a valid level name", lev);
+			ConsoleLog.defaultLog.error("{} is not a valid level name", lev);
 		}
 	}
 

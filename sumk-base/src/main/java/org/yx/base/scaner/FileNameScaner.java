@@ -45,9 +45,9 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 	@Override
 	public Collection<String> apply(Collection<String> packageNames) {
 		Logger log = Logs.system();
-		Set<String> classNameList = new HashSet<>(240);
+		Set<String> classNameSet = new HashSet<>(240);
 		if (packageNames == null || packageNames.isEmpty()) {
-			return classNameList;
+			return classNameSet;
 		}
 		String packagePath;
 		File file;
@@ -68,31 +68,31 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 					log.debug("find {}", url.getFile());
 					if (JarFileUtil.URL_PROTOCOL_JAR.equals(url.getProtocol())
 							|| JarFileUtil.URL_PROTOCOL_ZIP.equals(url.getProtocol())) {
-						this.findClassInJar(classNameList, url, packagePath);
+						this.findClassInJar(classNameSet, url, packagePath);
 						continue;
 					}
 					file = new File(url.toURI());
 					if (!file.exists()) {
 						throw new SumkException(9723423, file.getAbsolutePath() + " is not a file");
 					}
-					this.parseFile(classNameList, file, packagePath);
+					this.parseFile(classNameSet, file, packagePath);
 				}
 			} catch (Exception ex) {
 				log.error("parse " + packageName + "failed", ex);
 				throw new SumkException(23423, ex.getMessage(), ex);
 			}
 		}
-		return classNameList;
+		return classNameSet;
 	}
 
-	private void parseFile(Collection<String> classNameList, final File root, final String packagePath) {
+	private void parseFile(Collection<String> classNameCol, final File root, final String packagePath) {
 		File[] subFiles = root.listFiles();
 		if (subFiles == null || subFiles.length == 0) {
 			return;
 		}
 		for (File file : subFiles) {
 			if (file.isDirectory()) {
-				this.parseFile(classNameList, file, packagePath);
+				this.parseFile(classNameCol, file, packagePath);
 			} else if (file.getName().endsWith(subfix)) {
 				String absolutePath = file.getAbsolutePath().replace('\\', '/');
 				int index = absolutePath.indexOf('/' + packagePath) + 1;
@@ -100,7 +100,7 @@ public final class FileNameScaner implements Function<Collection<String>, Collec
 					Logs.system().error(absolutePath + " donot contain " + packagePath);
 					continue;
 				}
-				addClz(classNameList, absolutePath.substring(index));
+				addClz(classNameCol, absolutePath.substring(index));
 			}
 		}
 	}

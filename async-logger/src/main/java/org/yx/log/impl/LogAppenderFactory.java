@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.yx.log.ConsoleLog;
+
 public final class LogAppenderFactory {
 
 	private static final ConcurrentMap<String, LogAppender> map = new ConcurrentHashMap<>();
@@ -39,11 +41,11 @@ public final class LogAppenderFactory {
 	static LogAppender start(String name, Map<String, String> configMap) throws Exception {
 		LogAppender append = map.get(name);
 		if (append == null) {
-			LogAppenders.consoleLog.error("{} cannot find appender", name);
+			ConsoleLog.defaultLog.error("{} cannot find appender", name);
 			return null;
 		}
 		if (!append.start(configMap)) {
-			LogAppenders.consoleLog.error("{} started failed,value is {}", name, configMap);
+			ConsoleLog.defaultLog.error("{} started failed,value is {}", name, configMap);
 			return null;
 		}
 		return append;

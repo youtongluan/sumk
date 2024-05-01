@@ -30,6 +30,7 @@ import org.yx.base.matcher.BooleanMatcher;
 import org.yx.base.matcher.Matchers;
 import org.yx.common.StringEntity;
 import org.yx.common.action.ActInfoUtil;
+import org.yx.common.locale.I18n;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.exception.BizException;
@@ -39,7 +40,6 @@ import org.yx.http.select.DefaultHttpActionSelector;
 import org.yx.http.select.HttpActionSelector;
 import org.yx.log.Logs;
 import org.yx.main.SumkServer;
-import org.yx.util.M;
 import org.yx.util.StringUtil;
 
 public final class HttpActions {
@@ -85,10 +85,10 @@ public final class HttpActions {
 		if (usedAct == null || usedAct.isEmpty()) {
 			Logs.http().error("act is empty for {}", requestAct);
 			throw BizException.create(HttpErrorCode.ACT_FORMAT_ERROR,
-					M.get("sumk.http.error.actformat", "请求格式不正确", requestAct));
+					I18n.get("sumk.http.error.actformat", "{0}请求格式不正确", requestAct));
 		}
 		if (fusing.test(usedAct)) {
-			throw BizException.create(HttpErrorCode.FUSING, M.get("sumk.http.error.fusing", "请求被熔断", usedAct));
+			throw BizException.create(HttpErrorCode.FUSING, I18n.get("sumk.http.error.fusing", "{0}请求被熔断", usedAct));
 		}
 		return selector.getHttpInfo(usedAct, method);
 	}

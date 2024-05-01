@@ -15,25 +15,13 @@
  */
 package org.yx.log;
 
-import java.util.Objects;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class Log {
-	private static LogType logType = LogType.slf4j;
 	private static final String SUMKBOX = ".sumkbox.";
 
 	private Log() {
-	}
-
-	public static LogType logType() {
-		return logType;
-	}
-
-	public static void setLogType(LogType type) {
-		logType = Objects.requireNonNull(type);
-		ConsoleLog.get("sumk.log").info("set logtype to {}", logType);
 	}
 
 	public static boolean isTraceEnable(String module) {
@@ -53,10 +41,15 @@ public final class Log {
 		if (module == null) {
 			module = "";
 		}
-		if (logType == LogType.slf4j) {
-			return LoggerFactory.getLogger(module);
+		Logger logger = LoggerFactory.getLogger(module);
+		if (isNOPLogger(logger)) {
+			return DelegateLogger.get(module);
 		}
-		return DelegateLogger.get(module);
+		return logger;
+	}
+
+	public static boolean isNOPLogger(Logger logger) {
+		return "NOPLogger".equals(logger.getClass().getSimpleName());
 	}
 
 	public static void printStack(String module, Throwable e) {

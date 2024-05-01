@@ -16,7 +16,7 @@
 package org.yx.rpc.codec.encoders;
 
 import org.yx.annotation.Bean;
-import org.yx.common.codec.StreamAble;
+import org.yx.rpc.codec.StreamAble;
 import org.yx.rpc.transport.DataBuffer;
 
 @Bean

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 import org.yx.util.UUIDSeed;
 
 public class LocalFileDao implements UnionLogDao {
@@ -50,17 +51,17 @@ public class LocalFileDao implements UnionLogDao {
 				if (!f.getParentFile().exists()) {
 					File parent = f.getParentFile();
 					if (!parent.mkdirs()) {
-						LogAppenders.consoleLog.error("create folder " + parent.getAbsolutePath() + " failed!!!");
+						ConsoleLog.defaultLog.error("create folder " + parent.getAbsolutePath() + " failed!!!");
 						return null;
 					}
 				}
 				if (!f.createNewFile()) {
-					LogAppenders.consoleLog.error("create file " + f.getAbsolutePath() + " failed!!!");
+					ConsoleLog.defaultLog.error("create file " + f.getAbsolutePath() + " failed!!!");
 					return null;
 				}
 				return f;
 			} catch (Exception e) {
-				LogAppenders.consoleLog.error(e.getMessage(), e);
+				ConsoleLog.defaultLog.error(e.getMessage(), e);
 			}
 		}
 		return null;
@@ -119,13 +120,13 @@ public class LocalFileDao implements UnionLogDao {
 			this.fileLength = 0;
 			this.recordSize = 0;
 		} catch (Exception e) {
-			LogAppenders.consoleLog.error(e.toString(), e);
+			ConsoleLog.defaultLog.error(e.toString(), e);
 		} finally {
 			if (channel != null) {
 				try {
 					channel.close();
 				} catch (IOException e) {
-					LogAppenders.consoleLog.error(e.toString(), e);
+					ConsoleLog.defaultLog.error(e.toString(), e);
 				}
 			}
 		}

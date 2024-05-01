@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.function.Function;
 
 import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 
 public class UnionLogObjectSerializer implements Function<LogObject, UnionLogObject> {
 
@@ -41,7 +42,7 @@ public class UnionLogObjectSerializer implements Function<LogObject, UnionLogObj
 			UnionLogUtil.appendLogObject(sb, log, appId);
 			return new UnionLogObject(log.loggerName, log.logDate, sb.toString());
 		} catch (IOException e) {
-			LogAppenders.consoleLog.error("数据解析出错", e);
+			ConsoleLog.defaultLog.error("数据解析出错", e);
 			return null;
 		}
 	}

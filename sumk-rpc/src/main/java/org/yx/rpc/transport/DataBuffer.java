@@ -15,7 +15,7 @@
  */
 package org.yx.rpc.transport;
 
-import org.yx.common.codec.DataStream;
+import org.yx.rpc.codec.DataStream;
 
 public interface DataBuffer extends DataStream {
 

@@ -23,6 +23,7 @@ import java.util.function.Consumer;
 
 import org.yx.conf.AppInfo;
 import org.yx.conf.SystemConfig;
+import org.yx.log.ConsoleLog;
 import org.yx.log.LogSettings;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -40,7 +41,7 @@ public class LogAppendObserver implements Consumer<SystemConfig> {
 				try {
 					append.stop();
 				} catch (Exception e) {
-					LogAppenders.consoleLog.error(e.toString(), e);
+					ConsoleLog.defaultLog.error(e.toString(), e);
 				}
 				continue;
 			}
@@ -57,7 +58,7 @@ public class LogAppendObserver implements Consumer<SystemConfig> {
 			appends.add(append);
 		}
 		if (LogAppenders.isStarted()) {
-			LogAppenders.consoleLog.info("find new appends:{}", newAppenders);
+			ConsoleLog.defaultLog.info("find new appends:{}", newAppenders);
 		}
 		for (Entry<String, String> entry : newAppenders.entrySet()) {
 			String k = entry.getKey();

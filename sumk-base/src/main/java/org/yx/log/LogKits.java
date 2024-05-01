@@ -15,6 +15,8 @@
  */
 package org.yx.log;
 
+import org.slf4j.spi.LocationAwareLogger;
+
 public final class LogKits {
 	private static final String DELIM_STR = "{}";
 
@@ -62,5 +64,21 @@ public final class LogKits {
 			sb.append(msg.substring(start));
 		}
 		return sb.toString();
+	}
+
+	public static LogLevel fromSlf4jLocationAwareLoggerInt(int logger_int) {
+		if (logger_int >= LocationAwareLogger.ERROR_INT) {
+			return LogLevel.ERROR;
+		}
+		if (logger_int >= LocationAwareLogger.WARN_INT) {
+			return LogLevel.WARN;
+		}
+		if (logger_int >= LocationAwareLogger.INFO_INT) {
+			return LogLevel.INFO;
+		}
+		if (logger_int >= LocationAwareLogger.DEBUG_INT) {
+			return LogLevel.DEBUG;
+		}
+		return LogLevel.TRACE;
 	}
 }

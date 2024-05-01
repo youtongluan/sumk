@@ -27,8 +27,7 @@ import org.yx.db.visit.Visitors;
 import org.yx.exception.SumkException;
 
 /**
- * 这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应，忽略大小写<BR>
- * 大小写敏感
+ * 这里的sql，占位符不是?，而是#{**}，里面的name，与map的key要一一对应<BR>
  * 
  * @author 游夏
  *

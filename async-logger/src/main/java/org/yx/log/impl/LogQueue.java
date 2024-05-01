@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import org.yx.base.matcher.BooleanMatcher;
 import org.yx.base.matcher.Matchers;
 import org.yx.conf.AppInfo;
+import org.yx.log.ConsoleLog;
 import org.yx.util.SumkThreadPool;
 
 public abstract class LogQueue implements Runnable {
@@ -66,7 +67,7 @@ public abstract class LogQueue implements Runnable {
 			patterns = Matchers.WILDCARD;
 		}
 		this.matcher = Matchers.includeAndExclude(patterns, configMap.get("exclude"));
-		LogAppenders.consoleLog.debug("{} set matcher ：{}", this.name, this.matcher);
+		ConsoleLog.defaultLog.debug("{} set matcher ：{}", this.name, this.matcher);
 	}
 
 	public final String name() {
@@ -90,10 +91,10 @@ public abstract class LogQueue implements Runnable {
 			try {
 				this.flush(this.consume());
 			} catch (Throwable e) {
-				LogAppenders.consoleLog.warn("日志消费失败，" + e.toString(), e);
+				ConsoleLog.defaultLog.warn("日志消费失败，" + e.toString(), e);
 
 				if (Thread.currentThread().isInterrupted() || e.getClass() == InterruptedException.class) {
-					LogAppenders.consoleLog.warn("{}日志停止了", this.name);
+					ConsoleLog.defaultLog.warn("{}日志停止了", this.name);
 					Thread.currentThread().interrupt();
 					return;
 				}
@@ -128,7 +129,7 @@ public abstract class LogQueue implements Runnable {
 		if (!onStart(map)) {
 			return false;
 		}
-		LogAppenders.consoleLog.debug("{} started by {}", this, map);
+		ConsoleLog.defaultLog.debug("{} started by {}", this, map);
 		if (!jobStarted) {
 			startJob();
 			this.jobStarted = true;
@@ -144,7 +145,7 @@ public abstract class LogQueue implements Runnable {
 
 	public synchronized void stop() throws Exception {
 		this.matcher = BooleanMatcher.FALSE;
-		LogAppenders.consoleLog.info("日志{} stoped", this.name);
+		ConsoleLog.defaultLog.info("日志{} stoped", this.name);
 	}
 
 	public void setInterval(int interval) {

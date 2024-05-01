@@ -17,7 +17,6 @@ package org.yx.rpc.codec;
 
 import java.util.List;
 
-import org.yx.common.codec.DataStream;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.codec.decoders.DataDecoder;

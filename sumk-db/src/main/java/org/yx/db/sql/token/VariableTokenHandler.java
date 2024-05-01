@@ -19,12 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * 大小写不敏感
- * 
- * @author 游夏
- *
- */
 public class VariableTokenHandler implements MapedSqlTokenParser.TokenHandler {
 
 	private final Function<String, Object> valueHandler;

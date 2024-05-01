@@ -15,11 +15,22 @@
  */
 package org.yx.log;
 
+import java.util.Objects;
+
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
-import org.yx.base.context.AppContext;
 
 public final class DelegateLogger implements Logger {
+
+	private static int count = 0;
+
+	private static void incrCount() {
+		count++;
+		if (count < 0) {
+			count = 0;
+		}
+	}
 
 	private Logger delegate;
 
@@ -35,12 +46,28 @@ public final class DelegateLogger implements Logger {
 		if (delegate.getClass() != ConsoleLog.class) {
 			return delegate;
 		}
-		if (AppContext.inst().isStarted() && Log.logType() == LogType.slf4j) {
-			delegate = Log.get(delegate.getName());
-			if (delegate.isDebugEnabled()) {
-				Log.get("sumk.log").debug("{} change to {}", delegate.getName(), delegate.getClass().getSimpleName());
-			}
+		incrCount();
+		if (count % 20 != 10) {
+			return delegate;
 		}
+		try {
+			Logger slfLog = LoggerFactory.getLogger(delegate.getName());
+			if (slfLog == null) {
+				return delegate;
+			}
+			if (slfLog instanceof ConsoleLog || slfLog instanceof DelegateLogger) {
+				return delegate;
+			}
+			if (Log.isNOPLogger(slfLog)) {
+				return delegate;
+			}
+			delegate = slfLog;
+			ConsoleLog.defaultLog.info("{} change to {}", delegate.getName(), delegate.getClass().getSimpleName());
+		} catch (Throwable e) {
+			ConsoleLog.defaultLog.warn("can not change to slf4j. throwable {}:{}", e.getClass().getName(),
+					e.getMessage());
+		}
+
 		return delegate;
 	}
 
@@ -348,4 +375,9 @@ public final class DelegateLogger implements Logger {
 	public void error(Marker marker, String msg, Throwable t) {
 		delegate().error(marker, msg, t);
 	}
+
+	public void setDelegate(Logger delegate) {
+		this.delegate = Objects.requireNonNull(delegate);
+	}
+
 }

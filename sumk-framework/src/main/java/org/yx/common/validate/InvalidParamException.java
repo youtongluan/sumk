@@ -28,6 +28,8 @@ public class InvalidParamException extends Exception {
 
 	private static final long serialVersionUID = 125465546L;
 
+	public static final String PARAM_SLOT = "$@$";
+
 	private ParameterInfo info;
 
 	public InvalidParamException(String message, ParameterInfo info) {
@@ -38,19 +40,20 @@ public class InvalidParamException extends Exception {
 	@Override
 	public String getMessage() {
 		String ret = super.getMessage();
-		if (ret.indexOf("#") < 0) {
+		if (ret.indexOf(PARAM_SLOT) < 0) {
 			return ret;
 		}
 		if (info == null) {
-			return ret.replace("#", "参数");
+			return ret.replace(PARAM_SLOT, genericParamName());
 		}
 		if (AppInfo.getBoolean("sumk.valid.name.cn", true) && StringUtil.isNotEmpty(info.getCnName())) {
-			return ret.replace("#", info.getCnName());
+			return ret.replace(PARAM_SLOT, info.getCnName());
 		}
-		if (AppInfo.getBoolean("sumk.valid.name.raw", true)) {
-			return ret.replace("#", info.getParamName());
-		}
-		return ret.replace("#", "参数");
+		return ret.replace(PARAM_SLOT, info.getParamName());
+	}
+
+	private String genericParamName() {
+		return AppInfo.get("sumk.valid.name.generic", "参数");
 	}
 
 	public ParameterInfo getInfo() {

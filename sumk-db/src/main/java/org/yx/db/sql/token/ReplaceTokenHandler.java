@@ -18,12 +18,6 @@ package org.yx.db.sql.token;
 import java.util.Map;
 import java.util.function.Function;
 
-/**
- * 大小写不敏感
- * 
- * @author 游夏
- *
- */
 public final class ReplaceTokenHandler implements StringTokenParser.TokenHandler {
 
 	private final Function<String, Object> valueHandler;

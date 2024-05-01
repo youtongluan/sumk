@@ -22,6 +22,8 @@ public class ConsoleLog extends SumkLogger {
 
 	private static final Loggers loggers = Loggers.create("ConsoleLog");
 
+	public static final SumkLogger defaultLog = ConsoleLog.get("sumk.log");
+
 	public static SumkLogger get(String name) {
 		SumkLogger log = loggers.get(name);
 		if (log != null) {
@@ -43,21 +45,27 @@ public class ConsoleLog extends SumkLogger {
 
 	@Override
 	protected void output(Marker marker, LogLevel methodLevel, String msg, Throwable e) {
-		StringBuilder sb = new StringBuilder();
-		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
-		sb.append(Thread.currentThread().getName()).append("] ").append(methodLevel).append(" ")
-				.append(LogKits.shorterPrefix(name, 40)).append(" - ").append(msg).append("\n");
+		StringBuilder sb = new StringBuilder(128);
+		sb.append(currentTime()).append(" [").append(Thread.currentThread().getName()).append("] ").append(methodLevel)
+				.append(" ").append(LogKits.shorterPrefix(name, 40)).append(" - ").append(msg).append("\n");
 		System.err.print(sb.toString());
 		e.printStackTrace();
 	}
 
 	private void show(LogLevel level, String msg, Object... args) {
 		msg = LogKits.buildMessage(msg, args);
-		StringBuilder sb = new StringBuilder();
-		sb.append(SumkDate.now().to_yyyy_MM_dd_HH_mm_ss_SSS()).append(" [");
+		StringBuilder sb = new StringBuilder(128);
+		sb.append(currentTime()).append(" [");
 		sb.append(Thread.currentThread().getName()).append("] ").append(level).append(" ")
 				.append(LogKits.shorterPrefix(name, 40)).append(" - ").append(msg);
 		System.out.println(sb.toString());
+	}
+
+	private StringBuilder currentTime() {
+		SumkDate d = SumkDate.now();
+		StringBuilder sb = new StringBuilder(26);
+		sb.append(d.to_yyyy_MM_dd()).append('T').append(d.to_HH_mm_ss_SSS());
+		return sb;
 	}
 
 }

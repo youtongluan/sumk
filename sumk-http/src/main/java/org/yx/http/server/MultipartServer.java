@@ -19,12 +19,12 @@ import javax.servlet.annotation.MultipartConfig;
 
 import org.yx.annotation.Bean;
 import org.yx.annotation.http.SumkServlet;
+import org.yx.common.locale.I18n;
 import org.yx.exception.BizException;
 import org.yx.http.HttpErrorCode;
 import org.yx.http.handler.HttpHandlerChain;
 import org.yx.http.handler.MultipartHolder;
 import org.yx.http.handler.WebContext;
-import org.yx.util.M;
 
 /**
  * 
@@ -46,9 +46,9 @@ public class MultipartServer extends AbstractActionServer {
 		}
 		String contextType = wc.httpRequest().getContentType();
 		if (contextType == null || !contextType.startsWith(MULTIPART_FORMDATA)) {
-			log.error("the MIME of act is " + MULTIPART_FORMDATA + ",not " + contextType);
+			log.error("the MIME of " + wc.rawAct() + " act is " + MULTIPART_FORMDATA + ",not " + contextType);
 			throw BizException.create(HttpErrorCode.UPLOAD_NOT_MULTI_TYPE,
-					M.get("sumk.http.upload.error.contentType", "ContentType不是" + MULTIPART_FORMDATA, wc.rawAct()));
+					I18n.get("sumk.http.upload.error.contentType", "该接口的ContentType不是" + MULTIPART_FORMDATA));
 		}
 		try {
 			HttpHandlerChain.multipart.handle(wc);

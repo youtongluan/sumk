@@ -17,9 +17,9 @@ package org.yx.rpc.netty;
 
 import java.nio.charset.StandardCharsets;
 
-import org.yx.common.codec.DataStream;
 import org.yx.exception.SumkException;
 import org.yx.rpc.codec.AbstractDataBuffer;
+import org.yx.rpc.codec.DataStream;
 
 import io.netty.buffer.ByteBuf;
 

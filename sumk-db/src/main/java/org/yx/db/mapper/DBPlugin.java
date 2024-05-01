@@ -54,7 +54,7 @@ public class DBPlugin implements Plugin {
 		try {
 			SumkStatement.setSqlLog(new SimpleSqlLogImpl());
 		} catch (Throwable e) {
-			Logs.db().warn("因为没有使用async-logger，所以不加载数据库的容易日志适配器");
+			Logs.db().warn("因为没有使用async-logger，所以不加载数据库的统一日志适配器");
 		}
 
 		preHotDataSource();

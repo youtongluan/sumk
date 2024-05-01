@@ -75,7 +75,7 @@ public class LogObject {
 		this.body = body;
 		this.exception = exception;
 		this.threadName = threadName;
-		this.logContext = logContext;
+		this.logContext = logContext != null ? logContext : LogContext.empty();
 		this.loggerName = loggerName;
 		this.codeLine = codeLine;
 	}

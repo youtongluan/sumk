@@ -16,35 +16,21 @@
 package org.yx.log.impl;
 
 import org.slf4j.Marker;
+import org.slf4j.event.LoggingEvent;
 import org.slf4j.spi.LocationAwareLogger;
-import org.yx.exception.SumkException;
+import org.yx.base.context.LogContext;
 import org.yx.log.CodeLineMarker;
+import org.yx.log.ConsoleLog;
 import org.yx.log.LogKits;
 import org.yx.log.LogLevel;
 import org.yx.log.LogSettings;
 import org.yx.log.SumkLogger;
+import org.yx.util.SumkDate;
 
 public class SumkLoggerImpl extends SumkLogger implements LocationAwareLogger {
 
 	public SumkLoggerImpl(String module) {
 		super(module);
-	}
-
-	private LogLevel fromLocationAwareLoggerInt(int logger_int) {
-		switch (logger_int) {
-		case LocationAwareLogger.TRACE_INT:
-			return LogLevel.TRACE;
-		case LocationAwareLogger.DEBUG_INT:
-			return LogLevel.DEBUG;
-		case LocationAwareLogger.INFO_INT:
-			return LogLevel.INFO;
-		case LocationAwareLogger.WARN_INT:
-			return LogLevel.WARN;
-		case LocationAwareLogger.ERROR_INT:
-			return LogLevel.ERROR;
-		default:
-			throw new SumkException(34523521, logger_int + "不是有效的日志级别");
-		}
 	}
 
 	@Override
@@ -76,12 +62,33 @@ public class SumkLoggerImpl extends SumkLogger implements LocationAwareLogger {
 	@Override
 	public void log(Marker marker, String fqcn, int level, String message, Object[] argArray, Throwable t) {
 		try {
-			LogLevel methodLevel = this.fromLocationAwareLoggerInt(level);
+			LogLevel methodLevel = LogKits.fromSlf4jLocationAwareLoggerInt(level);
 			if (!this.isLogable(methodLevel)) {
 				return;
 			}
 			String msg = LogKits.buildMessage(message, argArray);
-			LogObject logObject = LogObject.create(new CodeLineMarker(fqcn), methodLevel, msg, t, this);
+			if (fqcn != null && !fqcn.equals(name)) {
+				marker = new CodeLineMarker(fqcn);
+			}
+			LogObject logObject = LogObject.create(marker, methodLevel, msg, t, this);
+
+			if (!LogAppenders.offer(logObject) || LogSettings.consoleEnable()) {
+				System.out.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));
+			}
+		} catch (Exception e) {
+			ConsoleLog.defaultLog.error("failed when append to log queue", e);
+		}
+	}
+
+	public void log(LoggingEvent event) {
+		LogLevel methodLevel = LogKits.fromSlf4jLocationAwareLoggerInt(event.getLevel().toInt());
+		if (!this.isLogable(methodLevel)) {
+			return;
+		}
+		try {
+			String msg = "*** " + LogKits.buildMessage(event.getMessage(), event.getArgumentArray());
+			LogObject logObject = new LogObject(name, SumkDate.of(event.getTimeStamp()), methodLevel, msg,
+					event.getThrowable(), event.getThreadName(), LogContext.empty(), null);
 
 			if (!LogAppenders.offer(logObject) || LogSettings.consoleEnable()) {
 				System.out.print(LogHelper.plainMessage(logObject, LogSettings.showAttach()));

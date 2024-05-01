@@ -17,6 +17,8 @@ package org.yx.log.impl;
 
 import java.util.Objects;
 
+import org.yx.log.ConsoleLog;
+
 public class LogHelper {
 
 	private static PlainOutput output = new PlainOutputImpl();
@@ -60,7 +62,7 @@ public class LogHelper {
 	public static String realContext(String text, String pattern, String slot) {
 		String[] fs = pattern.split(slot, 2);
 		if (fs.length != 2) {
-			LogAppenders.consoleLog.error("{} should contain and only contain one {}", pattern, slot);
+			ConsoleLog.defaultLog.error("{} should contain and only contain one {}", pattern, slot);
 			return null;
 		}
 		if (fs[0].length() + fs[1].length() > text.length()) {

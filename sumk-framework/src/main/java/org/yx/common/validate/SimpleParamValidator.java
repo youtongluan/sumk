@@ -16,8 +16,8 @@
 package org.yx.common.validate;
 
 import org.yx.annotation.Bean;
+import org.yx.common.locale.I18n;
 import org.yx.conf.AppInfo;
-import org.yx.util.M;
 
 @Bean
 public class SimpleParamValidator implements Validator {
@@ -26,7 +26,8 @@ public class SimpleParamValidator implements Validator {
 	public void valid(ParameterInfo info, Object arg) throws InvalidParamException {
 		if (info.isRequired()) {
 			if (arg == null || "".equals(arg)) {
-				throw new InvalidParamException(AppInfo.get("sumk.valid.msg.null", "#不能为空"), info);
+				throw new InvalidParamException(
+						AppInfo.get("sumk.valid.msg.null", InvalidParamException.PARAM_SLOT + "不能为空"), info);
 			}
 		}
 		if (arg == null) {
@@ -52,13 +53,15 @@ public class SimpleParamValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() > expect) {
-				return M.get("sumk.valid.msg.maxLength", "#的长度不能超过{0},实际却是{1}", expect, s.length());
+				return I18n.get("sumk.valid.msg.maxLength", InvalidParamException.PARAM_SLOT + "的长度不能超过{0},实际却是{1}",
+						expect, s.length());
 			}
 		}
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n > expect) {
-				return M.get("sumk.valid.msg.max", "#的值不能大于{0},实际却是{1}", expect, arg);
+				return I18n.get("sumk.valid.msg.max", InvalidParamException.PARAM_SLOT + "的值不能大于{0},实际却是{1}", expect,
+						arg);
 			}
 		}
 		return null;
@@ -72,14 +75,16 @@ public class SimpleParamValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() < expect) {
-				return M.get("sumk.valid.msg.minLength", "#的长度不能小于{0},实际却是{1}", expect, s.length());
+				return I18n.get("sumk.valid.msg.minLength", InvalidParamException.PARAM_SLOT + "的长度不能小于{0},实际却是{1}",
+						expect, s.length());
 			}
 		}
 
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n < expect) {
-				return M.get("sumk.valid.msg.min", "#的值不能小于{0},实际却是{1}", expect, arg);
+				return I18n.get("sumk.valid.msg.min", InvalidParamException.PARAM_SLOT + "的值不能小于{0},实际却是{1}", expect,
+						arg);
 			}
 		}
 		return null;

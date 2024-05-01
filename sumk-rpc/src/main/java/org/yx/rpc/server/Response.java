@@ -17,13 +17,13 @@ package org.yx.rpc.server;
 
 import java.io.Serializable;
 
-import org.yx.common.codec.DataStream;
-import org.yx.common.codec.StreamAble;
 import org.yx.common.util.S;
 import org.yx.exception.SoaException;
 import org.yx.exception.SumkException;
 import org.yx.rpc.codec.CodecKit;
+import org.yx.rpc.codec.DataStream;
 import org.yx.rpc.codec.Protocols;
+import org.yx.rpc.codec.StreamAble;
 
 public class Response implements StreamAble, Serializable {
 
