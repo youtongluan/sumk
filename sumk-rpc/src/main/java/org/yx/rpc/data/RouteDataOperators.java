@@ -15,16 +15,17 @@
  */
 package org.yx.rpc.data;
 
-import java.util.Map;
+import java.util.Objects;
 
-import org.yx.common.Host;
+public final class RouteDataOperators {
+	private static RouteDataOperator inst = new RouteDataOperatorImpl();
 
-public interface ZkDataOperator {
+	public static RouteDataOperator inst() {
+		return inst;
+	}
 
-	String getName(Host host);
-
-	byte[] serialize(Host host, Map<String, String> data) throws Exception;
-
-	RouteInfo deserialize(ZKPathData data) throws Exception;
+	public static void setOperator(RouteDataOperator op) {
+		RouteDataOperators.inst = Objects.requireNonNull(op);
+	}
 
 }

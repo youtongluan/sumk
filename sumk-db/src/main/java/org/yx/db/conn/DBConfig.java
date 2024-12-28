@@ -17,7 +17,9 @@ package org.yx.db.conn;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.yx.common.util.S;
 import org.yx.conf.AppInfo;
@@ -27,6 +29,76 @@ import org.yx.exception.SumkException;
 import org.yx.log.Logs;
 
 public class DBConfig {
+
+	private static Function<String, String> passwordDecryptor = text -> {
+		byte[] bs = S.base64().decode(text.getBytes());
+		try {
+			return new String(S.cipher().decrypt(bs, DBSettings.getPasswordKey()));
+		} catch (Exception e) {
+			Logs.db().error("decrypt failed: " + text, e);
+			throw new SumkException(2354223, e.getMessage(), e);
+		}
+	};
+
+	public static void setPasswordDecryptor(Function<String, String> passwordDecryptor) {
+		DBConfig.passwordDecryptor = Objects.requireNonNull(passwordDecryptor);
+	}
+
+	public static DBConfig create(String index, Map<String, String> p) throws Exception {
+		DBType type = DBType.ANY;
+		int weight = 0, readWeight = 0;
+		Map<String, String> properties = new HashMap<>();
+
+		Set<String> set = p.keySet();
+		for (String key : set) {
+			String v = p.get(key);
+			if (v == null || v.isEmpty()) {
+				Logs.db().debug("db config {}={} is empty,ignore it.", key, v);
+				continue;
+			}
+			switch (key.toLowerCase()) {
+			case "type":
+				type = DBConfig.parseFromConfigFile(v);
+				break;
+			case "weight":
+				weight = Integer.parseInt(v);
+				break;
+			case "password":
+
+				if (AppInfo.getBoolean("sumk.db.password.encry", false)) {
+					v = passwordDecryptor.apply(v);
+				}
+				properties.put(key, v);
+				break;
+			case "read_weight":
+			case "readweight":
+				readWeight = Integer.parseInt(v);
+				break;
+			default:
+				properties.put(key, v);
+				break;
+			}
+		}
+		return new DBConfig(index, type, weight, readWeight, properties);
+	}
+
+	private static DBType parseFromConfigFile(String type) {
+		String type2 = type.toLowerCase();
+		switch (type2) {
+		case "w":
+		case "write":
+			return DBType.WRITE;
+		case "r":
+		case "read":
+			return DBType.READONLY;
+		case "wr":
+		case "rw":
+		case "any":
+			return DBType.ANY;
+		default:
+			throw new SumkException(2342312, type + " is not correct db type");
+		}
+	}
 
 	final DBType type;
 	final int weight;
@@ -70,63 +142,6 @@ public class DBConfig {
 	public String toString() {
 		return "DBConfig [type=" + type + ", weight=" + weight + ", readWeight=" + readWeight + ", index=" + index
 				+ ", properties=" + properties + "]";
-	}
-
-	public static DBConfig create(String index, Map<String, String> p) throws Exception {
-		DBType type = DBType.ANY;
-		int weight = 0, readWeight = 0;
-		Map<String, String> properties = new HashMap<>();
-
-		Set<String> set = p.keySet();
-		for (String key : set) {
-			String v = p.get(key);
-			if (v == null || v.isEmpty()) {
-				Logs.db().debug("db config {}={} isempty,ignore it.", key, v);
-				continue;
-			}
-			switch (key.toLowerCase()) {
-			case "type":
-				type = DBConfig.parseFromConfigFile(v);
-				break;
-			case "weight":
-				weight = Integer.parseInt(v);
-				break;
-			case "password":
-
-				if (AppInfo.getBoolean("sumk.db.password.encry", false)) {
-					byte[] bs = S.base64().decode(v.getBytes());
-					v = new String(S.cipher().decrypt(bs, DBSettings.getPasswordKey()));
-				}
-				properties.put(key, v);
-				break;
-			case "read_weight":
-			case "readweight":
-				readWeight = Integer.parseInt(v);
-				break;
-			default:
-				properties.put(key, v);
-				break;
-			}
-		}
-		return new DBConfig(index, type, weight, readWeight, properties);
-	}
-
-	private static DBType parseFromConfigFile(String type) {
-		String type2 = type.toLowerCase();
-		switch (type2) {
-		case "w":
-		case "write":
-			return DBType.WRITE;
-		case "r":
-		case "read":
-			return DBType.READONLY;
-		case "wr":
-		case "rw":
-		case "any":
-			return DBType.ANY;
-		default:
-			throw new SumkException(2342312, type + " is not correct db type");
-		}
 	}
 
 }

@@ -15,17 +15,17 @@
  */
 package org.yx.common.util.helper;
 
+import java.lang.reflect.Array;
 import java.util.Objects;
-import java.util.function.IntFunction;
 
 public final class ArrayHelper {
 
-	public static <T> T[] add(T[] old, T obj, IntFunction<T[]> arrayFactory) {
+	public static <T> T[] add(T[] old, T obj, Class<T> clz) {
 		if (obj == null) {
 			return old;
 		}
 		if (old == null || old.length == 0) {
-			T[] ret = arrayFactory.apply(1);
+			T[] ret = createArray(clz, 1);
 			ret[0] = obj;
 			return ret;
 		}
@@ -34,25 +34,30 @@ public final class ArrayHelper {
 				return old;
 			}
 		}
-		T[] ret = arrayFactory.apply(old.length + 1);
+		T[] ret = createArray(clz, old.length + 1);
 		System.arraycopy(old, 0, ret, 0, old.length);
 		ret[old.length] = obj;
 		return ret;
 	}
 
-	public static <T> T[] remove(T[] old, T obj, IntFunction<T[]> arrayFactory) {
+	public static <T> T[] remove(T[] old, T obj, Class<T> clz) {
 		if (old == null || old.length == 0 || obj == null) {
 			return old;
 		}
 		for (int i = 0; i < old.length; i++) {
 			T f = old[i];
 			if (Objects.equals(f, obj)) {
-				T[] ret = arrayFactory.apply(old.length - 1);
+				T[] ret = createArray(clz, old.length - 1);
 				System.arraycopy(old, 0, ret, 0, i);
 				System.arraycopy(old, i + 1, ret, i, ret.length - i);
 				return ret;
 			}
 		}
 		return old;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> T[] createArray(Class<T> clz, int length) {
+		return (T[]) Array.newInstance(clz, length);
 	}
 }

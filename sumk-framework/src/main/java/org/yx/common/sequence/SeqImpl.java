@@ -27,6 +27,7 @@ public final class SeqImpl extends AbstractSeq {
 		super(from);
 	}
 
+	@Override
 	public long next(String name) {
 
 		int sub = subNumber(name) & 0xFFFFFF;
@@ -39,6 +40,7 @@ public final class SeqImpl extends AbstractSeq {
 		return num << 24;
 	}
 
+	@Override
 	public long getTimeMillis(long seq) {
 		long num = seq & 0xFFFFFFFFFF000000L;
 		num >>>= 24;

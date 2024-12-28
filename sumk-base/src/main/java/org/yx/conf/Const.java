@@ -20,14 +20,12 @@ public final class Const {
 
 	public static final String DEFAULT_DB_NAME = "sumk";
 
-	public static final int SUMK_VERSION = 0x402;
+	public static final int SUMK_VERSION = 0x410;
 
 	public static String sumkVersion() {
 		return new StringBuilder(10).append((Const.SUMK_VERSION >> 8) & 0x0F).append('.')
 				.append((Const.SUMK_VERSION >> 4) & 0x0F).append('.').append(Const.SUMK_VERSION & 0x0F).toString();
 	}
-
-	public static final String ZK_URL = "sumk.zkurl";
 
 	public static final String KEY_STORE_PATH = "sumk.webserver.ssl.keyStore";
 

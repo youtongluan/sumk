@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.registry.client;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +29,7 @@ import org.yx.common.Host;
 import org.yx.common.route.Router;
 import org.yx.common.route.WeightedServer;
 import org.yx.log.Log;
-import org.yx.rpc.data.ApiInfo;
+import org.yx.rpc.data.ApiProfile;
 import org.yx.rpc.data.RouteInfo;
 import org.yx.util.CollectionUtil;
 
@@ -123,7 +123,7 @@ public final class RpcRoutes {
 	private static Map<String, WeightedServer<Host>> createServerMachine(RouteInfo data) {
 		Map<String, WeightedServer<Host>> servers = new HashMap<>();
 		int weight = data.weight() > 0 ? data.weight() : 100;
-		for (ApiInfo intf : data.apis()) {
+		for (ApiProfile intf : data.apis()) {
 			WeightedServer<Host> server = new WeightedHost(data.host(), weight);
 			servers.put(intf.getName(), server);
 		}

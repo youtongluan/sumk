@@ -17,10 +17,8 @@ package org.yx.db.mapper;
 
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.yx.annotation.Bean;
 import org.yx.bean.Plugin;
@@ -57,13 +55,14 @@ public class DBPlugin implements Plugin {
 			Logs.db().warn("因为没有使用async-logger，所以不加载数据库的统一日志适配器");
 		}
 
-		preHotDataSource();
 		Monitors.add(new DBMonitor());
 		Logs.db().info("数据库插件启动完成");
 	}
 
 	@Override
 	public void startAsync() {
+
+		preHotDataSource();
 	}
 
 	protected void preHotDataSource() {
@@ -74,19 +73,14 @@ public class DBPlugin implements Plugin {
 		if (map == null || map.isEmpty()) {
 			return;
 		}
-		Set<String> names = new HashSet<>();
 		for (String key : map.keySet()) {
 			int index = key.indexOf('.');
 			if (index > 0) {
 				key = key.substring(0, index);
 			}
-			names.add(key);
+			Logs.db().debug("{} begin preHot...", key);
+			DataSources.getManager(key);
 		}
-		for (String name : names) {
-			Logs.db().debug("{} begin preHot...", name);
-			DataSources.getManager(name);
-		}
-
 	}
 
 	protected void loadSDBResources() {

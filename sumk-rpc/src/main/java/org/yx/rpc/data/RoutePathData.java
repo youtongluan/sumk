@@ -15,17 +15,26 @@
  */
 package org.yx.rpc.data;
 
-import java.util.Objects;
+import org.yx.exception.SumkException;
 
-public final class ZkDataOperators {
-	private static ZkDataOperator inst = new ZkDataOperatorImpl();
+public class RoutePathData {
+	private String name;
+	private byte[] data;
 
-	public static ZkDataOperator inst() {
-		return inst;
+	public RoutePathData(String name, byte[] data) {
+		if (name.contains("/")) {
+			throw new SumkException(23543534, name + "应该只是当前目录，而不是全路径");
+		}
+		this.name = name;
+		this.data = data;
 	}
 
-	public static void setOperator(ZkDataOperator op) {
-		ZkDataOperators.inst = Objects.requireNonNull(op);
+	public String name() {
+		return name;
+	}
+
+	public byte[] data() {
+		return data;
 	}
 
 }

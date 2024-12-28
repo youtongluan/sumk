@@ -23,7 +23,7 @@ import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
 public class RouteInfo {
-	private Collection<ApiInfo> apis = Collections.emptyList();
+	private Collection<ApiProfile> apis = Collections.emptyList();
 	private final Host host;
 	private final String path;
 
@@ -37,11 +37,11 @@ public class RouteInfo {
 		this.path = path;
 	}
 
-	public Collection<ApiInfo> apis() {
+	public Collection<ApiProfile> apis() {
 		return apis;
 	}
 
-	void setApis(Collection<ApiInfo> list) {
+	void setApis(Collection<ApiProfile> list) {
 		this.apis = CollectionUtil.unmodifyList(list);
 	}
 

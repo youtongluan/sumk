@@ -97,17 +97,6 @@ public class ThreadPools {
 			this.threshold = threshold;
 		}
 
-		public void execute(Runnable command, int toplimit) {
-			if (toplimit < threshold) {
-				String msg = new StringBuilder().append("Task ").append(toString())
-						.append(" discarded, because toplimit ").append(toplimit).append(" lower than ")
-						.append(threshold).toString();
-				Log.get("sumk.thread").warn(msg);
-				return;
-			}
-			this.execute(command);
-		}
-
 		@Override
 		public int threshold() {
 			return threshold;

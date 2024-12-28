@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.registry.client;
 
 import java.util.Collection;
 import java.util.Objects;

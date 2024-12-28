@@ -21,7 +21,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import org.yx.common.Host;
 import org.yx.log.Logs;
-import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.transport.RpcWriteFuture;
 import org.yx.rpc.transport.TransportChannel;
 import org.yx.rpc.transport.TransportClient;

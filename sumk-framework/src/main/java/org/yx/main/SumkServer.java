@@ -237,20 +237,12 @@ public final class SumkServer {
 				- System.currentTimeMillis();
 	}
 
-	public static String soaHostInzk() {
-		return AppInfo.get("sumk.rpc.zk.host", null);
-	}
-
 	public static String soaHost() {
 		return AppInfo.get("sumk.rpc.host", AppInfo.getLocalIp());
 	}
 
 	public static int soaPort() {
 		return AppInfo.getInt("sumk.rpc.port", -1);
-	}
-
-	public static int soaPortInZk() {
-		return AppInfo.getInt("sumk.rpc.zk.port", -1);
 	}
 
 	public static String httpHost() {

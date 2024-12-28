@@ -156,7 +156,7 @@ public final class Booter {
 				}
 			} catch (LinkageError e) {
 				if (c.startsWith("org.yx.") || optional.test(c)) {
-					logger.debug("{} ignored because: {}", c, e.getMessage());
+					logger.debug("{} ignored when load because: [{}]", c, e);
 					continue;
 				}
 				logger.error("{}加载失败，原因是:{}", c, e.getLocalizedMessage());

@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.youtongluan</groupId>
 		<artifactId>sumk</artifactId>
-		<version>4.0.2</version>
+		<version>4.1.0</version>
 	</parent>
 	<artifactId>sumk-http</artifactId>
 	<name>com.github.youtongluan:sumk</name>
@@ -44,19 +44,6 @@
 			<artifactId>jetty-servlet</artifactId>
 		</dependency>
 		
-		
-		
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpasyncclient</artifactId>
-			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>commons-logging</artifactId>
-					<groupId>commons-logging</groupId>
-				</exclusion>
-			</exclusions>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

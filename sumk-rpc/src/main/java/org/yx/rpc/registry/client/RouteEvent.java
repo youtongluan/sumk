@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.registry.client;
 
 import org.yx.rpc.data.RouteInfo;
 
@@ -51,8 +51,4 @@ public class RouteEvent {
 	public static RouteEvent modifyEvent(String nodeName, RouteInfo info) {
 		return new RouteEvent(RouteEventType.MODIFY, nodeName, info);
 	}
-}
-
-enum RouteEventType {
-	CREATE, DELETE, MODIFY
 }

@@ -16,11 +16,10 @@
 package org.yx.common.util.kit;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 
 import org.yx.annotation.Priority;
 import org.yx.conf.Const;
@@ -28,33 +27,49 @@ import org.yx.conf.Const;
 public class PriorityKits {
 
 	private static final Comparator<Class<?>> priorityComparator = (a, b) -> {
-		int v = a.getAnnotation(Priority.class).value() - b.getAnnotation(Priority.class).value();
-		if (v != 0) {
-			return v;
+		int pa = getPriority(a);
+		int pb = getPriority(b);
+		if (pa == pb) {
+			return a.getName().compareTo(b.getName());
 		}
-		return a.getName().compareTo(b.getName());
+		return Integer.compare(pa, pb);
 	};
 
+	public static int getPriority(Class<?> clz) {
+		Priority p = clz.getAnnotation(Priority.class);
+		if (p == null) {
+			return Const.DEFAULT_ORDER;
+		}
+		return p.value();
+	}
+
 	public static List<Class<?>> sort(Collection<Class<?>> source) {
+		List<Class<?>> list = new ArrayList<>(source);
+		list.sort(priorityComparator);
+		return list;
+	}
+
+	/**
+	 * 
+	 * @param sortedClasses 已排序好的列表
+	 * @return 会有3个item，第一个是Priority小于默认值的，第二个是等于默认值或者没有@Priority注解，第三个Priority大于默认值的
+	 */
+	public static List<List<Class<?>>> split(List<Class<?>> sortedClasses) {
 		List<Class<?>> low = new ArrayList<>();
 		List<Class<?>> high = new ArrayList<>();
-		Map<String, Class<?>> middle = new TreeMap<>();
-		for (Class<?> c : source) {
-			Priority p = c.getAnnotation(Priority.class);
-			if (p == null || p.value() == Const.DEFAULT_ORDER) {
-				middle.put(c.getName(), c);
-			} else if (p.value() < Const.DEFAULT_ORDER) {
-				low.add(c);
+		List<Class<?>> middle = new ArrayList<>();
+		final int size = sortedClasses.size();
+		for (int i = 0; i < size; i++) {
+			Class<?> clz = sortedClasses.get(i);
+			int p = getPriority(clz);
+			if (p == Const.DEFAULT_ORDER) {
+				middle.add(clz);
+			} else if (p < Const.DEFAULT_ORDER) {
+				low.add(clz);
 			} else {
-				high.add(c);
+				high.add(clz);
 			}
 		}
-		low.sort(priorityComparator);
-		high.sort(priorityComparator);
-		List<Class<?>> ret = new ArrayList<>(source.size());
-		ret.addAll(low);
-		ret.addAll(middle.values());
-		ret.addAll(high);
-		return ret;
+		return Arrays.asList(low, middle, high);
 	}
 }

@@ -21,14 +21,23 @@ import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 
 public class SeqHolder {
-	private static Seq inst = new SeqImpl();
-	static {
-		int snow = AppInfo.getInt("sumk.counter.snow", Integer.MIN_VALUE);
+	private static Seq createDefaultSeq() {
+		int snow = AppInfo.getInt("sumk.seq.counter.snow", Integer.MIN_VALUE);
 		if (snow != Integer.MIN_VALUE) {
-			inst.setCounter(new SnowflakeCounter(snow));
-			Log.get("sumk.seq").debug("use snow counter");
+			Seq seq = new SeqImpl();
+			seq.setCounter(new SnowflakeCounter(snow));
+			Log.get("sumk.seq").info("use snow counter");
+			return seq;
 		}
+		int version = AppInfo.getInt("sumk.seq.version", 0);
+		if (version == 1) {
+			Log.get("sumk.seq").info("use v1.0 seq");
+			return new SeqImpl(AbstractSeq.FROMMILS_V1);
+		}
+		return new LongTermSeqImpl();
 	}
+
+	private static Seq inst = createDefaultSeq();
 
 	public static Seq inst() {
 		return inst;

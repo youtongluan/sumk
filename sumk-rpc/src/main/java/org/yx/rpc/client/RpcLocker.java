@@ -27,7 +27,6 @@ import org.yx.common.Host;
 import org.yx.exception.SoaException;
 import org.yx.log.Logs;
 import org.yx.rpc.RpcErrorCode;
-import org.yx.rpc.client.route.HostChecker;
 import org.yx.rpc.log.RpcLog;
 import org.yx.rpc.log.RpcLogs;
 import org.yx.rpc.transport.RpcWriteFuture;

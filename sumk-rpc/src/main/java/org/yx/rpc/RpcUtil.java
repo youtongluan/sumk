@@ -23,7 +23,7 @@ import org.yx.common.Host;
 
 import org.yx.base.context.ActionContext;
 import org.yx.common.route.Router;
-import org.yx.rpc.client.route.RpcRoutes;
+import org.yx.rpc.registry.client.RpcRoutes;
 import org.yx.rpc.server.LocalRpcContext;
 import org.yx.rpc.server.RpcContext;
 

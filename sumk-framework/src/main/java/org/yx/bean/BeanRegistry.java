@@ -18,26 +18,23 @@ package org.yx.bean;
 import java.util.Collection;
 
 import org.yx.annotation.spec.BeanSpec;
-import org.yx.annotation.spec.Specs;
 import org.yx.base.context.AppContext;
 import org.yx.common.Predicator;
 import org.yx.log.Logs;
 import org.yx.util.Loader;
 import org.yx.util.StringUtil;
 
-public class BeanFactory extends AbstractBootWatcher {
+public class BeanRegistry {
 
-	@Override
-	public void accept(Class<?> clz) throws Exception {
-		BeanSpec b = Specs.extractBean(clz);
-		if (b == null || !valid(clz, b)) {
+	public static void registerClass(Class<?> clz, BeanSpec spec) throws Exception {
+		if (spec == null || !valid(clz, spec)) {
 			return;
 		}
 		if (FactoryBean.class.isAssignableFrom(clz)) {
 			FactoryBean factory = (FactoryBean) Loader.newInstance(clz);
-			registerFactoryBean(factory.beans());
+			registerBeans(factory.beans());
 		} else {
-			InnerIOC.putClass(b.value(), clz);
+			InnerIOC.putClass(spec.value(), clz);
 		}
 	}
 
@@ -56,7 +53,7 @@ public class BeanFactory extends AbstractBootWatcher {
 		return true;
 	}
 
-	public static void registerFactoryBean(Collection<?> beans) throws Exception {
+	public static void registerBeans(Collection<?> beans) throws Exception {
 		if (beans != null && beans.size() > 0) {
 			for (Object obj : beans) {
 				registerBean(null, obj);
@@ -87,11 +84,6 @@ public class BeanFactory extends AbstractBootWatcher {
 		}
 
 		InnerIOC.putBean(name, obj);
-	}
-
-	@Override
-	public int order() {
-		return 1000;
 	}
 
 }

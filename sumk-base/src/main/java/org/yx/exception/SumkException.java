@@ -16,7 +16,7 @@
 package org.yx.exception;
 
 /**
- * 这个异常表示是执行sumk框架中的某个方法抛出的异常,它的code不能大于0<BR>
+ * 这个异常表示是执行sumk框架中的某个方法抛出的异常,它的code最大为0<BR>
  * 框架内部使用，业务异常请用BizException
  *
  */

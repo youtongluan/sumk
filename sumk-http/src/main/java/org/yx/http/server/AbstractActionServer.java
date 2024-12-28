@@ -129,17 +129,12 @@ public abstract class AbstractActionServer extends AbstractCommonHttpServlet {
 		do {
 			if (temp instanceof BizException) {
 				BizException be = (BizException) temp;
-				String msg2 = AppInfo.get("sumk.http.error." + be.getCode(), null);
-				if (msg2 != null && msg2.length() > 0) {
-					be = BizException.create(be.getCode(), msg2);
-				}
 				sendError(req, resp, be.getCode(), be.getMessage());
 				return be;
 			}
 		} while ((temp = temp.getCause()) != null);
 
-		sendError(req, resp, String.valueOf(HttpErrorCode.HANDLE_ERROR),
-				I18n.get("sumk.http.error." + HttpErrorCode.HANDLE_ERROR, "请求处理异常"));
+		sendError(req, resp, String.valueOf(HttpErrorCode.HANDLE_ERROR), "请求处理异常");
 		return root;
 	}
 }

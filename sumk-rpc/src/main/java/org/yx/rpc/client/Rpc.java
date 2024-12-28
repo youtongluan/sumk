@@ -16,16 +16,17 @@
 package org.yx.rpc.client;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 
+import org.yx.bean.IOC;
 import org.yx.common.util.S;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
-import org.yx.log.Logs;
 import org.yx.main.SumkServer;
 import org.yx.rpc.RpcSettings;
-import org.yx.rpc.client.route.ZkRouteParser;
+import org.yx.rpc.registry.RegistryFactory;
+import org.yx.rpc.registry.client.RegistryClient;
 import org.yx.rpc.transport.Transports;
 import org.yx.util.SumkThreadPool;
 import org.yx.util.Task;
@@ -37,6 +38,8 @@ public final class Rpc {
 	private static volatile boolean strated;
 
 	private static String appId;
+
+	private static Optional<RegistryClient> registryClient;
 
 	static String appId() {
 		return appId;
@@ -60,12 +63,9 @@ public final class Rpc {
 			appId = AppInfo.appId("sumk");
 			RpcSettings.init();
 			Rpc.clientExecutor = SumkServer.getExecutor("sumk.rpc.client.executor");
-			String zkUrl = AppInfo.getClinetZKUrl();
-			if (zkUrl != null) {
-				Logs.rpc().info("rpc client zkUrl:{}", zkUrl);
-				ZkRouteParser.get(zkUrl).readRouteAndListen();
-			} else {
-				Logs.rpc().warn("##因为没有配置{},所以只能调用本机的微服务接口##", Const.ZK_URL);
+			registryClient = IOC.getFirstBean(RegistryFactory.class, false).registryClient();
+			if (registryClient.isPresent()) {
+				registryClient.get().watch();
 			}
 			Transports.init();
 			Transports.factory().initClient();

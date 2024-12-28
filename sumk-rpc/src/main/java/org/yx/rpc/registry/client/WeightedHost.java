@@ -13,36 +13,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.data;
+package org.yx.rpc.registry.client;
 
-import org.yx.util.StringUtil;
+import org.yx.common.Host;
+import org.yx.common.route.AbstractWeightedServer;
+import org.yx.rpc.client.HostChecker;
 
-public class ApiInfo {
-	private final String name;
-	private Integer weight;
+public class WeightedHost extends AbstractWeightedServer<Host> {
 
-	public ApiInfo(String name) {
-		this.name = name;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public Integer getWeight() {
-		return weight;
-	}
-
-	void setWeight(String w) {
-		if (StringUtil.isEmpty(w)) {
-			return;
-		}
-		this.weight = Integer.valueOf(w);
+	public WeightedHost(Host source, int weight) {
+		super(source);
+		this.setWeight(weight);
 	}
 
 	@Override
-	public String toString() {
-		return name;
+	public boolean isEnable() {
+		return !HostChecker.get().isDowned(this.source);
 	}
 
 }

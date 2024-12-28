@@ -34,7 +34,7 @@ public final class RedisChecker implements Runnable {
 
 	public synchronized void addRedis(Checkable c) {
 		Logs.redis().debug("add alive check: {}", c);
-		this.allRedis = ArrayHelper.add(this.allRedis, c, i -> new Checkable[i]);
+		this.allRedis = ArrayHelper.add(this.allRedis, c, Checkable.class);
 	}
 
 	@Override
@@ -47,7 +47,7 @@ public final class RedisChecker implements Runnable {
 
 	public void remove(Checkable c) {
 		Logs.redis().debug("remove alive chech: {}", c);
-		this.allRedis = ArrayHelper.remove(this.allRedis, c, i -> new Checkable[i]);
+		this.allRedis = ArrayHelper.remove(this.allRedis, c, Checkable.class);
 	}
 
 }

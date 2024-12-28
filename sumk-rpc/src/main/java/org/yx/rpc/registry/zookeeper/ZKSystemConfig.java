@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.zookeeper.conf;
+package org.yx.rpc.registry.zookeeper;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,7 +27,6 @@ import org.I0Itec.zkclient.ZkClient;
 import org.yx.conf.MultiNodeConfig;
 import org.yx.exception.SumkException;
 import org.yx.log.RawLog;
-import org.yx.rpc.zookeeper.ZkClientHelper;
 import org.yx.util.CollectionUtil;
 
 /**

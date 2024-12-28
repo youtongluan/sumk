@@ -25,9 +25,9 @@ public class AopExecutorManager {
 	}
 
 	public List<AopContext> willProxyExcutorSuppliers(Class<?> clz, Method method) {
+		AopExecutorSupplier[] baseSuppliers = this.baseSuppliers;
 		List<AopContext> list = new ArrayList<>(baseSuppliers.length);
-		for (int i = 0; i < baseSuppliers.length; i++) {
-			AopExecutorSupplier supplier = this.baseSuppliers[i];
+		for (AopExecutorSupplier supplier : baseSuppliers) {
 			Object attach = supplier.willProxy(clz, method);
 			if (attach != null) {
 				list.add(new AopContext(supplier, attach));
@@ -36,7 +36,7 @@ public class AopExecutorManager {
 		return list;
 	}
 
-	public int indexSupplier(List<AopContext> supplierList) {
+	public synchronized int indexSupplier(List<AopContext> supplierList) {
 		AopContext[] supplier = supplierList.toArray(new AopContext[supplierList.size()]);
 		int currentLength = this.aopContexts.size();
 		this.aopContexts.add(supplier);

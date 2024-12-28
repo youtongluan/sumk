@@ -24,6 +24,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.yx.common.locale.I18n;
 import org.yx.conf.AppInfo;
 import org.yx.http.HttpJson;
 import org.yx.log.Logs;
@@ -34,6 +35,7 @@ public class DefaultHttpKit implements HttpKit {
 	private static final int MAX_EXPECT_SIZE = 1024 * 1024;
 	private static final int MIN_EXPECT_SIZE = 64;
 
+	@Override
 	public Charset charset(HttpServletRequest req) {
 		String charsetName = req.getCharacterEncoding();
 		if (StringUtil.isEmpty(charsetName)) {
@@ -65,7 +67,8 @@ public class DefaultHttpKit implements HttpKit {
 		} else {
 			map.put("code", code);
 		}
-		map.put("message", errorMsg);
+		String i18nMsg = I18n.get("sumk.http.error." + code, errorMsg);
+		map.put("message", i18nMsg);
 		resp.getOutputStream().write(HttpJson.operator().toJson(map).getBytes(charset));
 	}
 

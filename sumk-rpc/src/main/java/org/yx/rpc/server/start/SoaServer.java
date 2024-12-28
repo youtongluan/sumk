@@ -15,133 +15,56 @@
  */
 package org.yx.rpc.server.start;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
-import org.I0Itec.zkclient.IZkStateListener;
-import org.I0Itec.zkclient.ZkClient;
-import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.slf4j.Logger;
 import org.yx.base.Lifecycle;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
+import org.yx.log.Logs;
 import org.yx.main.SumkServer;
-import org.yx.rpc.Profile;
-import org.yx.rpc.context.RpcActions;
-import org.yx.rpc.data.ZkDataOperators;
+import org.yx.rpc.registry.RegistryFactory;
+import org.yx.rpc.registry.server.RegistryServer;
 import org.yx.rpc.transport.TransportServer;
 import org.yx.rpc.transport.Transports;
-import org.yx.rpc.zookeeper.ZKConst;
-import org.yx.rpc.zookeeper.ZkClientHelper;
 
 public class SoaServer implements Lifecycle {
 
 	private volatile boolean started = false;
-	private TransportServer server;
-	private String zkUrl;
-	private Host host;
-	private boolean enable;
-	private final String SOA_ROOT;
 	private final Logger logger = Log.get("sumk.rpc.server");
+	private TransportServer server;
+	private final Optional<RegistryServer> registry;
+	private Host listenHost;
 
-	private static boolean soaServerEnable() {
-		return AppInfo.getBoolean("sumk.rpc.server.register", true);
+	public SoaServer(RegistryFactory registryFactory) {
+		this.registry = registryFactory.registryServer();
 	}
 
-	private final IZkStateListener stateListener = new IZkStateListener() {
-		@Override
-		public void handleStateChanged(KeeperState state) throws Exception {
-			logger.debug("zk state changed:{}", state);
-		}
-
-		@Override
-		public void handleNewSession() throws Exception {
-			byte[] data = createZkPathData();
-			ZkClientHelper.getZkClient(zkUrl).createEphemeral(fullPath(), data);
-			logger.debug("handleNewSession");
-		}
-
-		@Override
-		public void handleSessionEstablishmentError(Throwable error) throws Exception {
-			logger.error("SessionEstablishmentError#" + error.getMessage(), error);
-		}
-
-	};
-
-	private String fullPath() {
-		StringBuilder sb = new StringBuilder().append(SOA_ROOT).append('/')
-				.append(ZkDataOperators.inst().getName(host));
-		return sb.toString();
-	}
-
-	private final Runnable zkUnRegister = () -> {
-		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-		client.unsubscribeStateChanges(stateListener);
-		client.delete(fullPath());
-	};
-
-	private final Runnable zkRegister = () -> {
-		ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-		byte[] data = null;
-		try {
-			data = createZkPathData();
-		} catch (Exception e) {
-			logger.error(e.getLocalizedMessage(), e);
-			return;
-		}
-
-		zkUnRegister.run();
-		client.createEphemeral(fullPath(), data);
-		client.subscribeStateChanges(stateListener);
-	};
-
-	public SoaServer(int port) {
-		this.SOA_ROOT = AppInfo.get("sumk.rpc.zk.root.server", "sumk.rpc.zk.root", ZKConst.SUMK_SOA_ROOT);
-		this.init(port);
-	}
-
-	protected int startServer(String ip, int port) throws Exception {
+	protected Host startServer() throws Exception {
+		String ip = SumkServer.soaHost();
+		int port = SumkServer.soaPort();
 		server = Transports.factory().bind(ip, port);
 		server.start();
-		return server.getPort();
-	}
-
-	private byte[] createZkPathData() throws Exception {
-		List<String> apis = RpcActions.publishSoaSet();
-		final Map<String, String> map = new HashMap<>();
-		for (String api : apis) {
-
-			map.put(ZKConst.METHODS + api, AppInfo.get("sumk.rpc.api." + api));
-		}
-		map.put(ZKConst.FEATURE, Profile.featureInHex());
-		map.put(ZKConst.START, String.valueOf(System.currentTimeMillis()));
-		map.put(ZKConst.WEIGHT, AppInfo.get("sumk.rpc.weight", "100"));
-
-		return ZkDataOperators.inst().serialize(host, map);
+		return Host.create(ip, server.getPort());
 	}
 
 	@Override
 	public synchronized void stop() {
-		try {
-			ZkClient client = ZkClientHelper.remove(zkUrl);
-			if (client != null) {
-				client.unsubscribeAll();
-				client.delete(fullPath());
-				client.close();
+		if (this.registry.isPresent()) {
+			try {
+				registry.get().stop();
+			} catch (Exception e) {
+				Logs.rpc().error("注册中心停止失败", e);
 			}
-		} catch (Exception e) {
-			logger.error(e.getLocalizedMessage(), e);
 		}
 
 		if (this.server != null) {
 			try {
 				this.server.stop();
 			} catch (Exception e) {
-				logger.error(e.getLocalizedMessage(), e);
+				logger.error("rpc的网络服务器停止失败", e);
 			}
 		}
 		started = false;
@@ -149,75 +72,53 @@ public class SoaServer implements Lifecycle {
 
 	@Override
 	public synchronized void start() {
-		if (started || host == null) {
+		if (started) {
 			return;
 		}
-		if (this.zkUrl == null) {
-			logger.warn("##因为没有配置{},所以就没有将微服务注册到注册中心##", Const.ZK_URL);
-			return;
-		}
-		logger.debug("register zk by addr : {}", host);
 		try {
-			if (this.enable) {
-				this.zkRegister.run();
-			} else {
-				this.zkUnRegister.run();
-			}
-			AppInfo.addObserver(info -> {
-				if (!SoaServer.this.started) {
-					logger.debug("soa server unstarted");
-					return;
-				}
-				boolean serverEnable = soaServerEnable();
-				if (serverEnable == enable) {
-					return;
-				}
-				try {
-					if (serverEnable) {
-						SoaServer.this.zkRegister.run();
-						logger.info("soa server enabled");
-					} else {
-						SoaServer.this.zkUnRegister.run();
-						logger.info("soa server disabled!!!");
-					}
-					enable = serverEnable;
-				} catch (Exception e) {
-					logger.error(e.getLocalizedMessage(), e);
-				}
-			});
-			started = true;
-		} catch (Exception e) {
-			logger.error(e.getLocalizedMessage(), e);
-			throw new SumkException(35334546, "soa服务启动失败");
+			this.listenHost = startServer();
+		} catch (Exception e1) {
+			logger.error("soa端口监听失败", e1);
+			throw new SumkException(35334545, "soa服务启动失败");
 		}
+		if (this.registry.isPresent()) {
+			try {
+				this.registry.get().start(getHostInRegistry());
+			} catch (Exception e) {
+				logger.error(e.getLocalizedMessage(), e);
+				throw new SumkException(35334546, "soa服务启动失败");
+			}
+		} else {
+			logger.warn("注册中心没有配置，所以没有发起注册");
+		}
+
+		started = true;
+	}
+
+	/**
+	 * 获取写到注册中心的地址
+	 * 
+	 * @return 写到注册中心的地址
+	 */
+	protected Host getHostInRegistry() {
+		String ip_zk = soaHostInRegistry();
+		if (ip_zk == null) {
+			ip_zk = listenHost.ip();
+		}
+		int port_zk = soaPortInRegistry();
+		if (port_zk < 1) {
+			port_zk = listenHost.port();
+		}
+
+		return Host.create(ip_zk, port_zk);
 
 	}
 
-	protected void init(int port) {
-		try {
-			enable = soaServerEnable();
-			String ip = SumkServer.soaHost();
-			port = startServer(ip, port);
+	private String soaHostInRegistry() {
+		return AppInfo.get("sumk.rpc.registry.host", null);
+	}
 
-			String ip_zk = SumkServer.soaHostInzk();
-			if (ip_zk == null) {
-				ip_zk = ip;
-			}
-			int port_zk = SumkServer.soaPortInZk();
-			if (port_zk < 1) {
-				port_zk = port;
-			}
-
-			this.host = Host.create(ip_zk, port_zk);
-			zkUrl = AppInfo.getServerZKUrl();
-			if (zkUrl != null) {
-				ZkClient client = ZkClientHelper.getZkClient(zkUrl);
-				ZkClientHelper.makeSure(client, SOA_ROOT);
-			}
-		} catch (Exception e) {
-			logger.error(e.getLocalizedMessage(), e);
-			throw new SumkException(353451436, "soa服务初始化失败");
-		}
-
+	private int soaPortInRegistry() {
+		return AppInfo.getInt("sumk.rpc.registry.port", -1);
 	}
 }

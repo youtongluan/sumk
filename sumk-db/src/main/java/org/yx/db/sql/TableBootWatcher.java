@@ -24,20 +24,20 @@ import java.util.List;
 import java.util.Map;
 
 import org.yx.annotation.Exclude;
-import org.yx.bean.AbstractBootWatcher;
+import org.yx.bean.ParallelBootWatcher;
 import org.yx.common.util.S;
 import org.yx.db.spec.DBSpecs;
 import org.yx.db.spec.TableSpec;
 import org.yx.log.Logs;
 
-public class TableBootWatcher extends AbstractBootWatcher {
+public class TableBootWatcher extends ParallelBootWatcher {
 
 	public TableBootWatcher() {
 		DBSettings.init();
 	}
 
 	@Override
-	public void accept(Class<?> clz) {
+	protected void handle(Class<?> clz) throws Exception {
 		TableSpec spec = DBSpecs.extractTable(clz);
 		if (spec == null) {
 			return;
@@ -75,4 +75,5 @@ public class TableBootWatcher extends AbstractBootWatcher {
 	public int order() {
 		return 2000;
 	}
+
 }

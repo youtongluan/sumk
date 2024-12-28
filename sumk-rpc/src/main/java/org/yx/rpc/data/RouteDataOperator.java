@@ -15,26 +15,16 @@
  */
 package org.yx.rpc.data;
 
-import org.yx.exception.SumkException;
+import java.util.Map;
 
-public class ZKPathData {
-	private String name;
-	private byte[] data;
+import org.yx.common.Host;
 
-	public ZKPathData(String name, byte[] data) {
-		if (name.contains("/")) {
-			throw new SumkException(23543534, name + "应该只是当前目录，而不是全路径");
-		}
-		this.name = name;
-		this.data = data;
-	}
+public interface RouteDataOperator {
 
-	public String name() {
-		return name;
-	}
+	String getName(Host host);
 
-	public byte[] data() {
-		return data;
-	}
+	byte[] serialize(Host host, Map<String, String> data) throws Exception;
+
+	RouteInfo deserialize(RoutePathData data) throws Exception;
 
 }

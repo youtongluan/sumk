@@ -30,4 +30,9 @@ public abstract class StartOnceLifecycle implements Lifecycle {
 
 	protected abstract void onStart();
 
+	@Override
+	public void stop() {
+		this.started = false;
+	}
+
 }

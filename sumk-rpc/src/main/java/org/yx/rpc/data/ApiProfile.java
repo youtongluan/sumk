@@ -13,14 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.zookeeper;
+package org.yx.rpc.data;
 
-public interface ZKConst {
-	String SUMK_SOA_ROOT = "/sumk_soa";
+import org.yx.util.StringUtil;
 
-	String METHODS = "$.";
-	String METHOD_SPLIT = "#";
-	String FEATURE = "feature";
-	String WEIGHT = "weight";
-	String START = "start";
+public class ApiProfile {
+	private final String name;
+	private Integer weight;
+
+	public ApiProfile(String name) {
+		this.name = name;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Integer getWeight() {
+		return weight;
+	}
+
+	void setWeight(String w) {
+		if (StringUtil.isEmpty(w)) {
+			return;
+		}
+		this.weight = Integer.valueOf(w);
+	}
+
+	@Override
+	public String toString() {
+		return name;
+	}
+
 }

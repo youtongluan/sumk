@@ -56,8 +56,7 @@ public abstract class AbstractCommonHttpServlet extends GenericServlet {
 				this.doOptions(req, resp);
 				return;
 			}
-			InnerHttpUtil.sendError(resp, HttpErrorCode.METHOD_UNSUPPORT,
-					AppInfo.get("sumk.http.method.notsupport", "NOT SUPPORTED"), AppInfo.UTF8);
+			InnerHttpUtil.sendError(resp, HttpErrorCode.METHOD_UNSUPPORT, "NOT SUPPORTED", AppInfo.UTF8);
 			return;
 		}
 		this.handle(req, resp);

@@ -53,14 +53,14 @@ public class SimpleParamValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() > expect) {
-				return I18n.get("sumk.valid.msg.maxLength", InvalidParamException.PARAM_SLOT + "的长度不能超过{0},实际却是{1}",
+				return I18n.get("sumk.valid.msg.maxLength", InvalidParamException.PARAM_SLOT + "的长度最大{0},实际却是{1}",
 						expect, s.length());
 			}
 		}
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n > expect) {
-				return I18n.get("sumk.valid.msg.max", InvalidParamException.PARAM_SLOT + "的值不能大于{0},实际却是{1}", expect,
+				return I18n.get("sumk.valid.msg.max", InvalidParamException.PARAM_SLOT + "的值最大{0},实际却是{1}", expect,
 						arg);
 			}
 		}
@@ -75,7 +75,7 @@ public class SimpleParamValidator implements Validator {
 		if (String.class == clz) {
 			String s = (String) arg;
 			if (s.length() < expect) {
-				return I18n.get("sumk.valid.msg.minLength", InvalidParamException.PARAM_SLOT + "的长度不能小于{0},实际却是{1}",
+				return I18n.get("sumk.valid.msg.minLength", InvalidParamException.PARAM_SLOT + "的长度最小{0},实际却是{1}",
 						expect, s.length());
 			}
 		}
@@ -83,7 +83,7 @@ public class SimpleParamValidator implements Validator {
 		if (Number.class.isAssignableFrom(clz)) {
 			long n = ((Number) arg).longValue();
 			if (n < expect) {
-				return I18n.get("sumk.valid.msg.min", InvalidParamException.PARAM_SLOT + "的值不能小于{0},实际却是{1}", expect,
+				return I18n.get("sumk.valid.msg.min", InvalidParamException.PARAM_SLOT + "的值最小{0},实际却是{1}", expect,
 						arg);
 			}
 		}

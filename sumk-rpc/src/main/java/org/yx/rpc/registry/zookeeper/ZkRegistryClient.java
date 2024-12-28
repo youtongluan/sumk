@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.registry.zookeeper;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -37,23 +37,27 @@ import org.yx.base.matcher.BooleanMatcher;
 import org.yx.base.matcher.Matchers;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
+import org.yx.rpc.data.RouteDataOperators;
 import org.yx.rpc.data.RouteInfo;
-import org.yx.rpc.data.ZKPathData;
-import org.yx.rpc.data.ZkDataOperators;
-import org.yx.rpc.zookeeper.ZKConst;
-import org.yx.rpc.zookeeper.ZkClientHelper;
+import org.yx.rpc.data.RoutePathData;
+import org.yx.rpc.registry.RegistryConst;
+import org.yx.rpc.registry.client.RegistryClient;
+import org.yx.rpc.registry.client.RouteEvent;
+import org.yx.rpc.registry.client.RpcRoutes;
+import org.yx.util.StringUtil;
 import org.yx.util.SumkThreadPool;
 
-public final class ZkRouteParser {
+public class ZkRegistryClient implements RegistryClient {
 	private final String zkUrl;
 	private Set<String> childs = Collections.emptySet();
 	private final Predicate<String> matcher;
-	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.root.client", "sumk.rpc.zk.root", ZKConst.SUMK_SOA_ROOT);
+	private final String SOA_ROOT = AppInfo.get("sumk.rpc.zk.root.client", "sumk.rpc.zk.root",
+			RegistryConst.SUMK_SOA_ROOT);
 	private Logger logger = Log.get("sumk.rpc.client");
 	private final ThreadPoolExecutor executor;
 	private final BlockingQueue<RouteEvent> queue = new LinkedBlockingQueue<>();
 
-	private ZkRouteParser(String zkUrl) {
+	public ZkRegistryClient(String zkUrl) {
 		this.zkUrl = zkUrl;
 
 		this.matcher = Matchers.includeAndExclude(AppInfo.getLatin("sumk.rpc.server.include", "*"),
@@ -64,17 +68,17 @@ public final class ZkRouteParser {
 		executor.allowCoreThreadTimeOut(true);
 	}
 
-	public static ZkRouteParser get(String zkUrl) {
-		return new ZkRouteParser(zkUrl);
-	}
-
-	public void readRouteAndListen() throws IOException {
+	@Override
+	public void watch() throws IOException {
+		if (StringUtil.isEmpty(this.zkUrl)) {
+			return;
+		}
 		List<RouteInfo> datas = new ArrayList<>();
 		ZkClient zk = ZkClientHelper.getZkClient(zkUrl);
 		ZkClientHelper.makeSure(zk, SOA_ROOT);
 
 		final IZkDataListener nodeListener = new IZkDataListener() {
-			ZkRouteParser parser = ZkRouteParser.this;
+			ZkRegistryClient parser = ZkRegistryClient.this;
 
 			@Override
 			public void handleDataChange(String dataPath, Object data) throws Exception {
@@ -83,7 +87,7 @@ public final class ZkRouteParser {
 				if (index > 0) {
 					dataPath = dataPath.substring(index + 1);
 				}
-				RouteInfo d = ZkDataOperators.inst().deserialize(new ZKPathData(dataPath, (byte[]) data));
+				RouteInfo d = RouteDataOperators.inst().deserialize(new RoutePathData(dataPath, (byte[]) data));
 				if (d == null || d.apis().isEmpty()) {
 					logger.debug("{} has no interface or is invalid node", dataPath);
 					parser.handle(RouteEvent.deleteEvent(dataPath));
@@ -100,7 +104,7 @@ public final class ZkRouteParser {
 		};
 
 		List<String> paths = zk.subscribeChildChanges(SOA_ROOT, new IZkChildListener() {
-			ZkRouteParser parser = ZkRouteParser.this;
+			ZkRegistryClient parser = ZkRegistryClient.this;
 
 			@Override
 			public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
@@ -172,7 +176,7 @@ public final class ZkRouteParser {
 	private RouteInfo getZkNodeData(ZkClient zk, String path) {
 		byte[] data = zk.readData(SOA_ROOT + "/" + path);
 		try {
-			return ZkDataOperators.inst().deserialize(new ZKPathData(path, data));
+			return RouteDataOperators.inst().deserialize(new RoutePathData(path, data));
 		} catch (Exception e) {
 			logger.error("解析" + path + "的zk数据失败", e);
 			return null;
@@ -188,7 +192,7 @@ public final class ZkRouteParser {
 			if (queue.isEmpty()) {
 				return;
 			}
-			synchronized (ZkRouteParser.this) {
+			synchronized (ZkRegistryClient.this) {
 				List<RouteEvent> list = new ArrayList<>();
 				queue.drainTo(list);
 				if (list.isEmpty()) {
@@ -237,6 +241,11 @@ public final class ZkRouteParser {
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public void stop() {
+
 	}
 
 }

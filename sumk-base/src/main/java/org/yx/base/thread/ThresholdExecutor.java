@@ -17,8 +17,6 @@ package org.yx.base.thread;
 
 public interface ThresholdExecutor {
 
-	void execute(Runnable command, int toplimit);
-
 	int threshold();
 
 	void threshold(int threshold);

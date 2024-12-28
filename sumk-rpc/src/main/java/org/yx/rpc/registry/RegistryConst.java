@@ -13,21 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.yx.rpc.client.route;
+package org.yx.rpc.registry;
 
-import org.yx.common.Host;
-import org.yx.common.route.AbstractWeightedServer;
+public interface RegistryConst {
+	String SUMK_SOA_ROOT = "/sumk_soa";
 
-public class WeightedHost extends AbstractWeightedServer<Host> {
-
-	public WeightedHost(Host source, int weight) {
-		super(source);
-		this.setWeight(weight);
-	}
-
-	@Override
-	public boolean isEnable() {
-		return !HostChecker.get().isDowned(this.source);
-	}
-
+	String METHODS = "$.";
+	String METHOD_SPLIT = "#";
+	String FEATURE = "feature";
+	String WEIGHT = "weight";
+	String START = "start";
 }

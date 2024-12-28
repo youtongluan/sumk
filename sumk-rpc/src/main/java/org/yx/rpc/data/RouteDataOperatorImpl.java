@@ -28,21 +28,21 @@ import org.yx.common.util.S;
 import org.yx.conf.AppInfo;
 import org.yx.log.Log;
 import org.yx.log.Logs;
-import org.yx.rpc.zookeeper.ZKConst;
+import org.yx.rpc.registry.RegistryConst;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
 
-public class ZkDataOperatorImpl implements ZkDataOperator {
+public class RouteDataOperatorImpl implements RouteDataOperator {
 
 	private static final String SERVER = "_server";
 	private Logger logger = Log.get("sumk.rpc.data");
 	private static final String SMALL_SPLIT = "=";
 
 	@Override
-	public RouteInfo deserialize(ZKPathData data) throws IOException {
+	public RouteInfo deserialize(RoutePathData data) throws IOException {
 		final String v = new String(data.data(), AppInfo.UTF8);
 		Map<String, String> map = CollectionUtil.fillMapFromText(new HashMap<>(), v, AppInfo.LN, SMALL_SPLIT);
-		Map<String, String> methodMap = CollectionUtil.subMap(map, ZKConst.METHODS);
+		Map<String, String> methodMap = CollectionUtil.subMap(map, RegistryConst.METHODS);
 		if (methodMap.isEmpty()) {
 			return null;
 		}
@@ -53,7 +53,7 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 			return null;
 		}
 		RouteInfo info = new RouteInfo(host, data.name());
-		String f = map.get(ZKConst.FEATURE);
+		String f = map.get(RegistryConst.FEATURE);
 		if (StringUtil.isNotEmpty(f)) {
 			try {
 				long fv = Long.parseLong(f, 16);
@@ -63,19 +63,19 @@ public class ZkDataOperatorImpl implements ZkDataOperator {
 				Logs.rpc().info(f + "不能解析为数字", e);
 			}
 		}
-		info.setWeight(map.get(ZKConst.WEIGHT));
-		List<ApiInfo> intfs = new ArrayList<>();
+		info.setWeight(map.get(RegistryConst.WEIGHT));
+		List<ApiProfile> intfs = new ArrayList<>();
 		for (Entry<String, String> entry : methodMap.entrySet()) {
 			String m = entry.getKey();
 			String value = entry.getValue();
 			if (m.length() == 0) {
 				continue;
 			}
-			ApiInfo intf = new ApiInfo(m);
+			ApiProfile intf = new ApiProfile(m);
 			intfs.add(intf);
 			if (value != null && value.length() > 0) {
 				Map<String, String> methodProperties = CollectionUtil.loadMapFromText(value, ",", ":");
-				intf.setWeight(methodProperties.get(ZKConst.WEIGHT));
+				intf.setWeight(methodProperties.get(RegistryConst.WEIGHT));
 			}
 		}
 		info.setApis(intfs);

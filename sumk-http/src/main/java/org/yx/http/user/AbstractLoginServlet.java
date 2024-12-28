@@ -23,6 +23,7 @@ import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
 import org.yx.base.context.ActionContext;
 import org.yx.base.sumk.UnsafeByteArrayOutputStream;
 import org.yx.common.util.S;
@@ -43,6 +44,10 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 	private static final String NEW_SESSION_ID = "sumk.http.session.id";
 	private UserSession session;
 
+	protected Logger logger() {
+		return Logs.http();
+	}
+
 	@Override
 	public void service(HttpServletRequest req, HttpServletResponse resp) {
 		final long beginTime = System.currentTimeMillis();
@@ -52,7 +57,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 		try {
 			InnerHttpUtil.startContext(req, resp, LOGIN_NAME);
 			if (!acceptMethod(req, resp)) {
-				Logs.http().warn("不是login的有效method，比如HEAD等方法可能不支持");
+				logger().warn("不是login的有效method，比如HEAD等方法可能不支持");
 				return;
 			}
 			InnerHttpUtil.setRespHeader(resp, charset);
@@ -60,7 +65,8 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			user = getUserName(req);
 			LoginObject obj = login(sid, user, req);
 			if (obj == null) {
-				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed", charset);
+				logger().warn("{} 没有关联到session对象", sid);
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "登录失败", charset);
 				return;
 			}
 			if (obj.getErrorMsg() != null) {
@@ -68,21 +74,22 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 				return;
 			}
 			if (obj.getSessionObject() == null || StringUtil.isEmpty(obj.getSessionObject().getUserId())) {
-				Logs.http().warn("{} :sid:{} 未正确设置session对象，或者session对象中的userId为空", user, sid);
-				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "login fail", charset);
+				logger().warn("{} :sid:{} 未正确设置session对象，或者session对象中的userId为空", user, sid);
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "登录失败", charset);
 				return;
 			}
 
 			Object newSid = req.getAttribute(NEW_SESSION_ID);
 			if (newSid instanceof String) {
-				Logs.http().debug("change sid {} to {}", sid, newSid);
+				logger().debug("change sid {} to {}", sid, newSid);
 				sid = (String) newSid;
 			}
+			kickout(obj, sid, req, resp);
 
 			byte[] key = createEncryptKey(req);
 			if (!this.setSession(req, sid, obj, key)) {
-				Logs.http().warn("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
-				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, user + " : login failed.", charset);
+				logger().warn("{} :sid:{} login failed,maybe sessionId existed.", user, sid);
+				InnerHttpUtil.sendError(resp, HttpErrorCode.LOGINFAILED, "登录失败", charset);
 				return;
 			}
 			String userId = obj.getSessionObject().getUserId();
@@ -110,7 +117,7 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			resp.getOutputStream().write(out.toByteArray());
 		} catch (Throwable e) {
 			ex = e;
-			Logs.http().error("user:" + user + ",message:" + e.getLocalizedMessage(), e);
+			logger().error("user:" + user + ",message:" + e.getLocalizedMessage(), e);
 			if (e instanceof BizException) {
 				BizException be = (BizException) e;
 				InnerHttpUtil.sendError(resp, be.getCode(), be.getMessage(), charset);
@@ -123,6 +130,10 @@ public abstract class AbstractLoginServlet implements LoginServlet {
 			InnerHttpUtil.record(LOGIN_NAME, time, ex == null);
 			ActionContext.remove();
 		}
+
+	}
+
+	protected void kickout(LoginObject obj, String sid, HttpServletRequest req, HttpServletResponse resp) {
 
 	}
 

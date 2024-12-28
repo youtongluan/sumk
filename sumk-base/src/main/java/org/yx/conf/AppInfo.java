@@ -98,22 +98,6 @@ public final class AppInfo {
 		return true;
 	}
 
-	public static String getServerZKUrl() {
-		String url = info.get("sumk.rpc.zk.server");
-		if (url != null && url.length() > 0) {
-			return url;
-		}
-		return info.get(Const.ZK_URL);
-	}
-
-	public static String getClinetZKUrl() {
-		String url = info.get("sumk.rpc.zk.client");
-		if (url != null && url.length() > 0) {
-			return url;
-		}
-		return info.get(Const.ZK_URL);
-	}
-
 	public static String getLocalIp() {
 		return LocalhostUtil.getLocalIP();
 	}

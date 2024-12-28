@@ -22,14 +22,16 @@ import org.slf4j.Logger;
 import org.yx.log.Log;
 
 public abstract class AbstractSeq implements Seq {
-	private static final long FROMMILS = 1420041600000L;
+
+	public static final long FROMMILS_V1 = 1420041600000L;
+	public static final long FROMMILS_V2 = 1717171200000L;
 	private static final int LOCAL_SEQ_INDEX = 64;
 	private AtomicIntegerArray localSeqs = new AtomicIntegerArray(LOCAL_SEQ_INDEX + 1);
 	protected final long fromMils;
 	protected SeqCounter counter;
 
 	public AbstractSeq() {
-		this(FROMMILS);
+		this(FROMMILS_V2);
 	}
 
 	public AbstractSeq(long from) {
@@ -78,10 +80,12 @@ public abstract class AbstractSeq implements Seq {
 
 	}
 
+	@Override
 	public void setCounter(SeqCounter counter) {
 		this.counter = counter;
 	}
 
+	@Override
 	public SeqCounter getCounter() {
 		return this.counter;
 	}
@@ -94,6 +98,7 @@ public abstract class AbstractSeq implements Seq {
 		return time + fromMils;
 	}
 
+	@Override
 	public long next() {
 		return next(null);
 	}

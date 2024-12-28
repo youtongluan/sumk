@@ -20,6 +20,7 @@ import java.util.Collection;
 
 import org.yx.annotation.Bean;
 import org.yx.base.Lifecycle;
+import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Plugin;
 import org.yx.common.monitor.Monitors;
@@ -29,6 +30,7 @@ import org.yx.log.Log;
 import org.yx.main.SumkServer;
 import org.yx.rpc.RpcSettings;
 import org.yx.rpc.monitor.RpcMonitor;
+import org.yx.rpc.registry.RegistryFactory;
 import org.yx.rpc.server.impl.RpcHandler;
 import org.yx.rpc.server.start.SoaAnnotationResolver;
 import org.yx.rpc.transport.Transports;
@@ -41,9 +43,8 @@ public class SoaPlugin implements Plugin {
 
 	@Override
 	public void startAsync() {
-		int port = SumkServer.soaPort();
 
-		if (!SumkServer.isRpcEnable() || port < 0) {
+		if (!SumkServer.isRpcEnable() || SumkServer.soaPort() < 0) {
 			return;
 		}
 		try {
@@ -53,10 +54,12 @@ public class SoaPlugin implements Plugin {
 			RpcHandler.init();
 			Monitors.add(new RpcMonitor());
 
+			RegistryFactory r = IOC.getFirstBean(RegistryFactory.class, false);
+
 			String clzName = AppInfo.get("sumk.rpc.starter.class", "org.yx.rpc.server.start.SoaServer");
 			Class<?> clz = Loader.loadClass(clzName);
-			Constructor<?> c = clz.getConstructor(int.class);
-			server = (Lifecycle) c.newInstance(port);
+			Constructor<?> c = clz.getConstructor(RegistryFactory.class);
+			server = (Lifecycle) c.newInstance(r);
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
 			throw new SumkException(35345436, "rpc服务启动失败");
