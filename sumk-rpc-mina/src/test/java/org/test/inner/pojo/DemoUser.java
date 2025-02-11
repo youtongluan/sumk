@@ -1,58 +1,59 @@
-package org.yx.demo.member;
+package org.test.inner.pojo;
+
+import java.util.Date;
 
 import org.yx.annotation.db.Column;
+import org.yx.annotation.db.SoftDelete;
 import org.yx.annotation.db.Table;
 import org.yx.db.enums.ColumnType;
+import org.yx.util.SumkDate;
 
 @Table
-public class Multikey {
+@SoftDelete(value = "enable", type = Byte.class)
+public class DemoUser {
 
-	@Column(type = ColumnType.ID_BOTH, order = 1)
-	private String id1;
-	@Column(type = ColumnType.ID_BOTH, order = 2)
-	private String id2;
+	@Column(type = ColumnType.ID_BOTH)
+	private Long id;
 	private String name;
 	private Integer age;
+	private Date lastUpdate;
 
-	public String getId1() {
-		return id1;
+	public Date getLastUpdate() {
+		return lastUpdate;
 	}
 
-	public Multikey setId1(String id1) {
-		this.id1 = id1;
-		return this;
+	public void setLastUpdate(Date lastUpdate) {
+		this.lastUpdate = lastUpdate;
 	}
 
-	public String getId2() {
-		return id2;
+	public Long getId() {
+		return id;
 	}
 
-	public Multikey setId2(String id2) {
-		this.id2 = id2;
-		return this;
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getName() {
 		return name;
 	}
 
-	public Multikey setName(String name) {
+	public void setName(String name) {
 		this.name = name;
-		return this;
 	}
 
 	public Integer getAge() {
 		return age;
 	}
 
-	public Multikey setAge(Integer age) {
+	public void setAge(Integer age) {
 		this.age = age;
-		return this;
 	}
 
 	@Override
 	public String toString() {
-		return "Multikey [id1=" + id1 + ", id2=" + id2 + ", name=" + name + ", age=" + age + "]";
+		return "DemoUser [id=" + id + ", name=" + name + ", age=" + age + ", lastUpdate="
+				+ (lastUpdate==null ? "null" : SumkDate.of(lastUpdate)).toString() + "]";
 	}
 
 	@Override
@@ -60,8 +61,7 @@ public class Multikey {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((age == null) ? 0 : age.hashCode());
-		result = prime * result + ((id1 == null) ? 0 : id1.hashCode());
-		result = prime * result + ((id2 == null) ? 0 : id2.hashCode());
+		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
@@ -74,21 +74,16 @@ public class Multikey {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Multikey other = (Multikey) obj;
+		DemoUser other = (DemoUser) obj;
 		if (age == null) {
 			if (other.age != null)
 				return false;
 		} else if (!age.equals(other.age))
 			return false;
-		if (id1 == null) {
-			if (other.id1 != null)
+		if (id == null) {
+			if (other.id != null)
 				return false;
-		} else if (!id1.equals(other.id1))
-			return false;
-		if (id2 == null) {
-			if (other.id2 != null)
-				return false;
-		} else if (!id2.equals(other.id2))
+		} else if (!id.equals(other.id))
 			return false;
 		if (name == null) {
 			if (other.name != null)
