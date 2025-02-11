@@ -346,5 +346,6 @@ v4.1.0
 
 v4.2.0
 1、添加sumk.factories，提供更加丰富的扩展支持
-2、zookeeper和jetty的依赖包版本升级
-3、app.properties支持行尾\作为跨行连接符，这个跟Properties标准文件一致。它们最大的区别在于app.properties不支持转义字符
+2、支持SumkServer.start(xx.class,xx)的方式扫描包路径,不需要显示配置sumk.ioc
+3、zookeeper和jetty的依赖包版本升级
+4、app.properties支持行尾\作为跨行连接符，这个跟Properties标准文件一致。它们最大的区别在于app.properties不支持转义字符
