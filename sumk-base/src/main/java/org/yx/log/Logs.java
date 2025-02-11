@@ -47,10 +47,10 @@ public final class Logs {
 	}
 
 	public static Logger asm() {
-		return Log.get("sumk.asm");
+		return Log.get("sumk.ioc.asm");
 	}
 
 	public static Logger aop() {
-		return Log.get("sumk.aop");
+		return Log.get("sumk.ioc.aop");
 	}
 }

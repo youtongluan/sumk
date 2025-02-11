@@ -74,6 +74,7 @@ public final class AppContext {
 
 	public String getAppInfo(String key, String defaultV) {
 		Object v = map.get(key);
+
 		if (v instanceof String) {
 			return (String) v;
 		}

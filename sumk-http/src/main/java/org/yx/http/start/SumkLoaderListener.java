@@ -69,7 +69,7 @@ public class SumkLoaderListener implements ServletContextListener {
 	public void contextInitialized(ServletContextEvent sce) {
 		Logs.http().debug("contextInitialized");
 		try {
-			SumkServer.start(Collections.singleton(StartConstants.EMBED_WEBSERVER_DISABLE));
+			SumkServer.start(null, Collections.singleton(StartConstants.EMBED_WEBSERVER_DISABLE));
 			if (!SumkServer.isHttpEnable()) {
 				return;
 			}
@@ -227,7 +227,7 @@ public class SumkLoaderListener implements ServletContextListener {
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		SumkServer.stop();
+		SumkServer.destroy();
 	}
 
 }

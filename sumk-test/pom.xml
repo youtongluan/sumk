@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>com.github.youtongluan</groupId>
 		<artifactId>sumk</artifactId>
-		<version>4.1.0</version>
+		<version>4.2.0</version>
 	</parent>
 	<artifactId>sumk-test</artifactId>
 	<dependencies>
@@ -12,16 +12,19 @@
 			<groupId>com.github.youtongluan</groupId>
 			<artifactId>sumk-rpc</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.youtongluan</groupId>
 			<artifactId>sumk-http</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.github.youtongluan</groupId>
 			<artifactId>sumk-db</artifactId>
 			<version>${project.version}</version>
+			<scope>test</scope>
 		</dependency>
 		
 		<dependency>

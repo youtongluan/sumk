@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import org.yx.base.matcher.WildcardMatcher.HeadAndTail;
 import org.yx.log.RawLog;
 import org.yx.util.CollectionUtil;
 import org.yx.util.StringUtil;
@@ -45,6 +46,13 @@ public class Matchers {
 		return createWildcardMatcher(CollectionUtil.unmodifyList(array), minPatternLength);
 	}
 
+	/**
+	 * 创建表达式。这里的表达式不做全角半角处理，也不对逗号做分割，但允许包含null
+	 * 
+	 * @param patterns         表达式字符串列表，支持为null。这里的每一个都是最小的表达式，不支持内部再含有逗号
+	 * @param minPatternLength 最小长度，会忽略pattern长度小于这个最小长度的
+	 * @return 表达式判断器
+	 */
 	public static Predicate<String> createWildcardMatcher(Collection<String> patterns, int minPatternLength) {
 		if (patterns == null || patterns.isEmpty()) {
 			return BooleanMatcher.FALSE;
@@ -53,19 +61,14 @@ public class Matchers {
 		Set<String> matchStart = new HashSet<>();
 		Set<String> matchEnd = new HashSet<>();
 		Set<String> matchContain = new HashSet<>();
-		String doubleWild = WILDCARD + WILDCARD;
+		Set<HeadAndTail> headAndTailMatch = new HashSet<>();
+		final String doubleWild = WILDCARD + WILDCARD;
 		for (String s : patterns) {
-			if ((s = s.trim()).isEmpty()) {
+			if (s == null || (s = s.trim()).isEmpty()) {
 				continue;
 			}
 			if (s.length() < minPatternLength) {
-				RawLog.warn("sumk.conf", s + "的长度太短，将被忽略");
-				continue;
-			}
-
-			int beginIndex = s.indexOf(WILDCARD);
-			if (beginIndex < 0) {
-				exact.add(s);
+				RawLog.warn("sumk.conf", "[" + s + "]的长度太短，被忽略.最小长度为:" + minPatternLength);
 				continue;
 			}
 
@@ -73,43 +76,45 @@ public class Matchers {
 				return BooleanMatcher.TRUE;
 			}
 
-			if (beginIndex == s.length() - 1) {
-				matchStart.add(s.substring(0, beginIndex));
+			int wildCount = s.length() - s.replace(WILDCARD, "").length();
+			if (wildCount > 2) {
+				RawLog.warn("sumk.conf", "[" + s + "]的*出现次数超过2次，将被忽略");
+
+			}
+			if (wildCount == 0) {
+				exact.add(s);
+				continue;
+			}
+			int firstIndex = s.indexOf(WILDCARD);
+			if (wildCount == 1) {
+				if (firstIndex == 0) {
+					matchEnd.add(s.substring(1));
+					continue;
+				}
+				if (firstIndex == s.length() - 1) {
+					matchStart.add(s.substring(0, firstIndex));
+					continue;
+				}
+				HeadAndTail h = new HeadAndTail(s.substring(0, firstIndex), s.substring(firstIndex + 1));
+				headAndTailMatch.add(h);
+			}
+			if (wildCount == 2) {
+				if (firstIndex == 0 && s.endsWith(WILDCARD)) {
+					matchContain.add(s.substring(1, s.length() - 1));
+					continue;
+				}
+				RawLog.warn("sumk.conf", "[" + s + "]的*不出现了2次，但不在头尾，将被忽略");
 				continue;
 			}
 
-			if (beginIndex != 0) {
-				RawLog.warn("sumk.conf", s + "的*不是出现在头尾，将被忽略");
-				continue;
-			}
-
-			int endIndex = s.indexOf(WILDCARD, beginIndex + 1);
-			if (endIndex < 0) {
-				matchEnd.add(s.substring(1));
-				continue;
-			}
-			if (endIndex == s.length() - 1) {
-				matchContain.add(s.substring(1, endIndex));
-				continue;
-			}
-			RawLog.warn("sumk.conf", s + "的*不止出现在头尾，将被忽略！！！");
 		}
 
-		Set<String> exacts = exact.size() > 0 ? exact : null;
-		String[] matchStarts = toArray(matchStart);
-		String[] matchEnds = toArray(matchEnd);
-		String[] matchContains = toArray(matchContain);
-		if (exacts == null && matchStarts == null && matchEnds == null && matchContains == null) {
+		if (exact.isEmpty() && matchStart.isEmpty() && matchEnd.isEmpty() && matchContain.isEmpty()
+				&& headAndTailMatch.isEmpty()) {
 			return BooleanMatcher.FALSE;
 		}
-		return new WildcardMatcher(exacts, matchStarts, matchEnds, matchContains);
-	}
 
-	private static String[] toArray(Collection<String> src) {
-		if (src.size() == 0) {
-			return null;
-		}
-		return src.toArray(new String[src.size()]);
+		return new WildcardMatcher(exact, matchStart, matchEnd, matchContain, headAndTailMatch);
 	}
 
 	/**

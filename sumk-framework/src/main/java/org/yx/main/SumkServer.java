@@ -15,6 +15,7 @@
  */
 package org.yx.main;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,12 +31,14 @@ import org.yx.bean.Booter;
 import org.yx.bean.IOC;
 import org.yx.bean.InnerIOC;
 import org.yx.bean.Plugin;
+import org.yx.bean.aop.asm.AsmUtils;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
 import org.yx.conf.SystemConfig;
 import org.yx.conf.SystemConfigHolder;
 import org.yx.log.Log;
 import org.yx.log.Logs;
+import org.yx.log.RawLog;
 import org.yx.redis.RedisPool;
 import org.yx.util.Loader;
 import org.yx.util.StringUtil;
@@ -71,40 +74,38 @@ public final class SumkServer {
 	}
 
 	public static void main(String[] args) {
-		start(args == null ? Collections.emptyList() : Arrays.asList(args));
-		Logs.system().info("启动完成,框架版本号:{},耗时：{}毫秒", Const.sumkVersion(), System.currentTimeMillis() - startTime);
+		run(null, args);
 	}
 
-	public static void main(Class<?> startClass, String[] args) {
-		Loader.setClassLoader(startClass.getClassLoader());
-		main(args);
+	public static void run(Class<?> mainClazz, String[] args) {
+		start(mainClazz, args == null ? Collections.emptyList() : Arrays.asList(args));
 	}
 
-	public static void start(String... args) {
-		start(args == null ? Collections.emptyList() : Arrays.asList(args));
+	public static void startAsTool(Class<?> mainClazz) {
+		start(mainClazz, Arrays.asList(StartConstants.NOHTTP, StartConstants.NOSOA, StartConstants.NOSOA_ClIENT));
 	}
 
-	public static void start(Class<?> startClass, Collection<String> args) {
-		Loader.setClassLoader(startClass.getClassLoader());
-		start(args);
+	public static synchronized void start(Class<?> mainClazz, SystemConfig config, Collection<String> args) {
+		if (config != null) {
+			SystemConfigHolder.setSystemConfig(config);
+		}
+		start(mainClazz, args);
 	}
 
-	public static void startAsTool() {
-		start(Arrays.asList(StartConstants.NOHTTP, StartConstants.NOSOA, StartConstants.NOSOA_ClIENT));
-	}
-
-	public static void start(SystemConfig config, Collection<String> args) {
-		SystemConfigHolder.setSystemConfig(config);
-		start(args == null ? Collections.emptyList() : args);
-	}
-
-	public static void start(Collection<String> args) {
-		synchronized (SumkServer.class) {
-			if (AppContext.inst().isStarted()) {
-				return;
-			}
-			startTime = System.currentTimeMillis();
-			AppContext.inst().setStatusToStarted();
+	/**
+	 * 启动ioc框架
+	 * 
+	 * @param mainClazz 类似于springboot的启动类，会扫描该类底下的类。支持为null
+	 * @param args      启动参数,可为null
+	 */
+	public static synchronized void start(Class<?> mainClazz, Collection<String> args) {
+		if (AppContext.inst().isStarted()) {
+			return;
+		}
+		startTime = System.currentTimeMillis();
+		AppContext.inst().setStatusToStarted();
+		if (mainClazz != null && mainClazz.getClassLoader() != null) {
+			Loader.setClassLoader(mainClazz.getClassLoader());
 		}
 		if (args == null) {
 			args = Collections.emptyList();
@@ -121,11 +122,10 @@ public final class SumkServer {
 				SumkThreadPool.setDaemon(true);
 			}
 			reloadConfig();
-			String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
-			List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
-					: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);
+			List<String> pcks = getIocScanPath(mainClazz);
 			new Booter().start(pcks);
 			SumkThreadPool.scheduleThreadPoolMonitor();
+			RawLog.setLogger(RawLog.SLF4J_LOG);
 			AppContext.clear();
 		} catch (Throwable e) {
 			Log.printStack("sumk.error", e);
@@ -136,6 +136,26 @@ public final class SumkServer {
 			}
 			AppContext.startFailed();
 		}
+		Logs.system().info("start finished in {} ms. sumk version {}", System.currentTimeMillis() - startTime,
+				Const.sumkVersion());
+	}
+
+	private static List<String> getIocScanPath(Class<?> mainClazz) {
+		String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
+		List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
+				: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);
+		pcks=new ArrayList<>(pcks);
+		if (mainClazz != null && mainClazz.getPackage() != null
+				&& StringUtil.isNotEmpty(mainClazz.getPackage().getName())) {
+			String pkName = mainClazz.getPackage().getName();
+			for (String defined : pcks) {
+				if (defined.startsWith(pkName + ".")) {
+					return pcks;
+				}
+			}
+			pcks.add(pkName);
+		}
+		return pcks;
 	}
 
 	/**
@@ -184,10 +204,10 @@ public final class SumkServer {
 
 	}
 
-	public static void stop() {
+	public static boolean stop() {
 		synchronized (SumkServer.class) {
 			if (AppContext.inst().isDestoryed()) {
-				return;
+				return false;
 			}
 			AppContext.inst().setStatusToDestoryed();
 		}
@@ -207,9 +227,17 @@ public final class SumkServer {
 			RedisPool.shutdown();
 		} catch (Throwable e2) {
 		}
+		AsmUtils.clearProxyClassLoaders();
 		InnerIOC.clear();
-		SumkThreadPool.shutdown();
 		Logs.system().info("sumk server stoped!!!");
+		return true;
+	}
+
+	public static void destroy() {
+		if (!stop()) {
+			return;
+		}
+		SumkThreadPool.shutdown();
 	}
 
 	public static Executor getExecutor(String name) {
@@ -253,6 +281,9 @@ public final class SumkServer {
 		return AppInfo.getInt("sumk.http.port", -1);
 	}
 
+	/**
+	 * 重置状态，一般用于单元测试
+	 */
 	public static void resetStatus() {
 		AppContext.inst().resetStatus();
 	}

@@ -23,7 +23,7 @@ public class RpcTest {
 
 	@BeforeClass
 	public static void before() {
-		SumkServer.start(StartConstants.NOHTTP,StartConstants.NOSOA);
+		SumkServer.start(RpcPressTest.class,Arrays.asList(StartConstants.NOHTTP,StartConstants.NOSOA));
 		Rpc.init();
 	}
 

@@ -11,10 +11,10 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.test.soa.demo.EchoAction;
+import org.test.inner.po.DemoUser;
+import org.test.inner.soa.demo.EchoAction;
 import org.yx.common.util.S;
 import org.yx.conf.AppInfo;
-import org.yx.demo.member.DemoUser;
 import org.yx.main.StartConstants;
 import org.yx.main.SumkServer;
 import org.yx.rpc.client.Rpc;
@@ -25,7 +25,7 @@ public class RpcTest {
 
 	@BeforeClass
 	public static void before() {
-		SumkServer.start(StartConstants.NOHTTP,StartConstants.NOSOA);
+		SumkServer.start(RpcTest.class,Arrays.asList(StartConstants.NOHTTP,StartConstants.NOSOA));
 		Rpc.init();
 	}
 

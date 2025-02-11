@@ -254,7 +254,7 @@ public class SumkMonitor extends AbstractCommonHttpServlet {
 		}
 		StringBuilder sb = new StringBuilder();
 		new TreeMap<>(AppInfo.subMap("")).forEach((k, v) -> {
-			sb.append(k).append(" = ").append(v.replace(LN, Const.CONFIG_NEW_LINE)).append(LN);
+			sb.append(k).append(" = ").append(v.replace(LN, "\\n")).append(LN);
 		});
 		writer.append(sb.toString());
 		writer.append(TYPE_SPLIT);

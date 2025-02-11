@@ -1,0 +1,6 @@
+sumk.ioc.bean=org.yx.common.listener.EventBusFactory,\
+	org.yx.common.validate.ComplexParamValidator,org.yx.common.validate.SimpleParamValidator,\
+	org.yx.redis.RedisPlugin,org.yx.redis.v3.Redis3Factory
+sumk.ioc.boot.watcher=org.yx.bean.BeanAssemblerBootWatcher
+sumk.ioc.optional=org.yx.redis.*
+	

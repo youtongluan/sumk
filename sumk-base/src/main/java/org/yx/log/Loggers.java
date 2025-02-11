@@ -59,13 +59,18 @@ public final class Loggers {
 				String[] levelNamePair = levelStr.split(":");
 				switch (levelNamePair.length) {
 				case 1:
-					newLevels.put(ROOT, LogLevel.valueOf(levelNamePair[0].trim().toUpperCase()));
+					String level = levelNamePair[0].trim().toUpperCase();
+					if (level.contains(".")) {
+						System.err.println("[" + levelStr + "] is not valid name:level format");
+						break;
+					}
+					newLevels.put(ROOT, LogLevel.valueOf(level));
 					break;
 				case 2:
 					newLevels.put(levelNamePair[0].trim(), LogLevel.valueOf(levelNamePair[1].trim().toUpperCase()));
 					break;
 				default:
-					System.err.println(levelStr + " is not valid name:level format");
+					System.err.println(levelStr + " is not valid [name:level] format");
 				}
 			}
 			Loggers.resetLevel(newLevels);

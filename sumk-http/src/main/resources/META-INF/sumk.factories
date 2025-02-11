@@ -1,0 +1,11 @@
+sumk.ioc.bean=org.yx.http.handler.Base64DecodeHandler,org.yx.http.handler.Base64EncodeHandler,\
+	org.yx.http.handler.DecryptHandler,org.yx.http.handler.EncryptHandler,\
+	org.yx.http.handler.InvokeHandler,org.yx.http.handler.MultipartHandler,\
+	org.yx.http.handler.ReqDataHandler,org.yx.http.handler.ReqSignValidateHandler,\
+	org.yx.http.handler.ReqToStringHandler,org.yx.http.handler.ReqUserHandler,\
+	org.yx.http.handler.RespBodyHandler,org.yx.http.handler.RespToStringHandler,\
+	org.yx.http.handler.ToBytesHandler,\
+	org.yx.http.server.DocumentServlet,org.yx.http.server.MultipartServer,\
+	org.yx.http.server.RestServer,org.yx.http.server.SumkMonitor,\
+	org.yx.http.HttpPlugin
+sumk.ioc.optional=org.yx.http.*

@@ -25,11 +25,11 @@ import java.util.Random;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.test.inner.dao.LocalSqlDao;
 import org.yx.base.date.TimeUtil;
 import org.yx.bean.IOC;
 import org.yx.conf.AppInfo;
 import org.yx.conf.Const;
-import org.yx.orm.LocalSqlDao;
 
 /*
  * useOldAliasMetadataBehavior=true表示启用别名，额不是数据库定义时的名字，注意连接里这个参数对测试用例的影响

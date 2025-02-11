@@ -18,10 +18,10 @@ package org.yx.rpc.netty;
 import java.util.Map;
 
 import org.yx.annotation.Bean;
+import org.yx.base.Ordered;
 import org.yx.bean.IOC;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.rpc.server.RequestHandler;
 import org.yx.rpc.transport.TransportClient;
 import org.yx.rpc.transport.TransportFactory;
@@ -55,6 +55,6 @@ public class NettyTransportFactory implements TransportFactory {
 
 	@Override
 	public int order() {
-		return Const.DEFAULT_ORDER + 1000;
+		return Ordered.DEFAULT_ORDER + 1000;
 	}
 }

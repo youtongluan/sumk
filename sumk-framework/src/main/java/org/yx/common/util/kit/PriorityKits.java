@@ -22,7 +22,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.yx.annotation.Priority;
-import org.yx.conf.Const;
+import org.yx.base.Ordered;
 
 public class PriorityKits {
 
@@ -38,7 +38,7 @@ public class PriorityKits {
 	public static int getPriority(Class<?> clz) {
 		Priority p = clz.getAnnotation(Priority.class);
 		if (p == null) {
-			return Const.DEFAULT_ORDER;
+			return Ordered.DEFAULT_ORDER;
 		}
 		return p.value();
 	}
@@ -62,9 +62,9 @@ public class PriorityKits {
 		for (int i = 0; i < size; i++) {
 			Class<?> clz = sortedClasses.get(i);
 			int p = getPriority(clz);
-			if (p == Const.DEFAULT_ORDER) {
+			if (p == Ordered.DEFAULT_ORDER) {
 				middle.add(clz);
-			} else if (p < Const.DEFAULT_ORDER) {
+			} else if (p < Ordered.DEFAULT_ORDER) {
 				low.add(clz);
 			} else {
 				high.add(clz);

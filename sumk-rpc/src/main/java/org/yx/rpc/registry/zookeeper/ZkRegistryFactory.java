@@ -3,8 +3,8 @@ package org.yx.rpc.registry.zookeeper;
 import java.util.Optional;
 
 import org.yx.annotation.Bean;
+import org.yx.base.Ordered;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.log.Logs;
 import org.yx.rpc.registry.RegistryFactory;
 import org.yx.rpc.registry.client.RegistryClient;
@@ -18,7 +18,7 @@ public class ZkRegistryFactory implements RegistryFactory {
 
 	@Override
 	public int order() {
-		return Const.DEFAULT_ORDER + 1000;
+		return Ordered.DEFAULT_ORDER + 1000;
 	}
 
 	@Override

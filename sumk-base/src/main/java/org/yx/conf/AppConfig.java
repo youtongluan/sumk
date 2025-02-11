@@ -74,7 +74,7 @@ public class AppConfig extends AbstractRefreshableSystemConfig {
 				return;
 			}
 			byte[] bs = IOUtil.readAllBytes(in, true);
-			Map<String, String> conf = CollectionUtil.fillConfigFromText(new HashMap<>(),
+			Map<String, String> conf = CollectionUtil.fillPropertiesFromText(new HashMap<>(),
 					new String(bs, StandardCharsets.UTF_8));
 			if (conf != null && !conf.equals(this.map)) {
 				if (this.showLog) {

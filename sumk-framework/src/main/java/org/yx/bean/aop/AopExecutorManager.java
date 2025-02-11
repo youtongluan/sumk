@@ -2,18 +2,24 @@ package org.yx.bean.aop;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+
+import org.yx.bean.IOC;
 
 public class AopExecutorManager {
 
-	private final AopExecutorSupplier[] baseSuppliers;
+	private static AopExecutorManager INSTANCE = new AopExecutorManager();
+
+	public static AopExecutorManager get() {
+		return INSTANCE;
+	}
+
+	public static void reset() {
+		INSTANCE = new AopExecutorManager();
+	}
 
 	private List<AopContext[]> aopContexts = new ArrayList<>();
-
-	public AopExecutorManager(List<AopExecutorSupplier> advisors) {
-		advisors.sort(null);
-		this.baseSuppliers = advisors.toArray(new AopExecutorSupplier[advisors.size()]);
-	}
 
 	public AopExecutorChain getChain(int index) {
 		AopContext[] aopContexts = this.aopContexts.get(index);
@@ -25,8 +31,11 @@ public class AopExecutorManager {
 	}
 
 	public List<AopContext> willProxyExcutorSuppliers(Class<?> clz, Method method) {
-		AopExecutorSupplier[] baseSuppliers = this.baseSuppliers;
-		List<AopContext> list = new ArrayList<>(baseSuppliers.length);
+		List<AopExecutorSupplier> baseSuppliers = IOC.getBeans(AopExecutorSupplier.class);
+		if (baseSuppliers.isEmpty()) {
+			return Collections.emptyList();
+		}
+		List<AopContext> list = new ArrayList<>(baseSuppliers.size());
 		for (AopExecutorSupplier supplier : baseSuppliers) {
 			Object attach = supplier.willProxy(clz, method);
 			if (attach != null) {

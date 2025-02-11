@@ -1,0 +1,2 @@
+sumk.ioc.bean=org.yx.rpc.mina.MinaTransportFactory
+sumk.ioc.exclude=org.yx.rpc.netty.NettyTransportFactory

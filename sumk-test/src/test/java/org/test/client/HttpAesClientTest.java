@@ -17,7 +17,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.test.web.client.Encrypt;
+import org.test.inner.web.client.Encrypt;
 import org.yx.common.util.S;
 import org.yx.log.Log;
 

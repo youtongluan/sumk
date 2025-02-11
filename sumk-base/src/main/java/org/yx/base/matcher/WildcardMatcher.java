@@ -18,13 +18,19 @@ package org.yx.base.matcher;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.yx.base.ItemJoiner;
 import org.yx.util.CollectionUtil;
 
+/**
+ * 或类型的匹配，只要能匹配中一个条件，就认为匹配成功
+ *
+ */
 public class WildcardMatcher implements Predicate<String> {
 
 	private final Set<String> exacts;
@@ -35,11 +41,23 @@ public class WildcardMatcher implements Predicate<String> {
 
 	private final String[] contains;
 
-	WildcardMatcher(Set<String> exacts, String[] matchStarts, String[] matchEnds, String[] contains) {
-		this.exacts = exacts;
-		this.matchStarts = matchStarts;
-		this.matchEnds = matchEnds;
-		this.contains = contains;
+	private final HeadAndTail[] headTails;
+
+	WildcardMatcher(Set<String> exacts, Set<String> matchStart, Set<String> matchEnd, Set<String> matchContain,
+			Set<HeadAndTail> headAndTailMatch) {
+		this.exacts = CollectionUtil.isEmpty(exacts) ? null : new HashSet<>(exacts);
+		this.matchStarts = toArray(matchStart);
+		this.matchEnds = toArray(matchEnd);
+		this.contains = toArray(matchContain);
+		this.headTails = CollectionUtil.isEmpty(headAndTailMatch) ? null
+				: headAndTailMatch.toArray(new HeadAndTail[headAndTailMatch.size()]);
+	}
+
+	private String[] toArray(Collection<String> src) {
+		if (CollectionUtil.isEmpty(src)) {
+			return null;
+		}
+		return src.toArray(new String[src.size()]);
 	}
 
 	@Override
@@ -75,6 +93,14 @@ public class WildcardMatcher implements Predicate<String> {
 				}
 			}
 		}
+
+		if (this.headTails != null) {
+			for (HeadAndTail ht : this.headTails) {
+				if (ht.test(text)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
 
@@ -98,18 +124,44 @@ public class WildcardMatcher implements Predicate<String> {
 	public String toString() {
 		ItemJoiner join = new ItemJoiner(",");
 		if (exacts != null) {
-			join.item().append("exacts=").append(exacts);
+			join.item().append("exacts:").append(exacts);
 		}
 		if (matchStarts != null) {
-			join.item().append("matchStarts=").append(Arrays.toString(matchStarts));
+			join.item().append("matchStarts:").append(Arrays.toString(matchStarts));
 		}
 		if (matchEnds != null) {
-			join.item().append("matchEnds=").append(Arrays.toString(matchEnds));
+			join.item().append("matchEnds:").append(Arrays.toString(matchEnds));
 		}
 		if (contains != null) {
-			join.item().append("contains=").append(Arrays.toString(contains));
+			join.item().append("contains:").append(Arrays.toString(contains));
+		}
+		if (headTails != null) {
+			join.item().append("headTails:").append(Arrays.toString(headTails));
 		}
 		return join.toString();
+	}
+
+	public static final class HeadAndTail implements Predicate<String> {
+		final String head;
+		final String tail;
+
+		public HeadAndTail(String head, String tail) {
+			this.head = Objects.requireNonNull(head);
+			this.tail = Objects.requireNonNull(tail);
+		}
+
+		@Override
+		public boolean test(String text) {
+			if (text.length() < head.length() + tail.length()) {
+				return false;
+			}
+			return text.startsWith(head) && text.endsWith(tail);
+		}
+
+		@Override
+		public String toString() {
+			return "HeadAndTail [head=" + head + ", tail=" + tail + "]";
+		}
 	}
 
 }

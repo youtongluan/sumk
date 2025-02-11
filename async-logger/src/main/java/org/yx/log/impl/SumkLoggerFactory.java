@@ -22,6 +22,7 @@ import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.yx.log.LogLevel;
 import org.yx.log.Loggers;
+import org.yx.log.RawLog;
 import org.yx.log.SumkLogger;
 
 public final class SumkLoggerFactory implements ILoggerFactory {
@@ -31,6 +32,7 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 	private static Function<String, SumkLogger> loggerFactory = SumkLoggerImpl::new;
 	static {
 		LogAppenders.init();
+		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
 	public static Function<String, SumkLogger> getLoggerFactory() {

@@ -30,7 +30,7 @@ public abstract class MultiNodeConfig extends AbstractRefreshableSystemConfig {
 	protected Map<String, String> config = Collections.emptyMap();
 	private Function<byte[], Map<String, String>> dataParser = data -> {
 		String s = new String(data, AppInfo.UTF8).trim().replace("\r\n", LN).replace("\r", LN);
-		return CollectionUtil.fillConfigFromText(new HashMap<>(), s);
+		return CollectionUtil.fillPropertiesFromText(new HashMap<>(), s);
 	};
 
 	public Function<byte[], Map<String, String>> getDataParser() {

@@ -45,21 +45,12 @@ import org.yx.util.StringUtil;
 public final class BeanPool {
 
 	private final ConcurrentMap<String, NameSlot> slotMap = new ConcurrentHashMap<>(128);
-	private AopExecutorManager manager = new AopExecutorManager(Collections.emptyList());
-
-	public AopExecutorManager aopExecutorManager() {
-		return manager;
-	}
-
-	void setAopExecutorManager(AopExecutorManager manager) {
-		this.manager = manager;
-	}
 
 	private Class<?> proxyIfNeed(Class<?> clz) throws Exception {
 
 		Method[] methods = clz.getDeclaredMethods();
 		Map<Method, Integer> aopMethods = new HashMap<>();
-
+		AopExecutorManager manager = AopExecutorManager.get();
 		for (Method m : methods) {
 			int modifier = m.getModifiers();
 			if (!AsmUtils.canProxy(modifier)) {
@@ -83,7 +74,7 @@ public final class BeanPool {
 				for (AopContext c : list) {
 					aopList.add(c.getAopExecutor());
 				}
-				Logs.aop().debug("{}.{}被{}代理了", clz.getName(), m.getName(), aopList);
+				Logs.aop().debug("{}.{}被{}代理了,序号:{}", clz.getName(), m.getName(), aopList, index);
 			}
 		}
 
@@ -91,14 +82,14 @@ public final class BeanPool {
 			return clz;
 		}
 
-		ClassReader cr = new ClassReader(AsmUtils.openStreamForClass(clz.getName()));
+		ClassReader cr = new ClassReader(AsmUtils.openStreamForClass(clz));
 
 		ClassWriter cw = new ClassWriter(cr, AppInfo.getInt("sumk.asm.writer.box.compute", ClassWriter.COMPUTE_MAXS));
 
 		String newClzName = AsmUtils.proxyCalssName(clz);
 		ProxyClassVistor cv = new ProxyClassVistor(cw, newClzName, clz, aopMethods);
 		cr.accept(cv, AsmUtils.asmVersion());
-		return AsmUtils.loadClass(newClzName, cw.toByteArray());
+		return AsmUtils.defineClass(newClzName, cw.toByteArray(), clz.getClassLoader());
 	}
 
 	public List<String> beanNames() {

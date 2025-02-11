@@ -21,7 +21,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.yx.conf.Const;
+import org.yx.base.Ordered;
 import org.yx.db.enums.ColumnType;
 
 @Target({ ElementType.FIELD })
@@ -35,5 +35,5 @@ public @interface Column {
 
 	ColumnType type() default ColumnType.NORMAL;
 
-	byte order() default Const.DEFAULT_ORDER;
+	byte order() default Ordered.DEFAULT_ORDER;
 }

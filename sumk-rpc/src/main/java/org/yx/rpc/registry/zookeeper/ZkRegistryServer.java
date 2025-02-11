@@ -6,9 +6,9 @@ import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.apache.zookeeper.Watcher.Event.KeeperState;
 import org.slf4j.Logger;
+import org.yx.base.Ordered;
 import org.yx.common.Host;
 import org.yx.conf.AppInfo;
-import org.yx.conf.Const;
 import org.yx.exception.SumkException;
 import org.yx.log.Log;
 import org.yx.rpc.registry.server.RegistryHelper;
@@ -33,7 +33,7 @@ public class ZkRegistryServer implements RegistryServer {
 
 	@Override
 	public int order() {
-		return Const.DEFAULT_ORDER + 1000;
+		return Ordered.DEFAULT_ORDER + 1000;
 	}
 
 	private static boolean soaServerEnable() {

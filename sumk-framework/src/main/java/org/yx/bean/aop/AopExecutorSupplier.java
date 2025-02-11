@@ -7,14 +7,16 @@ import org.yx.base.Ordered;
 
 /**
  * <UL>
- * <LI>这个接口与@Bean无关，不需要@Bean注解</LI>
+ * <LI>实现类也需要@Bean注解，但是它的willProxy()不能调用其它的bean</LI>
  * <LI>执行顺序由order()方法决定。</LI>
  * </UL>
  *
  */
 public interface AopExecutorSupplier extends Ordered {
+
 	/**
-	 * 判断是否满足代理条件，本方法只在IOC框架启动的时候调用。 私有方法等不符合代理条件的方法，不会调用这个方法
+	 * 判断是否满足代理条件，本方法只在IOC框架启动的时候调用，并且在bean初始化之前调用，所以里面不能使用其它的bean。
+	 * 私有方法等不符合代理条件的方法，不会调用这个方法
 	 * 
 	 * @param clz       方法的原始类
 	 * @param rawMethod 原始的方法

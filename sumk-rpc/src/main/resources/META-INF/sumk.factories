@@ -1,0 +1,6 @@
+sumk.ioc.bean=org.yx.rpc.client.intf.SoaClientFactory,org.yx.rpc.client.intf.SoaClientPlugin,\
+	org.yx.rpc.codec.decoders.RequestDecoder,org.yx.rpc.codec.decoders.ResponseDecoder,\
+	org.yx.rpc.codec.encoders.StreamAbleEncoder,org.yx.rpc.netty.NettyTransportFactory,\
+	org.yx.rpc.registry.zookeeper.ZkRegistryFactory,org.yx.rpc.server.impl.JsonedParamReqHandler,\
+	org.yx.rpc.server.impl.OrderedParamReqHandler,org.yx.rpc.server.SoaPlugin
+sumk.ioc.optional=org.yx.rpc.*

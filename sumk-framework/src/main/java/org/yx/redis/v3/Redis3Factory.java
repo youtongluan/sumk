@@ -16,7 +16,7 @@
 package org.yx.redis.v3;
 
 import org.yx.annotation.Bean;
-import org.yx.conf.Const;
+import org.yx.base.Ordered;
 import org.yx.log.Logs;
 import org.yx.redis.Redis;
 import org.yx.redis.RedisConfig;
@@ -41,7 +41,7 @@ public class Redis3Factory implements RedisFactory {
 
 	@Override
 	public int order() {
-		return Const.DEFAULT_ORDER + 100;
+		return Ordered.DEFAULT_ORDER + 100;
 	}
 
 }

@@ -8,10 +8,10 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.test.inner.dao.DemoUserDao;
+import org.test.inner.po.DemoUser;
 import org.yx.bean.IOC;
-import org.yx.demo.member.DemoUser;
 import org.yx.main.SumkServer;
-import org.yx.orm.DemoUserDao;
 import org.yx.util.IOUtil;
 
 //单主键的测试

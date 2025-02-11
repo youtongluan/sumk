@@ -1,0 +1,8 @@
+sumk.ioc.bean=org.yx.db.conn.CommonConfigFactory,\
+org.yx.db.exec.BoxAopExecutorSupplier,\
+org.yx.db.listener.DeleteListener,\
+org.yx.db.listener.InsertListener,\
+org.yx.db.listener.SelectListener,\
+org.yx.db.listener.UpdateListener,\
+org.yx.db.mapper.DBPlugin
+sumk.ioc.boot.watcher=org.yx.db.sql.TableBootWatcher

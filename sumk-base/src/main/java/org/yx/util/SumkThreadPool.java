@@ -15,6 +15,7 @@
  */
 package org.yx.util;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
@@ -55,7 +56,7 @@ public final class SumkThreadPool {
 		};
 	}
 
-	private static final ScheduledThreadPoolExecutor scheduledExecutor = new ScheduledThreadPoolExecutor(
+	private static final ScheduledExecutorService scheduledExecutor = new ScheduledThreadPoolExecutor(
 			Integer.getInteger("sumk.thread.schedule.size", 1), r -> {
 				Thread t = new Thread(r, "sumk-task");
 				t.setDaemon(true);
@@ -65,7 +66,7 @@ public final class SumkThreadPool {
 				return t;
 			});
 
-	static ScheduledThreadPoolExecutor scheduledExecutor() {
+	static ScheduledExecutorService scheduledExecutor() {
 		return scheduledExecutor;
 	}
 

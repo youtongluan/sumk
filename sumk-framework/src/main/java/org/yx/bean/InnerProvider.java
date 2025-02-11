@@ -6,7 +6,7 @@ public class InnerProvider implements BeanProvider {
 
 	@Override
 	public <T> List<T> getBeans(String name, Class<T> clz) {
-		return InnerIOC.pool.getBeans(name, clz);
+		return InnerIOC.pool().getBeans(name, clz);
 	}
 
 	@Override
@@ -16,7 +16,7 @@ public class InnerProvider implements BeanProvider {
 
 	@Override
 	public <T> T getBean(String name, Class<T> clz) {
-		return InnerIOC.pool.getBean(name, clz);
+		return InnerIOC.pool().getBean(name, clz);
 	}
 
 }

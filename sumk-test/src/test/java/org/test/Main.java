@@ -12,7 +12,7 @@ public class Main {
 //			SOAServer.startZKServer();
 //			Log.get(Main.class).info("zookeeper启动完成，现在开始启动真正的sumk服务器。。。");
 			long begin=System.currentTimeMillis();
-			SumkServer.start();
+			SumkServer.start(Main.class,null);
 			System.out.println("启动耗时："+(System.currentTimeMillis()-begin)+"毫秒");
 			Thread.currentThread().join();
 		} catch (Exception e) {

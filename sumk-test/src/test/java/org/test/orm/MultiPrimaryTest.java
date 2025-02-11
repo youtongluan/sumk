@@ -3,9 +3,9 @@ package org.test.orm;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.test.inner.dao.MultikeyDao;
+import org.test.inner.po.Multikey;
 import org.yx.bean.IOC;
-import org.yx.demo.member.Multikey;
-import org.yx.orm.MultikeyDao;
 
 public class MultiPrimaryTest extends BaseOrmTest{
 

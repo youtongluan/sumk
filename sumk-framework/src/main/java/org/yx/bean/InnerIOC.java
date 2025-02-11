@@ -22,7 +22,11 @@ import org.yx.bean.aop.AopExecutorChain;
 import org.yx.bean.aop.AopExecutorManager;
 
 public final class InnerIOC {
-	static final BeanPool pool = new BeanPool();
+	private static final BeanPool pool = new BeanPool();
+
+	static BeanPool pool() {
+		return pool;
+	}
 
 	public static <T> T putClass(String name, Class<T> clz) throws Exception {
 		return pool.putClass(name, clz);
@@ -64,11 +68,7 @@ public final class InnerIOC {
 		return pool.toString();
 	}
 
-	public static AopExecutorManager aopExecutorManager() {
-		return pool.aopExecutorManager();
-	}
-
 	public static AopExecutorChain getAopExecutorChain(int index) {
-		return pool.aopExecutorManager().getChain(index);
+		return AopExecutorManager.get().getChain(index);
 	}
 }

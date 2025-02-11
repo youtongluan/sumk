@@ -16,11 +16,10 @@
 package org.yx.conf;
 
 public final class Const {
-	public static final int DEFAULT_ORDER = 100;
 
 	public static final String DEFAULT_DB_NAME = "sumk";
 
-	public static final int SUMK_VERSION = 0x410;
+	public static final int SUMK_VERSION = 0x420;
 
 	public static String sumkVersion() {
 		return new StringBuilder(10).append((Const.SUMK_VERSION >> 8) & 0x0F).append('.')
@@ -38,11 +37,10 @@ public final class Const {
 	 */
 	public static final String COMMA = ",";
 
-	public static final String CONFIG_NEW_LINE = "\t\\\n\t";
-
 	public static final String LN = "\n";
 
 	public static final int DEFAULT_TOPLIMIT = 50000;
+
 	/**
 	 * 这个监听程序不要直接操作数据库
 	 */

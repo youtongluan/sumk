@@ -19,8 +19,11 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 /**
- * 这个定时任务与jvm自带的不同点在于： 它不会因为异常而停止，并且它不额外占用线程
+ * 这个定时任务与jvm自带的不同点在于：<BR>
+ * 1、它不会因为异常而停止。<BR>
+ * 2、它使用一个线程负责定时器，触发后由主线程池运行。但它也保证任务不会被并发<BR>
  */
+
 public final class Task {
 
 	public static ScheduledFuture<?> scheduleAtFixedRate(Runnable job, long delayMS, long periodMS) {

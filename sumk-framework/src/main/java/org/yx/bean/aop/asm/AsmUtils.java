@@ -26,31 +26,18 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.yx.base.context.AppContext;
 import org.yx.conf.AppInfo;
 import org.yx.exception.SumkException;
-import org.yx.log.Log;
 import org.yx.log.Logs;
 import org.yx.util.Loader;
 
 public final class AsmUtils {
-
-	private static Method defineClass;
-
-	static {
-		try {
-			defineClass = getMethod(ClassLoader.class, "defineClass",
-					new Class<?>[] { String.class, byte[].class, int.class, int.class });
-			defineClass.setAccessible(true);
-		} catch (Exception e) {
-			Log.printStack("sumk.error", e);
-			AppContext.startFailed();
-		}
-	}
+	private static final Map<ClassLoader, ProxyClassLoader> classLoaders = new ConcurrentHashMap<>();
 
 	public static String proxyCalssName(Class<?> clz) {
 		String name = clz.getName();
@@ -66,8 +53,8 @@ public final class AsmUtils {
 		return AppInfo.getInt("sumk.asm.jvm.version", Opcodes.V1_8);
 	}
 
-	public static InputStream openStreamForClass(String name) {
-		String internalName = name.replace('.', '/') + ".class";
+	public static InputStream openStreamForClass(Class<?> clz) {
+		String internalName = clz.getName().replace('.', '/') + ".class";
 		return Loader.getResourceAsStream(internalName);
 	}
 
@@ -104,8 +91,7 @@ public final class AsmUtils {
 
 	private static List<MethodParamInfo> buildMethodInfos(Class<?> declaringClass, List<Method> methods)
 			throws IOException {
-		String classFullName = declaringClass.getName();
-		ClassReader cr = new ClassReader(openStreamForClass(classFullName));
+		ClassReader cr = new ClassReader(openStreamForClass(declaringClass));
 		MethodInfoClassVisitor cv = new MethodInfoClassVisitor(methods);
 		cr.accept(cv, 0);
 		return cv.getMethodInfos();
@@ -129,7 +115,17 @@ public final class AsmUtils {
 		return null;
 	}
 
-	public static Class<?> loadClass(String fullName, byte[] b) throws Exception {
+	private static ProxyClassLoader getProxyClassLoader(ClassLoader originClassLoader) {
+		if (originClassLoader == null) {
+			originClassLoader = Loader.loader();
+		}
+		if (originClassLoader instanceof ProxyClassLoader) {
+			return (ProxyClassLoader) originClassLoader;
+		}
+		return classLoaders.computeIfAbsent(originClassLoader, k -> new ProxyClassLoader(k));
+	}
+
+	public static Class<?> defineClass(String fullName, byte[] b, ClassLoader originClassLoader) throws Exception {
 
 		String clzOutPath = AppInfo.get("sumk.asm.debug.output");
 		if (clzOutPath != null && clzOutPath.length() > 0) {
@@ -145,16 +141,18 @@ public final class AsmUtils {
 				}
 			}
 		}
-
+		ProxyClassLoader classLoader = getProxyClassLoader(originClassLoader);
 		synchronized (AsmUtils.class) {
 			try {
-				return Loader.loadClass(fullName);
+				Class<?> clz = classLoader.loadClass(fullName);
+				Logs.asm().debug("{} was defined", fullName);
+				return clz;
 			} catch (Throwable e) {
 				if (!(e instanceof ClassNotFoundException)) {
 					Logs.asm().warn(fullName + " 加载失败", e);
 				}
 			}
-			Class<?> clz = (Class<?>) defineClass.invoke(Loader.loader(), fullName, b, 0, b.length);
+			Class<?> clz = classLoader.defineClass(fullName, b);
 			if (clz == null) {
 				throw new SumkException(235345436, "cannot load class " + fullName);
 			}
@@ -241,4 +239,11 @@ public final class AsmUtils {
 		return method;
 	}
 
+	public static void clearProxyClassLoaders() {
+		classLoaders.clear();
+	}
+
+	public static HashMap<ClassLoader, ProxyClassLoader> aopClassLoaders() {
+		return new HashMap<>(classLoaders);
+	}
 }

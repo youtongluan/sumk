@@ -17,13 +17,14 @@ package org.yx.util;
 
 import static org.yx.conf.Const.LN;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -31,7 +32,8 @@ import java.util.Map.Entry;
 import org.yx.annotation.doc.NotNull;
 import org.yx.base.sumk.UnmodifiableArrayList;
 import org.yx.base.sumk.map.UnmodifiableListMap;
-import org.yx.conf.Const;
+import org.yx.exception.SumkException;
+import org.yx.log.RawLog;
 
 /**
  * 本类的许多方法都会对key、value做trim()处理
@@ -39,6 +41,10 @@ import org.yx.conf.Const;
 public final class CollectionUtil {
 
 	private static final String IGNORE_PREFIX = "#";
+	/**
+	 * 与后面的有效行合并成一行。如果后面是空行或者#开头的行，就继续寻找下一行。 如果后面是文件结尾，就忽略这个结尾
+	 */
+	private static final String LINE_CONCAT = "\\";
 
 	public static Map<String, String> loadMapFromText(String text, String bigDelimiter, String smallDelimiter) {
 		return fillMapFromText(new HashMap<String, String>(), text, bigDelimiter, smallDelimiter);
@@ -80,23 +86,63 @@ public final class CollectionUtil {
 		return sb.toString();
 	}
 
-	public static Map<String, String> fillConfigFromText(final Map<String, String> map, String text) {
+	public static Map<String, String> fillPropertiesFromText(final Map<String, String> map, String text) {
 		if (text == null || text.isEmpty()) {
 			return map;
 		}
-		final String CONFIG_NEW_LINE2 = Const.CONFIG_NEW_LINE.replace("\t", "  ");
+		try (BufferedReader reader = new BufferedReader(new StringReader(text))) {
+			String tmp = null;
 
-		text = StringUtil.formatNewLineFlag(text).replace(Const.CONFIG_NEW_LINE, "").replace(CONFIG_NEW_LINE2, "");
-		Map<String, String> temp = fillMapFromText(new LinkedHashMap<String, String>(), text, Const.LN, "=");
-		for (Entry<String, String> entry : temp.entrySet()) {
-			String k = entry.getKey();
-			String v = entry.getValue();
-			if (k.startsWith(IGNORE_PREFIX) || v == null || v.isEmpty()) {
-				continue;
+			while ((tmp = readLine(reader)) != null) {
+				String[] kv = tmp.split("=", 2);
+				if (kv.length != 2) {
+					continue;
+				}
+				String k = kv[0].trim();
+				String v = kv[1].trim();
+				if (k.isEmpty() || v.isEmpty()) {
+					continue;
+				}
+				map.put(k, v);
 			}
-			map.put(k, v);
+		} catch (Exception e) {
+			RawLog.error("文本转换成map失败：{}", text);
+			throw new SumkException(-234352398, text, e);
 		}
 		return map;
+	}
+
+	/**
+	 * 
+	 * @param reader
+	 * @return 返回null表示读取结束
+	 * @throws IOException
+	 */
+	private static String readLine(BufferedReader reader) throws IOException {
+		StringBuilder sb = new StringBuilder();
+		String tmp = null;
+		boolean readed = false;
+
+		while ((tmp = reader.readLine()) != null) {
+			readed = true;
+			if (tmp.startsWith(IGNORE_PREFIX) || tmp.trim().isEmpty()) {
+				continue;
+			}
+			if (tmp.endsWith(LINE_CONCAT)) {
+				if (tmp.length() == 1) { // 1个字节如果做substring会出错
+					continue;
+				}
+				sb.append(tmp.substring(0, tmp.length() - 1));
+				continue;
+			}
+			sb.append(tmp);
+			break;
+		}
+		if (!readed) {
+			return null;
+		}
+		String line = sb.toString();
+		return line.trim();
 	}
 
 	public static List<String> loadList(InputStream in) throws IOException {

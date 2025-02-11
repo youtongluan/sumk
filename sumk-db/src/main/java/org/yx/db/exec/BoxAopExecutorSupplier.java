@@ -2,11 +2,13 @@ package org.yx.db.exec;
 
 import java.lang.reflect.Method;
 
+import org.yx.annotation.Bean;
 import org.yx.bean.aop.AopExecutor;
 import org.yx.bean.aop.AopExecutorSupplier;
 import org.yx.db.spec.BoxSpec;
 import org.yx.db.spec.DBSpecs;
 
+@Bean
 public class BoxAopExecutorSupplier implements AopExecutorSupplier {
 
 	/**
@@ -36,7 +38,7 @@ public class BoxAopExecutorSupplier implements AopExecutorSupplier {
 	}
 
 	@Override
-	public DBSource willProxy(Class<?> clz, Method rawMethod) {
+	public synchronized DBSource willProxy(Class<?> clz, Method rawMethod) {
 		BoxSpec spec = DBSpecs.extractBox(rawMethod);
 		if (spec == null) {
 			return null;

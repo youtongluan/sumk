@@ -82,7 +82,8 @@ final class ParamPojoClassFactory {
 
 		cw.visitEnd();
 
-		return (Class<? extends ParamPojo>) AsmUtils.loadClass(fullName.replace('/', '.'), cw.toByteArray());
+		return (Class<? extends ParamPojo>) AsmUtils.defineClass(fullName.replace('/', '.'), cw.toByteArray(),
+				p.getDeclaringClass().getClassLoader());
 	}
 
 	private void buildInit() {

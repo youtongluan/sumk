@@ -23,7 +23,7 @@ public class RpcPressTest {
 
 	@Before
 	public void before(){
-		SumkServer.start(StartConstants.NOHTTP,StartConstants.NOSOA);
+		SumkServer.start(RpcPressTest.class,Arrays.asList(StartConstants.NOHTTP,StartConstants.NOSOA));
 		Loggers.setDefaultLevel(LogLevel.ERROR);//这个只能修改默认级别的，如果有具体设置了日志级别，它的优先级比这个高
 		Rpc.init();
 	}
