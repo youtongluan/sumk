@@ -1,8 +1,6 @@
 # sumk
 
-sumk由sumk-base、sumk-framework、sumk-db、sumk-http、sumk-rpc、sumk-rpc-mina、async-logger（又名sumk-log）7个工程组成。设计上对分布式、扩展性考虑较多，互联网常见的问题很多都内置支持，比如数据库读写分离、调用链跟踪、统一日志等，与spring（或springboot）的相比更轻量、性能更高、内存消耗更低。
-
-
+sumk由sumk-base、sumk-framework、sumk-db、sumk-http、sumk-rpc、async-logger（又名sumk-log）等工程组成。设计上对分布式、扩展性考虑较多，互联网常见的问题很多都内置支持，比如数据库读写分离、调用链跟踪、统一日志等，与spring体系相比更轻量、性能更高、内存消耗更低。
 
 ### 功能介绍
 
