@@ -15,6 +15,9 @@ public class Starter {
 		org.apache.logging.log4j.LogManager.getLogger(this.getClass()).error("如果使用log4j 2，请引入log4j-to-slf4j");
 		ProxyLog.log("{}是{}的测试类","这个",LocationAwareLogger.class);
 		ProxyLog.error("异常消息",new Exception("用于测试的异常"));
+		
+		Log.get(this.getClass()).atWarn().addArgument("李四").addKeyValue("key1", "marker1")
+			.setMessage("name:{}").log();
 		SumkThreadPool.shutdown();
 	}
 	

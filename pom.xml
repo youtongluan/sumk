@@ -2,7 +2,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.github.youtongluan</groupId>
 	<artifactId>sumk</artifactId>
-	<version>4.2.0</version>
+	<version>4.2.1</version>
 	<packaging>pom</packaging>
 
 	<name>com.github.youtongluan:sumk</name>
@@ -41,6 +41,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.test.skip>true</maven.test.skip>
+		<slf4j-version>2.0.17</slf4j-version>
 	</properties>
 	<dependencyManagement>
 		<dependencies>
@@ -78,20 +79,22 @@
 			</dependency>
 
 			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>log4j-over-slf4j</artifactId>
-				<version>1.7.32</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>jcl-over-slf4j</artifactId>
-				<version>1.7.32</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.32</version>
-			</dependency>
+		  <groupId>org.slf4j</groupId>
+		  <artifactId>slf4j-api</artifactId>
+		  <version>${slf4j-version}</version>
+		</dependency>
+		<!-- log4j 输出到 slf4j，日志级别设置也由slf4j的实现类决定 -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>log4j-over-slf4j</artifactId>
+			<version>${slf4j-version}</version>
+		</dependency>
+		<!-- commons-logging 输出到 slf4j -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jcl-over-slf4j</artifactId>
+			<version>${slf4j-version}</version>
+		</dependency>
 
 			<!-- 如果不用mybatis，这个可以去掉 -->
 			<dependency>

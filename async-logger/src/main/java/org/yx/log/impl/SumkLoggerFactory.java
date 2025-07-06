@@ -35,6 +35,10 @@ public final class SumkLoggerFactory implements ILoggerFactory {
 		RawLog.setLogger(RawLog.SLF4J_LOG);
 	}
 
+	public SumkLoggerFactory() {
+		RawLog.info("org.slf4j.sumk", "sumk slf4j initialized");
+	}
+
 	public static Function<String, SumkLogger> getLoggerFactory() {
 		return loggerFactory;
 	}

@@ -144,7 +144,8 @@ public final class SumkServer {
 		String ioc = AppInfo.getLatin(StartConstants.IOC_PACKAGES);
 		List<String> pcks = StringUtil.isEmpty(ioc) ? Collections.emptyList()
 				: StringUtil.splitAndTrim(ioc, Const.COMMA, Const.SEMICOLON);
-		pcks=new ArrayList<>(pcks);
+		pcks = new ArrayList<>(pcks);
+
 		if (mainClazz != null && mainClazz.getPackage() != null
 				&& StringUtil.isNotEmpty(mainClazz.getPackage().getName())) {
 			String pkName = mainClazz.getPackage().getName();
