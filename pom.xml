@@ -20,16 +20,14 @@
 		<developerConnection>https://github.com/youtongluan/sumk</developerConnection>
 	</scm>
 	<distributionManagement>
-		<snapshotRepository>
-			<id>sonatype-nexus-snapshots</id>
-			<name>repo-snapshot</name>
-			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
-		</snapshotRepository>
-		<repository>
-			<id>sonatype-nexus-staging</id>
-			<name>repo-release</name>
-			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-		</repository>
+	    <repository>
+	        <id>ossrh</id>
+	        <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+	    </repository>
+	    <snapshotRepository>
+	        <id>ossrh</id>
+	        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+	    </snapshotRepository>
 	</distributionManagement>
 	<developers>
 		<developer>
@@ -214,6 +212,15 @@
 					<skip>false</skip>
 				</configuration>
 			</plugin>
+			<plugin>
+	          <groupId>org.sonatype.central</groupId>
+	          <artifactId>central-publishing-maven-plugin</artifactId>
+	          <version>0.8.0</version>
+	          <extensions>true</extensions>
+	          <configuration>
+	            <publishingServerId>central</publishingServerId>
+	          </configuration>
+        	</plugin>
 		</plugins>
 	</build>
 </project>
